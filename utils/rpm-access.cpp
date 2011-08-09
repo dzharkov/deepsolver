@@ -154,7 +154,7 @@ bool readPackageData(const std::string fileName, Package& p, std::string& errMsg
 char** versions = NULL;
   int_32* flags = NULL;
   int res = headerGetEntry(h, RPMTAG_PROVIDENAME, &type, (void **)&names, &count1);
-  if (rc == 1)//What exact constant must be used here?
+  if (res == 0)//What exact constant must be used here?
     {
       headerFree(h);
       Fclose(fd);
@@ -164,7 +164,7 @@ char** versions = NULL;
   assert(type == RPM_STRING_ARRAY_TYPE);
   assert(names);
   res = headerGetEntry(h, RPMTAG_PROVIDEVERSION, &type, (void **)&versions, &count2);
-  if (rc == 1)//What exact constant must be used here?
+  if (res == 0)//What exact constant must be used here?
     {
       headerFree(h);
       Fclose(fd);
@@ -174,7 +174,7 @@ char** versions = NULL;
   assert(type == RPM_STRING_ARRAY_TYPE);
   assert(versions);
   res = headerGetEntry(h, RPMTAG_PROVIDEFLAGS, &type, (void **)&flags, &count3);
-  if (rc == 1)//What exact constant must be used here?
+  if (res == 0)//What exact constant must be used here?
     {
       headerFree(h);
       Fclose(fd);
@@ -188,12 +188,59 @@ char** versions = NULL;
   for(int_32 i = 0;i < count1;i++)
     p.provides[i] = PkgRel(names[i], versions[i], flags[i]);
 
-  /*
-  rc = headerGetEntry(h, RPMTAG_REQUIRENAME, &type, (void **)&namel, &count);
-  std::cout << count << std::endl;
-  for(size_t i = 0;i < count;i++)
-    std::cout << namel[i] << std::endl;
-
+  count1 = 0; count2 = 0; count3 = 0; type = 0;
+  names = NULL; versions = NULL;
+  flags = NULL;
+  res = headerGetEntry(h, RPMTAG_REQUIRENAME, &type, (void **)&names, &count1);
+  if (res == 0)//What exact constant must be used here?
+    {
+      headerFree(h);
+      Fclose(fd);
+      errMsg = "cannot get list of require names";
+      return 0;
+    }
+  assert(type == RPM_STRING_ARRAY_TYPE);
+  assert(names);
+  res = headerGetEntry(h, RPMTAG_REQUIREVERSION, &type, (void **)&versions, &count2);
+  if (res == 0)//What exact constant must be used here?
+    {
+      headerFree(h);
+      Fclose(fd);
+      errMsg = "cannot get list of require versions";
+      return 0;
+    }
+  assert(type == RPM_STRING_ARRAY_TYPE);
+  assert(versions);
+  res = headerGetEntry(h, RPMTAG_REQUIREFLAGS, &type, (void **)&flags, &count3);
+  if (res == 0)//What exact constant must be used here?
+    {
+      headerFree(h);
+      Fclose(fd);
+      errMsg = "cannot get list of require flags";
+      return 0;
+    }
+  assert(type == RPM_INT32_TYPE);
+  assert(flags);
+  assert(count1 == count2 && count2 == count3);
+  p.requires.resize(count1);
+  for(int_32 i = 0;i < count1;i++)
+    p.requires[i] = PkgRel(names[i], versions[i], flags[i]);
+  /*FIXME:PreReq:Assuming PreReq is the same as usual requires;
+  names = NULL;
+  count1 = 0;
+  type = 0;
+  res = headerGetEntry(h, RPMTAG_PREREQ, &type, (void **)&names, &count1);
+  if (res == 0)//What exact constant must be used here?
+    {
+      headerFree(h);
+      Fclose(fd);
+      errMsg = "cannot get list of prereq names";
+      return 0;
+    }
+  assert(type == RPM_STRING_ARRAY_TYPE);
+  assert(names);
+  for(int_32 i = 0;i < count1;i++)
+    p.requires.push_back(PkgRel(names[i]));
   */
 
   headerFree(h);
@@ -215,5 +262,10 @@ int main(int argc, char* argv[])
   std::cout << "Provides:" << std::endl;
   for(PkgRelVector::size_type i = 0;i < p.provides.size();i++)
     std::cout << p.provides[i] << std::endl;
+
+  std::cout << "Requires:" << std::endl;
+  for(PkgRelVector::size_type i = 0;i < p.requires.size();i++)
+    std::cout << p.requires[i] << std::endl;
+
   return 0;
 }
