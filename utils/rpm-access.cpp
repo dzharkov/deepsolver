@@ -28,6 +28,7 @@ class Package
 {
 public:
   std::string name, epoch, version, release, arch, url, packager, summary, description;
+  PkgRelVector requires, conflicts, provides;
 }; //class Package;
 
 std::ostream& operator <<(std::ostream& s, const Package& p)
@@ -41,7 +42,6 @@ std::ostream& operator <<(std::ostream& s, const PkgRel& p)
   s << p.name << " " << p.version << " (" << p.flags << ")";
   return s;
 }
-
 
 bool getStringTagValue(Header h, int_32 tag, std::string& value, std::string& errMsg)
 {
@@ -60,7 +60,7 @@ bool getStringTagValue(Header h, int_32 tag, std::string& value, std::string& er
       errMsg = ss.str();
       return 0;
     }
-  //FIXME:type checking;
+  assert(type == RPM_STRING_TYPE);
   assert(str);
   value = str;
   return 1;
@@ -69,11 +69,22 @@ bool getStringTagValue(Header h, int_32 tag, std::string& value, std::string& er
 bool readPackageData(const std::string fileName, Package& p, std::string& errMsg)
 {
   FD_t fd = Fopen(fileName.c_str(), "r");
-  assert(fd != NULL);
-  //FIXME:rc checking;
+  if (fd == NULL)
+    {
+      errMsg = "cannot open \'" + fileName + "\' for reading";
+      return 0;
+    }
   Header h;
   rpmRC rc = rpmReadPackageHeader(fd, &h, 0, NULL, NULL);
-  assert(rc == 0);
+  if (rc != RPMRC_OK || h == NULL)
+    {
+      if (h)
+	headerFree(h);
+      Fclose(fd);
+      errMsg = "cannot read package header from \'" + fileName + "\'";
+      return 0;
+
+    }
   //FIXME:rc checking;
 
   if (!getStringTagValue(h, RPMTAG_NAME, p.name, errMsg))
@@ -138,14 +149,46 @@ bool readPackageData(const std::string fileName, Package& p, std::string& errMsg
       return 0;
     }
 
+  int_32 count1 = 0, count2 = 0, count3 = 0, type = 0;
+  char** names = NULL;
+char** versions = NULL;
+  int_32* flags = NULL;
+  int res = headerGetEntry(h, RPMTAG_PROVIDENAME, &type, (void **)&names, &count1);
+  if (rc == 1)//What exact constant must be used here?
+    {
+      headerFree(h);
+      Fclose(fd);
+      errMsg = "cannot get list of provide names";
+      return 0;
+    }
+  assert(type == RPM_STRING_ARRAY_TYPE);
+  assert(names);
+  res = headerGetEntry(h, RPMTAG_PROVIDEVERSION, &type, (void **)&versions, &count2);
+  if (rc == 1)//What exact constant must be used here?
+    {
+      headerFree(h);
+      Fclose(fd);
+      errMsg = "cannot get list of provide versions";
+      return 0;
+    }
+  assert(type == RPM_STRING_ARRAY_TYPE);
+  assert(versions);
+  res = headerGetEntry(h, RPMTAG_PROVIDEFLAGS, &type, (void **)&flags, &count3);
+  if (rc == 1)//What exact constant must be used here?
+    {
+      headerFree(h);
+      Fclose(fd);
+      errMsg = "cannot get list of provide flags";
+      return 0;
+    }
+  assert(type == RPM_INT32_TYPE);
+  assert(flags);
+  assert(count1 == count2 && count2 == count3);
+  p.provides.resize(count1);
+  for(int_32 i = 0;i < count1;i++)
+    p.provides[i] = PkgRel(names[i], versions[i], flags[i]);
+
   /*
-  char **namel = NULL;
-
-  rc = headerGetEntry(h, RPMTAG_PROVIDENAME, &type, (void **)&namel, &count);
-  std::cout << count << std::endl;
-  for(size_t i = 0;i < count;i++)
-    std::cout << namel[i] << std::endl;
-
   rc = headerGetEntry(h, RPMTAG_REQUIRENAME, &type, (void **)&namel, &count);
   std::cout << count << std::endl;
   for(size_t i = 0;i < count;i++)
@@ -169,5 +212,8 @@ int main(int argc, char* argv[])
 	return 1;
     }
   std::cout << p << std::endl;
+  std::cout << "Provides:" << std::endl;
+  for(PkgRelVector::size_type i = 0;i < p.provides.size();i++)
+    std::cout << p.provides[i] << std::endl;
   return 0;
 }
