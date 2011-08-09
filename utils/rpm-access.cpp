@@ -1,56 +1,41 @@
-RPMFileHandler::RPMFileHandler(string File)
-{
-   ID = File;
-   FD = Fopen(File.c_str(), "r");
-   if (FD == NULL)
-   {
-      /*
-      _error->Error(_("could not open RPM package list file %s: %s"),
-		    File.c_str(), rpmErrorString());
-      */
-      return;
-   }
-   iSize = fdSize(FD);
-}
 
+#include<assert.h>
+#include<string>
+#include<iostream>
+#include<rpm/rpmlib.h>
 
-bool RPMSingleFileHandler::Skip()
+bool processFile(const std::string& fileName)
 {
-   if (FD == NULL)
-      return false;
-   if (HeaderP != NULL) {
-      headerFree(HeaderP);
-      HeaderP = NULL;
-      return false;
-   }
-#if RPM_VERSION >= 0x040100
-   rpmts TS = rpmtsCreate();
-   rpmtsSetVSFlags(TS, (rpmVSFlags_e)-1);
-   int rc = rpmReadPackageFile(TS, FD, sFilePath.c_str(), &HeaderP);
+  FD_t fd = Fopen(fileName.c_str(), "r");
+  assert(fd != NULL);
+  if (fd == NULL)
+    return 0;
+  Header h;
+  /*
+  rpmts ts = rpmtsCreate();
+  rpmtsSetVSFlags(TS, (rpmVSFlags_e)-1);
+  int rc = rpmReadPackageFile(TS, FD, sFilePath.c_str(), &HeaderP);
    if (rc != RPMRC_OK && rc != RPMRC_NOTTRUSTED && rc != RPMRC_NOKEY) {
       _error->Error(_("Failed reading file %s"), sFilePath.c_str());
       HeaderP = NULL;
    }
    rpmtsFree(TS);
-#else
-   int rc = rpmReadPackageHeader(FD, &HeaderP, 0, NULL, NULL);
-   if (rc) {
-      _error->Error(_("Failed reading file %s"), sFilePath.c_str());
-      HeaderP = NULL;
-   }
-#endif
-   return (HeaderP != NULL);
+  */
+  int rc = rpmReadPackageHeader(fd, &h, 0, NULL, NULL);
+  assert(!rs);
+  if (rc) 
+    return 0;
+  char* str;
+  int_32 count, type;
+  int rc = headerGetEntry(h, CRPMTAG_FILENAME, &type, (void**)&str, &count);
+  assert(rc != 0);
+  std::cout << str << std::endl;j
+				  return 1;
 }
 
-
-string RPMFileHandler::FileName()
+int main(int argc, char* argv[])
 {
-   char *str;
-   int_32 count, type;
-   assert(HeaderP != NULL);
-   int rc = headerGetEntry(HeaderP, CRPMTAG_FILENAME,
-			   &type, (void**)&str, &count);
-   assert(rc != 0);
-   return str;
+  assert(argc >= 2);
+  processFile(argv[1]);
+  return 0;
 }
-
