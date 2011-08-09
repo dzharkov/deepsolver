@@ -22,15 +22,30 @@ bool processFile(const std::string& fileName)
    rpmtsFree(TS);
   */
   int rc = rpmReadPackageHeader(fd, &h, 0, NULL, NULL);
-  assert(!rs);
+  assert(!rc);
   if (rc) 
     return 0;
   char* str;
   int_32 count, type;
-  int rc = headerGetEntry(h, CRPMTAG_FILENAME, &type, (void**)&str, &count);
+  rc = headerGetEntry(h, RPMTAG_VERSION, &type, (void**)&str, &count);
   assert(rc != 0);
-  std::cout << str << std::endl;j
-				  return 1;
+  std::cout << str << std::endl;
+
+  char **namel = NULL;
+
+  rc = headerGetEntry(h, RPMTAG_PROVIDENAME, &type, (void **)&namel, &count);
+  std::cout << count << std::endl;
+  for(size_t i = 0;i < count;i++)
+    std::cout << namel[i] << std::endl;
+
+  rc = headerGetEntry(h, RPMTAG_REQUIRENAME, &type, (void **)&namel, &count);
+  std::cout << count << std::endl;
+  for(size_t i = 0;i < count;i++)
+    std::cout << namel[i] << std::endl;
+
+
+
+  return 1;
 }
 
 int main(int argc, char* argv[])
