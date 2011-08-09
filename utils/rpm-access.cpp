@@ -151,7 +151,7 @@ bool readPackageData(const std::string fileName, Package& p, std::string& errMsg
 
   int_32 count1 = 0, count2 = 0, count3 = 0, type = 0;
   char** names = NULL;
-char** versions = NULL;
+  char** versions = NULL;
   int_32* flags = NULL;
   int res = headerGetEntry(h, RPMTAG_PROVIDENAME, &type, (void **)&names, &count1);
   if (res == 0)//What exact constant must be used here?
