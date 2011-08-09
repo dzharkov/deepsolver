@@ -1,10 +1,27 @@
 //Written with librpm-4.0.4-alt100.29;
 
 #include<assert.h>
+#include<list>
+#include<vector>
 #include<string>
 #include<sstream>
 #include<iostream>
 #include<rpm/rpmlib.h>
+
+class PkgRel
+{
+public:
+  PkgRel(): flags(0) {}
+  PkgRel(const std::string& n): name(n), flags(0) {}
+  PkgRel(const std::string& n, const std::string& v): name(n), version(v), flags(0) {}
+  PkgRel(const std::string& n, const std::string& v, int_32 f): name(n), version(v), flags(f) {}
+
+  std::string name, version;
+  int_32 flags;
+}; //class PkgRel;
+
+typedef std::list<PkgRel>  PkgRelList;
+typedef std::vector<PkgRel> PkgRelVector;
 
 //This class contains only data required for experiments and some general package information;
 class Package
@@ -18,6 +35,13 @@ std::ostream& operator <<(std::ostream& s, const Package& p)
   s << p.name << "-" << p.version << "-" << p.release;
   return s;
 }
+
+std::ostream& operator <<(std::ostream& s, const PkgRel& p)
+{
+  s << p.name << " " << p.version << " (" << p.flags << ")";
+  return s;
+}
+
 
 bool getStringTagValue(Header h, int_32 tag, std::string& value, std::string& errMsg)
 {
