@@ -37,7 +37,7 @@ class Package
 {
 public:
   std::string name, epoch, version, release, arch, url, packager, summary, description;
-  PkgRelVector requires, conflicts, provides;
+  PkgRelVector requires, conflicts, provides, obsoletes;
 }; //class Package;
 
 std::ostream& operator <<(std::ostream& s, const Package& p)
@@ -273,6 +273,41 @@ bool readPackageData(const std::string fileName, Package& p, std::string& errMsg
 	p.conflicts[i] = PkgRel(names[i], versions[i], flags[i]);
     }
 
+  p.obsoletes.clear();
+  count1 = 0; count2 = 0; count3 = 0; type = 0;
+  names = NULL; versions = NULL;
+  flags = NULL;
+  res = headerGetEntry(h, RPMTAG_OBSOLETENAME, &type, (void **)&names, &count1);
+  if (res != 0)//What exact constant must be used here?
+    {
+      assert(type == RPM_STRING_ARRAY_TYPE);
+      assert(names);
+      res = headerGetEntry(h, RPMTAG_OBSOLETEVERSION, &type, (void **)&versions, &count2);
+      if (res == 0)//What exact constant must be used here?
+	{
+	  headerFree(h);
+	  Fclose(fd);
+	  errMsg = "cannot get list of obsolete versions";
+	  return 0;
+	}
+      assert(type == RPM_STRING_ARRAY_TYPE);
+      assert(versions);
+      res = headerGetEntry(h, RPMTAG_OBSOLETEFLAGS, &type, (void **)&flags, &count3);
+      if (res == 0)//What exact constant must be used here?
+	{
+	  headerFree(h);
+	  Fclose(fd);
+	  errMsg = "cannot get list of obsolete flags";
+	  return 0;
+	}
+      assert(type == RPM_INT32_TYPE);
+      assert(flags);
+      assert(count1 == count2 && count2 == count3);
+      p.obsoletes.resize(count1);
+      for(int_32 i = 0;i < count1;i++)
+	p.obsoletes[i] = PkgRel(names[i], versions[i], flags[i]);
+    }
+
   count1 = 0; count2 = 0; count3 = 0; type = 0;
   names = NULL; versions = NULL;
   flags = NULL;
@@ -317,6 +352,8 @@ bool readPackageData(const std::string fileName, Package& p, std::string& errMsg
     translateRelFlags(p.requires[i]);
   for(PkgRelVector::size_type i = 0;i < p.conflicts.size();i++)
     translateRelFlags(p.conflicts[i]);
+  for(PkgRelVector::size_type i = 0;i < p.obsoletes.size();i++)
+    translateRelFlags(p.obsoletes[i]);
 
   headerFree(h);
   Fclose(fd);
@@ -344,6 +381,10 @@ int main(int argc, char* argv[])
   std::cout << "Conflicts:" << std::endl;
   for(PkgRelVector::size_type i = 0;i < p.conflicts.size();i++)
     std::cout << p.conflicts[i] << std::endl;
+  std::cout << "Obsoletes:" << std::endl;
+  for(PkgRelVector::size_type i = 0;i < p.obsoletes.size();i++)
+    std::cout << p.obsoletes[i] << std::endl;
+
 
   return 0;
 }
