@@ -36,7 +36,10 @@ typedef std::vector<PkgRel> PkgRelVector;
 class Package
 {
 public:
-  std::string name, epoch, version, release, arch, url, packager, summary, description;
+  Package(): epoch(0) {}
+
+  std::string name, version, release, arch, url, packager, summary, description;
+  int_32 epoch;
   PkgRelVector requires, conflicts, provides, obsoletes;
 }; //class Package;
 
@@ -119,6 +122,31 @@ bool getStringTagValue(Header h, int_32 tag, std::string& value, std::string& er
   assert(type == RPM_STRING_TYPE);
   assert(str);
   value = str;
+  //std::cout << value << std::endl;
+  return 1;
+}
+
+bool getInt32TagValue(Header h, int_32 tag, int_32& value, std::string& errMsg)
+{
+  int_32* num = NULL;
+  int_32 count, type;
+  const int rc = headerGetEntry(h, tag, &type, (void**)&num, &count);
+  if (rc == 0)//Is there proper constant ? RPMRC_OK is not suitable;
+    {
+      errMsg = "cannot get rpm package tag value";
+      return 0;
+    }
+  if (count != 1)
+    {
+      std::ostringstream ss;
+      ss << "received " << count << " lines of rpm package tag value, but must be one";
+      errMsg = ss.str();
+      return 0;
+    }
+  assert(type == RPM_INT32_TYPE);
+  assert(num);
+  value = *num;
+  //std::cout << value << std::endl;
   return 1;
 }
 
@@ -151,8 +179,8 @@ bool readPackageData(const std::string fileName, Package& p, std::string& errMsg
     }
 
   //Epoch may be omitted, no need to check return code; 
-  p.epoch.erase();
-  getStringTagValue(h, RPMTAG_EPOCH, p.epoch, errMsg);
+  p.epoch = 0;
+    getInt32TagValue(h, RPMTAG_EPOCH, p.epoch, errMsg);
 
   if (!getStringTagValue(h, RPMTAG_VERSION, p.version, errMsg))
     {
@@ -374,8 +402,8 @@ bool printPackageInfo(const std::string& fileName)
   std::cout << "version=" << p.version << std::endl;
   std::cout << "release=" << p.release << std::endl;
   std::cout << "arch=" << p.arch << std::endl;
-  std::cout << "url=" << std::endl;
-  std::cout << "packager=" << std::endl;
+  std::cout << "url=" << p.url << std::endl;
+  std::cout << "packager=" << p.packager << std::endl;
   std::cout << "summary=" << p.summary << std::endl;
   for (PkgRelVector::size_type i = 0;i < p.requires.size();i++)
     std::cout << "require:" << p.requires[i] << std::endl;
