@@ -354,37 +354,44 @@ bool readPackageData(const std::string fileName, Package& p, std::string& errMsg
     translateRelFlags(p.conflicts[i]);
   for(PkgRelVector::size_type i = 0;i < p.obsoletes.size();i++)
     translateRelFlags(p.obsoletes[i]);
-
   headerFree(h);
   Fclose(fd);
+  return 1;
+}
+
+bool printPackageInfo(const std::string& fileName)
+{
+  Package p;
+  std::string errMsg;
+  if (!readPackageData(fileName, p, errMsg))
+    {
+      std::cerr << "error:" << errMsg << std::endl;
+	return 0;
+    }
+  std::cout << "# " << fileName << std::endl;
+  std::cout << "name=" << p.name << std::endl;
+  std::cout << "epoch=" << p.epoch << std::endl;
+  std::cout << "version=" << p.version << std::endl;
+  std::cout << "release=" << p.release << std::endl;
+  std::cout << "arch=" << p.arch << std::endl;
+  std::cout << "url=" << std::endl;
+  std::cout << "packager=" << std::endl;
+  std::cout << "summary=" << p.summary << std::endl;
+  for (PkgRelVector::size_type i = 0;i < p.requires.size();i++)
+    std::cout << "require:" << p.requires[i] << std::endl;
+  for (PkgRelVector::size_type i = 0;i < p.provides.size();i++)
+    std::cout << "provide:" << p.provides[i] << std::endl;
+  for (PkgRelVector::size_type i = 0;i < p.conflicts.size();i++)
+    std::cout << "conflict:" << p.conflicts[i] << std::endl;
+  for (PkgRelVector::size_type i = 0;i < p.obsoletes.size();i++)
+    std::cout << "obsolete:" << p.obsoletes[i] << std::endl;
+  std::cout << std::endl;
   return 1;
 }
 
 int main(int argc, char* argv[])
 {
   assert(argc >= 2);
-  Package p;
-  std::string errMsg;
-  if (!readPackageData(argv[1], p, errMsg))
-    {
-      std::cerr << "error:" << errMsg << std::endl;
-	return 1;
-    }
-  std::cout << p << std::endl;
-  std::cout << "Provides:" << std::endl;
-  for(PkgRelVector::size_type i = 0;i < p.provides.size();i++)
-    std::cout << p.provides[i] << std::endl;
-
-  std::cout << "Requires:" << std::endl;
-  for(PkgRelVector::size_type i = 0;i < p.requires.size();i++)
-    std::cout << p.requires[i] << std::endl;
-  std::cout << "Conflicts:" << std::endl;
-  for(PkgRelVector::size_type i = 0;i < p.conflicts.size();i++)
-    std::cout << p.conflicts[i] << std::endl;
-  std::cout << "Obsoletes:" << std::endl;
-  for(PkgRelVector::size_type i = 0;i < p.obsoletes.size();i++)
-    std::cout << p.obsoletes[i] << std::endl;
-
-
+  printPackageInfo(argv[1]);
   return 0;
 }
