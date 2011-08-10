@@ -63,6 +63,7 @@ bool getStringTagValue(Header h, int_32 tag, std::string& value, std::string& er
   assert(type == RPM_STRING_TYPE);
   assert(str);
   value = str;
+  std::cout << value << std::endl;
   return 1;
 }
 
@@ -119,19 +120,13 @@ bool readPackageData(const std::string fileName, Package& p, std::string& errMsg
       return 0;
     }
 
-  if (!getStringTagValue(h, RPMTAG_URL, p.url, errMsg))
-    {
-      headerFree(h);
-      Fclose(fd);
-      return 0;
-    }
+  //URL may be omitted, no need to check return code; 
+  p.url.erase();
+  getStringTagValue(h, RPMTAG_URL, p.url, errMsg);
 
-  if (!getStringTagValue(h, RPMTAG_PACKAGER, p.packager, errMsg))
-    {
-      headerFree(h);
-      Fclose(fd);
-      return 0;
-    }
+//Packager may be omitted, no need to check return code; 
+  p.packager.erase();
+  getStringTagValue(h, RPMTAG_PACKAGER, p.packager, errMsg);
 
   //No i18n processing, is it required here?
   if (!getStringTagValue(h, RPMTAG_SUMMARY, p.summary, errMsg))
@@ -187,6 +182,41 @@ bool readPackageData(const std::string fileName, Package& p, std::string& errMsg
   p.provides.resize(count1);
   for(int_32 i = 0;i < count1;i++)
     p.provides[i] = PkgRel(names[i], versions[i], flags[i]);
+
+  p.conflicts.clear();
+  count1 = 0; count2 = 0; count3 = 0; type = 0;
+  names = NULL; versions = NULL;
+  flags = NULL;
+  res = headerGetEntry(h, RPMTAG_CONFLICTNAME, &type, (void **)&names, &count1);
+  if (res != 0)//What exact constant must be used here?
+    {
+      assert(type == RPM_STRING_ARRAY_TYPE);
+      assert(names);
+      res = headerGetEntry(h, RPMTAG_CONFLICTVERSION, &type, (void **)&versions, &count2);
+      if (res == 0)//What exact constant must be used here?
+	{
+	  headerFree(h);
+	  Fclose(fd);
+	  errMsg = "cannot get list of conflict versions";
+	  return 0;
+	}
+      assert(type == RPM_STRING_ARRAY_TYPE);
+      assert(versions);
+      res = headerGetEntry(h, RPMTAG_CONFLICTFLAGS, &type, (void **)&flags, &count3);
+      if (res == 0)//What exact constant must be used here?
+	{
+	  headerFree(h);
+	  Fclose(fd);
+	  errMsg = "cannot get list of conflict flags";
+	  return 0;
+	}
+      assert(type == RPM_INT32_TYPE);
+      assert(flags);
+      assert(count1 == count2 && count2 == count3);
+      p.conflicts.resize(count1);
+      for(int_32 i = 0;i < count1;i++)
+	p.conflicts[i] = PkgRel(names[i], versions[i], flags[i]);
+    }
 
   count1 = 0; count2 = 0; count3 = 0; type = 0;
   names = NULL; versions = NULL;
@@ -266,6 +296,10 @@ int main(int argc, char* argv[])
   std::cout << "Requires:" << std::endl;
   for(PkgRelVector::size_type i = 0;i < p.requires.size();i++)
     std::cout << p.requires[i] << std::endl;
+  std::cout << "Conflicts:" << std::endl;
+  for(PkgRelVector::size_type i = 0;i < p.conflicts.size();i++)
+    std::cout << p.conflicts[i] << std::endl;
+
 
   return 0;
 }
