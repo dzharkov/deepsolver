@@ -11,13 +11,22 @@
 class PkgRel
 {
 public:
-  PkgRel(): flags(0) {}
-  PkgRel(const std::string& n): name(n), flags(0) {}
-  PkgRel(const std::string& n, const std::string& v): name(n), version(v), flags(0) {}
-  PkgRel(const std::string& n, const std::string& v, int_32 f): name(n), version(v), flags(f) {}
+  enum {
+    Less = 1,
+    LessOrEqual = 2,
+    Equal = 3,
+    GreaterOrEqual = 4,
+    Greater = 5
+  };
+
+  PkgRel(): flags(0), versionRel(0) {}
+  PkgRel(const std::string& n): name(n), flags(0), versionRel(0) {}
+  PkgRel(const std::string& n, const std::string& v): name(n), version(v), flags(0), versionRel(0) {}
+  PkgRel(const std::string& n, const std::string& v, int_32 f): name(n), version(v), flags(f), versionRel(0) {}
 
   std::string name, version;
   int_32 flags;
+  char versionRel;
 }; //class PkgRel;
 
 typedef std::list<PkgRel>  PkgRelList;
@@ -39,8 +48,55 @@ std::ostream& operator <<(std::ostream& s, const Package& p)
 
 std::ostream& operator <<(std::ostream& s, const PkgRel& p)
 {
-  s << p.name << " " << p.version << " (" << p.flags << ")";
+  s << p.name;
+  if (p.versionRel)
+    {
+      assert(!p.version.empty());
+      s << " ";
+      switch(p.versionRel)
+	{
+	case PkgRel::Less:
+	  s << "<";
+	  break;
+	case PkgRel::LessOrEqual:
+	  s << "<=";
+	  break;
+	case PkgRel::Equal:
+	  s << "=";
+	  break;
+	case PkgRel::GreaterOrEqual:
+	  s << ">=";
+	  break;
+	case PkgRel::Greater:
+	  s << ">";
+	  break;
+	default:
+	  assert(0);
+	} //switch(p.versionRel); 
+      s << " " << p.version;
+    } else 
+    {
+      assert(p.version.empty());
+    }
+  s << " (" << p.flags << ")";
   return s;
+}
+
+void translateRelFlags(PkgRel& p)
+{
+  const bool less = p.flags & RPMSENSE_LESS, equal = p.flags & RPMSENSE_EQUAL, greater = p.flags & RPMSENSE_GREATER;
+  assert(!less || !greater);
+  if (less && equal)
+    p.versionRel = PkgRel::LessOrEqual; else
+  if (greater && equal)
+    p.versionRel = PkgRel::GreaterOrEqual; else
+  if (less)
+    p.versionRel = PkgRel::Less; else
+  if (equal)
+    p.versionRel = PkgRel::Equal; else
+  if (greater)
+    p.versionRel = PkgRel::Greater; else
+    p.versionRel = 0;
 }
 
 bool getStringTagValue(Header h, int_32 tag, std::string& value, std::string& errMsg)
@@ -63,7 +119,6 @@ bool getStringTagValue(Header h, int_32 tag, std::string& value, std::string& er
   assert(type == RPM_STRING_TYPE);
   assert(str);
   value = str;
-  std::cout << value << std::endl;
   return 1;
 }
 
@@ -255,23 +310,13 @@ bool readPackageData(const std::string fileName, Package& p, std::string& errMsg
   p.requires.resize(count1);
   for(int_32 i = 0;i < count1;i++)
     p.requires[i] = PkgRel(names[i], versions[i], flags[i]);
-  /*FIXME:PreReq:Assuming PreReq is the same as usual requires;
-  names = NULL;
-  count1 = 0;
-  type = 0;
-  res = headerGetEntry(h, RPMTAG_PREREQ, &type, (void **)&names, &count1);
-  if (res == 0)//What exact constant must be used here?
-    {
-      headerFree(h);
-      Fclose(fd);
-      errMsg = "cannot get list of prereq names";
-      return 0;
-    }
-  assert(type == RPM_STRING_ARRAY_TYPE);
-  assert(names);
-  for(int_32 i = 0;i < count1;i++)
-    p.requires.push_back(PkgRel(names[i]));
-  */
+
+  for(PkgRelVector::size_type i = 0;i < p.provides.size();i++)
+    translateRelFlags(p.provides[i]);
+  for(PkgRelVector::size_type i = 0;i < p.requires.size();i++)
+    translateRelFlags(p.requires[i]);
+  for(PkgRelVector::size_type i = 0;i < p.conflicts.size();i++)
+    translateRelFlags(p.conflicts[i]);
 
   headerFree(h);
   Fclose(fd);
@@ -299,7 +344,6 @@ int main(int argc, char* argv[])
   std::cout << "Conflicts:" << std::endl;
   for(PkgRelVector::size_type i = 0;i < p.conflicts.size();i++)
     std::cout << p.conflicts[i] << std::endl;
-
 
   return 0;
 }
