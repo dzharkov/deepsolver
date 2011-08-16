@@ -37,9 +37,14 @@ class Package
 public:
   Package(): epoch(0) {}
 
+public:
+  void makeStringId();
+
+public:
   std::string name, version, release, arch, url, packager, summary, description;
   int_32 epoch;
   PkgRelVector requires, conflicts, provides, obsoletes;
+  std::string stringId;//The string in form name-epoch:version-release, we assume two packages will never have the same stringId;
 }; //class Package;
 
 std::ostream& operator <<(std::ostream& s, const Package& p);

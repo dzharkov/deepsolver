@@ -1,7 +1,15 @@
 
 #include<iostream>
+#include<sstream>
 #include<assert.h>
 #include"Package.h"
+
+void Package::makeStringId()
+{
+  std::ostringstream s;
+  s << name << "-" << epoch << ":" << version << "-" << release;
+  stringId = s.str();
+}
 
 std::ostream& operator <<(std::ostream& s, const Package& p)
 {
