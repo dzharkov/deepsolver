@@ -47,6 +47,9 @@ public:
   std::string stringId;//The string in form name-epoch:version-release, we assume two packages will never have the same stringId;
 }; //class Package;
 
+typedef std::vector<Package> PackageVector;
+typedef std::list<Package> PackageList;
+
 std::ostream& operator <<(std::ostream& s, const Package& p);
 std::ostream& operator <<(std::ostream& s, const PkgRel& p);
 

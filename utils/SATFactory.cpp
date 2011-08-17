@@ -19,9 +19,9 @@ struct ProvideIndex
 }; //struct ProvideIndex;
 
 typedef std::map<std::string, PackageId> PackageToIdMap;
-typedef std::map<std::string, ProvideIndex} ProvideIndexMap;
+typedef std::map<std::string, ProvideIndex> ProvideIndexMap;
 
-void fillSAT(const PackageVector& packages, PackageId, forPackage, SAT& sat)
+void fillSAT(const PackageVector& packages, PackageId forPackage, SAT& sat)
 {
   PackageToIdMap revMap;
   for(PackageVector::size_type i = 0;i < packages.size();i++)
@@ -35,7 +35,7 @@ void fillSAT(const PackageVector& packages, PackageId, forPackage, SAT& sat)
   for(PackageVector::size_type i = 0;i < packages.size();i++)
     for(PkgRelVector::size_type j = 0;j < packages[i].provides.size();j++)
     {
-      const std::string&^ provideName = packages[i].provides[j].name;
+      const std::string& provideName = packages[i].provides[j].name;
       ProvideIndexMap::iterator it = provideIndexMap.find(provideName);
       if (it == provideIndexMap.end())
 	provideIndexMap.insert(ProvideIndexMap::value_type(provideName, ProvideIndex(0, 1))); else 
@@ -44,8 +44,8 @@ void fillSAT(const PackageVector& packages, PackageId, forPackage, SAT& sat)
   size_t count = 0;
   for(ProvideIndexMap::iterator it = provideIndexMap.begin();it != provideIndexMap.end();++it)
     {
-      it->pos = count;
-      count += it->count;
+      it->second.pos = count;
+      count += it->second.count;
     }
   PackageIdVector provides;
   provides.resize(count);
