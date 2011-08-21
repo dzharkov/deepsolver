@@ -30,7 +30,12 @@ static void pickPackagesByProvide(const PkgRel& pkgRel, const Packages& packages
   assert(pos + count <= provides.size());
   for(PackageIdVector::size_type i = pos;i < pos + count;i++)
     {
-      //FIXME:
+      assert(provides[i] < packages.size);
+      const Package& p = packages[provides[i]];
+      if (p.name == pkgRel.name)
+	{
+	  //FIXME:
+	}
     }
 }
 
