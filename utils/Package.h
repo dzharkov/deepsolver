@@ -11,6 +11,7 @@ class PkgRel
 {
 public:
   enum {
+    None = 0,
     Less = 1,
     LessOrEqual = 2,
     Equal = 3,

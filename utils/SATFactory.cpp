@@ -19,6 +19,21 @@ struct ProvideIndex
 typedef std::map<std::string, PackageId> PackageToIdMap;
 typedef std::map<std::string, ProvideIndex> ProvideIndexMap;
 
+static std::auto_ptr<AbstractVersionComparison> versionComparison = createVersion Comparison(VersionComparisonRPM);
+
+static bool verCmp(int acceptable, const std::string& required, const std::string& checking)
+{
+  const int res = versionComparison->compare(required, checking);
+  if (result == 0)//Means equal versions;
+    return acceptable == PkgRel::Equal || acceptable == PkgRel::LessOrEqual || acceptable == PkgRel::GreaterOrEqual;
+  if (res > 0)//Required greater than checking;
+    return acceptable == PkgRel::Less || acceptable == PkgRel::LessOrEqual;
+  if (res < 0)//Checking greater than required;
+    return acceptable == PkgRel::Greater || acceptable == PkgRel::GreaterOrEqual;
+  assert(0);
+  return 0;//Just to reduce warning messages;
+}
+
 static void pickPackagesByProvide(const PkgRel& pkgRel, const Packages& packages, const PackageIdVector& provides, const ProvideIndexMap& provideIndexMap, PackageIdVector& res)
 {
   assert(!pkgRel.name.empty());
@@ -34,9 +49,33 @@ static void pickPackagesByProvide(const PkgRel& pkgRel, const Packages& packages
       const Package& p = packages[provides[i]];
       if (p.name == pkgRel.name)
 	{
-	  //FIXME:
-	}
-    }
+	  //Checking if the package is appropriate by itself;
+	  if (pkgRel.versionRel == PkgRel::None)
+	    {
+	      //Any version is accessible for this relation;
+	      res.push_back(i);
+	      continue;
+	    }
+	  assert(!pkgRel.version.empty() && !p.version.empty());
+	  if (verCmp(pkgRel.versionRel, pkgRel.version, p.version))
+	    {
+	      res.push_back(i);
+	      continue;
+	    }
+	} //if (p.name == pkgRel.name);
+      //Checking all provides of the package;
+      for(PkgRelVector::size_type j = 0;j < p.provides.size();j++)
+	{
+	  const PkgRel& pp = p.provides[j];
+	  if (pkgRel.name != pp.name)
+	    continue;
+	  if (verCmpRange(pkgRel. pp))
+	    {
+	      res.push_back(i);
+	      break;
+	    }
+	} //for(p.provides);
+    }//for(packages);
 }
 
 void fillSAT(const PackageVector& packages, PackageId forPackage, SAT& sat)
