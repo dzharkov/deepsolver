@@ -12,6 +12,18 @@ public:
   virtual int compare(const std::string& s1, const std::string& s2) const = 0;
 }; //class AbstractVersionComparison;
 
+class VersionReleaseComparison: public AbstractVersionComparison
+{
+public:
+  VersionReleaseComparison(std::auto_ptr<abstractVersionComparison> verCmp): m_verCmp(verCmp) {}
+  virtual ~VersionReleaseComparison() {}
+
+  virtual int compare(const std::string& s1, const std::string& s2) const = 0;
+
+private:
+  std::auto_ptr<AbstractVersionComparison> m_verCmp;
+}; //class VersionReleaseComparison;
+
 enum {VersionComparisonRPM = 0};
 std::auto_ptr<AbstractVersionComparison> createVersionComparison(int type);
 

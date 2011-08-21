@@ -19,7 +19,7 @@ struct ProvideIndex
 typedef std::map<std::string, PackageId> PackageToIdMap;
 typedef std::map<std::string, ProvideIndex> ProvideIndexMap;
 
-static std::auto_ptr<AbstractVersionComparison> versionComparison = createVersion Comparison(VersionComparisonRPM);
+static std::auto_ptr<AbstractVersionComparison> versionComparison = std::auto_ptr<AbstractVersionComparison>(new VVersionReleaseComparison(createVersionComparison(VersionComparisonRPM));
 
 static bool verCmp(int acceptable, const std::string& required, const std::string& checking)
 {
