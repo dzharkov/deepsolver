@@ -15,10 +15,10 @@ public:
 class VersionReleaseComparison: public AbstractVersionComparison
 {
 public:
-  VersionReleaseComparison(std::auto_ptr<abstractVersionComparison> verCmp): m_verCmp(verCmp) {}
+  VersionReleaseComparison(std::auto_ptr<AbstractVersionComparison> verCmp): m_verCmp(verCmp) {}
   virtual ~VersionReleaseComparison() {}
 
-  virtual int compare(const std::string& s1, const std::string& s2) const = 0;
+  virtual int compare(const std::string& s1, const std::string& s2) const;
 
 private:
   std::auto_ptr<AbstractVersionComparison> m_verCmp;

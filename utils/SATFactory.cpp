@@ -4,9 +4,11 @@
 #include<iostream>
 #include<string>
 #include<map>
+#include<memory>
 #include"Package.h"
 #include"SATBase.h"
 #include"SATFactory.h"
+#include"VerCmp.h"
 
 struct ProvideIndex
 {
@@ -19,12 +21,12 @@ struct ProvideIndex
 typedef std::map<std::string, PackageId> PackageToIdMap;
 typedef std::map<std::string, ProvideIndex> ProvideIndexMap;
 
-static std::auto_ptr<AbstractVersionComparison> versionComparison = std::auto_ptr<AbstractVersionComparison>(new VVersionReleaseComparison(createVersionComparison(VersionComparisonRPM));
+static std::auto_ptr<AbstractVersionComparison> versionComparison = std::auto_ptr<AbstractVersionComparison>(new VersionReleaseComparison(createVersionComparison(VersionComparisonRPM)));
 
 static bool verCmp(int acceptable, const std::string& required, const std::string& checking)
 {
   const int res = versionComparison->compare(required, checking);
-  if (result == 0)//Means equal versions;
+  if (res == 0)//Means equal versions;
     return acceptable == PkgRel::Equal || acceptable == PkgRel::LessOrEqual || acceptable == PkgRel::GreaterOrEqual;
   if (res > 0)//Required greater than checking;
     return acceptable == PkgRel::Less || acceptable == PkgRel::LessOrEqual;
@@ -51,7 +53,7 @@ static bool versionIntersection(const PkgRel& p1, const PkgRel& p2)
       greater = p1;
     }
   int lessFirst = 0, first = 0, middle = 0, second = 0, greaterSecond = 0;
-  if (less.canBeLess)
+  if (less.canBeLess())
     lessFirst++;
   if (less.canBeEqual())
     first++;
@@ -74,7 +76,7 @@ static bool versionIntersection(const PkgRel& p1, const PkgRel& p2)
   return lessFirst == 2 || first == 2 || middle == 2 || second == 2 || greaterSecond == 2;
 }
 
-static void pickPackagesByProvide(const PkgRel& pkgRel, const Packages& packages, const PackageIdVector& provides, const ProvideIndexMap& provideIndexMap, PackageIdVector& res)
+static void pickPackagesByProvide(const PkgRel& pkgRel, const PackageVector& packages, const PackageIdVector& provides, const ProvideIndexMap& provideIndexMap, PackageIdVector& res)
 {
   assert(!pkgRel.name.empty());
   res.clear();
@@ -85,7 +87,7 @@ static void pickPackagesByProvide(const PkgRel& pkgRel, const Packages& packages
   assert(pos + count <= provides.size());
   for(PackageIdVector::size_type i = pos;i < pos + count;i++)
     {
-      assert(provides[i] < packages.size);
+      assert(provides[i] < packages.size());
       const Package& p = packages[provides[i]];
       if (p.name == pkgRel.name)
 	{
@@ -120,7 +122,7 @@ static void pickPackagesByProvide(const PkgRel& pkgRel, const Packages& packages
 	  if (pp.versionRel != PkgRel::None)
 	    continue;
 	  assert(!pp.version.empty());
-	  if (versionINtersection(pkgRel. pp))
+	  if (versionIntersection(pkgRel, pp))
 	    {
 	      res.push_back(i);
 	      break;

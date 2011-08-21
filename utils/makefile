@@ -29,4 +29,4 @@ rpm-access: rpm-access.o $(OBJS)
 	g++ -orpm-access $(CXXFLAGS) $(FLAGS) rpm-access.o $(OBJS) -lrpm
 
 sat-test: sat-test.o $(OBJS)
-	g++ -osat-test $(CXXFLAGS) $(FLAGS) sat-test.o $(OBJS) -lrpm
+	g++ -osat-test $(CXXFLAGS) $(FLAGS) sat-test.o $(OBJS) -lrpm -lrpmdb
