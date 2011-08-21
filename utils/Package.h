@@ -2,6 +2,7 @@
 #ifndef __APT_NG_PACKAGE_H__
 #define __APT_NG_PACKAGE_H__
 
+#include<assert.h>
 #include<vector>
 #include<list>
 #include<string>
@@ -24,6 +25,26 @@ public:
   PkgRel(const std::string& n, const std::string& v): name(n), version(v), flags(0), versionRel(0) {}
   PkgRel(const std::string& n, const std::string& v, int_32 f): name(n), version(v), flags(f), versionRel(0) {}
 
+public:
+  bool canBeEqual() const
+  {
+    assert(versionRel != None);
+    return versionRel == Equal || versionRel == LessOrEqual || versionRel == GreaterOrEqual;
+  }
+
+  bool canBeLess() const
+  {
+    assert(versionRel != None);
+    return versionRel == Less || versionRel == LessOrEqual;
+  }
+
+  bool canBeGreater() const
+  {
+    assert(versionRel != None);
+    return versionRel == Greater || versionRel == GreaterOrEqual;
+  }
+
+public:
   std::string name, version;
   int_32 flags;
   char versionRel;
