@@ -9,6 +9,23 @@
 #include<rpm/rpmlib.h>
 #include"Package.h"
 
+typedef std::vector<std::string> StringVector;
+
+std::string concatUnixPath(const std::string& s1, const std::string& s2)
+{
+  if (s1.empty() && s2.empty())
+    return "";
+  if (s1.empty())
+    return s2;
+  if (s2.empty())
+    return s1;
+  if (s1[s1.length() - 1] == '/' && s2[0] == '/')
+    return s1 + s2.substr(1);
+  if (s1[s1.length() - 1] != '/' && s2[0] != '/')
+    return s1 + "/" + s2;
+  return s1 + s2;
+}
+
 void translateRelFlags(PkgRel& p)
 {
   const bool less = p.flags & RPMSENSE_LESS, equal = p.flags & RPMSENSE_EQUAL, greater = p.flags & RPMSENSE_GREATER;
@@ -297,6 +314,55 @@ bool readPackageData(const std::string fileName, Package& p, std::string& errMsg
   p.requires.resize(count1);
   for(int_32 i = 0;i < count1;i++)
     p.requires[i] = PkgRel(names[i], versions[i], flags[i]);
+
+  StringVector dirNames;
+  int_32* dirindexes = NULL;
+  count1 = 0; count2 = 0; count3 = 0; type = 0;
+  names = NULL; versions = NULL;
+  flags = NULL;
+  res = headerGetEntry(h, RPMTAG_DIRNAMES, &type, (void **)&names, &count1);
+  if (res == 0)//What exact constant must be used here?
+    {
+      headerFree(h);
+      Fclose(fd);
+      errMsg = "cannot get list of directory names";
+      return 0;
+    }
+  assert(type == RPM_STRING_ARRAY_TYPE);
+  assert(names);
+  dirNames.reserve(count1);
+  for(int_32 i = 0;i < count1;i++)
+    dirNames.push_back(names[i]);
+  res = headerGetEntry(h, RPMTAG_DIRINDEXES, &type, (void **)&dirindexes, &count1);
+  if (res == 0)//What exact constant must be used here?
+    {
+      headerFree(h);
+      Fclose(fd);
+      errMsg = "cannot get list of directory indexes ";
+      return 0;
+    }
+  assert(type == RPM_INT32_TYPE);
+  assert(dirindexes);
+    names = NULL; versions = NULL;
+  flags = NULL;
+  res = headerGetEntry(h, RPMTAG_BASENAMES, &type, (void **)&names, &count2);
+  if (res == 0)//What exact constant must be used here?
+    {
+      headerFree(h);
+      Fclose(fd);
+      errMsg = "cannot get list of file basenames";
+      return 0;
+    }
+  assert(type == RPM_STRING_ARRAY_TYPE);
+  assert(names);
+  assert(count1 == count2);//count1 must have number of directory indexes
+  for(int_32 i = 0;i < count2;i++)
+    {
+      assert(dirindexes[i] < (int_32)dirNames.size());
+      const std::string value = concatUnixPath(dirNames[dirindexes[i]], names[i]);
+      if (value.find("/bin") != std::string::npos || value.find("/lib") != std::string::npos)
+	p.provides.push_back(PkgRel(value));
+    }
 
   for(PkgRelVector::size_type i = 0;i < p.provides.size();i++)
     translateRelFlags(p.provides[i]);

@@ -80,6 +80,7 @@ static void pickPackagesByProvide(const PkgRel& pkgRel, const PackageVector& pac
 {
   assert(!pkgRel.name.empty());
   res.clear();
+  std::cout << "debug " << pkgRel.name << std::endl;
   ProvideIndexMap::const_iterator it = provideIndexMap.find(pkgRel.name);
   assert(it != provideIndexMap.end());
   const size_t pos = it->second.pos;
@@ -95,13 +96,13 @@ static void pickPackagesByProvide(const PkgRel& pkgRel, const PackageVector& pac
 	  if (pkgRel.versionRel == PkgRel::None)
 	    {
 	      //Any version is accessible for this relation;
-	      res.push_back(i);
+	      res.push_back(provides[i]);
 	      continue;
 	    }
 	  assert(!pkgRel.version.empty() && !p.version.empty());
 	  if (verCmp(pkgRel.versionRel, pkgRel.version, p.version))
 	    {
-	      res.push_back(i);
+	      res.push_back(provides[i]);
 	      continue;
 	    }
 	} //if (p.name == pkgRel.name);
@@ -114,7 +115,7 @@ static void pickPackagesByProvide(const PkgRel& pkgRel, const PackageVector& pac
 	  if (pkgRel.versionRel == PkgRel::None)
 	    {
 	      //We can take any version;
-	      res.push_back(i);
+	      res.push_back(provides[i]);
 	      break;
 	    }
 	  assert(!pkgRel.version.empty());
@@ -124,7 +125,7 @@ static void pickPackagesByProvide(const PkgRel& pkgRel, const PackageVector& pac
 	  assert(!pp.version.empty());
 	  if (versionIntersection(pkgRel, pp))
 	    {
-	      res.push_back(i);
+	      res.push_back(provides[i]);
 	      break;
 	    }
 	} //for(p.provides);
@@ -200,5 +201,17 @@ void fillSAT(const PackageVector& packages, PackageId forPackage, SAT& sat)
       }
 
   //End of preparing;
-}
 
+  assert(forPackage < packages.size());
+  const Package& p = packages[forPackage];
+
+  PackageIdVector res;
+  for(PkgRelVector::size_type i = 0;i < p.requires.size();i++)
+    {
+      std::cout << std::endl;
+      std::cout << "Searching for " << p.requires[i] << std::endl;
+      pickPackagesByProvide(p.requires[i], packages, provides, provideIndexMap, res);
+      for(size_t k = 0;k < res.size();k++)
+	std::cout << packages[res[k]] << std::endl;
+    }
+}
