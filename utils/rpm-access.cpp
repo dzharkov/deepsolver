@@ -311,9 +311,11 @@ bool readPackageData(const std::string fileName, Package& p, std::string& errMsg
   assert(type == RPM_INT32_TYPE);
   assert(flags);
   assert(count1 == count2 && count2 == count3);
-  p.requires.resize(count1);
   for(int_32 i = 0;i < count1;i++)
-    p.requires[i] = PkgRel(names[i], versions[i], flags[i]);
+    {
+      if ((flags[i] & RPMSENSE_RPMLIB) == 0)//No need to handle rpmlib(feature) requirements
+	p.requires.push_back (PkgRel(names[i], versions[i], flags[i]));
+    }
 
   StringVector dirNames;
   int_32* dirindexes = NULL;
