@@ -80,7 +80,7 @@ static void pickPackagesByProvide(const PkgRel& pkgRel, const PackageVector& pac
 {
   assert(!pkgRel.name.empty());
   res.clear();
-  std::cout << "debug " << pkgRel.name << std::endl;
+  //  std::cout << "debug " << pkgRel.name << std::endl;
   ProvideIndexMap::const_iterator it = provideIndexMap.find(pkgRel.name);
   assert(it != provideIndexMap.end());
   const size_t pos = it->second.pos;
@@ -134,6 +134,7 @@ static void pickPackagesByProvide(const PkgRel& pkgRel, const PackageVector& pac
 
 void fillSAT(const PackageVector& packages, PackageId forPackage, SAT& sat)
 {
+  /*
   PackageToIdMap revMap;
   for(PackageVector::size_type i = 0;i < packages.size();i++)
     {
@@ -141,6 +142,7 @@ void fillSAT(const PackageVector& packages, PackageId forPackage, SAT& sat)
       assert(revMap.find(packages[i].stringId) == revMap.end());
       revMap.insert(PackageToIdMap::value_type(packages[i].stringId, i));
     }
+  */
 
   ProvideIndexMap provideIndexMap;
   //We do not rely on rpm feature to force each package to provide itself;
@@ -201,6 +203,7 @@ void fillSAT(const PackageVector& packages, PackageId forPackage, SAT& sat)
       }
 
   //End of preparing;
+  return;
 
   assert(forPackage < packages.size());
   const Package& p = packages[forPackage];

@@ -232,14 +232,17 @@ int main(int argc, char* argv[])
     return 1;
   sec = (double)(clock() - t1) / CLOCKS_PER_SEC;
   std::cout << "Loaded " << packages.size() << " packages in " << sec << " seconds" << std::endl;
+
+  /*
   for(PackageVector::size_type i = 0;i < packages.size();i++)
     packages[i].makeStringId();
+  */
+
   SAT sat;
   t1 = clock();
   fillSAT(packages, 0, sat);
   sec = (double)(clock() - t1) / CLOCKS_PER_SEC;
   std::cout << "SAT was built in " << sec << " seconds" << std::endl;
-
 
   while(1);
   return 0;

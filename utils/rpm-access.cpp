@@ -323,47 +323,43 @@ bool readPackageData(const std::string fileName, Package& p, std::string& errMsg
   names = NULL; versions = NULL;
   flags = NULL;
   res = headerGetEntry(h, RPMTAG_DIRNAMES, &type, (void **)&names, &count1);
-  if (res == 0)//What exact constant must be used here?
+  if (res != 0)//What exact constant must be used here?
     {
-      headerFree(h);
-      Fclose(fd);
-      errMsg = "cannot get list of directory names";
-      return 0;
-    }
-  assert(type == RPM_STRING_ARRAY_TYPE);
-  assert(names);
-  dirNames.reserve(count1);
-  for(int_32 i = 0;i < count1;i++)
-    dirNames.push_back(names[i]);
-  res = headerGetEntry(h, RPMTAG_DIRINDEXES, &type, (void **)&dirindexes, &count1);
-  if (res == 0)//What exact constant must be used here?
-    {
-      headerFree(h);
-      Fclose(fd);
-      errMsg = "cannot get list of directory indexes ";
-      return 0;
-    }
-  assert(type == RPM_INT32_TYPE);
-  assert(dirindexes);
-    names = NULL; versions = NULL;
-  flags = NULL;
-  res = headerGetEntry(h, RPMTAG_BASENAMES, &type, (void **)&names, &count2);
-  if (res == 0)//What exact constant must be used here?
-    {
-      headerFree(h);
-      Fclose(fd);
-      errMsg = "cannot get list of file basenames";
-      return 0;
-    }
-  assert(type == RPM_STRING_ARRAY_TYPE);
-  assert(names);
-  assert(count1 == count2);//count1 must have number of directory indexes
-  for(int_32 i = 0;i < count2;i++)
-    {
-      assert(dirindexes[i] < (int_32)dirNames.size());
-      const std::string value = concatUnixPath(dirNames[dirindexes[i]], names[i]);
-      if (value.find("/bin") != std::string::npos || value.find("/lib") != std::string::npos)
-	p.provides.push_back(PkgRel(value));
+      assert(type == RPM_STRING_ARRAY_TYPE);
+      assert(names);
+      dirNames.reserve(count1);
+      for(int_32 i = 0;i < count1;i++)
+	dirNames.push_back(names[i]);
+      res = headerGetEntry(h, RPMTAG_DIRINDEXES, &type, (void **)&dirindexes, &count1);
+      if (res == 0)//What exact constant must be used here?
+	{
+	  headerFree(h);
+	  Fclose(fd);
+	  errMsg = "cannot get list of directory indexes ";
+	  return 0;
+	}
+      assert(type == RPM_INT32_TYPE);
+      assert(dirindexes);
+      names = NULL; versions = NULL;
+      flags = NULL;
+      res = headerGetEntry(h, RPMTAG_BASENAMES, &type, (void **)&names, &count2);
+      if (res == 0)//What exact constant must be used here?
+	{
+	  headerFree(h);
+	  Fclose(fd);
+	  errMsg = "cannot get list of file basenames";
+	  return 0;
+	}
+      assert(type == RPM_STRING_ARRAY_TYPE);
+      assert(names);
+      assert(count1 == count2);//count1 must have number of directory indexes
+      for(int_32 i = 0;i < count2;i++)
+	{
+	  assert(dirindexes[i] < (int_32)dirNames.size());
+	  const std::string value = concatUnixPath(dirNames[dirindexes[i]], names[i]);
+	  if ((value.find("/bin") != std::string::npos || value.find("/lib") != std::string::npos) && value.find(" ") == std::string::npos)
+	    p.provides.push_back(PkgRel(value));
+	}
     }
 
   for(PkgRelVector::size_type i = 0;i < p.provides.size();i++)
@@ -385,7 +381,7 @@ bool printPackageInfo(const std::string& fileName)
   std::string errMsg;
   if (!readPackageData(fileName, p, errMsg))
     {
-      std::cerr << "error:" << errMsg << std::endl;
+      std::cerr << "rpm-access:" << errMsg << std::endl;
 	return 0;
     }
   std::cout << "# " << fileName << std::endl;
@@ -412,6 +408,7 @@ bool printPackageInfo(const std::string& fileName)
 int main(int argc, char* argv[])
 {
   assert(argc >= 2);
-  printPackageInfo(argv[1]);
+  if (!printPackageInfo(argv[1]))
+    return 1;
   return 0;
 }
