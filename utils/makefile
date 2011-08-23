@@ -35,4 +35,4 @@ sat-test: sat-test.o $(OBJS)
 	g++ -osat-test $(CXXFLAGS) $(FLAGS) sat-test.o $(OBJS) -lrpm -lrpmdb
 
 provide-filter: provide-filter.o $(OBJS)
-	g++ -oprovied-filter $(CXXFLAGS) $(FLAGS) provide-filter.o $(OBJS) -lrpm -lrpmdb
+	g++ -oprovide-filter $(CXXFLAGS) $(FLAGS) provide-filter.o $(OBJS) -lrpm -lrpmdb

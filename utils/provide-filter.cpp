@@ -40,6 +40,21 @@ bool buildrequireSet(const std::string& fileName, StringSet& res)
 	  const std::string::size_type space = tail.find(" ");
 	  assert(space != std::string::npos);
 	  res.insert(tail.substr(0, space));
+	  continue;
+	}
+      if (stringBegins(line, "conflict:", tail))
+	{
+	  const std::string::size_type space = tail.find(" ");
+	  assert(space != std::string::npos);
+	  res.insert(tail.substr(0, space));
+	  continue;
+	}
+      if (stringBegins(line, "obsolete:", tail))
+	{
+	  const std::string::size_type space = tail.find(" ");
+	  assert(space != std::string::npos);
+	  res.insert(tail.substr(0, space));
+	  continue;
 	}
     }
   assert(0);

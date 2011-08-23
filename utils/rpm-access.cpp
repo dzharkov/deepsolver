@@ -357,7 +357,7 @@ bool readPackageData(const std::string fileName, Package& p, std::string& errMsg
 	{
 	  assert(dirindexes[i] < (int_32)dirNames.size());
 	  const std::string value = concatUnixPath(dirNames[dirindexes[i]], names[i]);
-	  if ((value.find("/bin") != std::string::npos || value.find("/lib") != std::string::npos) && value.find(" ") == std::string::npos)
+	  if (value.find(" ") == std::string::npos)
 	    p.provides.push_back(PkgRel(value));
 	}
     }
