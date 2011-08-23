@@ -18,7 +18,6 @@ struct ProvideIndex
   size_t pos, count; 
 }; //struct ProvideIndex;
 
-typedef std::map<std::string, PackageId> PackageToIdMap;
 typedef std::map<std::string, ProvideIndex> ProvideIndexMap;
 
 static std::auto_ptr<AbstractVersionComparison> versionComparison = std::auto_ptr<AbstractVersionComparison>(new VersionReleaseComparison(createVersionComparison(VersionComparisonRPM)));
@@ -134,16 +133,6 @@ static void pickPackagesByProvide(const PkgRel& pkgRel, const PackageVector& pac
 
 void fillSAT(const PackageVector& packages, PackageId forPackage, SAT& sat)
 {
-  /*
-  PackageToIdMap revMap;
-  for(PackageVector::size_type i = 0;i < packages.size();i++)
-    {
-      assert(!packages[i].stringId.empty());
-      assert(revMap.find(packages[i].stringId) == revMap.end());
-      revMap.insert(PackageToIdMap::value_type(packages[i].stringId, i));
-    }
-  */
-
   ProvideIndexMap provideIndexMap;
   //We do not rely on rpm feature to force each package to provide itself;
   for(PackageVector::size_type i = 0;i < packages.size();i++)
@@ -203,7 +192,6 @@ void fillSAT(const PackageVector& packages, PackageId forPackage, SAT& sat)
       }
 
   //End of preparing;
-  return;
 
   assert(forPackage < packages.size());
   const Package& p = packages[forPackage];
@@ -214,6 +202,7 @@ void fillSAT(const PackageVector& packages, PackageId forPackage, SAT& sat)
       std::cout << std::endl;
       std::cout << "Searching for " << p.requires[i] << std::endl;
       pickPackagesByProvide(p.requires[i], packages, provides, provideIndexMap, res);
+      assert(!res.empty());
       for(size_t k = 0;k < res.size();k++)
 	std::cout << packages[res[k]] << std::endl;
     }
