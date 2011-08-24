@@ -10,7 +10,6 @@ class AbstractVersionComparison
 public:
   virtual ~AbstractVersionComparison() {}
 
-  //  virtual int compare(const std::string& s1, const std::string& s2) const = 0;
   virtual int rangesOverlap(const PkgRel& r1, const PkgRel& r2) const = 0;
 }; //class AbstractVersionComparison;
 

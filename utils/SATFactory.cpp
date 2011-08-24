@@ -35,7 +35,6 @@ static void pickPackagesByProvide(const PkgRel& pkgRel, const PackageVector& pac
     {
       assert(provides[i] < packages.size());
       const Package& p = packages[provides[i]];
-      //      std::cout << "Checking " << p.name << std::endl;//KILLME:
       if (p.name == pkgRel.name)
 	{
 	  //Checking if the package is appropriate by itself;
@@ -69,7 +68,6 @@ static void pickPackagesByProvide(const PkgRel& pkgRel, const PackageVector& pac
 	  if (pp.versionRel == PkgRel::None)
 	    continue;
 	  assert(!pp.version.empty());
-	  //	  std::cout << "version " << pp << std::endl;//KILLME:
 	  if (versionComparison->rangesOverlap(pkgRel, pp))
 	    {
 	      res.push_back(provides[i]);
