@@ -20,26 +20,12 @@ struct ProvideIndex
 
 typedef std::map<std::string, ProvideIndex> ProvideIndexMap;
 
-static std::auto_ptr<AbstractVersionComparison> versionComparison = std::auto_ptr<AbstractVersionComparison>(new VersionReleaseComparison(createVersionComparison(VersionComparisonRPM)));
-
-static bool verCmp(int acceptable, const std::string& required, const std::string& checking)
-{
-  const int res = versionComparison->compare(required, checking);
-  if (res == 0)//Means equal versions;
-    return acceptable == PkgRel::Equal || acceptable == PkgRel::LessOrEqual || acceptable == PkgRel::GreaterOrEqual;
-  if (res > 0)//Required greater than checking;
-    return acceptable == PkgRel::Less || acceptable == PkgRel::LessOrEqual;
-  if (res < 0)//Checking greater than required;
-    return acceptable == PkgRel::Greater || acceptable == PkgRel::GreaterOrEqual;
-  assert(0);
-  return 0;//Just to reduce warning messages;
-}
+static std::auto_ptr<AbstractVersionComparison> versionComparison = createVersionComparison(VersionComparisonRPM);
 
 static void pickPackagesByProvide(const PkgRel& pkgRel, const PackageVector& packages, const PackageIdVector& provides, const ProvideIndexMap& provideIndexMap, PackageIdVector& res)
 {
   assert(!pkgRel.name.empty());
   res.clear();
-  //  std::cout << "debug " << pkgRel.name << std::endl;
   ProvideIndexMap::const_iterator it = provideIndexMap.find(pkgRel.name);
   assert(it != provideIndexMap.end());
   const size_t pos = it->second.pos;
@@ -49,7 +35,7 @@ static void pickPackagesByProvide(const PkgRel& pkgRel, const PackageVector& pac
     {
       assert(provides[i] < packages.size());
       const Package& p = packages[provides[i]];
-      std::cout << "Checking " << p.name << std::endl;//KILLME:
+      //      std::cout << "Checking " << p.name << std::endl;//KILLME:
       if (p.name == pkgRel.name)
 	{
 	  //Checking if the package is appropriate by itself;
@@ -60,7 +46,7 @@ static void pickPackagesByProvide(const PkgRel& pkgRel, const PackageVector& pac
 	      continue;
 	    }
 	  assert(!pkgRel.version.empty() && !p.version.empty());
-	  if (verCmp(pkgRel.versionRel, pkgRel.version, p.version))
+	  if (versionComparison->rangesOverlap(pkgRel, PkgRel(p.name, p.version, PkgRel::Equal)))
 	    {
 	      res.push_back(provides[i]);
 	      continue;
@@ -83,8 +69,8 @@ static void pickPackagesByProvide(const PkgRel& pkgRel, const PackageVector& pac
 	  if (pp.versionRel == PkgRel::None)
 	    continue;
 	  assert(!pp.version.empty());
-	  std::cout << "version " << pp << std::endl;//KILLME:
-	  if (versionIntersection(pkgRel, pp))
+	  //	  std::cout << "version " << pp << std::endl;//KILLME:
+	  if (versionComparison->rangesOverlap(pkgRel, pp))
 	    {
 	      res.push_back(provides[i]);
 	      break;
