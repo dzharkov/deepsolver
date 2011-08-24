@@ -2,7 +2,7 @@
 
 CXXFLAGS=-O2 -g
 FLAGS=-Wall -pedantic
-HEADERS=Package.h SATBase.h VerCmp.h
+HEADERS=Package.h SATBase.h VerCmp.h set.h
 OBJS=Package.o SATFactory.o VerCmp.o
 
 all: rpm-access sat-test provide-filter

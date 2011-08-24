@@ -37,6 +37,8 @@ static bool verCmp(int acceptable, const std::string& required, const std::strin
 
 static bool versionIntersection(const PkgRel& p1, const PkgRel& p2)
 {
+  std::cout << "p1: " << p1 << std::endl;
+  std::cout << "p2: " << p2 << std::endl;
   const int res = versionComparison->compare(p1.version, p2.version);
   if (res == 0)
     return p1.canBeEqual() && p2.canBeEqual();
@@ -89,6 +91,7 @@ static void pickPackagesByProvide(const PkgRel& pkgRel, const PackageVector& pac
     {
       assert(provides[i] < packages.size());
       const Package& p = packages[provides[i]];
+      std::cout << "Checking " << p.name << std::endl;//KILLME:
       if (p.name == pkgRel.name)
 	{
 	  //Checking if the package is appropriate by itself;
@@ -119,9 +122,10 @@ static void pickPackagesByProvide(const PkgRel& pkgRel, const PackageVector& pac
 	    }
 	  assert(!pkgRel.version.empty());
 	  //rpm-specific behavior: requirement with version specification can be satisfied only by provide with version;
-	  if (pp.versionRel != PkgRel::None)
+	  if (pp.versionRel == PkgRel::None)
 	    continue;
 	  assert(!pp.version.empty());
+	  std::cout << "version " << pp << std::endl;//KILLME:
 	  if (versionIntersection(pkgRel, pp))
 	    {
 	      res.push_back(provides[i]);
