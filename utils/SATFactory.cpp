@@ -162,18 +162,15 @@ bool fillSAT(const PackageVector& packages, PackageId forPackage, SAT& sat)
     }//for(requires);
 
   res.clear();
-  for(PkgRelVector::size_type i = 0;i < p.conflicts.size();i++)
+    for(PkgRelVector::size_type i = 0;i < p.conflicts.size();i++)
     {
       pickPackagesByProvide(p.conflicts[i], packages, provides, provideIndexMap, res);
-      if (res.empty())
-	return 0;//Unmet found;
       for(PackageIdSet::const_iterator it = res.begin();it != res.end();++it)
 	{
 	  pending.insert(*it);
 	  sat.push_back(unitClause(*it, 1));
 	}
     }//for(conflicts);
-
 
   return 1;
 }

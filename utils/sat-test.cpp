@@ -234,7 +234,7 @@ int main(int argc, char* argv[])
   std::cout << "Loaded " << packages.size() << " packages in " << sec << " seconds" << std::endl;
 
   PackageId forPackage;
-  while (forPackage < packages.size() && packages[forPackage].name != "alsa-oss")
+  while (forPackage < packages.size() && packages[forPackage].name != "")
     forPackage++;
   assert(forPackage < packages.size());
 

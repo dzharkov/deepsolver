@@ -30,7 +30,7 @@ void printClause(std::ostream& s, const PackageVector& packages, const Clause& c
   for(Clause::size_type i = 1;i < clause.size();i++)
     {
       s << " or ";
-      printLiteral(s, packages, clause[0]);
+      printLiteral(s, packages, clause[i]);
     }
   s << ")";
 }
