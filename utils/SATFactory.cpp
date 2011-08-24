@@ -35,48 +35,6 @@ static bool verCmp(int acceptable, const std::string& required, const std::strin
   return 0;//Just to reduce warning messages;
 }
 
-static bool versionIntersection(const PkgRel& p1, const PkgRel& p2)
-{
-  std::cout << "p1: " << p1 << std::endl;
-  std::cout << "p2: " << p2 << std::endl;
-  const int res = versionComparison->compare(p1.version, p2.version);
-  if (res == 0)
-    return p1.canBeEqual() && p2.canBeEqual();
-  PkgRel less, greater;
-  if (res < 0)
-    {
-      less = p1;
-      greater = p2;
-    } else
-    {
-      assert(res > 0);
-      less = p2;
-      greater = p1;
-    }
-  int lessFirst = 0, first = 0, middle = 0, second = 0, greaterSecond = 0;
-  if (less.canBeLess())
-    lessFirst++;
-  if (less.canBeEqual())
-    first++;
-  if (less.canBeGreater())
-    {
-      middle++;
-      second++;
-      greaterSecond++;
-    }
-  if (greater.canBeLess())
-    {
-      lessFirst++;
-      first++;
-      middle++;
-    }
-  if (greater.canBeEqual())
-    second++;
-  if (greater.canBeGreater())
-    greaterSecond++;
-  return lessFirst == 2 || first == 2 || middle == 2 || second == 2 || greaterSecond == 2;
-}
-
 static void pickPackagesByProvide(const PkgRel& pkgRel, const PackageVector& packages, const PackageIdVector& provides, const ProvideIndexMap& provideIndexMap, PackageIdVector& res)
 {
   assert(!pkgRel.name.empty());
