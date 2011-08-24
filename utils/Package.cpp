@@ -4,11 +4,13 @@
 #include<assert.h>
 #include"Package.h"
 
-void Package::makeStringId()
+std::string Package::getFullVersion() const
 {
   std::ostringstream s;
-  s << name << "-" << epoch << ":" << version << "-" << release;
-  stringId = s.str();
+  if (epoch > 0)
+    s << epoch << ":";
+  s << version << "-" << release;
+  return s.str();
 }
 
 std::ostream& operator <<(std::ostream& s, const Package& p)

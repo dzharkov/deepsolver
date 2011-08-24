@@ -233,22 +233,23 @@ int main(int argc, char* argv[])
   sec = (double)(clock() - t1) / CLOCKS_PER_SEC;
   std::cout << "Loaded " << packages.size() << " packages in " << sec << " seconds" << std::endl;
 
-  /*
-  for(PackageVector::size_type i = 0;i < packages.size();i++)
-    packages[i].makeStringId();
-  */
+  PackageId forPackage;
+  while (forPackage < packages.size() && packages[forPackage].name != "alsa-oss")
+    forPackage++;
+  assert(forPackage < packages.size());
 
   SAT sat;
   t1 = clock();
-  if (!fillSAT(packages, 0, sat))
+  if (!fillSAT(packages, forPackage, sat))
     {
-      std::cerr << PREFIX << "could not build SAT for " << packages[0] << std::endl;
+      std::cerr << PREFIX << "could not build SAT for " << packages[forPackage] << std::endl;
       return 1;
     }
   sec = (double)(clock() - t1) / CLOCKS_PER_SEC;
   std::cout << "SAT was built in " << sec << " seconds" << std::endl;
   printSAT(std::cout, packages, sat);
+  std::cout << std::endl;
 
-  while(1);
+  std::cout << "Done!!!" << std::endl;
   return 0;
 }

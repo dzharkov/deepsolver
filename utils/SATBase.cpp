@@ -20,18 +20,28 @@ void printClause(std::ostream& s, const PackageVector& packages, const Clause& c
       s << "()";
       return;
     }
+  if (clause.size() == 1)
+    {
+      printLiteral(s, packages, clause[0]);
+      return;
+    }
   s << "(";
   printLiteral(s, packages, clause[0]);
-for(Clause::size_type i = 1;i < clause.size();i++)
-{
-s << " or ";
-printLiteral(s, packages, clause[0]);
-}
-s << ")";
+  for(Clause::size_type i = 1;i < clause.size();i++)
+    {
+      s << " or ";
+      printLiteral(s, packages, clause[0]);
+    }
+  s << ")";
 }
 
 void printSAT(std::ostream& s, const PackageVector& packages, const SAT& sat)
 {
+  if (sat.empty())
+    {
+      s << "Empty SAT";;
+      return;
+    }
 bool first = 1;
 for(SAT::const_iterator it = sat.begin();it != sat.end();++it)
 {
