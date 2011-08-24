@@ -22,12 +22,13 @@ typedef std::map<std::string, ProvideIndex> ProvideIndexMap;
 
 static std::auto_ptr<AbstractVersionComparison> versionComparison = createVersionComparison(VersionComparisonRPM);
 
-static void pickPackagesByProvide(const PkgRel& pkgRel, const PackageVector& packages, const PackageIdVector& provides, const ProvideIndexMap& provideIndexMap, PackageIdVector& res)
+static void pickPackagesByProvide(const PkgRel& pkgRel, const PackageVector& packages, const PackageIdVector& provides, const ProvideIndexMap& provideIndexMap, PackageIdSet& res)
 {
   assert(!pkgRel.name.empty());
   res.clear();
   ProvideIndexMap::const_iterator it = provideIndexMap.find(pkgRel.name);
-  assert(it != provideIndexMap.end());
+  if (it == provideIndexMap.end())
+	return;//Unmet;
   const size_t pos = it->second.pos;
   const size_t count = it->second.count;
   assert(pos + count <= provides.size());
@@ -41,13 +42,13 @@ static void pickPackagesByProvide(const PkgRel& pkgRel, const PackageVector& pac
 	  if (pkgRel.versionRel == PkgRel::None)
 	    {
 	      //Any version is accessible for this relation;
-	      res.push_back(provides[i]);
+	      res.insert(provides[i]);
 	      continue;
 	    }
 	  assert(!pkgRel.version.empty() && !p.version.empty());
 	  if (versionComparison->rangesOverlap(pkgRel, PkgRel(p.name, p.version, PkgRel::Equal)))
 	    {
-	      res.push_back(provides[i]);
+	      res.insert(provides[i]);
 	      continue;
 	    }
 	} //if (p.name == pkgRel.name);
@@ -60,7 +61,7 @@ static void pickPackagesByProvide(const PkgRel& pkgRel, const PackageVector& pac
 	  if (pkgRel.versionRel == PkgRel::None)
 	    {
 	      //We can take any version;
-	      res.push_back(provides[i]);
+	      res.insert(provides[i]);
 	      break;
 	    }
 	  assert(!pkgRel.version.empty());
@@ -70,15 +71,17 @@ static void pickPackagesByProvide(const PkgRel& pkgRel, const PackageVector& pac
 	  assert(!pp.version.empty());
 	  if (versionComparison->rangesOverlap(pkgRel, pp))
 	    {
-	      res.push_back(provides[i]);
+	      res.insert(provides[i]);
 	      break;
 	    }
 	} //for(p.provides);
     }//for(packages);
 }
 
-void fillSAT(const PackageVector& packages, PackageId forPackage, SAT& sat)
+bool fillSAT(const PackageVector& packages, PackageId forPackage, SAT& sat)
 {
+  sat.clear();
+
   ProvideIndexMap provideIndexMap;
   //We do not rely on rpm feature to force each package to provide itself;
   for(PackageVector::size_type i = 0;i < packages.size();i++)
@@ -141,15 +144,21 @@ void fillSAT(const PackageVector& packages, PackageId forPackage, SAT& sat)
 
   assert(forPackage < packages.size());
   const Package& p = packages[forPackage];
+  PackageIdSet done, pending;
 
-  PackageIdVector res;
+  PackageIdSet res;
   for(PkgRelVector::size_type i = 0;i < p.requires.size();i++)
     {
-      std::cout << std::endl;
-      std::cout << "Searching for " << p.requires[i] << std::endl;
       pickPackagesByProvide(p.requires[i], packages, provides, provideIndexMap, res);
-      assert(!res.empty());
-      for(size_t k = 0;k < res.size();k++)
-	std::cout << packages[res[k]] << std::endl;
-    }
+      if (res.empty())
+	return 0;//Unmet found;
+      Clause clause;
+      for(PackageIdSet::const_iterator it = res.begin();it != res.end();++it)
+	{
+	  pending.insert(*it);
+	  clause.push_back(Literal(*it));
+	}
+      sat.push_back(clause);
+    }//for(requires);
+  return 1;
 }

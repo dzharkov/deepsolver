@@ -5,6 +5,7 @@
 #include<assert.h>
 #include<vector>
 #include<list>
+#include<set>
 #include<string>
 #include<rpm/rpmlib.h>//FIXME:Just for int_32 type;
 
@@ -71,6 +72,12 @@ public:
 
 typedef std::vector<Package> PackageVector;
 typedef std::list<Package> PackageList;
+
+typedef size_t PackageId;
+#define BAD_PACKAGE_ID (PackageId)-1
+
+typedef std::vector<PackageId> PackageIdVector;
+typedef std::set<PackageId> PackageIdSet;
 
 std::ostream& operator <<(std::ostream& s, const Package& p);
 std::ostream& operator <<(std::ostream& s, const PkgRel& p);

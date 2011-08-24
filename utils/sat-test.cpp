@@ -240,9 +240,14 @@ int main(int argc, char* argv[])
 
   SAT sat;
   t1 = clock();
-  fillSAT(packages, 0, sat);
+  if (!fillSAT(packages, 0, sat))
+    {
+      std::cerr << PREFIX << "could not build SAT for " << packages[0] << std::endl;
+      return 1;
+    }
   sec = (double)(clock() - t1) / CLOCKS_PER_SEC;
   std::cout << "SAT was built in " << sec << " seconds" << std::endl;
+  printSAT(std::cout, packages, sat);
 
   while(1);
   return 0;
