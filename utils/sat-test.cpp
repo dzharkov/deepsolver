@@ -234,8 +234,8 @@ int main(int argc, char* argv[])
   sec = (double)(clock() - t1) / CLOCKS_PER_SEC;
   std::cout << "Loaded " << packages.size() << " packages in " << sec << " seconds" << std::endl;
 
-  PackageId forPackage;
-  while (forPackage < packages.size() && packages[forPackage].name != "emacspeak")
+  PackageId forPackage = 0;
+  while (forPackage < packages.size() && packages[forPackage].name != "RHVoice")
     forPackage++;
   assert(forPackage < packages.size());
 

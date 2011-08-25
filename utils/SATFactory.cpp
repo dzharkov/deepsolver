@@ -78,6 +78,50 @@ static void pickPackagesByProvide(const PkgRel& pkgRel, const PackageVector& pac
     }//for(packages);
 }
 
+static bool       buildSATForPackage(const PackageVector& packages,
+				     const PackageIdVector& provides,
+				     const ProvideIndexMap& provideIndexMap,
+				     PackageId packageId,
+				     SAT& sat,
+				     const PackageIdSet& done,
+				     PackageIdSet& pending)
+{
+  assert(packageId < packages.size());
+  const Package& p = packages[packageId];
+  PackageIdSet res;
+  //Requires processing;
+  for(PkgRelVector::size_type i = 0;i < p.requires.size();i++)
+    {
+      pickPackagesByProvide(p.requires[i], packages, provides, provideIndexMap, res);
+      if (res.empty())
+	return 0;//Unmet found;
+      Clause clause;
+      clause.push_back(Literal(packageId, 1));
+      for(PackageIdSet::const_iterator it = res.begin();it != res.end();++it)
+	{
+	  if (done.find(*it) == done.end())
+	    pending.insert(*it);
+	  clause.push_back(Literal(*it));
+	}
+      sat.push_back(clause);
+    }//for(requires);
+  //Conflicts processing;
+  for(PkgRelVector::size_type i = 0;i < p.conflicts.size();i++)
+    {
+      pickPackagesByProvide(p.conflicts[i], packages, provides, provideIndexMap, res);
+      for(PackageIdSet::const_iterator it = res.begin();it != res.end();++it)
+	{
+	  if (done.find(*it) == done.end())
+	    pending.insert(*it);
+	  Clause clause;
+	  clause.push_back(Literal(packageId, 1));
+	  clause.push_back(Literal(*it, 1));
+	  sat.push_back(clause);
+	}
+    }//for(conflicts);
+  return 1;
+}
+
 bool fillSAT(const PackageVector& packages, PackageId forPackage, SAT& sat)
 {
   sat.clear();
@@ -145,8 +189,8 @@ bool fillSAT(const PackageVector& packages, PackageId forPackage, SAT& sat)
   assert(forPackage < packages.size());
   const Package& p = packages[forPackage];
   PackageIdSet done, pending;
-
   PackageIdSet res;
+  //Requires processing;
   for(PkgRelVector::size_type i = 0;i < p.requires.size();i++)
     {
       pickPackagesByProvide(p.requires[i], packages, provides, provideIndexMap, res);
@@ -160,9 +204,9 @@ bool fillSAT(const PackageVector& packages, PackageId forPackage, SAT& sat)
 	}
       sat.push_back(clause);
     }//for(requires);
-
+  //Conflicts processing;
   res.clear();
-    for(PkgRelVector::size_type i = 0;i < p.conflicts.size();i++)
+  for(PkgRelVector::size_type i = 0;i < p.conflicts.size();i++)
     {
       pickPackagesByProvide(p.conflicts[i], packages, provides, provideIndexMap, res);
       for(PackageIdSet::const_iterator it = res.begin();it != res.end();++it)
@@ -171,6 +215,16 @@ bool fillSAT(const PackageVector& packages, PackageId forPackage, SAT& sat)
 	  sat.push_back(unitClause(*it, 1));
 	}
     }//for(conflicts);
+
+  while(!pending.empty())
+    {
+      PackageIdSet::iterator it = pending.begin();
+      const PackageId packageId = *it;
+      done.insert(packageId);
+      pending.erase(it);
+      if (!buildSATForPackage(packages, provides, provideIndexMap, packageId, sat, done, pending))
+	return 0;//Unmet found;
+      }
 
   return 1;
 }
