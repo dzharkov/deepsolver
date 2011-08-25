@@ -2,8 +2,8 @@
 
 CXXFLAGS=-O2 -g
 FLAGS=-Wall -pedantic
-HEADERS=Package.h SATBase.h VerCmp.h
-OBJS=Package.o SATFactory.o VerCmp.o SATBase.o
+HEADERS=Package.h SATBase.h VerCmp.h SATOptimizer.h
+OBJS=Package.o SATFactory.o VerCmp.o SATBase.o SATOptimizer.o
 
 all: rpm-access sat-test provide-filter
 
@@ -21,6 +21,10 @@ VerCmp.o: VerCmp.cpp $(HEADERS)
 
 SATBase.o: SATBase.cpp $(HEADERS)
 	g++ -c $(CXXFLAGS) $(FLAGS) SATBase.cpp
+
+SATOptimizer.o: SATOptimizer.cpp $(HEADERS)
+	g++ -c $(CXXFLAGS) $(FLAGS) SATOptimizer.cpp
+
 
 rpm-access.o: rpm-access.cpp $(HEADERS)
 	g++ -c $(CXXFLAGS) $(FLAGS) rpm-access.cpp

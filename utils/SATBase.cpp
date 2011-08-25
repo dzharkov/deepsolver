@@ -51,3 +51,13 @@ first = 0;
 printClause(s, packages, *it);
 }
 }
+
+bool equalClauses(const Clause& c1, const Clause& c2)
+{
+  if (c1.size() != c2.size())
+    return 0;
+  for(Clause::size_type i = 0;i < c1.size();i++)
+    if (c1[i] != c2[i])
+      return 0;
+  return 1;
+}

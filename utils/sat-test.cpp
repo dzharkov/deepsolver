@@ -7,6 +7,7 @@
 #include"Package.h"
 #include"SATBase.h"
 #include"SATFactory.h"
+#include"SATOptimizer.h"
 
 #define PREFIX "sat-test:"
 
@@ -234,7 +235,7 @@ int main(int argc, char* argv[])
   std::cout << "Loaded " << packages.size() << " packages in " << sec << " seconds" << std::endl;
 
   PackageId forPackage;
-  while (forPackage < packages.size() && packages[forPackage].name != "")
+  while (forPackage < packages.size() && packages[forPackage].name != "emacspeak")
     forPackage++;
   assert(forPackage < packages.size());
 
@@ -245,6 +246,7 @@ int main(int argc, char* argv[])
       std::cerr << PREFIX << "could not build SAT for " << packages[forPackage] << std::endl;
       return 1;
     }
+  optimizeSAT(sat);
   sec = (double)(clock() - t1) / CLOCKS_PER_SEC;
   std::cout << "SAT was built in " << sec << " seconds" << std::endl;
   printSAT(std::cout, packages, sat);

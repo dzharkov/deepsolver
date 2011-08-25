@@ -15,6 +15,19 @@ struct Literal
   Literal(SATVarId value): varId(value), negative(0) {}
   Literal(SATVarId value, bool neg): varId(value), negative(neg) {}
 
+
+public:
+  bool operator ==(const Literal& l) const
+  {
+    return varId == l.varId && negative == l.negative;
+  }
+
+  bool operator !=(const Literal& l) const
+  {
+    return varId != l.varId || negative != l.negative;
+  }
+
+public:
   SATVarId varId;
   bool negative;
 }; //struct Literal;
@@ -29,6 +42,8 @@ inline Clause unitClause(SATVarId varId, bool negative = 0)
 }
 
 typedef std::list<Clause> SAT;
+
+bool equalClauses(const Clause& c1, const Clause& c2);
 
 void printLiteral(std::ostream& s, const PackageVector& packages, const Literal& l);
 void printClause(std::ostream& s, const PackageVector& packages, const Clause& clause);
