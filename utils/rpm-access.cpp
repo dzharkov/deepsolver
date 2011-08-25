@@ -205,7 +205,7 @@ bool readPackageData(const std::string fileName, Package& p, std::string& errMsg
   assert(count1 == count2 && count2 == count3);
   p.provides.resize(count1);
   for(int_32 i = 0;i < count1;i++)
-    p.provides[i] = PkgRel(names[i], versions[i], flags[i]);
+    p.provides[i] = PkgRel(names[i], versions[i], PkgRel::None, flags[i]);//FIXME:
 
   p.conflicts.clear();
   count1 = 0; count2 = 0; count3 = 0; type = 0;
@@ -239,7 +239,7 @@ bool readPackageData(const std::string fileName, Package& p, std::string& errMsg
       assert(count1 == count2 && count2 == count3);
       p.conflicts.resize(count1);
       for(int_32 i = 0;i < count1;i++)
-	p.conflicts[i] = PkgRel(names[i], versions[i], flags[i]);
+	p.conflicts[i] = PkgRel(names[i], versions[i], PkgRel::None, flags[i]);//FIXME:
     }
 
   p.obsoletes.clear();
@@ -274,7 +274,7 @@ bool readPackageData(const std::string fileName, Package& p, std::string& errMsg
       assert(count1 == count2 && count2 == count3);
       p.obsoletes.resize(count1);
       for(int_32 i = 0;i < count1;i++)
-	p.obsoletes[i] = PkgRel(names[i], versions[i], flags[i]);
+	p.obsoletes[i] = PkgRel(names[i], versions[i], PkgRel::None, flags[i]);//FIXME:
     }
 
   count1 = 0; count2 = 0; count3 = 0; type = 0;
@@ -314,7 +314,7 @@ bool readPackageData(const std::string fileName, Package& p, std::string& errMsg
   for(int_32 i = 0;i < count1;i++)
     {
       if ((flags[i] & RPMSENSE_RPMLIB) == 0)//No need to handle rpmlib(feature) requirements
-	p.requires.push_back (PkgRel(names[i], versions[i], flags[i]));
+	p.requires.push_back (PkgRel(names[i], versions[i], PkgRel::None, flags[i]));//FIXME:
     }
 
   StringVector dirNames;

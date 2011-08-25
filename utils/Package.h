@@ -21,10 +21,9 @@ public:
     Greater = 5
   };
 
-  PkgRel(): flags(0), versionRel(0) {}
-  PkgRel(const std::string& n): name(n), flags(0), versionRel(0) {}
-  PkgRel(const std::string& n, const std::string& v): name(n), version(v), flags(0), versionRel(0) {}
-  PkgRel(const std::string& n, const std::string& v, int_32 f): name(n), version(v), flags(f), versionRel(0) {}
+  PkgRel(): flags(0), versionRel(None) {}
+  PkgRel(const std::string& n): name(n), flags(0), versionRel(None) {}
+  PkgRel(const std::string& n, const std::string& v, char vr, int_32 f): name(n), version(v), flags(f), versionRel(vr) {}//FIXME:
 
 public:
   bool canBeEqual() const

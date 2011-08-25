@@ -46,7 +46,7 @@ static void pickPackagesByProvide(const PkgRel& pkgRel, const PackageVector& pac
 	      continue;
 	    }
 	  assert(!pkgRel.version.empty() && !p.version.empty());
-	  if (versionComparison->rangesOverlap(pkgRel, PkgRel(p.name, p.getFullVersion(), PkgRel::Equal)))
+	  if (versionComparison->rangesOverlap(pkgRel, PkgRel(p.name, p.getFullVersion(), PkgRel::Equal, 0)))//FIXME:
 	    {
 	      res.insert(provides[i]);
 	      continue;
