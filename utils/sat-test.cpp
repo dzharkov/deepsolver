@@ -247,34 +247,32 @@ void printSATInfo(const PackageVector& packages, PackageId packageId, const SAT&
   std::cout << packages[packageId].name << ":SAT with " << clauseCount << " clauses, " << literalCount << " literals and " << variableCount << " variables was built in " << duration << " seconds" << std::endl;
 }
 
+void processPackage(const PackageVector& packages, PackageId packageId)
+{
+  SAT sat;
+  const clock_t t1 = clock();
+  if (!fillSAT(packages, packageId, sat))
+    {
+      std::cerr << "SAT building for " << packages[packageId] << "failed" << std::endl;
+	return;
+    }
+  optimizeSAT(sat);
+  const double sec = (double)(clock() - t1) / CLOCKS_PER_SEC;
+  printSATInfo(packages, packageId, sat, sec);
+}
+
 int main(int argc, char* argv[])
 {
   assert(argc == 2);
   PackageVector packages;
-  clock_t t1 = clock();
-  double sec;
+  const clock_t t1 = clock();
   if (!loadPackageData(argv[1], packages))
     return 1;
-  sec = (double)(clock() - t1) / CLOCKS_PER_SEC;
+  const double sec = (double)(clock() - t1) / CLOCKS_PER_SEC;
   std::cout << "Loaded " << packages.size() << " packages in " << sec << " seconds" << std::endl;
 
-  PackageId forPackage = 0;
-  while (forPackage < packages.size() && packages[forPackage].name != "RHVoice")
-    forPackage++;
-  assert(forPackage < packages.size());
+  for(PackageId i = 0;i < 100;i++)
+    processPackage(packages, i);
 
-  SAT sat;
-  t1 = clock();
-  if (!fillSAT(packages, forPackage, sat))
-    {
-      std::cerr << PREFIX << "could not build SAT for " << packages[forPackage] << std::endl;
-      return 1;
-    }
-  optimizeSAT(sat);
-  sec = (double)(clock() - t1) / CLOCKS_PER_SEC;
-  printSATInfo(packages, forPackage, sat, sec);
-  std::cout << std::endl;
-
-  std::cout << "Done!!!" << std::endl;
   return 0;
 }

@@ -94,7 +94,10 @@ static bool       buildSATForPackage(const PackageVector& packages,
     {
       pickPackagesByProvide(p.requires[i], packages, provides, provideIndexMap, res);
       if (res.empty())
-	return 0;//Unmet found;
+	{
+	  std::cout << "Unmet found for " << p.requires[i] << std::endl;
+	  return 0;//Unmet found;
+	}
       Clause clause;
       clause.push_back(Literal(packageId, 1));
       for(PackageIdSet::const_iterator it = res.begin();it != res.end();++it)
@@ -195,7 +198,10 @@ bool fillSAT(const PackageVector& packages, PackageId forPackage, SAT& sat)
     {
       pickPackagesByProvide(p.requires[i], packages, provides, provideIndexMap, res);
       if (res.empty())
-	return 0;//Unmet found;
+	{
+	  std::cout << "Unmet found for " << p.requires[i] << std::endl;
+	  return 0;//Unmet found;
+	}
       Clause clause;
       for(PackageIdSet::const_iterator it = res.begin();it != res.end();++it)
 	{
