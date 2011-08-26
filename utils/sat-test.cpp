@@ -11,6 +11,23 @@
 
 #define PREFIX "sat-test:"
 
+void getSATStatistic(const SAT& sat, size_t& clauseCount, size_t& literalCount, size_t& variableCount)
+{
+  clauseCount = 0;
+  literalCount = 0;
+  variableCount = 0;
+  PackageIdSet v;
+  clauseCount = sat.size();
+  for(SAT::const_iterator it = sat.begin();it != sat.end();++it)
+    {
+      const Clause& c = *it;
+      literalCount += c.size();
+      for(Clause::size_type i = 0;i < c.size();i++)
+	v.insert(c[i].varId);
+    }
+  variableCount = v.size();
+}
+
 bool parsePkgRel(const std::string& s, PkgRelVector& res)
 {
   PkgRel p;
@@ -223,6 +240,13 @@ bool loadPackageData(const std::string& fileName, PackageVector& packages)
   return 1;//Just to reduce warning messages;
 }
 
+void printSATInfo(const PackageVector& packages, PackageId packageId, const SAT& sat, double duration)
+{
+  size_t clauseCount, literalCount, variableCount;
+  getSATStatistic(sat, clauseCount, literalCount, variableCount);
+  std::cout << packages[packageId].name << ":SAT with " << clauseCount << " clauses, " << literalCount << " literals and " << variableCount << " variables was built in " << duration << " seconds" << std::endl;
+}
+
 int main(int argc, char* argv[])
 {
   assert(argc == 2);
@@ -248,8 +272,7 @@ int main(int argc, char* argv[])
     }
   optimizeSAT(sat);
   sec = (double)(clock() - t1) / CLOCKS_PER_SEC;
-  std::cout << "SAT was built in " << sec << " seconds" << std::endl;
-  printSAT(std::cout, packages, sat);
+  printSATInfo(packages, forPackage, sat, sec);
   std::cout << std::endl;
 
   std::cout << "Done!!!" << std::endl;
