@@ -7,7 +7,6 @@
 #include<list>
 #include<set>
 #include<string>
-#include<rpm/rpmlib.h>//FIXME:Just for int_32 type;
 
 class PkgRel
 {
@@ -21,9 +20,9 @@ public:
     Greater = 5
   };
 
-  PkgRel(): flags(0), versionRel(None) {}
-  PkgRel(const std::string& n): name(n), flags(0), versionRel(None) {}
-  PkgRel(const std::string& n, const std::string& v, char vr, int_32 f): name(n), version(v), flags(f), versionRel(vr) {}//FIXME:
+ PkgRel(): versionRel(None) {}
+  PkgRel(const std::string& n): name(n), versionRel(None) {}
+  PkgRel(const std::string& n, const std::string& v, char vr): name(n), version(v), versionRel(vr) {}
 
 public:
   bool canBeEqual() const
@@ -46,7 +45,6 @@ public:
 
 public:
   std::string name, version;
-  int_32 flags;
   char versionRel;
 }; //class PkgRel;
 
@@ -64,7 +62,7 @@ public:
 
 public:
   std::string name, version, release, arch, url, packager, summary, description;
-  int_32 epoch;
+  int epoch;
   PkgRelVector requires, conflicts, provides, obsoletes;
 }; //class Package;
 

@@ -26,21 +26,21 @@ std::string concatUnixPath(const std::string& s1, const std::string& s2)
   return s1 + s2;
 }
 
-void translateRelFlags(PkgRel& p)
+char translateRelFlags(int_32 flags)
 {
-  const bool less = p.flags & RPMSENSE_LESS, equal = p.flags & RPMSENSE_EQUAL, greater = p.flags & RPMSENSE_GREATER;
+  const bool less = flags & RPMSENSE_LESS, equal = flags & RPMSENSE_EQUAL, greater = flags & RPMSENSE_GREATER;
   assert(!less || !greater);
   if (less && equal)
-    p.versionRel = PkgRel::LessOrEqual; else
+    return PkgRel::LessOrEqual;
   if (greater && equal)
-    p.versionRel = PkgRel::GreaterOrEqual; else
+    return PkgRel::GreaterOrEqual;
   if (less)
-    p.versionRel = PkgRel::Less; else
+    return PkgRel::Less;
   if (equal)
-    p.versionRel = PkgRel::Equal; else
+    return PkgRel::Equal;
   if (greater)
-    p.versionRel = PkgRel::Greater; else
-    p.versionRel = 0;
+    return PkgRel::Greater;
+  return 0;
 }
 
 bool getStringTagValue(Header h, int_32 tag, std::string& value, std::string& errMsg)
@@ -205,7 +205,7 @@ bool readPackageData(const std::string fileName, Package& p, std::string& errMsg
   assert(count1 == count2 && count2 == count3);
   p.provides.resize(count1);
   for(int_32 i = 0;i < count1;i++)
-    p.provides[i] = PkgRel(names[i], versions[i], PkgRel::None, flags[i]);//FIXME:
+    p.provides[i] = PkgRel(names[i], versions[i], translateRelFlags(flags[i]));
 
   p.conflicts.clear();
   count1 = 0; count2 = 0; count3 = 0; type = 0;
@@ -239,7 +239,7 @@ bool readPackageData(const std::string fileName, Package& p, std::string& errMsg
       assert(count1 == count2 && count2 == count3);
       p.conflicts.resize(count1);
       for(int_32 i = 0;i < count1;i++)
-	p.conflicts[i] = PkgRel(names[i], versions[i], PkgRel::None, flags[i]);//FIXME:
+	p.conflicts[i] = PkgRel(names[i], versions[i], translateRelFlags(flags[i]));
     }
 
   p.obsoletes.clear();
@@ -274,7 +274,7 @@ bool readPackageData(const std::string fileName, Package& p, std::string& errMsg
       assert(count1 == count2 && count2 == count3);
       p.obsoletes.resize(count1);
       for(int_32 i = 0;i < count1;i++)
-	p.obsoletes[i] = PkgRel(names[i], versions[i], PkgRel::None, flags[i]);//FIXME:
+	p.obsoletes[i] = PkgRel(names[i], versions[i], translateRelFlags(flags[i]));
     }
 
   count1 = 0; count2 = 0; count3 = 0; type = 0;
@@ -314,7 +314,7 @@ bool readPackageData(const std::string fileName, Package& p, std::string& errMsg
   for(int_32 i = 0;i < count1;i++)
     {
       if ((flags[i] & RPMSENSE_RPMLIB) == 0)//No need to handle rpmlib(feature) requirements
-	p.requires.push_back (PkgRel(names[i], versions[i], PkgRel::None, flags[i]));//FIXME:
+	p.requires.push_back (PkgRel(names[i], versions[i], translateRelFlags(flags[i])));
     }
 
   StringVector dirNames;
@@ -362,14 +362,6 @@ bool readPackageData(const std::string fileName, Package& p, std::string& errMsg
 	}
     }
 
-  for(PkgRelVector::size_type i = 0;i < p.provides.size();i++)
-    translateRelFlags(p.provides[i]);
-  for(PkgRelVector::size_type i = 0;i < p.requires.size();i++)
-    translateRelFlags(p.requires[i]);
-  for(PkgRelVector::size_type i = 0;i < p.conflicts.size();i++)
-    translateRelFlags(p.conflicts[i]);
-  for(PkgRelVector::size_type i = 0;i < p.obsoletes.size();i++)
-    translateRelFlags(p.obsoletes[i]);
   headerFree(h);
   Fclose(fd);
   return 1;

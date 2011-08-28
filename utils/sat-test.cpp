@@ -38,12 +38,13 @@ bool parsePkgRel(const std::string& s, PkgRelVector& res)
     k++;
     }
   if (k >= s.length())
-    return 0;
+    {
+      res.push_back(p);
+      return 1;
+    }
   while(k < s.length() && s[k] == ' ')
     k++;
-  if (k >= s.length())
-    return 0;
-  if (s[k] == '<' || s[k] == '=' || s[k] == '>')
+  if (k < s.length() && (s[k] == '<' || s[k] == '=' || s[k] == '>'))
     {
       if (k + 1 >= s.length())
 	return 0;
@@ -77,28 +78,7 @@ bool parsePkgRel(const std::string& s, PkgRelVector& res)
 	  p.version += s[k];
 	  k++;
 	}
-      if (k >= s.length())
-	return 0;
-      while(k < s.length() && s[k] == ' ')
-	k++;
-      if (k >= s.length())
-	return 0;
     }
-  assert(k < s.length());
-  if (s[k] != '(')
-    return 0;
-  k++;
-  std::string v;
-  while(k < s.length() && s[k] != ')')
-    {
-      v += s[k];
-      k++;
-    }
-  if (k >= s.length())
-    return 0;
-  std::istringstream is(v);
-  if (!(is >> p.flags))
-    return 0;
   res.push_back(p);
   return 1;
 }

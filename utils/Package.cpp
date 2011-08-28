@@ -51,6 +51,5 @@ std::ostream& operator <<(std::ostream& s, const PkgRel& p)
     {
       assert(p.version.empty());
     }
-  s << " (" << p.flags << ")";
   return s;
 }
