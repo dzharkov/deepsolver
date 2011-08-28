@@ -11,6 +11,18 @@
 
 #define PREFIX "sat-test:"
 
+static double maxDuration = 0;
+static std::string maxDurationPackage;
+
+static size_t maxVariableCount = 0;
+static std::string maxVariableCountPackage;
+
+static size_t maxLiteralCount = 0;
+static std::string maxLiteralCountPackage;
+
+static size_t maxClauseCount = 0;
+static std::string maxClauseCountPackage;
+
 void getSATStatistic(const SAT& sat, size_t& clauseCount, size_t& literalCount, size_t& variableCount)
 {
   clauseCount = 0;
@@ -225,6 +237,32 @@ void printSATInfo(const PackageVector& packages, PackageId packageId, const SAT&
   size_t clauseCount, literalCount, variableCount;
   getSATStatistic(sat, clauseCount, literalCount, variableCount);
   std::cout << packages[packageId].name << ":SAT with " << clauseCount << " clauses, " << literalCount << " literals and " << variableCount << " variables was built in " << duration << " seconds" << std::endl;
+
+  if (duration > maxDuration)
+    {
+      maxDuration = duration;
+      maxDurationPackage = packages[packageId].name;
+    }
+
+  if (variableCount > maxVariableCount)
+    {
+      maxVariableCount = variableCount;
+      maxVariableCountPackage = packages[packageId].name;
+    }
+
+  if (literalCount > maxLiteralCount)
+    {
+      maxLiteralCount = literalCount;
+      maxLiteralCountPackage = packages[packageId].name;
+    }
+
+  if (clauseCount > maxClauseCount)
+    {
+      maxClauseCount = clauseCount;
+      maxClauseCountPackage = packages[packageId].name;
+    }
+
+
 }
 
 void processPackage(const PackageVector& packages, PackageId packageId)
@@ -251,8 +289,16 @@ int main(int argc, char* argv[])
   const double sec = (double)(clock() - t1) / CLOCKS_PER_SEC;
   std::cout << "Loaded " << packages.size() << " packages in " << sec << " seconds" << std::endl;
 
-  for(PackageId i = 0;i < 100;i++)
+  for(PackageId i = 0;i < packages.size();i++)
     processPackage(packages, i);
+
+  std::cout << std::endl;
+  std::cout << "------------------------------------------------------------" << std::endl;
+  std::cout << "Packages processed: " << packages.size() << std::endl;
+  std::cout << "Max duration was " << maxDuration << " sec at package " << maxDurationPackage << std::endl;
+  std::cout << "Max variable count was " << maxVariableCount << " at package " << maxVariableCountPackage << std::endl;
+  std::cout << "Max literal count was " << maxLiteralCount << " at package " << maxLiteralCountPackage << std::endl;
+  std::cout << "Max clause count was " << maxClauseCount << " at package " << maxClauseCountPackage << std::endl;
 
   return 0;
 }
