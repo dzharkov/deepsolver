@@ -38,22 +38,22 @@ bool buildrequireSet(const std::string& fileName, StringSet& res)
       if (stringBegins(line, "require:", tail))
 	{
 	  const std::string::size_type space = tail.find(" ");
-	  assert(space != std::string::npos);
-	  res.insert(tail.substr(0, space));
+	  const std::string pkg = space != std::string::npos?tail.substr(0, space):tail;
+	  res.insert(pkg);
 	  continue;
 	}
       if (stringBegins(line, "conflict:", tail))
 	{
 	  const std::string::size_type space = tail.find(" ");
-	  assert(space != std::string::npos);
-	  res.insert(tail.substr(0, space));
+	  const std::string pkg = space != std::string::npos?tail.substr(0, space):tail;
+	  res.insert(pkg);
 	  continue;
 	}
       if (stringBegins(line, "obsolete:", tail))
 	{
 	  const std::string::size_type space = tail.find(" ");
-	  assert(space != std::string::npos);
-	  res.insert(tail.substr(0, space));
+	  const std::string pkg = space != std::string::npos?tail.substr(0, space):tail;
+	  res.insert(pkg);
 	  continue;
 	}
     }
@@ -90,8 +90,8 @@ bool filterProvideRecords(const std::string& inputFileName, const std::string& o
       if (stringBegins(line, "provide:", tail))
 	{
 	  const std::string::size_type space = tail.find(" ");
-	  assert(space != std::string::npos);
-	  if (requires.find(tail.substr(0, space)) != requires.end())
+	  const std::string pkg = space != std::string::npos?tail.substr(0, space):tail;
+	  if (requires.find(pkg) != requires.end())
 	      os << line << std::endl;
 	} else 
 	    os << line << std::endl;
