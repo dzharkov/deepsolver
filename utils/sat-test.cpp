@@ -23,6 +23,8 @@ static std::string maxLiteralCountPackage;
 static size_t maxClauseCount = 0;
 static std::string maxClauseCountPackage;
 
+static double totalDuration = 0, totalVariableCount = 0, totalLiteralCount = 0, totalClauseCount = 0;
+
 void getSATStatistic(const SAT& sat, size_t& clauseCount, size_t& literalCount, size_t& variableCount)
 {
   clauseCount = 0;
@@ -237,32 +239,30 @@ void printSATInfo(const PackageVector& packages, PackageId packageId, const SAT&
   size_t clauseCount, literalCount, variableCount;
   getSATStatistic(sat, clauseCount, literalCount, variableCount);
   std::cout << packages[packageId].name << ":SAT with " << clauseCount << " clauses, " << literalCount << " literals and " << variableCount << " variables was built in " << duration << " seconds" << std::endl;
-
   if (duration > maxDuration)
     {
       maxDuration = duration;
       maxDurationPackage = packages[packageId].name;
     }
-
   if (variableCount > maxVariableCount)
     {
       maxVariableCount = variableCount;
       maxVariableCountPackage = packages[packageId].name;
     }
-
   if (literalCount > maxLiteralCount)
     {
       maxLiteralCount = literalCount;
       maxLiteralCountPackage = packages[packageId].name;
     }
-
   if (clauseCount > maxClauseCount)
     {
       maxClauseCount = clauseCount;
       maxClauseCountPackage = packages[packageId].name;
     }
-
-
+  totalDuration += duration;
+  totalVariableCount += variableCount;
+  totalLiteralCount += literalCount;
+  totalClauseCount += clauseCount;
 }
 
 void processPackage(const PackageVector& packages, PackageId packageId)
@@ -299,6 +299,11 @@ int main(int argc, char* argv[])
   std::cout << "Max variable count was " << maxVariableCount << " at package " << maxVariableCountPackage << std::endl;
   std::cout << "Max literal count was " << maxLiteralCount << " at package " << maxLiteralCountPackage << std::endl;
   std::cout << "Max clause count was " << maxClauseCount << " at package " << maxClauseCountPackage << std::endl;
+
+  std::cout << "Aver. duration is " << (totalDuration / packages.size()) << " sec" << std::endl;
+  std::cout << "Aver. variable count is " << (totalVariableCount / packages.size()) << std::endl;
+  std::cout << "Aver. literal count is " << (totalLiteralCount / packages.size()) << std::endl;
+  std::cout << "Aver. clause count is " << (totalClauseCount / packages.size()) << std::endl;
 
   return 0;
 }
