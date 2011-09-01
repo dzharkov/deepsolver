@@ -46,7 +46,7 @@ static void pickPackagesByProvide(const PkgRel& pkgRel, const PackageVector& pac
 	      continue;
 	    }
 	  assert(!pkgRel.version.empty() && !p.version.empty());
-	  if (versionComparison->rangesOverlap(pkgRel, PkgRel(p.name, p.getFullVersion(), PkgRel::Equal)))
+	  if (versionComparison->rangesOverlap(PkgRel(p.name, p.getFullVersion(), PkgRel::Equal), pkgRel))
 	    {
 	      res.insert(provides[i]);
 	      continue;
@@ -69,7 +69,7 @@ static void pickPackagesByProvide(const PkgRel& pkgRel, const PackageVector& pac
 	  if (pp.versionRel == PkgRel::None)
 	    continue;
 	  assert(!pp.version.empty());
-	  if (versionComparison->rangesOverlap(pkgRel, pp))
+	  if (versionComparison->rangesOverlap(pp, pkgRel))
 	    {
 	      res.insert(provides[i]);
 	      break;

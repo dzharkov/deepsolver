@@ -39,7 +39,7 @@ public:
   int rangesOverlap(const PkgRel& r1, const PkgRel& r2) const
   {
     std::string v1 = r1.version, v2 = r2.version;
-    adjustEpochSpecifications(v1, v2);
+    //    adjustEpochSpecifications(v1, v2);
     return rpmRangesOverlap(r1.name.c_str(), v1.c_str(), buildSenseFlags(r1),
 			    r2.name.c_str(), v2.c_str(), buildSenseFlags(r2));
   }
