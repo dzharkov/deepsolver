@@ -10,7 +10,7 @@
 \usepackage{sectsty}
 \usepackage{fancyhdr}
 
-\newcommand{\EN}[1]{{#1}}
+\newcommand{\EN}[1]{{\it #1}}
 \newcommand{\CODE}[1]{{\ttfamily #1}}
 
 \fancyhf{}
@@ -56,8 +56,10 @@
 \newpage
 \input{intro}
 \newpage
-\addcontentsline{toc}{section}{\hspace{7mm}Список литературы}
-\begin{thebibliography}{0}
-\input{bibliography}
-\end{thebibliography}
+\input{main}
+%%\newpage
+%%\addcontentsline{toc}{section}{\hspace{7mm}Список литературы}
+%%\begin{thebibliography}{0}
+%%\input{bibliography}
+%%\end{thebibliography}
 \end{document}
