@@ -1,0 +1,9 @@
+FIXME is a package manipulation tool for GNU/Linux system. It
+basically designed for ALT Linux RPM environment but in hope it can be
+useful for other distributions or even other package managers.
+
+Main design goals include flexibility, reliability and small execution
+time. The core system for package dependency processing is based on
+robust SAT algorithm. The tool aims to be a useful instrument both for
+users and system administrators. It also includes features to be
+appropriate for ALT Linux package building environment.

@@ -1,0 +1,21 @@
+
+AC_INIT(fixme, 0.0.1, msp@altlinux.org)
+AM_INIT_AUTOMAKE([-Wall foreign])
+
+if test "x$CFLAGS" == 'x'; then
+   CFLAGS='-O2'
+fi
+
+if test "x$CXXFLAGS" == 'x'; then
+   CXXFLAGS='-O2'
+fi
+
+AC_PROG_CC
+AC_PROG_CXX
+AC_PROG_RANLIB
+
+AC_CONFIG_FILES([
+  makefile
+])
+
+AC_OUTPUT

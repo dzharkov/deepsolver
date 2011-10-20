@@ -1,0 +1,7 @@
+
+#ifndef FIXME_DEFAULT_VALUES_H
+#define FIXME_DEFAULT_VALUES_H
+
+#define DEFAULT_CONFIG_DIR "/etc/apt-ng"//FIXME:
+
+#endif //FIXME_DEFAULT_VALUES_H;
