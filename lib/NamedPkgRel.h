@@ -40,4 +40,7 @@ public:
   std::string ver;
 }; //class NamedPkgRel;
 
+typedef std::list<NamedPkgRel> NamedPkgRelList;
+typedef std::vector<NamedPkgRel> NamedPkgRelVector;
+
 #endif //FIXME_NAMED_PKG_REL_H;
