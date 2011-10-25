@@ -1,5 +1,7 @@
 //Written with librpm-4.0.4-alt100.29;
 
+#include"basic-header.h"
+
 //FIXME:includes;
 
 char translateRelFlags(int_32 flags)

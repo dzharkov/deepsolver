@@ -1,0 +1,14 @@
+
+This document describes naming conventions used in coding style in
+FIXME project. Everybody is welcome to keep all rules considered below
+in effect during any code changing.
+
+Class names must begin with capital letters without any prefix. For
+example, "FooBar". Any class fields marked for protected or private
+access must begin with "m_" prefix, public fields may have not any
+prefix.
+
+Class methods purposed to read or write boolean flags must have "is"
+substring in their names and cannot have "get" substring. For example,
+in case of "FooBar" flags names must be "isFooBar() and
+"setIsFooBar()".

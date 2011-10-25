@@ -22,4 +22,13 @@ std::string concatUnixPath(const std::string& part1, const std::string& part2)
   return res;
 }
 
+bool stringBegins(const std::string& str, const std::string& headToCheck, std::string& tail)
+{
+  assert(!headToCheck.empty());
+  if (str.length() < headToCheck.length() || str.find(headToCheck) != 0)
+    return 0;
+  tail = str.substr(headToCheck.length());
+  return 1;
+}
+
 #ifndef FIXME_STRING_UTILS_H

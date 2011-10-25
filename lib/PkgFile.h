@@ -5,7 +5,8 @@
 class PkgFile: public Pkg
 {
 public:
-  PkgFile() {}
+  PkgFile()
+    : m_source(0)  {}
   virtual ~PkgFile() {}
 
 public:
@@ -19,8 +20,19 @@ public:
     m_fileName = fileName;
   }
 
+  bool isSource() const
+  {
+    return m_source;
+  }
+
+  void setIsSource(bool isSource)
+  {
+    m_source = isSource;
+  }
+
 protected:
   std::string m_fileName;
+  bool m_source;
 }; //class PkgFile;
 
 #endif //FIXME_PKG_FILE_H;
