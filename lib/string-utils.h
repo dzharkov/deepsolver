@@ -2,6 +2,15 @@
 #ifndef FIXME_STRING_UTILS_H
 #define FIXME_STRING_UTILS_H
 
+bool hasNonSpaces(const std::string& s)
+{
+  //FIXME:BLANK_CHARS();
+  for(std::string::size_type i = 0;i < s.length();i++)
+    if (s[i] != ' ')
+return 1;
+return 0;
+}
+
 std::string concatUnixPath(const std::string& part1, const std::string& part2)
 {
   if (part1.empty() && part2.empty())
@@ -31,4 +40,4 @@ bool stringBegins(const std::string& str, const std::string& headToCheck, std::s
   return 1;
 }
 
-#ifndef FIXME_STRING_UTILS_H
+#endif //FIXME_STRING_UTILS_H

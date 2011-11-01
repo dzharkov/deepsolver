@@ -6,7 +6,7 @@
 
 void IndexCore::build(const std::string& topDir, const std::string& arch, const RepoIndexParams& params)
 {
-  RepoINdexInfoFile inforFile;
+  RepoIndexInfoFile infoFile;
   assert(hasNonSpaces(params.repoName));
   infoFile.setRepoName(params.repoName);
   switch(params.compressionType)

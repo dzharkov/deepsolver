@@ -15,7 +15,7 @@ public:
 
   void open(const std::string fileName);
   void openreadOnly(const std::string& fileName);
-  void create(const std::string& fileName)
+  void create(const std::string& fileName);
     void close();
 
   /*
@@ -25,7 +25,7 @@ public:
    * is performed completely until entire requested data is read or error
    * occured.
    */
-    size_t read(void* buf, size_t bufSize) = 0;
+    size_t read(void* buf, size_t bufSize);
 
   /*
    * Length of the buffer is not limited. In case of large buffer this
@@ -34,7 +34,7 @@ public:
    * is performed completely until entire buffer content is written or error
    * occured.
    */
-    size_t write(const void* buf, size_t bufSize) = 0;
+    size_t write(const void* buf, size_t bufSize);
 
   int getFd() const
   {

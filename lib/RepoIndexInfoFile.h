@@ -9,7 +9,7 @@ public:
 
 public:
   bool read(const std::string& fileName, StringList& errorMessages, StringList& warningMessages);
-  bool write(const std::string& fileName, StringList& errorMessages, StringList& warningMessages)
+  bool write(const std::string& fileName, StringList& errorMessages, StringList& warningMessages);
 
   std::string getRepoName() const
   {
