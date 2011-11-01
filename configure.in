@@ -14,8 +14,12 @@ AC_PROG_CC
 AC_PROG_CXX
 AC_PROG_RANLIB
 
+AC_SUBST(FIXME_CXXFLAGS, '-Wall -pedantic -fpic -fno-rtti -DFIXME_DATADIR=\"$(pkgdatadir)\"')
+
 AC_CONFIG_FILES([
   makefile
+  lib/makefile
+  programs/makefile
 ])
 
 AC_OUTPUT

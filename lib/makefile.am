@@ -1,0 +1,9 @@
+
+AM_CXXFLAGS = $(FIXME_CXXFLAGS)
+
+noinst_HEADERS = \
+IndexCore.h
+noinst_LIBRARIES = libfixme.a
+
+libfixme_a_SOURCES = \
+IndexCore.cpp

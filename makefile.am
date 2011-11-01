@@ -1,5 +1,6 @@
 SUBDIRS =  \
-lib
+lib \
+programs
 
 #sysconf_DATA = 
 #dist_pkgdata_DATA = 

@@ -1,0 +1,11 @@
+
+AM_CXXFLAGS = $(FIXME_CXXFLAGS) -I$(top_srcdir)/lib
+
+bin_PROGRAMS = genbasedir
+
+genbasedir_LDADD = \
+$(top_srcdir)/lib/libfixme.a 
+genbasedir_DEPENDENCIES = $(genbasedir_LDADD)
+
+genbasedir_SOURCES=\
+genbasedir.cpp
