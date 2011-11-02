@@ -20,8 +20,8 @@ public:
 
 public:
   std::string repoName;
-  char compressionType;
-  char formatType;
+  char compressionType;//Must be exactly signed for error value indications;
+  char formatType;//Must be exactly signed for error value indications;
 }; //class RepoIndexParams;
 
 class IndexCore

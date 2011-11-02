@@ -2,7 +2,7 @@
 #ifndef FIXME_STRING_UTILS_H
 #define FIXME_STRING_UTILS_H
 
-bool hasNonSpaces(const std::string& s)
+inline bool hasNonSpaces(const std::string& s)
 {
   //FIXME:BLANK_CHARS();
   for(std::string::size_type i = 0;i < s.length();i++)
@@ -11,7 +11,7 @@ return 1;
 return 0;
 }
 
-std::string concatUnixPath(const std::string& part1, const std::string& part2)
+inline std::string concatUnixPath(const std::string& part1, const std::string& part2)
 {
   if (part1.empty() && part2.empty())
     return std::string();
@@ -31,7 +31,7 @@ std::string concatUnixPath(const std::string& part1, const std::string& part2)
   return res;
 }
 
-bool stringBegins(const std::string& str, const std::string& headToCheck, std::string& tail)
+inline bool stringBegins(const std::string& str, const std::string& headToCheck, std::string& tail)
 {
   assert(!headToCheck.empty());
   if (str.length() < headToCheck.length() || str.find(headToCheck) != 0)
