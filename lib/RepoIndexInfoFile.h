@@ -8,8 +8,8 @@ public:
   RepoIndexInfoFile() {}
 
 public:
-  bool read(const std::string& fileName, StringList& errorMessages, StringList& warningMessages);
-  bool write(const std::string& fileName, StringList& errorMessages, StringList& warningMessages);
+  bool read(const std::string& fileName, std::string& errorMessage, StringList& warningMessages);
+  bool write(const std::string& fileName, std::string& errorMessage, StringList& warningMessages);
 
   std::string getRepoName() const
   {

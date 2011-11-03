@@ -11,6 +11,8 @@ void IndexCore::build(const std::string& topDir, const std::string& arch, const 
   const std::string indexDir = concatUnixPath(archDir, REPO_INDEX_DIR);
   const std::string infoFile = concatUnixPath(indexDir, REPO_INDEX_INFO_FILE);
   std::cout << infoFile << std::endl;
+  //FIXME:ensure directory exists;
+  writeInfoFile(infoFile, params);
 }
 
 void IndexCore::writeInfoFile(const std::string& fileName, const RepoIndexParams& params)
@@ -36,6 +38,12 @@ void IndexCore::writeInfoFile(const std::string& fileName, const RepoIndexParams
     default:
       assert(0);
     }; //switch(formatType);
-  //  infoFile.write();
+  std::string errorMessage;
+  StringList warningMessages;
+  const bool res = infoFile.write(fileName, errorMessage, warningMessages);
+  for(StringList::const_iterator it = warningMessages.begin();it != warningMessages.end();it++)
+    m_warningHandler.onWarning(*it);
+  if (!res)
+    INDEX_CORE_STOP(errorMessage);
 
 }

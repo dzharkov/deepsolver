@@ -2,18 +2,18 @@
 #include"basic-header.h"//FIXME:
 #include"RepoIndexInfoFile.h"
 
-bool RepoIndexInfoFile::read(const std::string& fileName, StringList& errorMessages, StringList& warningMessages)
+bool RepoIndexInfoFile::read(const std::string& fileName, std::string& errorMessage, StringList& warningMessages)
 {
-  errorMessages.clear();
+  errorMessage.erase();
   warningMessages.clear();
 }
 
-bool RepoIndexInfoFile::write(const std::string& fileName, StringList& errorMessages, StringList& warningMessages)
+bool RepoIndexInfoFile::write(const std::string& fileName, std::string& errorMessage, StringList& warningMessages)
 {
   assert(hasNonSpaces(m_repoName));
   assert(hasNonSpaces(m_compressionType));
   assert(hasNonSpaces(m_formatType));
-  errorMessages.clear();
+  errorMessage.erase();
   warningMessages.clear();
   return 0;
 }

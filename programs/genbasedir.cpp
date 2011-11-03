@@ -8,6 +8,21 @@
 static RepoIndexParams params;
 static std::string topDir = ".", requiredArch;
 
+class WarningHandler: public AbstractWarningHandler
+{
+public:
+  WarningHandler(std::ostream& s):
+    m_stream(s) {}
+
+  void onWarning(const std::string& message)
+  {
+    m_stream << PREFIX << "warning:" << message << std::endl;
+  }
+
+private:
+  std::ostream& m_stream;
+}; //class WarningHandler;
+
 void printHelp()
 {
   printf("%s%s", PREFIX,
@@ -100,7 +115,8 @@ bool parseCmdLine(int argc, char* argv[])
 
 void run()
 {
-  IndexCore indexCore;
+  WarningHandler warningHandler(std::cerr);
+  IndexCore indexCore(warningHandler);
   indexCore.build(topDir, requiredArch, params);
 }
 

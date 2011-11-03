@@ -2,6 +2,8 @@
 #ifndef FIXME_INDEX_CORE_H
 #define FIXME_INDEX_CORE_H
 
+#include"AbstractWarningHandler.h"
+
 class RepoIndexParams
 {
 public:
@@ -48,13 +50,17 @@ private:
 class IndexCore
 {
 public:
-  IndexCore() {}
+  IndexCore(AbstractWarningHandler& warningHandler):
+    m_warningHandler(warningHandler) {}
 
 public:
   void build(const std::string& topDir, const std::string& arch, const RepoIndexParams& params);
 
  private:
   void writeInfoFile(const std::string& fileName, const RepoIndexParams& params);
+
+private:
+  AbstractWarningHandler& m_warningHandler;
 }; //class IndexCore;
 
 #endif //FIXME_INDEX_CORE_H;
