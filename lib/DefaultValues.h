@@ -8,6 +8,7 @@
 
 //Repo index parameters;
 #define REPO_INDEX_DIR "base"
+#define REPO_INDEX_INFO_FILE "info"
 #define DEFAULT_REPO_INDEX_COMPRESSION_TYPE CompressionTypeGzip
 #define DEFAULT_REPO_INDEX_FORMAT_TYPE FormatTypeText
 
