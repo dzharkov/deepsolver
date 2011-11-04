@@ -44,6 +44,7 @@ private:
   std::string m_comment;
 }; //class SystemException;
 
-#define FIXME_SYS(expr, msg) if (!(expr)) throw SystemException(msg)
+#define TRY_SYS_CALL(expr, msg) if (!(expr)) throw SystemException(msg)
+#define SYS_STOP(msg) throw SystemException(msg)
 
 #endif //FIXME_SYSTEM_EXCEPTION_H

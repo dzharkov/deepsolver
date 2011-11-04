@@ -110,6 +110,16 @@ bool parseCmdLine(int argc, char* argv[])
   requiredArch = argv[optind];
   if (optind + 1 < argc)
     topDir = argv[optind + 1];
+  if (!hasNonSpaces(requiredArch))
+    {
+      std::cout << PREFIX << "Required architecture cannot be an empty string" << std::endl;
+      return 0;
+    }
+  if (!hasNonSpaces(topDir))
+    {
+      std::cout << PREFIX << "Repository directory cannot be an empty string" << std::endl;
+      return 0;
+    }
   return 1;
 }
 
@@ -127,6 +137,11 @@ int main(int argc, char* argv[])
   try {
     run();
   }
+  catch(const IndexCoreException& e)
+    {
+      std::cerr << PREFIX << "index error:" << e.getMessage() << std::endl;
+      return 1;
+    }
   catch(std::bad_alloc)
     {
       std::cerr << PREFIX << "no enough free memory to complete operation" << std::endl;
