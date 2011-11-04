@@ -6,6 +6,7 @@ bool RepoIndexInfoFile::read(const std::string& fileName, std::string& errorMess
 {
   errorMessage.erase();
   warningMessages.clear();
+  return 0;
 }
 
 bool RepoIndexInfoFile::write(const std::string& fileName, std::string& errorMessage, StringList& warningMessages)

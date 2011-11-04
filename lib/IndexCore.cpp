@@ -11,7 +11,7 @@ void IndexCore::build(const std::string& topDir, const std::string& arch, const 
   const std::string indexDir = concatUnixPath(archDir, REPO_INDEX_DIR);
   const std::string infoFile = concatUnixPath(indexDir, REPO_INDEX_INFO_FILE);
   std::cout << infoFile << std::endl;
-  //FIXME:ensure directory exists;
+  Directory::ensureExists(indexDir);
   writeInfoFile(infoFile, params);
 }
 
