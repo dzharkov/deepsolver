@@ -4,7 +4,8 @@
 bool Directory::isExist(const std::string& path)
 {
   struct stat s;
-  TRY_SYS_CALL(stat(path.c_str(), &s) == 0, "stat(" + path + ")");
+  if (stat(path.c_str(), &s) == -1)
+    return 0;
   return S_ISDIR(s.st_mode);
 }
 
@@ -16,11 +17,17 @@ void Directory::ensureExists(const std::string& path)
     {
       if (path[i] == '/')
 	{
-	  if (s.empty() || s[s.length() - 1] == '/')
+	  if (s.empty())
+	    {
+	      s = "/";
+	      continue;
+	    }
+	  if (s[s.length() - 1] == '/')//No double slashes processing;
 	    continue;
 	  if (!isExist(s))
 	    TRY_SYS_CALL(mkdir(s.c_str(), 0777) == 0, "mkdir(" + s + ")");
 	  s += '/';
+	  continue;
 	}
       s += path[i];
     }

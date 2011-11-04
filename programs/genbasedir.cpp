@@ -142,6 +142,11 @@ int main(int argc, char* argv[])
       std::cerr << PREFIX << "index error:" << e.getMessage() << std::endl;
       return 1;
     }
+  catch(const SystemException& e)
+    {
+      std::cerr << PREFIX << "error:" << e.getMessage() << std::endl;
+	return 1;
+    }
   catch(std::bad_alloc)
     {
       std::cerr << PREFIX << "no enough free memory to complete operation" << std::endl;
