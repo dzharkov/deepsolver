@@ -56,7 +56,8 @@ public:
 public:
   void build(const std::string& topDir, const std::string& arch, const RepoIndexParams& params);
 
- private:
+private:
+  void processRpms(const std::string& path);
   void writeInfoFile(const std::string& fileName, const RepoIndexParams& params);
 
 private:

@@ -6,6 +6,10 @@
 #define DEFAULT_CONFIG_DIR "/etc/apt-ng"//FIXME:
 #define DEFAULT_CONFIG_FILE_NAME "apt-ng.conf"//FIXME:
 
+//Repo structure;
+#define REPO_RPMS_DIR_NAME "RPMS"
+#define REPO_SRPMS_DIR_NAME "RPMS"
+
 //Repo index parameters;
 #define REPO_INDEX_DIR "base"
 #define REPO_INDEX_INFO_FILE "info"

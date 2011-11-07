@@ -5,7 +5,7 @@
 #include"PkgFile.h"
 #include"NamesPkgRel.h"
 
-bool readRpmFile(const std::string& fileName
+bool readRpmPkgFile(const std::string& fileName
 		 PkgFile& pkgFile,
 		 NamedPkgRelList& provides,
 		 NamedPkgRelList& requires,

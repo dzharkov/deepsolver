@@ -10,9 +10,23 @@ void IndexCore::build(const std::string& topDir, const std::string& arch, const 
   const std::string archDir = concatUnixPath(topDir, arch);
   const std::string indexDir = concatUnixPath(archDir, REPO_INDEX_DIR);
   const std::string infoFile = concatUnixPath(indexDir, REPO_INDEX_INFO_FILE);
-  std::cout << infoFile << std::endl;
   Directory::ensureExists(indexDir);
   writeInfoFile(infoFile, params);
+  processRpms(concatUnixPath(archDir, REPO_RPMS_DIR_NAME));
+}
+
+void IndexCore::processRpms(const std::string& path)
+{
+  std::auto_ptr<Directory::Iterator> it = Directory::enumerate(path);
+  while(it->moveNext())
+    {
+      if (it->getName() == "." || it->getName() == "..")
+	continue;
+      if (checkExtension(it->getName(), ".rpm"))
+	continue;
+      PkgFile pkgFile;
+      readRpmPkgFile(it->getFullPath(), );
+    }
 }
 
 void IndexCore::writeInfoFile(const std::string& fileName, const RepoIndexParams& params)

@@ -36,3 +36,8 @@ bool stringBegins(const std::string& str, const std::string& headToCheck, std::s
   tail = str.substr(headToCheck.length());
   return 1;
 }
+
+bool checkExtension(const std:;string& fileName, const std::string& extension)
+{
+  //FIXME:
+}
