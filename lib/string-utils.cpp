@@ -40,4 +40,7 @@ bool stringBegins(const std::string& str, const std::string& headToCheck, std::s
 bool checkExtension(const std:;string& fileName, const std::string& extension)
 {
   //FIXME:
+  if (fileName.length() < extension.length())
+    return 0;  for(std::string::size_type i = 0;i < extension.length();i++)
+
 }

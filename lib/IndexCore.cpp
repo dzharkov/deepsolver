@@ -25,7 +25,8 @@ void IndexCore::processRpms(const std::string& path)
       if (checkExtension(it->getName(), ".rpm"))
 	continue;
       PkgFile pkgFile;
-      readRpmPkgFile(it->getFullPath(), );
+      NamedPkgRelList provides, requires, conflicts, obsoletes;
+      readRpmPkgFile(it->getFullPath(), pkgFile, provides, requires, conflicts, obsoletes);
     }
 }
 
