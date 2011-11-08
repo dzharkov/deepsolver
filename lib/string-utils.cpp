@@ -37,10 +37,12 @@ bool stringBegins(const std::string& str, const std::string& headToCheck, std::s
   return 1;
 }
 
-bool checkExtension(const std:;string& fileName, const std::string& extension)
+bool checkExtension(const std::string& fileName, const std::string& extension)
 {
-  //FIXME:
   if (fileName.length() < extension.length())
-    return 0;  for(std::string::size_type i = 0;i < extension.length();i++)
-
+    return 0; 
+  for(std::string::size_type i = 0;i < extension.length();i++)
+    if (extension[i] != fileName[fileName.length() - extension.length() + i])
+      return 0;
+  return 1;
 }

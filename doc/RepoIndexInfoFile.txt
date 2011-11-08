@@ -1,0 +1,40 @@
+
+This document describes repository index information file format and
+its processing conventions. Repository index information file is
+stored in `base' directory and has name `info'. It is the first file
+to read during repository index loading.
+
+This file consists of set of pairs like `name=value'. Name cannot
+include `=' character, any number of spaces is allowed around `=' sign
+between name and value. Empty lines are silently skipped, any part of
+line after `#' character without previously used `\' character is also
+skipped as comment. All spaces and tabs at the beginning or end of
+value string are removed. Parameter values must be processed in case
+sensitive mode.
+
+The file has the following meaningful parameters (may be extended
+later):
+
+* format_type;
+* format_version;
+* compression_type;
+* md5sum_file.
+
+Repository index may be saved in text or binary format. Text format is
+well suitable for debugging purposes but binary format takes less disk
+space. So `format_type' may have two values: `binary' and
+`text'. `format_version' parameter stores minimal required version of
+the package to be able to read info file properly.
+
+Parameter `compression_type' saves information about used compression
+library. The following values can be used: `none', `gzip', `bzip2' or
+`xz'. Of course, not all of them are currently supported. It is just
+declaration of possible values. `md5sum_file' stores the name of
+possibly signed md5sum file to control integrity of repository index
+files.
+
+Parameters listed above are strongly required. Information file must
+be considered invalid if some of them are absent. All other parameters
+with name constructed with small and capital English letters, digits
+and `_' character are allowed for any additional user information and
+must be skipped during file reading process.

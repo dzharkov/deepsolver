@@ -3,6 +3,7 @@
 #define FIXME_INDEX_CORE_H
 
 #include"AbstractWarningHandler.h"
+#include"IndexCoreException.h"
 
 class RepoIndexParams
 {
@@ -25,27 +26,6 @@ public:
   char compressionType;//Must be exactly signed for error value indications;
   char formatType;//Must be exactly signed for error value indications;
 }; //class RepoIndexParams;
-
-
-//FIXME:basic exception;
-class IndexCoreException 
-{
-public:
-  IndexCoreException() {}
-  IndexCoreException(const std::string& message):
-    m_message(message) {}
-
-  virtual ~IndexCoreException() {}
-
-public:
-  std::string getMessage() const
-  {
-    return m_message;
-  }
-
-private:
-  const std::string m_message;
-}; //class IndexCoreException;
 
 class IndexCore
 {
