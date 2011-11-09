@@ -1,8 +1,7 @@
 //Written with librpm-4.0.4-alt100.29;
 
 #include"basic-header.h"
-
-//FIXME:includes;
+#include"RpmFIle.h"
 
 char translateRelFlags(int_32 flags)
 {
@@ -38,7 +37,9 @@ bool getStringTagValue(Header h, int_32 tag, std::string& value, std::string& er
       errMsg = ss.str();
       return 0;
     }
-  assert(type == RPM_STRING_TYPE);
+  if (type != RPM_STRING_TYPE)
+    {
+    }
   assert(str);
   value = str;
   //std::cout << value << std::endl;
