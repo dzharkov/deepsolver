@@ -35,26 +35,26 @@ void RpmFileHeaderReader::close()
 
 void RpmFileHeaderReader::fillMainData(PkgFile& pkg)
 {
-  if (!getStringTagValue(h, RPMTAG_NAME, p.name, errMsg))
+  getStringTagValue(RPMTAG_NAME, pkg.name);
   //Epoch may be omitted, no need to check return code; 
-  p.epoch = 0;
-    getInt32TagValue(h, RPMTAG_EPOCH, p.epoch, errMsg);
-  if (!getStringTagValue(h, RPMTAG_VERSION, p.version, errMsg))
-  if (!getStringTagValue(h, RPMTAG_RELEASE, p.release, errMsg))
-  if (!getStringTagValue(h, RPMTAG_ARCH, p.arch, errMsg))
+  pkg.epoch = 0;
+  getInt32TagValueRelaxed(RPMTAG_EPOCH, pkg.epoch);
+  getStringTagValue(RPMTAG_VERSION, pkg.version);
+  getStringTagValue(RPMTAG_RELEASE, pkg.release);
+  getStringTagValue(RPMTAG_ARCH, pkg.arch);
   //URL may be omitted, no need to check return code; 
-  p.url.erase();
-  getStringTagValue(h, RPMTAG_URL, p.url, errMsg);
-//Packager may be omitted, no need to check return code; 
-  p.packager.erase();
-  getStringTagValue(h, RPMTAG_PACKAGER, p.packager, errMsg);
-
+  pkg.url.erase();
+  getStringTagValueRelaxed(RPMTAG_URL, pkg.url);
+  //Packager may be omitted, no need to check return code; 
+  pkg.packager.erase();
+  getStringTagValueRelaxed(RPMTAG_PACKAGER, pkg.packager);
   //No i18n processing, is it required here?
-  if (!getStringTagValue(h, RPMTAG_SUMMARY, p.summary, errMsg))
+  getStringTagValue(RPMTAG_SUMMARY, pkg.summary);
   //No i18n processing, is it required here?
-  if (!getStringTagValue(h, RPMTAG_DESCRIPTION, p.description, errMsg))
-    }
+  getStringTagValue(RPMTAG_DESCRIPTION, pkg.description);
+}
 
+/*
   int_32 count1 = 0, count2 = 0, count3 = 0, type = 0;
   char** names = NULL;
   char** versions = NULL;
@@ -93,7 +93,10 @@ void RpmFileHeaderReader::fillMainData(PkgFile& pkg)
   p.provides.resize(count1);
   for(int_32 i = 0;i < count1;i++)
     p.provides[i] = PkgRel(names[i], versions[i], translateRelFlags(flags[i]));
+*/
 
+
+*/
   p.conflicts.clear();
   count1 = 0; count2 = 0; count3 = 0; type = 0;
   names = NULL; versions = NULL;
@@ -128,7 +131,9 @@ void RpmFileHeaderReader::fillMainData(PkgFile& pkg)
       for(int_32 i = 0;i < count1;i++)
 	p.conflicts[i] = PkgRel(names[i], versions[i], translateRelFlags(flags[i]));
     }
+*/
 
+  /*
   p.obsoletes.clear();
   count1 = 0; count2 = 0; count3 = 0; type = 0;
   names = NULL; versions = NULL;
@@ -163,7 +168,9 @@ void RpmFileHeaderReader::fillMainData(PkgFile& pkg)
       for(int_32 i = 0;i < count1;i++)
 	p.obsoletes[i] = PkgRel(names[i], versions[i], translateRelFlags(flags[i]));
     }
+  */
 
+  /*
   count1 = 0; count2 = 0; count3 = 0; type = 0;
   names = NULL; versions = NULL;
   flags = NULL;
@@ -203,7 +210,9 @@ void RpmFileHeaderReader::fillMainData(PkgFile& pkg)
       if ((flags[i] & RPMSENSE_RPMLIB) == 0)//No need to handle rpmlib(feature) requirements
 	p.requires.push_back (PkgRel(names[i], versions[i], translateRelFlags(flags[i])));
     }
+  */
 
+  /*
   StringVector dirNames;
   int_32* dirindexes = NULL;
   count1 = 0; count2 = 0; count3 = 0; type = 0;
@@ -248,10 +257,9 @@ void RpmFileHeaderReader::fillMainData(PkgFile& pkg)
 	    p.provides.push_back(PkgRel(value));
 	}
     }
+  */
 
-  return 1;
-}
-
+  /*
 char translateRelFlags(int_32 flags)
 {
   const bool less = flags & RPMSENSE_LESS, equal = flags & RPMSENSE_EQUAL, greater = flags & RPMSENSE_GREATER;
@@ -268,6 +276,7 @@ char translateRelFlags(int_32 flags)
     return PkgRel::Greater;
   return 0;
 }
+*/
 
 void RpmFileHeaderReader::getStringTagValue(int_32 tag, std::string& value)
 {
@@ -297,17 +306,37 @@ void RpmFileHeaderReader::getStringTagValue(int_32 tag, std::string& value)
   return 1;
 }
 
-void RpmFileHeaderReader::getInt32TagValue(int_32 tag, int_32& value)
+void RpmFileHeaderReader::getStringTagValueRelaxed(int_32 tag, std::string& value)
+{
+  char* str;
+  int_32 count, type;
+  const int rc = headerGetEntry(m_header, tag, &type, (void**)&str, &count);
+  if (rc == 0)//Is there proper constant ? RPMRC_OK is not suitable;
+    return;//Silently doing nothing;
+  if (count != 1)
+    {
+      std::ostringstream ss;
+      ss << "RPM header in \'" << m_fileName << "\' has " << count << " values of tag \'" << tag << "\' but required 1";
+      RPM_STOP(ss.str());
+    }
+  if (type != RPM_STRING_TYPE)
+    {
+      std::ostringstream ss;
+      ss << "RPM header in \'" << m_fileName << "\' has tag \'" << tag << "\' of type \'" << type << "\' which is not a string";
+      RPM_STOP(ss.str());
+    }
+  assert(str);
+  value = str;
+  return 1;
+}
+
+void RpmFileHeaderReader::getInt32TagValueRelaxed(int_32 tag, int_32& value)
 {
   int_32* num = NULL;
   int_32 count, type;
   const int rc = headerGetEntry(m_header, tag, &type, (void**)&num, &count);
   if (rc == 0)//Is there proper constant ? RPMRC_OK is not suitable;
-    {
-      std::ostringstream ss;
-      ss << "RPM header in \'" << m_fileName << "\' does not contain tag \'" << tag << "\'";
-      RPM_STOP(ss.str());
-    }
+    return;//Silently doing nothing;
   if (count != 1)
     {
       std::ostringstream ss;
