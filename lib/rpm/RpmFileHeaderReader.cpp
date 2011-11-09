@@ -1,92 +1,39 @@
 //Written with librpm-4.0.4-alt100.29;
 
 #include"basic-header.h"
-#include"RpmFIle.h"
+#include"RpmFIleHeaderReader.h"
 
-char translateRelFlags(int_32 flags)
+void RpmFileHeaderReader::open(const std::string& fileName)
 {
-  const bool less = flags & RPMSENSE_LESS, equal = flags & RPMSENSE_EQUAL, greater = flags & RPMSENSE_GREATER;
-  assert(!less || !greater);
-  if (less && equal)
-    return PkgRel::LessOrEqual;
-  if (greater && equal)
-    return PkgRel::GreaterOrEqual;
-  if (less)
-    return PkgRel::Less;
-  if (equal)
-    return PkgRel::Equal;
-  if (greater)
-    return PkgRel::Greater;
-  return 0;
+  assert(m_fd == NULL);
+  assert(m_header == NULL);
+  m_fd = Fopen(fileName.c_str(), "r");
+  if (m_fd == NULL)
+    RPM_STOP("Could not open rpm file \'" + fileName + "\' for header reading")
+  const rpmRC rc = rpmReadPackageHeader(m_fd, &m_header, 0, NULL, NULL);
+  if (rc != RPMRC_OK || m_header == NULL)
+    {
+      if (m_header)
+	headerFree(h);
+      Fclose(fd);
+      m_fd = NULL;
+      m_header = NULL;
+      RPM_STOP("Could not read header from rpm file \'" + fileName + "\'");
+    }
 }
 
-bool getStringTagValue(Header h, int_32 tag, std::string& value, std::string& errMsg)
+void RpmFileHeaderReader::close()
 {
-  char* str;
-  int_32 count, type;
-  const int rc = headerGetEntry(h, tag, &type, (void**)&str, &count);
-  if (rc == 0)//Is there proper constant ? RPMRC_OK is not suitable;
-    {
-      errMsg = "cannot get rpm package tag value";
-      return 0;
-    }
-  if (count != 1)
-    {
-      std::ostringstream ss;
-      ss << "received " << count << " lines of rpm package tag value, but must be one";
-      errMsg = ss.str();
-      return 0;
-    }
-  if (type != RPM_STRING_TYPE)
-    {
-    }
-  assert(str);
-  value = str;
-  //std::cout << value << std::endl;
-  return 1;
-}
-
-bool getInt32TagValue(Header h, int_32 tag, int_32& value, std::string& errMsg)
-{
-  int_32* num = NULL;
-  int_32 count, type;
-  const int rc = headerGetEntry(h, tag, &type, (void**)&num, &count);
-  if (rc == 0)//Is there proper constant ? RPMRC_OK is not suitable;
-    {
-      errMsg = "cannot get rpm package tag value";
-      return 0;
-    }
-  if (count != 1)
-    {
-      std::ostringstream ss;
-      ss << "received " << count << " lines of rpm package tag value, but must be one";
-      errMsg = ss.str();
-      return 0;
-    }
-  assert(type == RPM_INT32_TYPE);
-  assert(num);
-  value = *num;
-  //std::cout << value << std::endl;
-  return 1;
+  if (m_header != NULL)
+  headerFree(m_header);
+  if (m_fd != NULL)
+    Fclose(m_fd);
+  m_header = NULL;
+  m_fd = NULL;
 }
 
 bool readPackageData(const std::string fileName, Package& p, std::string& errMsg)
 {
-  FD_t fd = Fopen(fileName.c_str(), "r");
-  if (fd == NULL)
-    {
-      errMsg = "cannot open \'" + fileName + "\' for reading";
-      return 0;
-    }
-  Header h;
-  rpmRC rc = rpmReadPackageHeader(fd, &h, 0, NULL, NULL);
-  if (rc != RPMRC_OK || h == NULL)
-    {
-      if (h)
-	headerFree(h);
-      Fclose(fd);
-      errMsg = "cannot read package header from \'" + fileName + "\'";
-      return 0;
 
     }
   //FIXME:rc checking;
@@ -341,38 +288,75 @@ bool readPackageData(const std::string fileName, Package& p, std::string& errMsg
 	}
     }
 
-  headerFree(h);
-  Fclose(fd);
   return 1;
 }
 
-bool printPackageInfo(const std::string& fileName)
+char translateRelFlags(int_32 flags)
 {
-  Package p;
-  std::string errMsg;
-  if (!readPackageData(fileName, p, errMsg))
+  const bool less = flags & RPMSENSE_LESS, equal = flags & RPMSENSE_EQUAL, greater = flags & RPMSENSE_GREATER;
+  assert(!less || !greater);
+  if (less && equal)
+    return PkgRel::LessOrEqual;
+  if (greater && equal)
+    return PkgRel::GreaterOrEqual;
+  if (less)
+    return PkgRel::Less;
+  if (equal)
+    return PkgRel::Equal;
+  if (greater)
+    return PkgRel::Greater;
+  return 0;
+}
+
+bool getStringTagValue(Header h, int_32 tag, std::string& value, std::string& errMsg)
+{
+  char* str;
+  int_32 count, type;
+  const int rc = headerGetEntry(h, tag, &type, (void**)&str, &count);
+  if (rc == 0)//Is there proper constant ? RPMRC_OK is not suitable;
     {
-      std::cerr << "rpm-access:" << errMsg << std::endl;
-	return 0;
+      errMsg = "cannot get rpm package tag value";
+      return 0;
     }
-  std::cout << "# " << fileName << std::endl;
-  std::cout << "name=" << p.name << std::endl;
-  std::cout << "epoch=" << p.epoch << std::endl;
-  std::cout << "version=" << p.version << std::endl;
-  std::cout << "release=" << p.release << std::endl;
-  std::cout << "arch=" << p.arch << std::endl;
-  std::cout << "url=" << p.url << std::endl;
-  std::cout << "packager=" << p.packager << std::endl;
-  std::cout << "summary=" << p.summary << std::endl;
-  for (PkgRelVector::size_type i = 0;i < p.requires.size();i++)
-    std::cout << "require:" << p.requires[i] << std::endl;
-  for (PkgRelVector::size_type i = 0;i < p.provides.size();i++)
-    std::cout << "provide:" << p.provides[i] << std::endl;
-  for (PkgRelVector::size_type i = 0;i < p.conflicts.size();i++)
-    std::cout << "conflict:" << p.conflicts[i] << std::endl;
-  for (PkgRelVector::size_type i = 0;i < p.obsoletes.size();i++)
-    std::cout << "obsolete:" << p.obsoletes[i] << std::endl;
-  std::cout << std::endl;
+  if (count != 1)
+    {
+      std::ostringstream ss;
+      ss << "received " << count << " lines of rpm package tag value, but must be one";
+      errMsg = ss.str();
+      return 0;
+    }
+  if (type != RPM_STRING_TYPE)
+    {
+    }
+  assert(str);
+  value = str;
+  //std::cout << value << std::endl;
   return 1;
 }
+
+bool getInt32TagValue(Header h, int_32 tag, int_32& value, std::string& errMsg)
+{
+  int_32* num = NULL;
+  int_32 count, type;
+  const int rc = headerGetEntry(h, tag, &type, (void**)&num, &count);
+  if (rc == 0)//Is there proper constant ? RPMRC_OK is not suitable;
+    {
+      errMsg = "cannot get rpm package tag value";
+      return 0;
+    }
+  if (count != 1)
+    {
+      std::ostringstream ss;
+      ss << "received " << count << " lines of rpm package tag value, but must be one";
+      errMsg = ss.str();
+      return 0;
+    }
+  assert(type == RPM_INT32_TYPE);
+  assert(num);
+  value = *num;
+  //std::cout << value << std::endl;
+  return 1;
+}
+
+
 
