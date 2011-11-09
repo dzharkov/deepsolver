@@ -20,6 +20,7 @@ void RpmFileHeaderReader::open(const std::string& fileName)
       m_header = NULL;
       RPM_STOP("Could not read header from rpm file \'" + fileName + "\'");
     }
+  m_fileName = fileName;
 }
 
 void RpmFileHeaderReader::close()
@@ -32,66 +33,26 @@ void RpmFileHeaderReader::close()
   m_fd = NULL;
 }
 
-bool readPackageData(const std::string fileName, Package& p, std::string& errMsg)
+void RpmFileHeaderReader::fillMainData(PkgFile& pkg)
 {
-
-    }
-  //FIXME:rc checking;
-
   if (!getStringTagValue(h, RPMTAG_NAME, p.name, errMsg))
-    {
-      headerFree(h);
-      Fclose(fd);
-      return 0;
-    }
-
   //Epoch may be omitted, no need to check return code; 
   p.epoch = 0;
     getInt32TagValue(h, RPMTAG_EPOCH, p.epoch, errMsg);
-
   if (!getStringTagValue(h, RPMTAG_VERSION, p.version, errMsg))
-    {
-      headerFree(h);
-      Fclose(fd);
-      return 0;
-    }
-
   if (!getStringTagValue(h, RPMTAG_RELEASE, p.release, errMsg))
-    {
-      headerFree(h);
-      Fclose(fd);
-      return 0;
-    }
-
   if (!getStringTagValue(h, RPMTAG_ARCH, p.arch, errMsg))
-    {
-      headerFree(h);
-      Fclose(fd);
-      return 0;
-    }
-
   //URL may be omitted, no need to check return code; 
   p.url.erase();
   getStringTagValue(h, RPMTAG_URL, p.url, errMsg);
-
 //Packager may be omitted, no need to check return code; 
   p.packager.erase();
   getStringTagValue(h, RPMTAG_PACKAGER, p.packager, errMsg);
 
   //No i18n processing, is it required here?
   if (!getStringTagValue(h, RPMTAG_SUMMARY, p.summary, errMsg))
-    {
-      headerFree(h);
-      Fclose(fd);
-      return 0;
-    }
-
   //No i18n processing, is it required here?
   if (!getStringTagValue(h, RPMTAG_DESCRIPTION, p.description, errMsg))
-    {
-      headerFree(h);
-      Fclose(fd);
-      return 0;
     }
 
   int_32 count1 = 0, count2 = 0, count3 = 0, type = 0;
@@ -308,55 +269,58 @@ char translateRelFlags(int_32 flags)
   return 0;
 }
 
-bool getStringTagValue(Header h, int_32 tag, std::string& value, std::string& errMsg)
+void RpmFileHeaderReader::getStringTagValue(int_32 tag, std::string& value)
 {
   char* str;
   int_32 count, type;
-  const int rc = headerGetEntry(h, tag, &type, (void**)&str, &count);
+  const int rc = headerGetEntry(m_header, tag, &type, (void**)&str, &count);
   if (rc == 0)//Is there proper constant ? RPMRC_OK is not suitable;
     {
-      errMsg = "cannot get rpm package tag value";
-      return 0;
+      std::ostringstream ss;
+      ss << "RPM header in \'" << m_fileName << "\' does not contain tag \'" << tag << "\'";
+      RPM_STOP(ss.str());
     }
   if (count != 1)
     {
       std::ostringstream ss;
-      ss << "received " << count << " lines of rpm package tag value, but must be one";
-      errMsg = ss.str();
-      return 0;
+      ss << "RPM header in \'" << m_fileName << "\' has " << count << " values of tag \'" << tag << "\' but required 1";
+      RPM_STOP(ss.str());
     }
   if (type != RPM_STRING_TYPE)
     {
+      std::ostringstream ss;
+      ss << "RPM header in \'" << m_fileName << "\' has tag \'" << tag << "\' of type \'" << type << "\' which is not a string";
+      RPM_STOP(ss.str());
     }
   assert(str);
   value = str;
-  //std::cout << value << std::endl;
   return 1;
 }
 
-bool getInt32TagValue(Header h, int_32 tag, int_32& value, std::string& errMsg)
+void RpmFileHeaderReader::getInt32TagValue(int_32 tag, int_32& value)
 {
   int_32* num = NULL;
   int_32 count, type;
-  const int rc = headerGetEntry(h, tag, &type, (void**)&num, &count);
+  const int rc = headerGetEntry(m_header, tag, &type, (void**)&num, &count);
   if (rc == 0)//Is there proper constant ? RPMRC_OK is not suitable;
     {
-      errMsg = "cannot get rpm package tag value";
-      return 0;
+      std::ostringstream ss;
+      ss << "RPM header in \'" << m_fileName << "\' does not contain tag \'" << tag << "\'";
+      RPM_STOP(ss.str());
     }
   if (count != 1)
     {
       std::ostringstream ss;
-      ss << "received " << count << " lines of rpm package tag value, but must be one";
-      errMsg = ss.str();
-      return 0;
+      ss << "RPM header in \'" << m_fileName << "\' has " << count << " values of tag \'" << tag << "\' but required 1";
+      RPM_STOP(ss.str());
     }
-  assert(type == RPM_INT32_TYPE);
+  if(type != RPM_INT32_TYPE)
+    {
+      std::ostringstream ss;
+      ss << "RPM header in \'" << m_fileName << "\' has tag \'" << tag << "\' of type \'" << type << "\' which is not a string";
+      RPM_STOP(ss.str());
+    }
   assert(num);
   value = *num;
-  //std::cout << value << std::endl;
   return 1;
 }
-
-
-

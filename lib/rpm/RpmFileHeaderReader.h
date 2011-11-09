@@ -2,6 +2,7 @@
 #ifndef FIXME_RPM_FILE_HEADER_READER_H
 #define FIXME_RPM_FILE_HEADER_READER_H
 
+#include"PkgFile.h"
 #include"RpmException.h"
 #include<rpm/rpmlib.h>
 
@@ -19,10 +20,16 @@ public:
 public:
   void load(const std::string& fileName);
   void close();
+  void fillMainData(PkgFile& pkg);
+
+private:
+  void getStringTagValue(int_32 tag, std::string& value);
+  void getInt32TagValue(int_32 tag, int_32& value);
 
 private:
   FD_t m_fd;
   Header m_header;
+  std::string m_fileName;
 }; //class RpmFileHeaderReader;
 
 #endif //FIXME_RPM_FILE_HEADER_READER_H;
