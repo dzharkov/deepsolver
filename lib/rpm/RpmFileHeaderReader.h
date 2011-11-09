@@ -2,7 +2,7 @@
 #ifndef FIXME_RPM_FILE_HEADER_READER_H
 #define FIXME_RPM_FILE_HEADER_READER_H
 
-#include"PkgFile.h"
+#include"../PkgFile.h"//FIXME:
 #include"RpmException.h"
 #include<rpm/rpmlib.h>
 
@@ -12,7 +12,7 @@ public:
   RpmFileHeaderReader()
     : m_fd(NULL), m_header(NULL) {}
 
-  ~RpmFileHeaderReader{}
+  ~RpmFileHeaderReader()
   {
     close();
   }

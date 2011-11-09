@@ -7,6 +7,6 @@
 bool hasNonSpaces(const std::string& s);
 std::string concatUnixPath(const std::string& part1, const std::string& part2);
 bool stringBegins(const std::string& str, const std::string& headToCheck, std::string& tail);
-bool checkExtension(const std:;string& fileName, const std::string& extension);
+bool checkExtension(const std::string& fileName, const std::string& extension);
 
 #endif //FIXME_STRING_UTILS_H

@@ -2,6 +2,8 @@
 #ifndef FIXME_PKG_FILE_H
 #define FIXME_PKG_FILE_H
 
+#include"Pkg.h"
+
 class PkgFile: public Pkg
 {
 public:

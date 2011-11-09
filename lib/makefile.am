@@ -10,4 +10,4 @@ os/Directory.cpp \
 IndexCore.cpp \
 RepoIndexInfoFile.cpp \
 string-utils.cpp \
-os/RpmFileHeaderReader.cpp
+rpm/RpmFileHeaderReader.cpp

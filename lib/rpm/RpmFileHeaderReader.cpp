@@ -1,21 +1,21 @@
 //Written with librpm-4.0.4-alt100.29;
 
-#include"basic-header.h"
-#include"RpmFIleHeaderReader.h"
+#include"../basic-header.h"//FIXME:
+#include"RpmFileHeaderReader.h"
 
-void RpmFileHeaderReader::open(const std::string& fileName)
+void RpmFileHeaderReader::load(const std::string& fileName)
 {
   assert(m_fd == NULL);
   assert(m_header == NULL);
   m_fd = Fopen(fileName.c_str(), "r");
   if (m_fd == NULL)
-    RPM_STOP("Could not open rpm file \'" + fileName + "\' for header reading")
+    RPM_STOP("Could not open rpm file \'" + fileName + "\' for header reading");
   const rpmRC rc = rpmReadPackageHeader(m_fd, &m_header, 0, NULL, NULL);
   if (rc != RPMRC_OK || m_header == NULL)
     {
       if (m_header)
-	headerFree(h);
-      Fclose(fd);
+	headerFree(m_header);
+      Fclose(m_fd);
       m_fd = NULL;
       m_header = NULL;
       RPM_STOP("Could not read header from rpm file \'" + fileName + "\'");
@@ -37,8 +37,9 @@ void RpmFileHeaderReader::fillMainData(PkgFile& pkg)
 {
   getStringTagValue(RPMTAG_NAME, pkg.name);
   //Epoch may be omitted, no need to check return code; 
-  pkg.epoch = 0;
-  getInt32TagValueRelaxed(RPMTAG_EPOCH, pkg.epoch);
+  int32_t epoch = 0;
+  getInt32TagValueRelaxed(RPMTAG_EPOCH, epoch);
+  pkg.epoch = epoch;
   getStringTagValue(RPMTAG_VERSION, pkg.version);
   getStringTagValue(RPMTAG_RELEASE, pkg.release);
   getStringTagValue(RPMTAG_ARCH, pkg.arch);
@@ -96,7 +97,7 @@ void RpmFileHeaderReader::fillMainData(PkgFile& pkg)
 */
 
 
-*/
+/*
   p.conflicts.clear();
   count1 = 0; count2 = 0; count3 = 0; type = 0;
   names = NULL; versions = NULL;
@@ -303,7 +304,7 @@ void RpmFileHeaderReader::getStringTagValue(int_32 tag, std::string& value)
     }
   assert(str);
   value = str;
-  return 1;
+  return;
 }
 
 void RpmFileHeaderReader::getStringTagValueRelaxed(int_32 tag, std::string& value)
@@ -327,7 +328,7 @@ void RpmFileHeaderReader::getStringTagValueRelaxed(int_32 tag, std::string& valu
     }
   assert(str);
   value = str;
-  return 1;
+  return;
 }
 
 void RpmFileHeaderReader::getInt32TagValueRelaxed(int_32 tag, int_32& value)
@@ -351,5 +352,5 @@ void RpmFileHeaderReader::getInt32TagValueRelaxed(int_32 tag, int_32& value)
     }
   assert(num);
   value = *num;
-  return 1;
+  return;
 }

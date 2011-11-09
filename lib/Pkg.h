@@ -9,21 +9,21 @@ typedef unsigned short Epoch;
 class Pkg
 {
 public:
-  Pkg():
-    epoch(0) {}
+  Pkg()
+    : epoch(0) {}
   virtual ~Pkg() {}
 
-protected:
-  Epoch m_epoch;
-  std::string m_name;
-  std::string m_version;
-  std::string m_release;
-  std::string m_arch;
-  std::string m_packager;
-  std::string m_url;
-  std::string m_license;
-  std::string m_summary;
-  std::string m_descr;
+public:
+  Epoch epoch;
+  std::string name;
+  std::string version;
+  std::string release;
+  std::string arch;
+  std::string packager;
+  std::string url;
+  std::string license;
+  std::string summary;
+  std::string description;
   DateTime m_buildDateTime;
 }; //class Pkg;
 
