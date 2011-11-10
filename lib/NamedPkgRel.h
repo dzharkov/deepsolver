@@ -19,10 +19,11 @@
  */
 class NamedPkgRel
 {
+public:
   enum {
-    Less = 1;
-    Equals = 2;
-    Greater = 4;
+    Less = 1,
+    Equals = 2,
+    Greater = 4
   };
 
   NamedPkgRel()

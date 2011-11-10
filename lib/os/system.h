@@ -41,6 +41,7 @@
 using std::auto_ptr;
 typedef std::vector<std::string> StringVector;
 typedef std::list<std::string> StringList;
+typedef std::map<std;:string, std::string> StringToStringMap;
 
 #define ERRNO_MSG (strerror(errno))
 

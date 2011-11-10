@@ -3,6 +3,7 @@
 #define FIXME_RPM_FILE_HEADER_READER_H
 
 #include"../PkgFile.h"//FIXME:
+#include"../NamedPkgRel.h"
 #include"RpmException.h"
 #include<rpm/rpmlib.h>
 
@@ -21,6 +22,11 @@ public:
   void load(const std::string& fileName);
   void close();
   void fillMainData(PkgFile& pkg);
+  void fillProvides(NamedPkgRelVector& v);
+  void fillConflicts(NamedPkgRelVector& v);
+  void fillObsoletes(NamedPkgRelVector& v);
+  void fillRequires(NamedPkgRelVector& v);
+  void fillFileList(StringList& v);
 
 private:
   //Throws RpmException if required tag does not exist;

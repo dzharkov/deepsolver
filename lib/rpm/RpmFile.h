@@ -4,6 +4,7 @@
 
 #include"PkgFile.h"
 #include"NamesPkgRel.h"
+#include"RpmException.h"
 
 bool readRpmPkgFile(const std::string& fileName
 		 PkgFile& pkgFile,

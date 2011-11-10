@@ -3,6 +3,18 @@
 #include"../basic-header.h"//FIXME:
 #include"RpmFileHeaderReader.h"
 
+static char translateRelFlags(int_32 flags)
+{
+  char value = 0;
+  if (flags & RPMSENSE_LESS)
+    value |= NamedPkgRel::Less;
+  if (flags & RPMSENSE_EQUAL)
+    value |= NamedPkgRel::Equals;
+  if (flags & RPMSENSE_GREATER)
+    value |= NamedPkgRel::Greater;
+  return value;
+}
+
 void RpmFileHeaderReader::load(const std::string& fileName)
 {
   assert(m_fd == NULL);
@@ -55,229 +67,157 @@ void RpmFileHeaderReader::fillMainData(PkgFile& pkg)
   getStringTagValue(RPMTAG_DESCRIPTION, pkg.description);
 }
 
-/*
+void RpmFileHeaderReader::fillProvides(NamedPkgRelVector& v)
+{
+  v.clear();
   int_32 count1 = 0, count2 = 0, count3 = 0, type = 0;
   char** names = NULL;
   char** versions = NULL;
   int_32* flags = NULL;
-  int res = headerGetEntry(h, RPMTAG_PROVIDENAME, &type, (void **)&names, &count1);
+  int res = headerGetEntry(m_header, RPMTAG_PROVIDENAME, &type, (void **)&names, &count1);
   if (res == 0)//What exact constant must be used here?
-    {
-      headerFree(h);
-      Fclose(fd);
-      errMsg = "cannot get list of provide names";
-      return 0;
-    }
+    return;//No provides entries found;
   assert(type == RPM_STRING_ARRAY_TYPE);
   assert(names);
-  res = headerGetEntry(h, RPMTAG_PROVIDEVERSION, &type, (void **)&versions, &count2);
+  res = headerGetEntry(m_header, RPMTAG_PROVIDEVERSION, &type, (void **)&versions, &count2);
   if (res == 0)//What exact constant must be used here?
-    {
-      headerFree(h);
-      Fclose(fd);
-      errMsg = "cannot get list of provide versions";
-      return 0;
-    }
+    RPM_STOP("Header of rpm file \'" + m_fileName + "\' contains list of provides but does not contain list of provide versions");
   assert(type == RPM_STRING_ARRAY_TYPE);
   assert(versions);
-  res = headerGetEntry(h, RPMTAG_PROVIDEFLAGS, &type, (void **)&flags, &count3);
+  res = headerGetEntry(m_header, RPMTAG_PROVIDEFLAGS, &type, (void **)&flags, &count3);
   if (res == 0)//What exact constant must be used here?
-    {
-      headerFree(h);
-      Fclose(fd);
-      errMsg = "cannot get list of provide flags";
-      return 0;
-    }
+    RPM_STOP("Header of rpm file \'" + m_fileName + "\' contains list of provides but does not contain list of provide flags");
   assert(type == RPM_INT32_TYPE);
   assert(flags);
-  assert(count1 == count2 && count2 == count3);
-  p.provides.resize(count1);
+  if (count1 != count2 || count1 != count3)
+    RPM_STOP("Header of rpm file \'" + m_fileName + "\' contains different number of items in provide name list, provide version list and provide flags list");
+  v.resize(count1);
   for(int_32 i = 0;i < count1;i++)
-    p.provides[i] = PkgRel(names[i], versions[i], translateRelFlags(flags[i]));
-*/
+    v[i] = NamedPkgRel(names[i], translateRelFlags(flags[i]), versions[i]);
+}
 
-
-/*
-  p.conflicts.clear();
-  count1 = 0; count2 = 0; count3 = 0; type = 0;
-  names = NULL; versions = NULL;
-  flags = NULL;
-  res = headerGetEntry(h, RPMTAG_CONFLICTNAME, &type, (void **)&names, &count1);
-  if (res != 0)//What exact constant must be used here?
-    {
-      assert(type == RPM_STRING_ARRAY_TYPE);
-      assert(names);
-      res = headerGetEntry(h, RPMTAG_CONFLICTVERSION, &type, (void **)&versions, &count2);
-      if (res == 0)//What exact constant must be used here?
-	{
-	  headerFree(h);
-	  Fclose(fd);
-	  errMsg = "cannot get list of conflict versions";
-	  return 0;
-	}
-      assert(type == RPM_STRING_ARRAY_TYPE);
-      assert(versions);
-      res = headerGetEntry(h, RPMTAG_CONFLICTFLAGS, &type, (void **)&flags, &count3);
-      if (res == 0)//What exact constant must be used here?
-	{
-	  headerFree(h);
-	  Fclose(fd);
-	  errMsg = "cannot get list of conflict flags";
-	  return 0;
-	}
-      assert(type == RPM_INT32_TYPE);
-      assert(flags);
-      assert(count1 == count2 && count2 == count3);
-      p.conflicts.resize(count1);
-      for(int_32 i = 0;i < count1;i++)
-	p.conflicts[i] = PkgRel(names[i], versions[i], translateRelFlags(flags[i]));
-    }
-*/
-
-  /*
-  p.obsoletes.clear();
-  count1 = 0; count2 = 0; count3 = 0; type = 0;
-  names = NULL; versions = NULL;
-  flags = NULL;
-  res = headerGetEntry(h, RPMTAG_OBSOLETENAME, &type, (void **)&names, &count1);
-  if (res != 0)//What exact constant must be used here?
-    {
-      assert(type == RPM_STRING_ARRAY_TYPE);
-      assert(names);
-      res = headerGetEntry(h, RPMTAG_OBSOLETEVERSION, &type, (void **)&versions, &count2);
-      if (res == 0)//What exact constant must be used here?
-	{
-	  headerFree(h);
-	  Fclose(fd);
-	  errMsg = "cannot get list of obsolete versions";
-	  return 0;
-	}
-      assert(type == RPM_STRING_ARRAY_TYPE);
-      assert(versions);
-      res = headerGetEntry(h, RPMTAG_OBSOLETEFLAGS, &type, (void **)&flags, &count3);
-      if (res == 0)//What exact constant must be used here?
-	{
-	  headerFree(h);
-	  Fclose(fd);
-	  errMsg = "cannot get list of obsolete flags";
-	  return 0;
-	}
-      assert(type == RPM_INT32_TYPE);
-      assert(flags);
-      assert(count1 == count2 && count2 == count3);
-      p.obsoletes.resize(count1);
-      for(int_32 i = 0;i < count1;i++)
-	p.obsoletes[i] = PkgRel(names[i], versions[i], translateRelFlags(flags[i]));
-    }
-  */
-
-  /*
-  count1 = 0; count2 = 0; count3 = 0; type = 0;
-  names = NULL; versions = NULL;
-  flags = NULL;
-  res = headerGetEntry(h, RPMTAG_REQUIRENAME, &type, (void **)&names, &count1);
+void RpmFileHeaderReader::fillConflicts(NamedPkgRelVector& v)
+{
+  v.clear();
+  int_32 count1 = 0, count2 = 0, count3 = 0, type = 0;
+  char** names = NULL;
+  char** versions = NULL;
+  int_32* flags = NULL;
+  int res = headerGetEntry(m_header, RPMTAG_CONFLICTNAME, &type, (void **)&names, &count1);
   if (res == 0)//What exact constant must be used here?
-    {
-      headerFree(h);
-      Fclose(fd);
-      errMsg = "cannot get list of require names";
-      return 0;
-    }
+    return;
   assert(type == RPM_STRING_ARRAY_TYPE);
   assert(names);
-  res = headerGetEntry(h, RPMTAG_REQUIREVERSION, &type, (void **)&versions, &count2);
+  res = headerGetEntry(m_header, RPMTAG_CONFLICTVERSION, &type, (void **)&versions, &count2);
   if (res == 0)//What exact constant must be used here?
-    {
-      headerFree(h);
-      Fclose(fd);
-      errMsg = "cannot get list of require versions";
-      return 0;
-    }
+    RPM_STOP("Header of rpm file \'" + m_fileName + "\' contains list of conflict names but does not contain list of conflict versions");
   assert(type == RPM_STRING_ARRAY_TYPE);
   assert(versions);
-  res = headerGetEntry(h, RPMTAG_REQUIREFLAGS, &type, (void **)&flags, &count3);
+  res = headerGetEntry(m_header, RPMTAG_CONFLICTFLAGS, &type, (void **)&flags, &count3);
   if (res == 0)//What exact constant must be used here?
-    {
-      headerFree(h);
-      Fclose(fd);
-      errMsg = "cannot get list of require flags";
-      return 0;
-    }
+    RPM_STOP("Header of rpm file \'" + m_fileName + "\' contains list of conflict names but does not contain list of conflict flags");
   assert(type == RPM_INT32_TYPE);
   assert(flags);
-  assert(count1 == count2 && count2 == count3);
+  if (count1 != count2 || count1 != count3)
+    RPM_STOP("Header of rpm file \'" + m_fileName + "\' contains different number of items in conflict name list, conflict version list and conflict flags list");
+  v.resize(count1);
+  for(int_32 i = 0;i < count1;i++)
+    v[i] = NamedPkgRel(names[i], translateRelFlags(flags[i]), versions[i]);
+}
+
+void RpmFileHeaderReader::fillObsoletes(NamedPkgRelVector& v)
+{
+  v.clear();
+  int_32 count1 = 0, count2 = 0, count3 = 0, type = 0;
+  char** names = NULL;
+  char** versions = NULL;
+  int_32* flags = NULL;
+  int res = headerGetEntry(m_header, RPMTAG_OBSOLETENAME, &type, (void **)&names, &count1);
+  if (res == 0)//What exact constant must be used here?
+    return;
+  assert(type == RPM_STRING_ARRAY_TYPE);
+  assert(names);
+  res = headerGetEntry(m_header, RPMTAG_OBSOLETEVERSION, &type, (void **)&versions, &count2);
+  if (res == 0)//What exact constant must be used here?
+    RPM_STOP("Header of RPM file \'" + m_fileName + " contains obsolete name list but does not contain obsolete version list");
+  assert(type == RPM_STRING_ARRAY_TYPE);
+  assert(versions);
+  res = headerGetEntry(m_header, RPMTAG_OBSOLETEFLAGS, &type, (void **)&flags, &count3);
+  if (res == 0)//What exact constant must be used here?
+    RPM_STOP("Header of RPM file \'" + m_fileName + " contains obsolete name list but does not contain obsolete flags list");
+  assert(type == RPM_INT32_TYPE);
+  assert(flags);
+  if (count1 != count2 || count1 != count3)
+    RPM_STOP("Header of rpm file \'" + m_fileName + "\' contains different number of items in obsolete name list, obsolete version list and obsolete flags list");
+  v.resize(count1);
+  for(int_32 i = 0;i < count1;i++)
+    v[i] = NamedPkgRel(names[i], translateRelFlags(flags[i]), versions[i]);
+}
+
+void RpmFileHeaderReader::fillRequires(NamedPkgRelVector& v)
+{
+  v.clear();
+  int_32 count1 = 0, count2 = 0, count3 = 0, type = 0;
+  char** names = NULL;
+  char** versions = NULL;
+  int_32* flags = NULL;
+  int res = headerGetEntry(m_header, RPMTAG_REQUIRENAME, &type, (void **)&names, &count1);
+  if (res == 0)//What exact constant must be used here?
+    return;
+  assert(type == RPM_STRING_ARRAY_TYPE);
+  assert(names);
+  res = headerGetEntry(m_header, RPMTAG_REQUIREVERSION, &type, (void **)&versions, &count2);
+  if (res == 0)//What exact constant must be used here?
+    RPM_STOP("Header of rpm file \'" + m_fileName + "\' contains require name list but does not contain require version list");
+  assert(type == RPM_STRING_ARRAY_TYPE);
+  assert(versions);
+  res = headerGetEntry(m_header, RPMTAG_REQUIREFLAGS, &type, (void **)&flags, &count3);
+  if (res == 0)//What exact constant must be used here?
+    RPM_STOP("Header of rpm file \'" + m_fileName + "\' contains require name list but does not contain require flags list");
+  assert(type == RPM_INT32_TYPE);
+  assert(flags);
+  if (count1 != count2 || count1 != count3)
+    RPM_STOP("Header of rpm file \'" + m_fileName + "\' contains different number of items in require name list, require version list and require flags list");
   for(int_32 i = 0;i < count1;i++)
     {
       if ((flags[i] & RPMSENSE_RPMLIB) == 0)//No need to handle rpmlib(feature) requirements
-	p.requires.push_back (PkgRel(names[i], versions[i], translateRelFlags(flags[i])));
+	v.push_back (NamedPkgRel(names[i], translateRelFlags(flags[i]), versions[i]));
     }
-  */
-
-  /*
-  StringVector dirNames;
-  int_32* dirindexes = NULL;
-  count1 = 0; count2 = 0; count3 = 0; type = 0;
-  names = NULL; versions = NULL;
-  flags = NULL;
-  res = headerGetEntry(h, RPMTAG_DIRNAMES, &type, (void **)&names, &count1);
-  if (res != 0)//What exact constant must be used here?
-    {
-      assert(type == RPM_STRING_ARRAY_TYPE);
-      assert(names);
-      dirNames.reserve(count1);
-      for(int_32 i = 0;i < count1;i++)
-	dirNames.push_back(names[i]);
-      res = headerGetEntry(h, RPMTAG_DIRINDEXES, &type, (void **)&dirindexes, &count1);
-      if (res == 0)//What exact constant must be used here?
-	{
-	  headerFree(h);
-	  Fclose(fd);
-	  errMsg = "cannot get list of directory indexes ";
-	  return 0;
-	}
-      assert(type == RPM_INT32_TYPE);
-      assert(dirindexes);
-      names = NULL; versions = NULL;
-      flags = NULL;
-      res = headerGetEntry(h, RPMTAG_BASENAMES, &type, (void **)&names, &count2);
-      if (res == 0)//What exact constant must be used here?
-	{
-	  headerFree(h);
-	  Fclose(fd);
-	  errMsg = "cannot get list of file basenames";
-	  return 0;
-	}
-      assert(type == RPM_STRING_ARRAY_TYPE);
-      assert(names);
-      assert(count1 == count2);//count1 must have number of directory indexes
-      for(int_32 i = 0;i < count2;i++)
-	{
-	  assert(dirindexes[i] < (int_32)dirNames.size());
-	  const std::string value = concatUnixPath(dirNames[dirindexes[i]], names[i]);
-	  if (value.find(" ") == std::string::npos)
-	    p.provides.push_back(PkgRel(value));
-	}
-    }
-  */
-
-  /*
-char translateRelFlags(int_32 flags)
-{
-  const bool less = flags & RPMSENSE_LESS, equal = flags & RPMSENSE_EQUAL, greater = flags & RPMSENSE_GREATER;
-  assert(!less || !greater);
-  if (less && equal)
-    return PkgRel::LessOrEqual;
-  if (greater && equal)
-    return PkgRel::GreaterOrEqual;
-  if (less)
-    return PkgRel::Less;
-  if (equal)
-    return PkgRel::Equal;
-  if (greater)
-    return PkgRel::Greater;
-  return 0;
 }
-*/
+
+void RpmFileHeaderReader::fillFileList(StringList& v)
+{
+  v.clear();
+  StringVector dirNames;
+  int_32* dirIndexes = NULL;
+  int_32 count1 = 0, count2 = 0, type = 0;
+  char** names = NULL;
+  int res = headerGetEntry(m_header, RPMTAG_DIRNAMES, &type, (void **)&names, &count1);
+  if (res == 0)//What exact constant must be used here?
+    return;
+  assert(type == RPM_STRING_ARRAY_TYPE);
+  assert(names);
+  dirNames.reserve(count1);
+  for(int_32 i = 0;i < count1;i++)
+    dirNames.push_back(names[i]);
+  res = headerGetEntry(m_header, RPMTAG_DIRINDEXES, &type, (void **)&dirIndexes, &count1);
+  if (res == 0)//What exact constant must be used here?
+    RPM_STOP("Header of rpm file \'" + m_fileName + "\' does not contain directory indices tag but has list of directory names");
+  assert(type == RPM_INT32_TYPE);
+  assert(dirIndexes);
+  res = headerGetEntry(m_header, RPMTAG_BASENAMES, &type, (void **)&names, &count2);
+  if (res == 0)//What exact constant must be used here?
+    RPM_STOP("Header of rpm file \'" + m_fileName + "\' does not contain list of stored file base names  but has list of directories");
+  assert(type == RPM_STRING_ARRAY_TYPE);
+  assert(names);
+  if (count1 != count2)
+    RPM_STOP("Header of rpm file \'" + m_fileName + "\' has different number of stored files and directory indices for them");
+  for(int_32 i = 0;i < count2;i++)
+    {
+      assert(dirIndexes[i] < (int_32)dirNames.size());
+	  v.push_back(concatUnixPath(dirNames[dirIndexes[i]], names[i]));
+    }
+}
 
 void RpmFileHeaderReader::getStringTagValue(int_32 tag, std::string& value)
 {
@@ -354,3 +294,15 @@ void RpmFileHeaderReader::getInt32TagValueRelaxed(int_32 tag, int_32& value)
   value = *num;
   return;
 }
+
+bool readRpmPkgFile(const std::string& fileName
+		 PkgFile& pkgFile,
+		 NamedPkgRelList& provides,
+		 NamedPkgRelList& requires,
+		 NamedPkgRelList& conflicts,
+		 NamedPkgRelList& obsoletes)
+{
+  //FIXME:
+  return 0;
+}
+
