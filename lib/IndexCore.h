@@ -34,7 +34,7 @@ public:
     m_warningHandler(warningHandler) {}
 
 public:
-  void build(const std::string& topDir, const std::string& arch, const RepoIndexParams& params);
+    void build(const std::string& topDir, const std::string& arch, const RepoIndexParams& params, const StringToStringMap& userParams);
 
 private:
   void processRpms(const std::string& path);

@@ -7,7 +7,7 @@
 
 static RepoIndexParams params;
 static std::string topDir = ".", requiredArch;
-static stringToStringMap userParams;
+static StringToStringMap userParams;
 
 class WarningHandler: public AbstractWarningHandler
 {
@@ -76,12 +76,13 @@ char selectFormatType(const std::string& value)
   return -1;
 }
 
-static bool processUserParam(const std:;string& s)
+static bool processUserParam(const std::string& s)
 {
   std::string name, value;
   if (!splitUserParam(s, name, value))
     return 0;
   userParams.insert(StringToStringMap::value_type(name, value));
+  return 1;
 }
 
 static bool parseCmdLine(int argc, char* argv[])
@@ -102,7 +103,7 @@ static bool parseCmdLine(int argc, char* argv[])
 	case 'u':
 	  if (!processUserParam(optarg))
 	    {
-	      std::cerr << PREFIX << "\'" << optarg << "\' is not a valid user-defined paramter fparameter for index information file (probably missed \'=\' sign) << std::endl;
+	      std::cerr << PREFIX << "\'" << optarg << "\' is not a valid user-defined parameter for index information file (probably missed \'=\' sign)" << std::endl;
 return 0;
 	    }
 	  break;
