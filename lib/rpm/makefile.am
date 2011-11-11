@@ -1,0 +1,15 @@
+
+AM_CXXFLAGS = $(FIXME_CXXFLAGS) $(FIXME_INCLUDES)
+
+noinst_HEADERS = \
+RpmException.h \
+RpmFile.h \
+RpmFileHeaderReader.h
+
+noinst_LIBRARIES = libfixmerpm.a
+
+libfixmerpm_a_SOURCES = \
+RpmException.h \
+RpmFile.h \
+RpmFileHeaderReader.cpp \
+RpmFileHeaderReader.h

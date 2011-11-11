@@ -2,8 +2,8 @@
 #ifndef FIXME_RPM_FILE_HEADER_READER_H
 #define FIXME_RPM_FILE_HEADER_READER_H
 
-#include"../PkgFile.h"//FIXME:
-#include"../NamedPkgRel.h"
+#include"PkgFile.h"
+#include"NamedPkgRel.h"
 #include"RpmException.h"
 #include<rpm/rpmlib.h>
 

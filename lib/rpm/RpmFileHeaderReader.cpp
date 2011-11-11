@@ -1,6 +1,6 @@
 //Written with librpm-4.0.4-alt100.29;
 
-#include"../basic-header.h"//FIXME:
+#include"basic-header.h"
 #include"RpmFileHeaderReader.h"
 
 static char translateRelFlags(int_32 flags)
@@ -295,7 +295,7 @@ void RpmFileHeaderReader::getInt32TagValueRelaxed(int_32 tag, int_32& value)
   return;
 }
 
-bool readRpmPkgFile(const std::string& fileName
+bool readRpmPkgFile(const std::string& fileName,
 		 PkgFile& pkgFile,
 		 NamedPkgRelList& provides,
 		 NamedPkgRelList& requires,

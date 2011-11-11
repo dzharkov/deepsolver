@@ -1,13 +1,15 @@
 
-AM_CXXFLAGS = $(FIXME_CXXFLAGS)
+SUBDIRS=rpm
+
+AM_CXXFLAGS = $(FIXME_CXXFLAGS) $(FIXME_INCLUDES)
 
 noinst_HEADERS = \
 IndexCore.h
+
 noinst_LIBRARIES = libfixme.a
 
 libfixme_a_SOURCES = \
 os/Directory.cpp \
 IndexCore.cpp \
 RepoIndexInfoFile.cpp \
-string-utils.cpp \
-rpm/RpmFileHeaderReader.cpp
+string-utils.cpp 
