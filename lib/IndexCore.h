@@ -36,7 +36,7 @@ public:
     void build(const std::string& topDir, const std::string& arch, const RepoIndexParams& params, const StringToStringMap& userParams);
 
 private:
-  void processRpms(const std::string& path);
+    void processRpms(const std::string& indexDir, const std::string& pkgDir, const RepoIndexParams& params);
   void writeInfoFile(const std::string& fileName, const RepoIndexParams& params, const StringToStringMap& userParams);
 
 private:

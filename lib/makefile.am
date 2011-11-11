@@ -11,4 +11,5 @@ noinst_LIBRARIES = libfixme.a
 libfixme_a_SOURCES = \
 IndexCore.cpp \
 RepoIndexInfoFile.cpp \
+RepoIndexTextFormat.cpp \
 string-utils.cpp 

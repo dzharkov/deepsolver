@@ -2,6 +2,8 @@
 #include"basic-header.h"
 #include"IndexCore.h"
 #include"RepoIndexInfoFile.h"
+#include"RepoIndexTextFormat.h"
+#include"rpm/RpmFile.h"
 
 #define INDEX_CORE_STOP(x) throw IndexCoreException(x)
 
@@ -12,24 +14,28 @@ void IndexCore::build(const std::string& topDir, const std::string& arch, const 
   const std::string infoFile = concatUnixPath(indexDir, REPO_INDEX_INFO_FILE);
   Directory::ensureExists(indexDir);
   writeInfoFile(infoFile, params, userParams);
-  processRpms(concatUnixPath(archDir, REPO_RPMS_DIR_NAME));
+  processRpms(indexDir, concatUnixPath(archDir, REPO_RPMS_DIR_NAME), params);
 }
 
-void IndexCore::processRpms(const std::string& path)
+void IndexCore::processRpms(const std::string& indexDir, const std::string& pkgDir, const RepoIndexParams& params)
 {
-  std::auto_ptr<Directory::Iterator> it = Directory::enumerate(path);
+  assert(params.formatType == RepoIndexParams::FormatTypeText);//FIXME:binary format support;
+  RepoIndexTextFormat handler(indexDir);
+  handler.init();
+  std::auto_ptr<Directory::Iterator> it = Directory::enumerate(pkgDir);
   while(it->moveNext())
     {
       if (it->getName() == "." || it->getName() == "..")
 	continue;
       if (checkExtension(it->getName(), ".rpm"))
 	continue;
-      /*
       PkgFile pkgFile;
       NamedPkgRelList provides, requires, conflicts, obsoletes;
-      readRpmPkgFile(it->getFullPath(), pkgFile, provides, requires, conflicts, obsoletes);
-      */
+      StringList files;
+      readRpmPkgFile(it->getFullPath(), pkgFile, provides, requires, conflicts, obsoletes, files);
+      handler.add(pkgFile, provides, requires, conflicts, obsoletes, files);
     }
+  handler.commit();
 }
 
 void IndexCore::writeInfoFile(const std::string& fileName, const RepoIndexParams& params, const StringToStringMap& userParams)
@@ -51,9 +57,14 @@ void IndexCore::writeInfoFile(const std::string& fileName, const RepoIndexParams
     case RepoIndexParams::FormatTypeText:
       infoFile.setFormatType("text");
       break;
+    case RepoIndexParams::FormatTypeBinary:
+      infoFile.setFormatType("binary");
+      break;
     default:
       assert(0);
     }; //switch(formatType);
+  infoFile.setFormatVersion(PACKAGE_VERSION);
+  infoFile.setMd5sumFile(REPO_INDEX_MD5SUM_FILE);
   for(StringToStringMap::const_iterator it = userParams.begin();it != userParams.end();it++)
     infoFile.addUserParam(it->first, it->second);
   std::string errorMessage;

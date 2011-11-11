@@ -78,6 +78,7 @@ char selectFormatType(const std::string& value)
 
 static bool processUserParam(const std::string& s)
 {
+  //FIXME:do not allow using of reserved parameters;
   std::string name, value;
   if (!splitUserParam(s, name, value))
     return 0;
@@ -92,7 +93,7 @@ static bool parseCmdLine(int argc, char* argv[])
 {
   while(1)
     {
-      const int p = getopt(argc, argv, "c:f:hn:");
+      const int p = getopt(argc, argv, "c:f:u:h:");
       if (p == -1)
 	break;
       if (p == '?')
