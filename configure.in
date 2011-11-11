@@ -20,6 +20,7 @@ AC_SUBST(FIXME_INCLUDES, '-I$(top_srcdir)/lib')
 AC_CONFIG_FILES([
   makefile
   lib/makefile
+  lib/os/makefile
   lib/rpm/makefile
   programs/makefile
 ])

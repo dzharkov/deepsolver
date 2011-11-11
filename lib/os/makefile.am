@@ -1,0 +1,17 @@
+
+AM_CXXFLAGS = $(FIXME_CXXFLAGS) $(FIXME_INCLUDES)
+
+noinst_HEADERS = \
+Directory.h \
+File.h \
+SystemException.h \
+system.h
+
+noinst_LIBRARIES = libfixmeos.a
+
+libfixmeos_a_SOURCES = \
+Directory.cpp \
+Directory.h \
+File.h \
+SystemException.h \
+system.h
