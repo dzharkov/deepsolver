@@ -9,7 +9,6 @@ IndexCore.h
 noinst_LIBRARIES = libfixme.a
 
 libfixme_a_SOURCES = \
-os/Directory.cpp \
 IndexCore.cpp \
 RepoIndexInfoFile.cpp \
 string-utils.cpp 

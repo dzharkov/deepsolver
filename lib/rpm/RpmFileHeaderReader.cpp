@@ -67,7 +67,7 @@ void RpmFileHeaderReader::fillMainData(PkgFile& pkg)
   getStringTagValue(RPMTAG_DESCRIPTION, pkg.description);
 }
 
-void RpmFileHeaderReader::fillProvides(NamedPkgRelVector& v)
+void RpmFileHeaderReader::fillProvides(NamedPkgRelList& v)
 {
   v.clear();
   int_32 count1 = 0, count2 = 0, count3 = 0, type = 0;
@@ -91,12 +91,11 @@ void RpmFileHeaderReader::fillProvides(NamedPkgRelVector& v)
   assert(flags);
   if (count1 != count2 || count1 != count3)
     RPM_STOP("Header of rpm file \'" + m_fileName + "\' contains different number of items in provide name list, provide version list and provide flags list");
-  v.resize(count1);
   for(int_32 i = 0;i < count1;i++)
-    v[i] = NamedPkgRel(names[i], translateRelFlags(flags[i]), versions[i]);
+    v.push_back(NamedPkgRel(names[i], translateRelFlags(flags[i]), versions[i]));
 }
 
-void RpmFileHeaderReader::fillConflicts(NamedPkgRelVector& v)
+void RpmFileHeaderReader::fillConflicts(NamedPkgRelList& v)
 {
   v.clear();
   int_32 count1 = 0, count2 = 0, count3 = 0, type = 0;
@@ -120,12 +119,11 @@ void RpmFileHeaderReader::fillConflicts(NamedPkgRelVector& v)
   assert(flags);
   if (count1 != count2 || count1 != count3)
     RPM_STOP("Header of rpm file \'" + m_fileName + "\' contains different number of items in conflict name list, conflict version list and conflict flags list");
-  v.resize(count1);
   for(int_32 i = 0;i < count1;i++)
-    v[i] = NamedPkgRel(names[i], translateRelFlags(flags[i]), versions[i]);
+    v.push_back(NamedPkgRel(names[i], translateRelFlags(flags[i]), versions[i]));
 }
 
-void RpmFileHeaderReader::fillObsoletes(NamedPkgRelVector& v)
+void RpmFileHeaderReader::fillObsoletes(NamedPkgRelList& v)
 {
   v.clear();
   int_32 count1 = 0, count2 = 0, count3 = 0, type = 0;
@@ -149,12 +147,11 @@ void RpmFileHeaderReader::fillObsoletes(NamedPkgRelVector& v)
   assert(flags);
   if (count1 != count2 || count1 != count3)
     RPM_STOP("Header of rpm file \'" + m_fileName + "\' contains different number of items in obsolete name list, obsolete version list and obsolete flags list");
-  v.resize(count1);
   for(int_32 i = 0;i < count1;i++)
-    v[i] = NamedPkgRel(names[i], translateRelFlags(flags[i]), versions[i]);
+    v.push_back(NamedPkgRel(names[i], translateRelFlags(flags[i]), versions[i]));
 }
 
-void RpmFileHeaderReader::fillRequires(NamedPkgRelVector& v)
+void RpmFileHeaderReader::fillRequires(NamedPkgRelList& v)
 {
   v.clear();
   int_32 count1 = 0, count2 = 0, count3 = 0, type = 0;
@@ -295,14 +292,22 @@ void RpmFileHeaderReader::getInt32TagValueRelaxed(int_32 tag, int_32& value)
   return;
 }
 
-bool readRpmPkgFile(const std::string& fileName,
+void readRpmPkgFile(const std::string& fileName,
 		 PkgFile& pkgFile,
 		 NamedPkgRelList& provides,
 		 NamedPkgRelList& requires,
 		 NamedPkgRelList& conflicts,
-		 NamedPkgRelList& obsoletes)
+		    NamedPkgRelList& obsoletes,
+		    StringList& fileList)
 {
-  //FIXME:
-  return 0;
+  RpmFileHeaderReader reader;
+  reader.load(fileName);
+  reader.fillMainData(pkgFile);
+  reader.fillProvides(provides);
+  reader.fillConflicts(conflicts);
+  reader.fillObsoletes(obsoletes);
+  reader.fillRequires(requires);
+  reader.fillFileList(fileList);
+  reader.close();
 }
 

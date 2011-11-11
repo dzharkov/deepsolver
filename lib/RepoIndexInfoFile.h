@@ -53,7 +53,7 @@ public:
 
   void addUserParam(const std::string& name, const std::string& value)
   {
-    m_userParams.push_back(StringToStringMap::value_type(name/, value));
+    m_userParams.insert(StringToStringMap::value_type(name, value));
   }
 
   const StringToStringMap& getUserParams() const

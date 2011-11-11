@@ -2,6 +2,31 @@
 #include"basic-header.h"//FIXME:
 #include"RepoIndexInfoFile.h"
 
+static std::string escapeString(const std::string& s)
+{
+  std::string res;
+  for(std::string::size_type i = 0;i < s.length();i++)
+    {
+      switch(s[i])
+	{
+	case '\\':
+	  res += "\\\\";
+	  break;
+	case '#':
+	  res += "\\#";
+	  break;
+	default:
+	  res += s[i];
+	}; //switch();
+    }
+  return res;
+}
+
+static void writeParam(std::ostream& s, const std::string& name, const std::string& value)
+{
+  s << name << " = " << escapeString(value) << std::endl;
+}
+
 bool RepoIndexInfoFile::read(const std::string& fileName, std::string& errorMessage, StringList& warningMessages)
 {
   errorMessage.erase();
@@ -11,8 +36,6 @@ bool RepoIndexInfoFile::read(const std::string& fileName, std::string& errorMess
 
 bool RepoIndexInfoFile::write(const std::string& fileName, std::string& errorMessage, StringList& warningMessages)
 {
-  assert(hasNonSpaces(m_compressionType));
-  assert(hasNonSpaces(m_formatType));
   errorMessage.erase();
   warningMessages.clear();
   std::ofstream f(fileName.c_str());
@@ -31,8 +54,11 @@ bool RepoIndexInfoFile::write(const std::string& fileName, std::string& errorMes
   f << "# Character `\\\' should be used in the conjunction with the following character to" << std::endl;
   f << "# prevent special character processing." << std::endl;
   f << std::endl;
-  f << "repo_name=" << m_repoName << std::endl;
-  f << "format_type=" << m_formatType << std::endl;
-  f << "compression_type=" << m_compressionType << std::endl;
+  writeParam(f, "format_version", m_formatVersion);
+  writeParam(f, "format_type", m_formatType);
+  writeParam(f, "compression_type", m_compressionType);
+  writeParam(f, "md5sum_file", m_md5sumFile);
+  for(StringToStringMap::const_iterator it = m_userParams.begin();it != m_userParams.end();it++)
+    writeParam(f, it->first, it->second);
   return 1;
 }

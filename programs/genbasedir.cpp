@@ -81,6 +81,9 @@ static bool processUserParam(const std::string& s)
   std::string name, value;
   if (!splitUserParam(s, name, value))
     return 0;
+  for(std::string::size_type i = 0;i < name.length();i++)
+    if (s[i] == '#' || s[i] == '\\' || BLANK_CHAR(s[i]))
+      return 0;
   userParams.insert(StringToStringMap::value_type(name, value));
   return 1;
 }

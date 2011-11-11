@@ -22,7 +22,6 @@ public:
     : compressionType(DEFAULT_REPO_INDEX_COMPRESSION_TYPE), formatType(DEFAULT_REPO_INDEX_FORMAT_TYPE) {}//Real values are defined in DefaultValues.h;
 
 public:
-  std::string repoName;
   char compressionType;//Must be exactly signed for error value indications;
   char formatType;//Must be exactly signed for error value indications;
 }; //class RepoIndexParams;
@@ -38,7 +37,7 @@ public:
 
 private:
   void processRpms(const std::string& path);
-  void writeInfoFile(const std::string& fileName, const RepoIndexParams& params);
+  void writeInfoFile(const std::string& fileName, const RepoIndexParams& params, const StringToStringMap& userParams);
 
 private:
   AbstractWarningHandler& m_warningHandler;

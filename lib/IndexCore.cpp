@@ -5,13 +5,13 @@
 
 #define INDEX_CORE_STOP(x) throw IndexCoreException(x)
 
-void IndexCore::build(const std::string& topDir, const std::string& arch, const RepoIndexParams& params)
+void IndexCore::build(const std::string& topDir, const std::string& arch, const RepoIndexParams& params, const StringToStringMap& userParams)
 {
   const std::string archDir = concatUnixPath(topDir, arch);
   const std::string indexDir = concatUnixPath(archDir, REPO_INDEX_DIR);
   const std::string infoFile = concatUnixPath(indexDir, REPO_INDEX_INFO_FILE);
   Directory::ensureExists(indexDir);
-  writeInfoFile(infoFile, params);
+  writeInfoFile(infoFile, params, userParams);
   processRpms(concatUnixPath(archDir, REPO_RPMS_DIR_NAME));
 }
 
@@ -24,16 +24,17 @@ void IndexCore::processRpms(const std::string& path)
 	continue;
       if (checkExtension(it->getName(), ".rpm"))
 	continue;
+      /*
       PkgFile pkgFile;
       NamedPkgRelList provides, requires, conflicts, obsoletes;
       readRpmPkgFile(it->getFullPath(), pkgFile, provides, requires, conflicts, obsoletes);
+      */
     }
 }
 
-void IndexCore::writeInfoFile(const std::string& fileName, const RepoIndexParams& params)
+void IndexCore::writeInfoFile(const std::string& fileName, const RepoIndexParams& params, const StringToStringMap& userParams)
 {
   RepoIndexInfoFile infoFile;
-  infoFile.setRepoName(params.repoName);
   switch(params.compressionType)
     {
     case RepoIndexParams::CompressionTypeNone:
@@ -53,6 +54,8 @@ void IndexCore::writeInfoFile(const std::string& fileName, const RepoIndexParams
     default:
       assert(0);
     }; //switch(formatType);
+  for(StringToStringMap::const_iterator it = userParams.begin();it != userParams.end();it++)
+    infoFile.addUserParam(it->first, it->second);
   std::string errorMessage;
   StringList warningMessages;
   const bool res = infoFile.write(fileName, errorMessage, warningMessages);
@@ -60,5 +63,4 @@ void IndexCore::writeInfoFile(const std::string& fileName, const RepoIndexParams
     m_warningHandler.onWarning(*it);
   if (!res)
     INDEX_CORE_STOP(errorMessage);
-
 }

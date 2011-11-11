@@ -22,10 +22,10 @@ public:
   void load(const std::string& fileName);
   void close();
   void fillMainData(PkgFile& pkg);
-  void fillProvides(NamedPkgRelVector& v);
-  void fillConflicts(NamedPkgRelVector& v);
-  void fillObsoletes(NamedPkgRelVector& v);
-  void fillRequires(NamedPkgRelVector& v);
+  void fillProvides(NamedPkgRelList& v);
+  void fillConflicts(NamedPkgRelList& v);
+  void fillObsoletes(NamedPkgRelList& v);
+  void fillRequires(NamedPkgRelList& v);
   void fillFileList(StringList& v);
 
 private:
