@@ -7,6 +7,7 @@
 
 static RepoIndexParams params;
 static std::string topDir = ".", requiredArch;
+static stringToStringMap userParams;
 
 class WarningHandler: public AbstractWarningHandler
 {
@@ -23,7 +24,26 @@ private:
   std::ostream& m_stream;
 }; //class WarningHandler;
 
-void printHelp()
+static bool splitUserParam(const std::string& str, std::string& name, std::string& value)
+{
+  name.erase();
+  value.erase();
+  bool wasEquals = 0;
+  for(std::string::size_type i = 0;i < str.length();i++)
+    {
+      if (!wasEquals && str[i] == '=')
+	{
+	  wasEquals = 1;
+	  continue;
+	}
+      if (!wasEquals)
+	name += str[i]; else
+	value += str[i];
+    }
+  return wasEquals;
+}
+
+static void printHelp()
 {
   printf("%s%s", PREFIX,
 	 "The utility to build index data of package repository\n\n"
@@ -33,7 +53,7 @@ void printHelp()
 	 "\t-h - print this help screen;\n"
 	 "\t-c TYPE - choose compression type: none or gzip (default is gzip);\n"
 	 "\t-f FORMAT - choose data format: binary or text (default is text);\n"
-	 "\t-n NAME - select the repository name (optional).\n\n"
+	 "\t-u NAME=VALUE - add a user defined parameter to repository index information file.\n\n"
 	 "If directory is not specified current directory is used to search packages of repository.\n"
 	 );
 }
@@ -56,7 +76,15 @@ char selectFormatType(const std::string& value)
   return -1;
 }
 
-bool parseCmdLine(int argc, char* argv[])
+static bool processUserParam(const std:;string& s)
+{
+  std::string name, value;
+  if (!splitUserParam(s, name, value))
+    return 0;
+  userParams.insert(StringToStringMap::value_type(name, value));
+}
+
+static bool parseCmdLine(int argc, char* argv[])
 {
   while(1)
     {
@@ -70,6 +98,13 @@ bool parseCmdLine(int argc, char* argv[])
 	case 'h':
 	  printHelp();
 	  exit(EXIT_SUCCESS);
+	  break;
+	case 'u':
+	  if (!processUserParam(optarg))
+	    {
+	      std::cerr << PREFIX << "\'" << optarg << "\' is not a valid user-defined paramter fparameter for index information file (probably missed \'=\' sign) << std::endl;
+return 0;
+	    }
 	  break;
 	case 'c':
 	  params.compressionType = selectCompressionType(optarg);
@@ -86,9 +121,6 @@ bool parseCmdLine(int argc, char* argv[])
 	      std::cerr << PREFIX << "value \'" << optarg << "\' is not a valid format type" << std::endl;
 	      return 0;
 	    }
-	  break;
-	case 'n':
-	  params.repoName = optarg;
 	  break;
 	default:
 	  assert(0);
@@ -127,7 +159,7 @@ void run()
 {
   WarningHandler warningHandler(std::cerr);
   IndexCore indexCore(warningHandler);
-  indexCore.build(topDir, requiredArch, params);
+  indexCore.build(topDir, requiredArch, params, userParams);
 }
 
 int main(int argc, char* argv[])
