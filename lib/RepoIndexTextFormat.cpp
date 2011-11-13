@@ -2,7 +2,7 @@
 #include"basic-header.h"
 #include"RepoIndexTextFormat.h"
 
-void init()
+void RepoIndexTextFormat::init()
 {
   //FIXME:
 }
@@ -17,7 +17,7 @@ void RepoIndexTextFormat::add(const PkgFile& pkgFile,
     //FIXME:
 }
 
-void commit()
+void RepoIndexTextFormat::commit()
 {
   //FIXME:
 }

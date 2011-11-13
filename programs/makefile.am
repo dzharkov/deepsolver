@@ -1,5 +1,6 @@
 
 AM_CXXFLAGS = $(FIXME_CXXFLAGS) $(FIXME_INCLUDES)
+LIBS += -lrpm
 
 bin_PROGRAMS = genbasedir
 
