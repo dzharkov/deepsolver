@@ -6,8 +6,6 @@
 #define PREFIX "genbasedir:"
 
 static RepoIndexParams params;
-static std::string topDir = ".", requiredArch;
-static StringToStringMap userParams;
 
 class WarningHandler: public AbstractWarningHandler
 {
@@ -85,7 +83,7 @@ static bool processUserParam(const std::string& s)
   for(std::string::size_type i = 0;i < name.length();i++)
     if (s[i] == '#' || s[i] == '\\' || BLANK_CHAR(s[i]))
       return 0;
-  userParams.insert(StringToStringMap::value_type(name, value));
+  params.userParams.insert(StringToStringMap::value_type(name, value));
   return 1;
 }
 
@@ -144,15 +142,15 @@ return 0;
 	printHelp();
 	return 0;
 }
-  requiredArch = argv[optind];
+  params.arch = argv[optind];
   if (optind + 1 < argc)
-    topDir = argv[optind + 1];
-  if (!hasNonSpaces(requiredArch))
+    params.topDir = argv[optind + 1];
+  if (!hasNonSpaces(params.arch))
     {
       std::cout << PREFIX << "Required architecture cannot be an empty string" << std::endl;
       return 0;
     }
-  if (!hasNonSpaces(topDir))
+  if (!hasNonSpaces(params.topDir))
     {
       std::cout << PREFIX << "Repository directory cannot be an empty string" << std::endl;
       return 0;
@@ -164,7 +162,7 @@ void run()
 {
   WarningHandler warningHandler(std::cerr);
   IndexCore indexCore(warningHandler);
-  indexCore.build(topDir, requiredArch, params, userParams);
+  indexCore.build(params);
 }
 
 int main(int argc, char* argv[])

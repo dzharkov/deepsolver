@@ -7,13 +7,13 @@
 
 #define INDEX_CORE_STOP(x) throw IndexCoreException(x)
 
-void IndexCore::build(const std::string& topDir, const std::string& arch, const RepoIndexParams& params, const StringToStringMap& userParams)
+void IndexCore::build(const RepoIndexParams& params)
 {
-  const std::string archDir = concatUnixPath(topDir, arch);
+  const std::string archDir = concatUnixPath(params.topDir, params.arch);
   const std::string indexDir = concatUnixPath(archDir, REPO_INDEX_DIR);
   const std::string infoFile = concatUnixPath(indexDir, REPO_INDEX_INFO_FILE);
   Directory::ensureExists(indexDir);
-  writeInfoFile(infoFile, params, userParams);
+  writeInfoFile(infoFile, params);
   processRpms(indexDir, concatUnixPath(archDir, REPO_RPMS_DIR_NAME), params);
 }
 
@@ -38,7 +38,7 @@ void IndexCore::processRpms(const std::string& indexDir, const std::string& pkgD
   handler.commit();
 }
 
-void IndexCore::writeInfoFile(const std::string& fileName, const RepoIndexParams& params, const StringToStringMap& userParams)
+void IndexCore::writeInfoFile(const std::string& fileName, const RepoIndexParams& params)
 {
   RepoIndexInfoFile infoFile;
   switch(params.compressionType)
@@ -65,7 +65,7 @@ void IndexCore::writeInfoFile(const std::string& fileName, const RepoIndexParams
     }; //switch(formatType);
   infoFile.setFormatVersion(PACKAGE_VERSION);
   infoFile.setMd5sumFile(REPO_INDEX_MD5SUM_FILE);
-  for(StringToStringMap::const_iterator it = userParams.begin();it != userParams.end();it++)
+  for(StringToStringMap::const_iterator it = params.userParams.begin();it != params.userParams.end();it++)
     infoFile.addUserParam(it->first, it->second);
   std::string errorMessage;
   StringList warningMessages;

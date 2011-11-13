@@ -24,6 +24,9 @@ public:
 public:
   char compressionType;//Must be exactly signed for error value indications;
   char formatType;//Must be exactly signed for error value indications;
+  std::string arch;
+  std::string topDir;
+  StringToStringMap userParams;
 }; //class RepoIndexParams;
 
 class IndexCore
@@ -33,11 +36,11 @@ public:
     m_warningHandler(warningHandler) {}
 
 public:
-    void build(const std::string& topDir, const std::string& arch, const RepoIndexParams& params, const StringToStringMap& userParams);
+  void build(const RepoIndexParams& params);
 
 private:
     void processRpms(const std::string& indexDir, const std::string& pkgDir, const RepoIndexParams& params);
-  void writeInfoFile(const std::string& fileName, const RepoIndexParams& params, const StringToStringMap& userParams);
+  void writeInfoFile(const std::string& fileName, const RepoIndexParams& params);
 
 private:
   AbstractWarningHandler& m_warningHandler;
