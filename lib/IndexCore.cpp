@@ -27,7 +27,7 @@ void IndexCore::processRpms(const std::string& indexDir, const std::string& pkgD
     {
       if (it->getName() == "." || it->getName() == "..")
 	continue;
-      if (checkExtension(it->getName(), ".rpm"))
+      if (!checkExtension(it->getName(), ".rpm"))
 	continue;
       PkgFile pkgFile;
       NamedPkgRelList provides, requires, conflicts, obsoletes;
