@@ -12,6 +12,7 @@ noinst_LIBRARIES = libfixmeos.a
 libfixmeos_a_SOURCES = \
 Directory.cpp \
 Directory.h \
+File.cpp \
 File.h \
 SystemException.h \
 system.h

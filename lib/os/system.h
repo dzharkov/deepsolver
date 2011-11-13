@@ -44,5 +44,6 @@ typedef std::list<std::string> StringList;
 typedef std::map<std::string, std::string> StringToStringMap;
 
 #define ERRNO_MSG (strerror(errno))
+#define NEW_FILE_MODE (S_IRWXU | S_IRWXG | S_IRWXO)
 
 #endif //FIXME_SYSTEM_H;

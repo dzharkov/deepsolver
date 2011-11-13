@@ -14,7 +14,7 @@ public:
   }
 
   void open(const std::string fileName);
-  void openreadOnly(const std::string& fileName);
+  void openReadOnly(const std::string& fileName);
   void create(const std::string& fileName);
     void close();
 

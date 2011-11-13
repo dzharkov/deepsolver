@@ -25,14 +25,14 @@ void Directory::ensureExists(const std::string& path)
 	  if (s[s.length() - 1] == '/')//No double slashes processing;
 	    continue;
 	  if (!isExist(s))
-	    TRY_SYS_CALL(mkdir(s.c_str(), 0777) == 0, "mkdir(" + s + ")");
+	    TRY_SYS_CALL(mkdir(s.c_str(), NEW_FILE_MODE) == 0, "mkdir(" + s + ")");
 	  s += '/';
 	  continue;
 	}
       s += path[i];
     }
 	  if (!isExist(s))
-	    TRY_SYS_CALL(mkdir(s.c_str(), 0777) == 0, "mkdir(" + s + ")");
+	    TRY_SYS_CALL(mkdir(s.c_str(), NEW_FILE_MODE) == 0, "mkdir(" + s + ")");
 }
 
 bool Directory::Iterator::moveNext()
