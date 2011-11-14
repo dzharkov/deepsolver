@@ -2,7 +2,7 @@
 #include"basic-header.h"//FIXME:
 #include"NamedPkgRel.h"
 
-std::ostream& operator <<(std::ostream& s, const namedPkgRel& r)
+std::ostream& operator <<(std::ostream& s, const NamedPkgRel& r)
 {
   s << r.pkgName;
   if (r.ver.empty())

@@ -41,7 +41,7 @@ public:
   std::string ver;
 }; //class NamedPkgRel;
 
-std::ostream& operator <<(std::ostream& s, const namedPkgRel& r);
+std::ostream& operator <<(std::ostream& s, const NamedPkgRel& r);
 
 typedef std::list<NamedPkgRel> NamedPkgRelList;
 typedef std::vector<NamedPkgRel> NamedPkgRelVector;

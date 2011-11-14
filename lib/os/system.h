@@ -38,7 +38,8 @@
 #include<locale.h>
 #include<time.h>
 
-using std::auto_ptr;
+
+typedef std::vector<size_t> SizeVector;
 typedef std::vector<std::string> StringVector;
 typedef std::list<std::string> StringList;
 typedef std::map<std::string, std::string> StringToStringMap;
