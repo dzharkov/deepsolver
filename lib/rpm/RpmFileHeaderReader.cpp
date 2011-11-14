@@ -40,7 +40,7 @@ void RpmFileHeaderReader::load(const std::string& fileName)
 void RpmFileHeaderReader::close()
 {
   if (m_header != NULL)
-  headerFree(m_header);
+    headerFree(m_header);
   if (m_fd != NULL)
     Fclose(m_fd);
   m_header = NULL;

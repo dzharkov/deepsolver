@@ -2,6 +2,7 @@
 
 #include"basic-header.h"//FIXME:
 #include"IndexCore.h"
+#include"rpm/RpmException.h"
 
 #define PREFIX "genbasedir:"
 
@@ -175,6 +176,11 @@ int main(int argc, char* argv[])
   catch(const IndexCoreException& e)
     {
       std::cerr << PREFIX << "index error:" << e.getMessage() << std::endl;
+      return 1;
+    }
+  catch(const RpmException& e)
+    {
+      std::cerr << PREFIX << "rpm error:" << e.getMessage() << std::endl;
       return 1;
     }
   catch(const SystemException& e)

@@ -8,12 +8,13 @@ class RpmException
 public:
   RpmException() {}
   RpmException(const std::string& message)
-    : m_message() {}
+    : m_message(message
+) {}
 
       virtual ~RpmException() {}
 
 public:
-  std::string getMessage()
+  std::string getMessage() const
   {
     return m_message;
   }
