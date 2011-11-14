@@ -5,8 +5,6 @@
 #include"RepoIndexTextFormat.h"
 #include"rpm/RpmFile.h"
 
-#define INDEX_CORE_STOP(x) throw IndexCoreException(x)
-
 void IndexCore::build(const RepoIndexParams& params)
 {
   const std::string archDir = concatUnixPath(params.topDir, params.arch);

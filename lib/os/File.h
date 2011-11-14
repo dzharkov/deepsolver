@@ -42,6 +42,8 @@ public:
     return m_fd;
   }
 
+  static std::string baseName(const std::string& fileName);
+
 protected:
   int m_fd;
 }; //class File;

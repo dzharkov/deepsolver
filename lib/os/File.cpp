@@ -3,6 +3,26 @@
 
 #define IO_BUF_SIZE 2048
 
+std::string File::baseName(const std::string& fileName)
+{
+  if (fileName.empty() || fileName == "/")
+    return fileName;
+  std::string s, last;
+  for(std::string::size_type i = 0;i < fileName.length();i++)
+    {
+      if (fileName[i] == '/')
+{
+if (s.empty())
+continue;
+last = s;
+s.erase();
+continue;
+}
+s += fileName[i];
+    }
+  return s.empty()?last:s;
+}
+
 //Ensures block of required length is read completely or there is no more data (prevents from incomplete read() operation);
 static ssize_t readBlock(int fd, void* buf, size_t bufSize)
 {

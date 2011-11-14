@@ -22,4 +22,6 @@ private:
   const std::string m_message;
 }; //class IndexCoreException;
 
+#define INDEX_CORE_STOP(x) throw IndexCoreException(x)
+
 #endif //FIXME_INDEX_CORE_EXCEPTION_H;

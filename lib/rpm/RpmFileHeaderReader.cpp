@@ -3,6 +3,8 @@
 #include"basic-header.h"
 #include"RpmFileHeaderReader.h"
 
+//FIXME:requires flags for package install and removing;
+
 static char translateRelFlags(int_32 flags)
 {
   char value = 0;
@@ -309,5 +311,6 @@ void readRpmPkgFile(const std::string& fileName,
   reader.fillRequires(requires);
   reader.fillFileList(fileList);
   reader.close();
+  pkgFile.fileName = fileName;
 }
 

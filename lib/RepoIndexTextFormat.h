@@ -24,7 +24,15 @@ public:
   void commit();
 
 private:
+  void firstProvideReg(const std::string& pkgName, const std::string& provideName);
+
+private:
+  typedef std::map<std::string, size_t> StringToIntMap;
+
+private:
   const std::string m_dir;
+  StringToIntMap m_provideMap;
+  std::ofstream m_os;
 }; //class RepoIndexTextFormat ;
 
 #endif //FIXME_REPO_INDEX_TEXT_FORMAT_H;

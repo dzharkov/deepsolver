@@ -1,4 +1,4 @@
-
+//FIXME:requires flags for package install and removing;
 
 #ifndef FIXME_NAMED_PKG_REL_H
 #define FIXME_NAMED_PKG_REL_H
@@ -40,6 +40,8 @@ public:
   char type;
   std::string ver;
 }; //class NamedPkgRel;
+
+std::ostream& operator <<(std::ostream& s, const namedPkgRel& r);
 
 typedef std::list<NamedPkgRel> NamedPkgRelList;
 typedef std::vector<NamedPkgRel> NamedPkgRelVector;
