@@ -83,18 +83,31 @@ void RpmFileHeaderReader::fillProvides(NamedPkgRelList& v)
   assert(names);
   res = headerGetEntry(m_header, RPMTAG_PROVIDEVERSION, &type, (void **)&versions, &count2);
   if (res == 0)//What exact constant must be used here?
-    RPM_STOP("Header of rpm file \'" + m_fileName + "\' contains list of provides but does not contain list of provide versions");
+    {
+      headerFreeData(names, RPM_STRING_ARRAY_TYPE);
+      RPM_STOP("Header of rpm file \'" + m_fileName + "\' contains list of provides but does not contain list of provide versions");
+    }
   assert(type == RPM_STRING_ARRAY_TYPE);
   assert(versions);
   res = headerGetEntry(m_header, RPMTAG_PROVIDEFLAGS, &type, (void **)&flags, &count3);
   if (res == 0)//What exact constant must be used here?
-    RPM_STOP("Header of rpm file \'" + m_fileName + "\' contains list of provides but does not contain list of provide flags");
+    {
+      headerFreeData(names, RPM_STRING_ARRAY_TYPE);
+      headerFreeData(versions, RPM_STRING_ARRAY_TYPE);
+      RPM_STOP("Header of rpm file \'" + m_fileName + "\' contains list of provides but does not contain list of provide flags");
+    }
   assert(type == RPM_INT32_TYPE);
   assert(flags);
   if (count1 != count2 || count1 != count3)
-    RPM_STOP("Header of rpm file \'" + m_fileName + "\' contains different number of items in provide name list, provide version list and provide flags list");
+    {
+      headerFreeData(names, RPM_STRING_ARRAY_TYPE);
+      headerFreeData(versions, RPM_STRING_ARRAY_TYPE);
+      RPM_STOP("Header of rpm file \'" + m_fileName + "\' contains different number of items in provide name list, provide version list and provide flags list");
+    }
   for(int_32 i = 0;i < count1;i++)
     v.push_back(NamedPkgRel(names[i], translateRelFlags(flags[i]), versions[i]));
+  headerFreeData(names, RPM_STRING_ARRAY_TYPE);
+  headerFreeData(versions, RPM_STRING_ARRAY_TYPE);
 }
 
 void RpmFileHeaderReader::fillConflicts(NamedPkgRelList& v)
@@ -111,18 +124,31 @@ void RpmFileHeaderReader::fillConflicts(NamedPkgRelList& v)
   assert(names);
   res = headerGetEntry(m_header, RPMTAG_CONFLICTVERSION, &type, (void **)&versions, &count2);
   if (res == 0)//What exact constant must be used here?
-    RPM_STOP("Header of rpm file \'" + m_fileName + "\' contains list of conflict names but does not contain list of conflict versions");
+    {
+      headerFreeData(names, RPM_STRING_ARRAY_TYPE);
+      RPM_STOP("Header of rpm file \'" + m_fileName + "\' contains list of conflict names but does not contain list of conflict versions");
+    }
   assert(type == RPM_STRING_ARRAY_TYPE);
   assert(versions);
   res = headerGetEntry(m_header, RPMTAG_CONFLICTFLAGS, &type, (void **)&flags, &count3);
   if (res == 0)//What exact constant must be used here?
-    RPM_STOP("Header of rpm file \'" + m_fileName + "\' contains list of conflict names but does not contain list of conflict flags");
+    {
+      headerFreeData(names, RPM_STRING_ARRAY_TYPE);
+      headerFreeData(versions, RPM_STRING_ARRAY_TYPE);
+      RPM_STOP("Header of rpm file \'" + m_fileName + "\' contains list of conflict names but does not contain list of conflict flags");
+    }
   assert(type == RPM_INT32_TYPE);
   assert(flags);
   if (count1 != count2 || count1 != count3)
-    RPM_STOP("Header of rpm file \'" + m_fileName + "\' contains different number of items in conflict name list, conflict version list and conflict flags list");
+    {
+      headerFreeData(names, RPM_STRING_ARRAY_TYPE);
+      headerFreeData(versions, RPM_STRING_ARRAY_TYPE);
+      RPM_STOP("Header of rpm file \'" + m_fileName + "\' contains different number of items in conflict name list, conflict version list and conflict flags list");
+    }
   for(int_32 i = 0;i < count1;i++)
     v.push_back(NamedPkgRel(names[i], translateRelFlags(flags[i]), versions[i]));
+  headerFreeData(names, RPM_STRING_ARRAY_TYPE);
+  headerFreeData(versions, RPM_STRING_ARRAY_TYPE);
 }
 
 void RpmFileHeaderReader::fillObsoletes(NamedPkgRelList& v)
@@ -139,18 +165,31 @@ void RpmFileHeaderReader::fillObsoletes(NamedPkgRelList& v)
   assert(names);
   res = headerGetEntry(m_header, RPMTAG_OBSOLETEVERSION, &type, (void **)&versions, &count2);
   if (res == 0)//What exact constant must be used here?
-    RPM_STOP("Header of RPM file \'" + m_fileName + " contains obsolete name list but does not contain obsolete version list");
+    {
+      headerFreeData(names, RPM_STRING_ARRAY_TYPE);
+      RPM_STOP("Header of RPM file \'" + m_fileName + " contains obsolete name list but does not contain obsolete version list");
+    }
   assert(type == RPM_STRING_ARRAY_TYPE);
   assert(versions);
   res = headerGetEntry(m_header, RPMTAG_OBSOLETEFLAGS, &type, (void **)&flags, &count3);
   if (res == 0)//What exact constant must be used here?
-    RPM_STOP("Header of RPM file \'" + m_fileName + " contains obsolete name list but does not contain obsolete flags list");
+    {
+      headerFreeData(names, RPM_STRING_ARRAY_TYPE);
+      headerFreeData(versions, RPM_STRING_ARRAY_TYPE);
+      RPM_STOP("Header of RPM file \'" + m_fileName + " contains obsolete name list but does not contain obsolete flags list");
+    }
   assert(type == RPM_INT32_TYPE);
   assert(flags);
   if (count1 != count2 || count1 != count3)
-    RPM_STOP("Header of rpm file \'" + m_fileName + "\' contains different number of items in obsolete name list, obsolete version list and obsolete flags list");
+    {
+      headerFreeData(names, RPM_STRING_ARRAY_TYPE);
+      headerFreeData(versions, RPM_STRING_ARRAY_TYPE);
+      RPM_STOP("Header of rpm file \'" + m_fileName + "\' contains different number of items in obsolete name list, obsolete version list and obsolete flags list");
+    }
   for(int_32 i = 0;i < count1;i++)
     v.push_back(NamedPkgRel(names[i], translateRelFlags(flags[i]), versions[i]));
+  headerFreeData(names, RPM_STRING_ARRAY_TYPE);
+  headerFreeData(versions, RPM_STRING_ARRAY_TYPE);
 }
 
 void RpmFileHeaderReader::fillRequires(NamedPkgRelList& v)
@@ -167,21 +206,34 @@ void RpmFileHeaderReader::fillRequires(NamedPkgRelList& v)
   assert(names);
   res = headerGetEntry(m_header, RPMTAG_REQUIREVERSION, &type, (void **)&versions, &count2);
   if (res == 0)//What exact constant must be used here?
-    RPM_STOP("Header of rpm file \'" + m_fileName + "\' contains require name list but does not contain require version list");
+    {
+      headerFreeData(names, RPM_STRING_ARRAY_TYPE);
+      RPM_STOP("Header of rpm file \'" + m_fileName + "\' contains require name list but does not contain require version list");
+    }
   assert(type == RPM_STRING_ARRAY_TYPE);
   assert(versions);
   res = headerGetEntry(m_header, RPMTAG_REQUIREFLAGS, &type, (void **)&flags, &count3);
   if (res == 0)//What exact constant must be used here?
-    RPM_STOP("Header of rpm file \'" + m_fileName + "\' contains require name list but does not contain require flags list");
+    {
+      headerFreeData(names, RPM_STRING_ARRAY_TYPE);
+      headerFreeData(versions, RPM_STRING_ARRAY_TYPE);
+      RPM_STOP("Header of rpm file \'" + m_fileName + "\' contains require name list but does not contain require flags list");
+    }
   assert(type == RPM_INT32_TYPE);
   assert(flags);
   if (count1 != count2 || count1 != count3)
+    {
+      headerFreeData(names, RPM_STRING_ARRAY_TYPE);
+      headerFreeData(versions, RPM_STRING_ARRAY_TYPE);
     RPM_STOP("Header of rpm file \'" + m_fileName + "\' contains different number of items in require name list, require version list and require flags list");
+    }
   for(int_32 i = 0;i < count1;i++)
     {
       if ((flags[i] & RPMSENSE_RPMLIB) == 0)//No need to handle rpmlib(feature) requirements
 	v.push_back (NamedPkgRel(names[i], translateRelFlags(flags[i]), versions[i]));
     }
+  headerFreeData(names, RPM_STRING_ARRAY_TYPE);
+  headerFreeData(versions, RPM_STRING_ARRAY_TYPE);
 }
 
 void RpmFileHeaderReader::fillFileList(StringList& v)
@@ -199,6 +251,7 @@ void RpmFileHeaderReader::fillFileList(StringList& v)
   dirNames.reserve(count1);
   for(int_32 i = 0;i < count1;i++)
     dirNames.push_back(names[i]);
+  headerFreeData(names, RPM_STRING_ARRAY_TYPE);
   res = headerGetEntry(m_header, RPMTAG_DIRINDEXES, &type, (void **)&dirIndexes, &count1);
   if (res == 0)//What exact constant must be used here?
     RPM_STOP("Header of rpm file \'" + m_fileName + "\' does not contain directory indices tag but has list of directory names");
@@ -210,12 +263,16 @@ void RpmFileHeaderReader::fillFileList(StringList& v)
   assert(type == RPM_STRING_ARRAY_TYPE);
   assert(names);
   if (count1 != count2)
-    RPM_STOP("Header of rpm file \'" + m_fileName + "\' has different number of stored files and directory indices for them");
+    {
+      headerFreeData(names, RPM_STRING_ARRAY_TYPE);
+      RPM_STOP("Header of rpm file \'" + m_fileName + "\' has different number of stored files and directory indices for them");
+    }
   for(int_32 i = 0;i < count2;i++)
     {
       assert(dirIndexes[i] < (int_32)dirNames.size());
 	  v.push_back(concatUnixPath(dirNames[dirIndexes[i]], names[i]));
     }
+      headerFreeData(names, RPM_STRING_ARRAY_TYPE);
 }
 
 void RpmFileHeaderReader::getStringTagValue(int_32 tag, std::string& value)
