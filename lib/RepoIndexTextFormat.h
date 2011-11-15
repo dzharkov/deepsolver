@@ -24,14 +24,43 @@ public:
   void commit();
 
 private:
-  void firstProvideReg(const std::string& pkgName, const std::string& provideName);
+  struct ProvideResolvingItem
+  {
+  public:
+    ProvideResolvingItem(const std::string& n, size_t c)
+      : name(n), count(c), pos(0) {}
+
+  public:
+    bool operator <(const ProvideResolvingItem& i) const
+    {
+      return name < i.name;
+    }
+
+    bool operator >(const ProvideResolvingItem& i) const
+    {
+      return name > i.name;
+    }
+
+  public:
+    std::string name;
+    size_t count, pos;
+  }; //struct ProvideResolvingItem;
 
 private:
+  typedef std::vector<ProvideResolvingItem> ProvideResolvingItemVector;
   typedef std::map<std::string, size_t> StringToIntMap;
+
+private:
+  void firstProvideReg(const std::string& pkgName, const std::string& provideName);
+  void prepareResolvingData();
+  size_t fillProvideResolvingItemsPos(ProvideResolvingItemVector& v);
+  ProvideResolvingItemVector::size_type findProvideResolvingItem(const ProvideResolvingItemVector& v, const std::string& name);
 
 private:
   const std::string m_dir;
   StringToIntMap m_provideMap;
+  ProvideResolvingItemVector m_resolvingItems;
+  SizeVector m_resolvingData;
   std::ofstream m_os;
 }; //class RepoIndexTextFormat ;
 
