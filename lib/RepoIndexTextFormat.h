@@ -8,8 +8,7 @@
 class RepoIndexTextFormat
 {
 public:
-  RepoIndexTextFormat(const std::string& dir)
-    : m_dir(dir) {}
+  RepoIndexTextFormat(const std::string& dir);
 
 public:
   void init();
@@ -61,6 +60,7 @@ private:
 
 private:
   const std::string m_dir;
+  const std::string m_rpmsFileName, m_providesFileName, m_tmpFileName;
   StringToIntMap m_provideMap;
   ProvideResolvingItemVector m_resolvingItems;
   SizeVector m_resolvingData;

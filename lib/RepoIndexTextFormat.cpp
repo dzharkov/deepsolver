@@ -3,17 +3,24 @@
 #include"RepoIndexTextFormat.h"
 #include"IndexCoreException.h"
 
-#define TMP_FILE "tmp_file1"
+#define TMP_FILE "tmp_packages_data"
 
 #define NAME_STR "name="
 #define PROVIDES_STR "provides:"
 
+RepoIndexTextFormat::RepoIndexTextFormat(const std::string& dir)
+  : m_dir(dir),
+    m_rpmsFileName(concatUnixPath(dir, REPO_INDEX_RPMS_DATA_FILE)),
+    m_providesFileName(concatUnixPath(dir, REPO_INDEX_PROVIDES_DATA_FILE)),
+    m_tmpFileName(concatUnixPath(dir, TMP_FILE))
+{
+}
+
 void RepoIndexTextFormat::init()
 {
-  const std::string tmpFileName = concatUnixPath(m_dir, TMP_FILE);
-  m_os.open(tmpFileName.c_str());
+  m_os.open(m_tmpFileName.c_str());
   if (!m_os)
-    INDEX_CORE_STOP("Error creating temporary file \'" + tmpFileName + "\'");
+    INDEX_CORE_STOP("Error creating temporary file \'" + m_tmpFileName + "\'");
 }
 
 void RepoIndexTextFormat::add(const PkgFile& pkgFile,
@@ -37,12 +44,10 @@ void RepoIndexTextFormat::add(const PkgFile& pkgFile,
 void RepoIndexTextFormat::commit()
 {
   m_os.close();
-  std::cout << "Preparing resolving data" << std::endl;
   prepareResolvingData();
-  std::cout << "Second phase" << std::endl;
   secondPhase();
-  std::cout << "writeProvideResolvingData()" << std::endl;
   writeProvideResolvingData();
+  File::unlink(m_tmpFileName);
 }
 
 void RepoIndexTextFormat::firstProvideReg(const std::string& pkgName, const std::string& provideName)
@@ -103,13 +108,13 @@ size_t RepoIndexTextFormat::fillProvideResolvingItemsPos(ProvideResolvingItemVec
 void RepoIndexTextFormat::secondPhase()
 {
   const std::string tmpFileName = concatUnixPath(m_dir, TMP_FILE);
-  const std::string resFileName = concatUnixPath(m_dir, "rpms.data");//FIXME:define a constant;
+
   std::ifstream is(tmpFileName.c_str());
   if (!is)
     INDEX_CORE_STOP("Could not open temporary file \'" + tmpFileName + "\' for second phase processing");
-  std::ofstream os(resFileName.c_str());
+  std::ofstream os(m_rpmsFileName.c_str());
   if (!os)
-    INDEX_CORE_STOP("Could not create file with package headers information \'" + resFileName + "\'");
+    INDEX_CORE_STOP("Could not create file with package headers information \'" + m_rpmsFileName + "\'");
   std::string name;
   while (1)
     {
@@ -154,10 +159,9 @@ void RepoIndexTextFormat::secondProvideReg(const std::string& pkgName, const std
 
 void RepoIndexTextFormat::writeProvideResolvingData()
 {
-  const std::string providesFileName = concatUnixPath(m_dir, "provides.data");//FIXME:
-  std::ofstream os(providesFileName.c_str());
+  std::ofstream os(m_providesFileName.c_str());
   if (!os)
-    INDEX_CORE_STOP("Could not create file for provides data \'" + providesFileName + "\'");
+    INDEX_CORE_STOP("Could not create file for provides data \'" + m_providesFileName + "\'");
   for(ProvideResolvingItemVector::size_type i = 0;i < m_resolvingItems.size();i++)
     {
       const ProvideResolvingItem& item = m_resolvingItems[i];

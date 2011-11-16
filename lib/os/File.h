@@ -43,6 +43,7 @@ public:
   }
 
   static std::string baseName(const std::string& fileName);
+  static void unlink(const std::string& fileName);
 
 protected:
   int m_fd;

@@ -154,3 +154,8 @@ size_t File::write(const void* buf, size_t bufSize)
     SYS_STOP("write()");
   return (size_t)res;
 }
+
+void File::unlink(const std::string& fileName)
+{
+  TRY_SYS_CALL(::unlink(fileName.c_str()) == 0, "unlink(" + fileName + ")");
+}
