@@ -1,3 +1,6 @@
+//FIXME:space escaping;
+//FIXME:provides filtering;
+//FIXME:change log;
 
 #include"basic-header.h"
 #include"RepoIndexTextFormat.h"
@@ -6,7 +9,45 @@
 #define TMP_FILE "tmp_packages_data"
 
 #define NAME_STR "name="
+#define EPOCH_STR "epoch="
+#define VERSION_STR "version="
+#define RELEASE_STR "release="
+#define ARCH_STR "arch="
+#define URL_STR "URL="
+#define LICENSE_STR "license="
+#define PACKAGER_STR "packager="
+#define SUMMARY_STr "summary="
+#define DESCRIPTION_STR "descr="
+
 #define PROVIDES_STR "provides:"
+#define REQUIRES_STR "requires:"
+#define CONFLICTS_STR "conflicts:"
+#define OBSOLETES_STR "obsoletes:"
+
+static std::string encodeDescr(const std::string& s)
+{
+  std::string r;
+  for(std::string::size_type i = 0;i < s.length();i++)
+    {
+      switch(s[i])
+	{
+	case '\\':
+	  r += "\\\\";
+	  break;
+	case '\n':
+	  r += "\\n";
+	  break;
+	case '\r':
+	  continue;
+	case '\t':
+	  r += "\\t";
+	  break;
+	default:
+	  r += s[i];
+	}; //switch(s[i]);
+    }
+  return r;
+}
 
 RepoIndexTextFormat::RepoIndexTextFormat(const std::string& dir)
   : m_dir(dir),
@@ -31,14 +72,32 @@ void RepoIndexTextFormat::add(const PkgFile& pkgFile,
 			      const StringList& fileList)
 {
   m_os << "[" << File::baseName(pkgFile.fileName) << "]" << std::endl;
-  m_os << "name=" << pkgFile.name << std::endl;
-  m_os << "version=" << pkgFile.version << std::endl;
+  m_os << NAME_STR << pkgFile.name << std::endl;
+  m_os << EPOCH_STR << pkgFile.epoch << std::endl;
+  m_os << VERSION_STR << pkgFile.version << std::endl;
+  m_os << RELEASE_STR << pkgFile.release << std::endl;
+  m_os << ARCH_STR << pkgFile.arch << std::endl;
+  m_os << URL_STR << pkgFile.url << std::endl;
+  m_os << LICENSE_STR << pkgFile.license << std::endl;
+  m_os << PACKAGER_STR << pkgFile.packager << std::endl;
+  m_os << SUMMARY_STr << pkgFile.summary << std::endl;
+  m_os << DESCRIPTION_STR << encodeDescr(pkgFile.description) << std::endl;
+
   for(NamedPkgRelList::const_iterator it = provides.begin();it != provides.end();it++)
     {
       m_os << PROVIDES_STR << (*it) << std::endl;
       firstProvideReg(pkgFile.name, it->pkgName);
     }
-    m_os << std::endl;
+  for(NamedPkgRelList::const_iterator it = requires.begin();it != requires.end();it++)
+    m_os << REQUIRES_STR << (*it) << std::endl;
+  for(NamedPkgRelList::const_iterator it = conflicts.begin();it != conflicts.end();it++)
+    m_os << CONFLICTS_STR << (*it) << std::endl;
+  for(NamedPkgRelList::const_iterator it = obsoletes.begin();it != obsoletes.end();it++)
+    m_os << OBSOLETES_STR << (*it) << std::endl;
+
+
+
+  m_os << std::endl;
 }
 
 void RepoIndexTextFormat::commit()

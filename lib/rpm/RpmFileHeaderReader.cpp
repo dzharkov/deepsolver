@@ -50,19 +50,17 @@ void RpmFileHeaderReader::close()
 void RpmFileHeaderReader::fillMainData(PkgFile& pkg)
 {
   getStringTagValue(RPMTAG_NAME, pkg.name);
-  //Epoch may be omitted, no need to check return code; 
   int32_t epoch = 0;
   getInt32TagValueRelaxed(RPMTAG_EPOCH, epoch);
   pkg.epoch = epoch;
   getStringTagValue(RPMTAG_VERSION, pkg.version);
   getStringTagValue(RPMTAG_RELEASE, pkg.release);
   getStringTagValue(RPMTAG_ARCH, pkg.arch);
-  //URL may be omitted, no need to check return code; 
   pkg.url.erase();
   getStringTagValueRelaxed(RPMTAG_URL, pkg.url);
-  //Packager may be omitted, no need to check return code; 
   pkg.packager.erase();
   getStringTagValueRelaxed(RPMTAG_PACKAGER, pkg.packager);
+  getStringTagValueRelaxed(RPMTAG_LICENSE, pkg.license);
   //No i18n processing, is it required here?
   getStringTagValue(RPMTAG_SUMMARY, pkg.summary);
   //No i18n processing, is it required here?
