@@ -52,9 +52,12 @@ private:
 
 private:
   void firstProvideReg(const std::string& pkgName, const std::string& provideName);
+  void secondProvideReg(const std::string& pkgName, const std::string& provideName);
   void prepareResolvingData();
   size_t fillProvideResolvingItemsPos(ProvideResolvingItemVector& v);
-  ProvideResolvingItemVector::size_type findProvideResolvingItem(const ProvideResolvingItemVector& v, const std::string& name);
+  ProvideResolvingItemVector::size_type findProvideResolvingItem(const std::string& name);
+  void writeProvideResolvingData();
+  void secondPhase();
 
 private:
   const std::string m_dir;

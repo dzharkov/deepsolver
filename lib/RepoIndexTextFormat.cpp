@@ -5,6 +5,9 @@
 
 #define TMP_FILE "tmp_file1"
 
+#define NAME_STR "name="
+#define PROVIDES_STR "provides:"
+
 void RepoIndexTextFormat::init()
 {
   const std::string tmpFileName = concatUnixPath(m_dir, TMP_FILE);
@@ -25,7 +28,7 @@ void RepoIndexTextFormat::add(const PkgFile& pkgFile,
   m_os << "version=" << pkgFile.version << std::endl;
   for(NamedPkgRelList::const_iterator it = provides.begin();it != provides.end();it++)
     {
-      m_os << "provides:" << (*it) << std::endl;
+      m_os << PROVIDES_STR << (*it) << std::endl;
       firstProvideReg(pkgFile.name, it->pkgName);
     }
     m_os << std::endl;
@@ -34,7 +37,12 @@ void RepoIndexTextFormat::add(const PkgFile& pkgFile,
 void RepoIndexTextFormat::commit()
 {
   m_os.close();
+  std::cout << "Preparing resolving data" << std::endl;
   prepareResolvingData();
+  std::cout << "Second phase" << std::endl;
+  secondPhase();
+  std::cout << "writeProvideResolvingData()" << std::endl;
+  writeProvideResolvingData();
 }
 
 void RepoIndexTextFormat::firstProvideReg(const std::string& pkgName, const std::string& provideName)
@@ -61,23 +69,19 @@ void RepoIndexTextFormat::prepareResolvingData()
   m_resolvingData.resize(totalCount);
   for(SizeVector::size_type i = 0;i < m_resolvingData.size();i++)
     m_resolvingData[i] = (size_t) -1;
-  std::cout << "ready!" << std::endl;
-
-    std::cout << "totalCount=" << totalCount << std::endl;
-    while(1);
 }
 
-RepoIndexTextFormat::ProvideResolvingItemVector::size_type RepoIndexTextFormat::findProvideResolvingItem(const ProvideResolvingItemVector& v, const std::string& name)
+RepoIndexTextFormat::ProvideResolvingItemVector::size_type RepoIndexTextFormat::findProvideResolvingItem(const std::string& name)
 {
-  assert(!v.empty());
-  ProvideResolvingItemVector::size_type l = 0, r = v.size();
+  assert(!m_resolvingItems.empty());
+  ProvideResolvingItemVector::size_type l = 0, r = m_resolvingItems.size();
   while(l < r)
     {
       const ProvideResolvingItemVector::size_type middle = (l + r) / 2;
-      assert(middle < v.size());
-      if (v[middle].name == name)
+      assert(middle < m_resolvingItems.size());
+      if (m_resolvingItems[middle].name == name)
 	return middle;
-      if (v[middle].name > name)
+      if (m_resolvingItems[middle].name > name)
 	r = middle; else
 	l = middle;
     }
@@ -94,4 +98,77 @@ size_t RepoIndexTextFormat::fillProvideResolvingItemsPos(ProvideResolvingItemVec
       c += v[i].count;
     }
   return c;
+}
+
+void RepoIndexTextFormat::secondPhase()
+{
+  const std::string tmpFileName = concatUnixPath(m_dir, TMP_FILE);
+  const std::string resFileName = concatUnixPath(m_dir, "rpms.data");//FIXME:define a constant;
+  std::ifstream is(tmpFileName.c_str());
+  if (!is)
+    INDEX_CORE_STOP("Could not open temporary file \'" + tmpFileName + "\' for second phase processing");
+  std::ofstream os(resFileName.c_str());
+  if (!os)
+    INDEX_CORE_STOP("Could not create file with package headers information \'" + resFileName + "\'");
+  std::string name;
+  while (1)
+    {
+      std::string line;
+      std::getline(is, line);
+      if (!is)
+	break;
+      std::string tail;
+      if (stringBegins(line, NAME_STR, tail))
+	name = tail;
+      if (!stringBegins(line, PROVIDES_STR, tail))
+	{
+	  os << line << std::endl;
+	  continue;
+	}
+      const std::string::size_type spacePos = tail.find(" ");
+      const std::string provideName = spacePos != std::string::npos?tail.substr(0, spacePos):tail;
+      assert(!provideName.empty());
+      assert(!name.empty());
+      secondProvideReg(name, provideName);
+      //FIXME:provide filtering;
+      os << line << std::endl;
+    } //while(1);
+  writeProvideResolvingData();
+}
+
+void RepoIndexTextFormat::secondProvideReg(const std::string& pkgName, const std::string& provideName)
+{
+  //  std::cout << "secondProvideReg(" << pkgName << ", " << provideName << ")" << std::endl;
+  const ProvideResolvingItemVector::size_type itemIndex = findProvideResolvingItem(provideName);
+  assert(itemIndex < m_resolvingItems.size());
+  const ProvideResolvingItem& item = m_resolvingItems[itemIndex];
+  const ProvideResolvingItemVector::size_type pkgIndex = findProvideResolvingItem(pkgName);
+  assert(pkgIndex < m_resolvingItems.size());
+  SizeVector::size_type i = item.pos;;
+  while(i < item.pos + item.count && m_resolvingData[i] != (size_t)-1)
+    i++;
+  assert(i <item.pos + item.count);
+  assert(i < m_resolvingData.size());
+  m_resolvingData[i] = pkgIndex;
+}
+
+void RepoIndexTextFormat::writeProvideResolvingData()
+{
+  const std::string providesFileName = concatUnixPath(m_dir, "provides.data");//FIXME:
+  std::ofstream os(providesFileName.c_str());
+  if (!os)
+    INDEX_CORE_STOP("Could not create file for provides data \'" + providesFileName + "\'");
+  for(ProvideResolvingItemVector::size_type i = 0;i < m_resolvingItems.size();i++)
+    {
+      const ProvideResolvingItem& item = m_resolvingItems[i];
+      if (item.count == 0)
+	continue;
+      os << "[" << item.name << "]" << std::endl;
+      for(SizeVector::size_type k = item.pos;k < item.pos + item.count && m_resolvingData[k] != (size_t)-1;k++)
+	{
+	  assert(m_resolvingData[k] < m_resolvingItems.size());
+	  os << m_resolvingItems[m_resolvingData[k]].name << std::endl;
+	}
+      os << std::endl;
+    }
 }
