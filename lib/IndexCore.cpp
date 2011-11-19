@@ -4,6 +4,36 @@
 #include"RepoIndexInfoFile.h"
 #include"RepoIndexTextFormat.h"
 #include"rpm/RpmFile.h"
+#include"rpm/RpmFileHeaderReader.h"
+
+static void collectRequires(const std::string& dirName, StringSet& res)
+{
+  std::auto_ptr<Directory::Iterator> it = Directory::enumerate(dirName);
+  while(it->moveNext())
+    {
+      if (it->getName() == "." || it->getName() == "..")
+	continue;
+      if (!checkExtension(it->getName(), ".rpm"))
+	continue;
+      NamedPkgRelList requires;
+      RpmFileHeaderReader reader;
+      reader.load(it->getFullPath());
+      reader.fillRequires(requires);
+      for(NamedPkgRelList::const_iterator it = requires.begin();it != requires.end();it++)
+	{
+	  StringSet::iterator resIt = res.find(it->pkgName);
+	  if (resIt == res.end())
+	    res.insert(it->pkgName);
+	}
+    }
+}
+
+static void collectRequiresFromDirs(const StringList& dirs, StringSet& res)
+{
+  res.clear();
+  for(StringList::const_iterator it = dirs.begin();it != dirs.end();it++)
+    collectRequires(*it, res);
+}
 
 void IndexCore::build(const RepoIndexParams& params)
 {

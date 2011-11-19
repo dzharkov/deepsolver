@@ -8,7 +8,7 @@
 class RepoIndexTextFormat
 {
 public:
-  RepoIndexTextFormat(const std::string& dir);
+  RepoIndexTextFormat(const std::string& dir, bool filterProvidesByRequires, const StringSet& additionalRequires, const StringList& filterProvidesByDirs);
 
 public:
   void init();
@@ -57,14 +57,20 @@ private:
   ProvideResolvingItemVector::size_type findProvideResolvingItem(const std::string& name);
   void writeProvideResolvingData();
   void secondPhase();
+  void additionalPhase();
 
 private:
   const std::string m_dir;
-  const std::string m_rpmsFileName, m_providesFileName, m_tmpFileName;
+  const std::string m_rpmsFileName, m_providesFileName;
+  std::string m_tmpFileName;
   StringToIntMap m_provideMap;
   ProvideResolvingItemVector m_resolvingItems;
   SizeVector m_resolvingData;
   std::ofstream m_os;
+  const bool m_filterProvidesByRequires;
+  const StringSet& m_additionalRequires;
+  const StringList& m_filterProvidesByDirs;
+  StringSet m_requiresSet;
 }; //class RepoIndexTextFormat ;
 
 #endif //FIXME_REPO_INDEX_TEXT_FORMAT_H;

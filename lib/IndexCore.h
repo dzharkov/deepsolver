@@ -19,7 +19,10 @@ public:
   };
 
   RepoIndexParams()
-    : compressionType(DEFAULT_REPO_INDEX_COMPRESSION_TYPE), formatType(DEFAULT_REPO_INDEX_FORMAT_TYPE) {}//Real values are defined in DefaultValues.h;
+    : compressionType(DEFAULT_REPO_INDEX_COMPRESSION_TYPE), //Real value is defined in DefaultValues.h;
+      formatType(DEFAULT_REPO_INDEX_FORMAT_TYPE), //Real value is defined in DefaultValues.h;
+      provideFilteringByRequires(0)
+  {}
 
 public:
   char compressionType;//Must be exactly signed for error value indications;
@@ -27,6 +30,10 @@ public:
   std::string arch;
   std::string topDir;
   StringToStringMap userParams;
+  //If the following list is empty provide filtering by directories is disabled;
+  StringList provideFilterDirs;
+  bool provideFilteringByRequires;
+  StringList takeRequiresFromPackageDirs;
 }; //class RepoIndexParams;
 
 class IndexCore

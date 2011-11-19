@@ -6,7 +6,9 @@
 #include"RepoIndexTextFormat.h"
 #include"IndexCoreException.h"
 
-#define TMP_FILE "tmp_packages_data"
+#define TMP_FILE "tmp_packages_data1"
+#define TMP_FILE_ADDITIONAL "tmp_packages_data2"
+
 
 #define NAME_STR "name="
 #define EPOCH_STR "epoch="
@@ -23,6 +25,33 @@
 #define REQUIRES_STR "requires:"
 #define CONFLICTS_STR "conflicts:"
 #define OBSOLETES_STR "obsoletes:"
+
+static std::string saveNamedPkgRel(const NamedPkgRel& r)
+{
+  std::ostringstream s;
+  std::string name;
+  for(std::string::size_type i = 0;i < r.pkgName.length();i++)
+    if (r.pkgName[i] == ' ')
+      name += "\\ "; else
+      name += r.pkgName[i];
+  s << name;
+  if (r.ver.empty())
+    return s.str();
+  const bool less = r.type & NamedPkgRel::Less, equals = r.type & NamedPkgRel::Equals, greater = r.type & NamedPkgRel::Greater;
+  assert(!less || !greater);
+  std::string t;
+  if (less)
+    t += "<";
+  if (equals)
+    t += "=";
+  if (greater)
+    t += ">";
+  s << " " << t << " " << r.ver;
+  return s.str();
+}
+
+
+
 
 static std::string encodeDescr(const std::string& s)
 {
@@ -49,11 +78,25 @@ static std::string encodeDescr(const std::string& s)
   return r;
 }
 
-RepoIndexTextFormat::RepoIndexTextFormat(const std::string& dir)
+static bool fileFromDirs(const std::string& fileName, const StringList& dirs)
+{
+  std::string tail;
+  for(StringList::const_iterator it = dirs.begin();it != dirs.end();it++)
+    {
+      if (stringBegins(fileName, *it, tail))
+	return 1;
+    }
+  return 0;
+}
+
+RepoIndexTextFormat::RepoIndexTextFormat(const std::string& dir, bool filterProvidesByRequires, const StringSet& additionalRequires, const StringList& filterProvidesByDirs)
   : m_dir(dir),
     m_rpmsFileName(concatUnixPath(dir, REPO_INDEX_RPMS_DATA_FILE)),
     m_providesFileName(concatUnixPath(dir, REPO_INDEX_PROVIDES_DATA_FILE)),
-    m_tmpFileName(concatUnixPath(dir, TMP_FILE))
+    m_tmpFileName(concatUnixPath(dir, TMP_FILE)),
+    m_filterProvidesByRequires(filterProvidesByRequires),
+    m_additionalRequires(additionalRequires),
+    m_filterProvidesByDirs(filterProvidesByDirs)
 {
 }
 
@@ -82,31 +125,99 @@ void RepoIndexTextFormat::add(const PkgFile& pkgFile,
   m_os << PACKAGER_STR << pkgFile.packager << std::endl;
   m_os << SUMMARY_STr << pkgFile.summary << std::endl;
   m_os << DESCRIPTION_STR << encodeDescr(pkgFile.description) << std::endl;
-
   for(NamedPkgRelList::const_iterator it = provides.begin();it != provides.end();it++)
     {
-      m_os << PROVIDES_STR << (*it) << std::endl;
+      /*
+       * The following operation must be done in both cases: in filtering by
+       * requires mode and without filtering. If there is no filtering we just
+       * saving all provides, if filtering is enabled we will proceed real
+       * filtering on additional phase.
+       */
+      //But registration must be done only if we have no additional phase ;
+      if (!m_filterProvidesByRequires)
+	m_os << PROVIDES_STR << saveNamedPkgRel(*it) << std::endl;
       firstProvideReg(pkgFile.name, it->pkgName);
     }
+  for(StringList::const_iterator it = fileList.begin();it != fileList.end();it++)
+    /*
+     * If filtering by requires is enabled we are writing all possible
+     * provides to filter them on additional phase. If filterProvidesByDirs
+     * string list is empty it means filtering by directories is disabled and
+     * we also must write current file as provides. If filtering by
+     * directories is enabled we are writing file as provides only if its
+     * directory presents in directory list.
+     */
+    if (m_filterProvidesByRequires || m_filterProvidesByDirs.empty() || fileFromDirs(*it, m_filterProvidesByDirs))
+      {
+	m_os << PROVIDES_STR << *it << std::endl;
+	//But we are performing registration only if there is no additional phase ;
+	if (!m_filterProvidesByRequires)
+	  firstProvideReg(pkgFile.name, *it);
+      }
   for(NamedPkgRelList::const_iterator it = requires.begin();it != requires.end();it++)
-    m_os << REQUIRES_STR << (*it) << std::endl;
+    {
+      m_os << REQUIRES_STR << saveNamedPkgRel(*it) << std::endl;
+      if (m_filterProvidesByRequires)
+	m_requiresSet.insert(it->pkgName);
+    }
   for(NamedPkgRelList::const_iterator it = conflicts.begin();it != conflicts.end();it++)
-    m_os << CONFLICTS_STR << (*it) << std::endl;
+    m_os << CONFLICTS_STR << saveNamedPkgRel(*it) << std::endl;
   for(NamedPkgRelList::const_iterator it = obsoletes.begin();it != obsoletes.end();it++)
-    m_os << OBSOLETES_STR << (*it) << std::endl;
-
-
-
+    m_os << OBSOLETES_STR << saveNamedPkgRel(*it) << std::endl;
   m_os << std::endl;
 }
 
 void RepoIndexTextFormat::commit()
 {
   m_os.close();
+  m_tmpFileName = concatUnixPath(m_dir, TMP_FILE);
+  if (m_filterProvidesByRequires)
+    additionalPhase();
   prepareResolvingData();
   secondPhase();
   writeProvideResolvingData();
   File::unlink(m_tmpFileName);
+}
+
+void RepoIndexTextFormat::additionalPhase()
+{
+  assert(m_provideMap.empty());
+  assert(m_resolvingItems.empty());
+  assert(m_resolvingData.empty());
+  assert(m_filterProvidesByRequires);
+  const std::string inputFileName = concatUnixPath(m_dir, TMP_FILE), outputFileName = concatUnixPath(m_dir, TMP_FILE_ADDITIONAL);
+  m_tmpFileName = outputFileName;//Changing name of a file to be processed on the second phase;
+  std::ifstream is(inputFileName.c_str());
+  if (!is)
+    INDEX_CORE_STOP("Could not open for reading previously created temporary file \'" + inputFileName + "\'");
+  std::ofstream os(outputFileName.c_str());
+  if (!os)
+    INDEX_CORE_STOP("Could not create new temporary file for data on additional  phase \'" + outputFileName + "\'");
+  while (1)
+    {
+      std::string line;
+      std::getline(is, line);
+      if (!is)
+	break;
+      std::string tail;
+      if (!stringBegins(line, PROVIDES_STR, tail))
+	{
+	  os << line << std::endl;
+	  continue;
+	}
+      const std::string::size_type spacePos = tail.find(" ");
+      const std::string provideName = spacePos != std::string::npos?tail.substr(0, spacePos):tail;//FIXME:spaces in pkgName;
+      assert(!provideName.empty());
+      //If provide does not present in non empty m_filterProvidesByDirs we skip it in any case;
+      if (!m_filterProvidesByDirs.empty() && !fileFromDirs(provideName, m_filterProvidesByDirs))//FIXME:it can be not provide by file name!!!
+	continue;
+      if (m_requiresSet.find(provideName) != m_requiresSet.end() || m_additionalRequires.find(provideName) != m_additionalRequires.end())
+	continue;
+      os << line << std::endl;
+      //FIXME:first provide reg;
+    } //while();
+  is.close();
+  File::unlink(inputFileName);
 }
 
 void RepoIndexTextFormat::firstProvideReg(const std::string& pkgName, const std::string& provideName)
@@ -135,42 +246,12 @@ void RepoIndexTextFormat::prepareResolvingData()
     m_resolvingData[i] = (size_t) -1;
 }
 
-RepoIndexTextFormat::ProvideResolvingItemVector::size_type RepoIndexTextFormat::findProvideResolvingItem(const std::string& name)
-{
-  assert(!m_resolvingItems.empty());
-  ProvideResolvingItemVector::size_type l = 0, r = m_resolvingItems.size();
-  while(l < r)
-    {
-      const ProvideResolvingItemVector::size_type middle = (l + r) / 2;
-      assert(middle < m_resolvingItems.size());
-      if (m_resolvingItems[middle].name == name)
-	return middle;
-      if (m_resolvingItems[middle].name > name)
-	r = middle; else
-	l = middle;
-    }
-  assert(0);
-  return 0;//Just to reduce warning messages;
-}
-
-size_t RepoIndexTextFormat::fillProvideResolvingItemsPos(ProvideResolvingItemVector& v)
-{
-  size_t c = 0;
-  for(ProvideResolvingItemVector::size_type i = 0;i < v.size();i++)
-    {
-      v[i].pos = c;
-      c += v[i].count;
-    }
-  return c;
-}
-
 void RepoIndexTextFormat::secondPhase()
 {
-  const std::string tmpFileName = concatUnixPath(m_dir, TMP_FILE);
-
-  std::ifstream is(tmpFileName.c_str());
+  assert(!m_tmpFileName.empty());
+  std::ifstream is(m_tmpFileName.c_str());
   if (!is)
-    INDEX_CORE_STOP("Could not open temporary file \'" + tmpFileName + "\' for second phase processing");
+    INDEX_CORE_STOP("Could not open temporary file \'" + m_tmpFileName + "\' for second phase processing");
   std::ofstream os(m_rpmsFileName.c_str());
   if (!os)
     INDEX_CORE_STOP("Could not create file with package headers information \'" + m_rpmsFileName + "\'");
@@ -197,7 +278,6 @@ void RepoIndexTextFormat::secondPhase()
       //FIXME:provide filtering;
       os << line << std::endl;
     } //while(1);
-  writeProvideResolvingData();
 }
 
 void RepoIndexTextFormat::secondProvideReg(const std::string& pkgName, const std::string& provideName)
@@ -234,4 +314,33 @@ void RepoIndexTextFormat::writeProvideResolvingData()
 	}
       os << std::endl;
     }
+}
+
+RepoIndexTextFormat::ProvideResolvingItemVector::size_type RepoIndexTextFormat::findProvideResolvingItem(const std::string& name)
+{
+  assert(!m_resolvingItems.empty());
+  ProvideResolvingItemVector::size_type l = 0, r = m_resolvingItems.size();
+  while(l < r)
+    {
+      const ProvideResolvingItemVector::size_type middle = (l + r) / 2;
+      assert(middle < m_resolvingItems.size());
+      if (m_resolvingItems[middle].name == name)
+	return middle;
+      if (m_resolvingItems[middle].name > name)
+	r = middle; else
+	l = middle;
+    }
+  assert(0);
+  return 0;//Just to reduce warning messages;
+}
+
+size_t RepoIndexTextFormat::fillProvideResolvingItemsPos(ProvideResolvingItemVector& v)
+{
+  size_t c = 0;
+  for(ProvideResolvingItemVector::size_type i = 0;i < v.size();i++)
+    {
+      v[i].pos = c;
+      c += v[i].count;
+    }
+  return c;
 }
