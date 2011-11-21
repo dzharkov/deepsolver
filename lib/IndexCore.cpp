@@ -48,7 +48,10 @@ void IndexCore::build(const RepoIndexParams& params)
 void IndexCore::processRpms(const std::string& indexDir, const std::string& pkgDir, const RepoIndexParams& params)
 {
   assert(params.formatType == RepoIndexParams::FormatTypeText);//FIXME:binary format support;
-  RepoIndexTextFormat handler(indexDir);
+  StringSet additionalRequires;
+  if (params.provideFilteringByRequires)
+    collectRequiresFromDirs(params.provideFilterDirs, additionalRequires);
+  RepoIndexTextFormat handler(indexDir, params.provideFilteringByRequires, additionalRequires, params.provideFilterDirs);
   handler.init();
   std::auto_ptr<Directory::Iterator> it = Directory::enumerate(pkgDir);
   while(it->moveNext())

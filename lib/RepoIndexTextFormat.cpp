@@ -9,7 +9,6 @@
 #define TMP_FILE "tmp_packages_data1"
 #define TMP_FILE_ADDITIONAL "tmp_packages_data2"
 
-
 #define NAME_STR "name="
 #define EPOCH_STR "epoch="
 #define VERSION_STR "version="
@@ -25,6 +24,27 @@
 #define REQUIRES_STR "requires:"
 #define CONFLICTS_STR "conflicts:"
 #define OBSOLETES_STR "obsoletes:"
+
+static std::string getPkgRelName(const std::string& line)
+{
+  //Name is stored at the beginning of line until first space without previously used backslash;
+  std::string res;
+  for(std::string::size_type i = 0;i < line.length();i++)
+    {
+      if (line[i] == '\\')
+	{
+	  i++;
+	  if (i < line.length())
+	    res += line[i]; else 
+	    res += '\\';
+	  continue;
+	}
+      if (line[i] == ' ')
+	return res;
+      res += line[i];
+    } //for();
+  return res;
+}
 
 static std::string saveNamedPkgRel(const NamedPkgRel& r)
 {
@@ -193,6 +213,7 @@ void RepoIndexTextFormat::additionalPhase()
   std::ofstream os(outputFileName.c_str());
   if (!os)
     INDEX_CORE_STOP("Could not create new temporary file for data on additional  phase \'" + outputFileName + "\'");
+  std::string name;
   while (1)
     {
       std::string line;
@@ -200,21 +221,25 @@ void RepoIndexTextFormat::additionalPhase()
       if (!is)
 	break;
       std::string tail;
+      if (stringBegins(line, NAME_STR, tail))
+	{
+	  name = tail;
+	  os << line << std::endl;
+	  continue;
+	}
       if (!stringBegins(line, PROVIDES_STR, tail))
 	{
 	  os << line << std::endl;
 	  continue;
 	}
-      const std::string::size_type spacePos = tail.find(" ");
-      const std::string provideName = spacePos != std::string::npos?tail.substr(0, spacePos):tail;//FIXME:spaces in pkgName;
+      const std::string provideName = getPkgRelName(tail);
       assert(!provideName.empty());
-      //If provide does not present in non empty m_filterProvidesByDirs we skip it in any case;
-      if (!m_filterProvidesByDirs.empty() && !fileFromDirs(provideName, m_filterProvidesByDirs))//FIXME:it can be not provide by file name!!!
-	continue;
-      if (m_requiresSet.find(provideName) != m_requiresSet.end() || m_additionalRequires.find(provideName) != m_additionalRequires.end())
-	continue;
-      os << line << std::endl;
-      //FIXME:first provide reg;
+      if (m_requiresSet.find(provideName) != m_requiresSet.end() || m_additionalRequires.find(provideName) != m_additionalRequires.end() ||
+	  (!m_filterProvidesByDirs.empty() && fileFromDirs(provideName, m_filterProvidesByDirs)))
+	{
+	  os << line << std::endl;
+	  firstProvideReg(name, provideName);
+	}
     } //while();
   is.close();
   File::unlink(inputFileName);
