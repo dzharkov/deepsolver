@@ -1,5 +1,4 @@
 
-
 #include"basic-header.h"//FIXME:
 #include"IndexCore.h"
 #include"rpm/RpmException.h"
@@ -22,6 +21,25 @@ public:
 private:
   std::ostream& m_stream;
 }; //class WarningHandler;
+
+static void splitColonDelimitedList(const std::string& str, StringList& res)
+{
+  std::string s;
+  for(std::string::size_type i = 0;i < str.length();i++)
+    {
+      if (str[i] == ':')
+	{
+	  if (s.empty())
+	    continue;
+	  res.push_back(s);
+	  s.erase();
+	  continue;
+	}
+      s += str[i];
+    } //for();
+  if (!s.empty())
+    res.push_back(s);
+}
 
 static bool splitUserParam(const std::string& str, std::string& name, std::string& value)
 {
@@ -51,7 +69,10 @@ static void printHelp()
 	 "Valid command line options are:\n"
 	 "\t-h - print this help screen;\n"
 	 "\t-c TYPE - choose compression type: none or gzip (default is gzip);\n"
+	 "\t-d DIRLIST - add colon-delimited list of directories to take requires from for provides filtering;\n"
 	 "\t-f FORMAT - choose data format: binary or text (default is text);\n"
+	 "\t-p DIRLIST - enable provides filtering by colon-delimited list of directories;\n"
+	 "\t-r - enable provides filtering by used requires (see also \'-d\' option);\n"
 	 "\t-u NAME=VALUE - add a user defined parameter to repository index information file.\n\n"
 	 "If directory is not specified current directory is used to search packages of repository.\n"
 	 );
@@ -92,7 +113,7 @@ static bool parseCmdLine(int argc, char* argv[])
 {
   while(1)
     {
-      const int p = getopt(argc, argv, "c:f:u:h:");
+      const int p = getopt(argc, argv, "c:d:f:hu:rp:");
       if (p == -1)
 	break;
       if (p == '?')
@@ -102,6 +123,15 @@ static bool parseCmdLine(int argc, char* argv[])
 	case 'h':
 	  printHelp();
 	  exit(EXIT_SUCCESS);
+	  break;
+	case 'r':
+	  params.provideFilteringByRequires = 1;
+	  break;
+	case 'd':
+	  splitColonDelimitedList(optarg, params.takeRequiresFromPackageDirs);
+	  break;
+	case 'p':
+	  splitColonDelimitedList(optarg, params.provideFilterDirs);
 	  break;
 	case 'u':
 	  if (!processUserParam(optarg))

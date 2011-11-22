@@ -1,4 +1,5 @@
 //Written with librpm-4.0.4-alt100.29;
+//FIXME:directories without files;
 
 #include"basic-header.h"
 #include"RpmFileHeaderReader.h"

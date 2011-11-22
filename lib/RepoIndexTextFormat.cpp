@@ -1,5 +1,3 @@
-//FIXME:space escaping;
-//FIXME:provides filtering;
 //FIXME:change log;
 
 #include"basic-header.h"
@@ -36,7 +34,7 @@ static std::string getPkgRelName(const std::string& line)
 	  i++;
 	  if (i < line.length())
 	    res += line[i]; else 
-	    res += '\\';
+	    return res + "\\";
 	  continue;
 	}
       if (line[i] == ' ')
@@ -51,9 +49,11 @@ static std::string saveNamedPkgRel(const NamedPkgRel& r)
   std::ostringstream s;
   std::string name;
   for(std::string::size_type i = 0;i < r.pkgName.length();i++)
-    if (r.pkgName[i] == ' ')
-      name += "\\ "; else
+    {
+      if (r.pkgName[i] == ' ' || r.pkgName[i] == '\\')
+	name += "\\";
       name += r.pkgName[i];
+    }
   s << name;
   if (r.ver.empty())
     return s.str();
@@ -70,8 +70,17 @@ static std::string saveNamedPkgRel(const NamedPkgRel& r)
   return s.str();
 }
 
-
-
+static std::string saveFileName(const std::string& fileName)
+{
+  std::string s;
+  for(std::string::size_type i = 0;i < fileName.length();i++)
+    {
+      if (fileName[i] == ' ' || fileName[i] == '\\')
+	s += "\\";
+      s += fileName[i];
+    }
+  return s;
+}
 
 static std::string encodeDescr(const std::string& s)
 {
@@ -153,10 +162,10 @@ void RepoIndexTextFormat::add(const PkgFile& pkgFile,
        * saving all provides, if filtering is enabled we will proceed real
        * filtering on additional phase.
        */
+      m_os << PROVIDES_STR << saveNamedPkgRel(*it) << std::endl;
       //But registration must be done only if we have no additional phase ;
       if (!m_filterProvidesByRequires)
-	m_os << PROVIDES_STR << saveNamedPkgRel(*it) << std::endl;
-      firstProvideReg(pkgFile.name, it->pkgName);
+	firstProvideReg(pkgFile.name, it->pkgName);
     }
   for(StringList::const_iterator it = fileList.begin();it != fileList.end();it++)
     /*
@@ -169,7 +178,7 @@ void RepoIndexTextFormat::add(const PkgFile& pkgFile,
      */
     if (m_filterProvidesByRequires || m_filterProvidesByDirs.empty() || fileFromDirs(*it, m_filterProvidesByDirs))
       {
-	m_os << PROVIDES_STR << *it << std::endl;
+	m_os << PROVIDES_STR << saveFileName(*it) << std::endl;
 	//But we are performing registration only if there is no additional phase ;
 	if (!m_filterProvidesByRequires)
 	  firstProvideReg(pkgFile.name, *it);
@@ -189,18 +198,25 @@ void RepoIndexTextFormat::add(const PkgFile& pkgFile,
 
 void RepoIndexTextFormat::commit()
 {
+  std::cout << "begin commit" << std::endl;//KILLME:
   m_os.close();
   m_tmpFileName = concatUnixPath(m_dir, TMP_FILE);
+  std::cout << "tmpFileName=" << m_tmpFileName << std::endl;
   if (m_filterProvidesByRequires)
     additionalPhase();
   prepareResolvingData();
+  std::cout << "resolving data prepared" << std::endl;
   secondPhase();
+  std::cout << "second phase completed" << std::endl;
   writeProvideResolvingData();
-  File::unlink(m_tmpFileName);
+  //FIXME:  File::unlink(m_tmpFileName);
+//KILLME:  std::cout << "Finished!!!" << std::endl;
+  while(1);
 }
 
 void RepoIndexTextFormat::additionalPhase()
 {
+  std::cout << "Beginning additional phase" << std::endl;
   assert(m_provideMap.empty());
   assert(m_resolvingItems.empty());
   assert(m_resolvingData.empty());
@@ -242,7 +258,7 @@ void RepoIndexTextFormat::additionalPhase()
 	}
     } //while();
   is.close();
-  File::unlink(inputFileName);
+  //FIXME:  File::unlink(inputFileName);
 }
 
 void RepoIndexTextFormat::firstProvideReg(const std::string& pkgName, const std::string& provideName)
@@ -295,12 +311,10 @@ void RepoIndexTextFormat::secondPhase()
 	  os << line << std::endl;
 	  continue;
 	}
-      const std::string::size_type spacePos = tail.find(" ");
-      const std::string provideName = spacePos != std::string::npos?tail.substr(0, spacePos):tail;
+      const std::string provideName = getPkgRelName(tail);
       assert(!provideName.empty());
       assert(!name.empty());
       secondProvideReg(name, provideName);
-      //FIXME:provide filtering;
       os << line << std::endl;
     } //while(1);
 }
