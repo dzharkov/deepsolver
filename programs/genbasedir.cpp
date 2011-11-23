@@ -87,9 +87,9 @@ static void printHelp()
 	 "\t-h - print this help screen;\n"
 	 "\t-c TYPE - choose compression type: none or gzip (default is gzip);\n"
 	 "\t-d DIRLIST - add colon-delimited list of directories to take requires from for provides filtering;\n"
-	 "\t-f FORMAT - choose data format: binary or text (default is text);\n"
+	 //TODO:	 "\t-f FORMAT - choose data format: binary or text (default is text);\n"
 	 "\t-p DIRLIST - enable provides filtering by colon-delimited list of directories;\n"
-	 "\t-r - enable provides filtering by used requires (see also \'-d\' option);\n"
+	 "\t-r - enable provides filtering by used requires (recommended) (see also \'-d\' option);\n"
 	 "\t-u NAME=VALUE - add a user defined parameter to repository index information file.\n\n"
 	 "If directory is not specified current directory is used to search packages of repository.\n"
 	 );
@@ -130,7 +130,7 @@ static bool parseCmdLine(int argc, char* argv[])
 {
   while(1)
     {
-      const int p = getopt(argc, argv, "c:d:f:hu:rp:");
+      const int p = getopt(argc, argv, "c:d:hu:rp:");
       if (p == -1)
 	break;
       if (p == '?')
@@ -165,6 +165,7 @@ return 0;
 	      return 0;
 	    }
 	  break;
+	  /*TODO:not implemented - not accessible;
 	case 'f':
 	  params.formatType = selectFormatType(optarg);
 	  if (params.formatType < 0)
@@ -173,6 +174,7 @@ return 0;
 	      return 0;
 	    }
 	  break;
+	  */
 	default:
 	  assert(0);
 	}; //switch(p);

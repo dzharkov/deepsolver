@@ -1,7 +1,7 @@
 //FIXME:change log;
 
 #include"basic-header.h"
-#include"RepoIndexTextFormat.h"
+#include"RepoIndexTextFormatWriter.h"
 #include"IndexCoreException.h"
 
 #define TMP_FILE "tmp_packages_data1"
@@ -118,7 +118,7 @@ static bool fileFromDirs(const std::string& fileName, const StringList& dirs)
   return 0;
 }
 
-RepoIndexTextFormat::RepoIndexTextFormat(AbstractConsoleMessages& console, const std::string& dir, bool filterProvidesByRequires, const StringSet& additionalRequires, const StringList& filterProvidesByDirs)
+RepoIndexTextFormatWriter::RepoIndexTextFormatWriter(AbstractConsoleMessages& console, const std::string& dir, bool filterProvidesByRequires, const StringSet& additionalRequires, const StringList& filterProvidesByDirs)
   : m_console(console),
     m_dir(dir),
     m_rpmsFileName(concatUnixPath(dir, REPO_INDEX_RPMS_DATA_FILE)),
@@ -130,14 +130,14 @@ RepoIndexTextFormat::RepoIndexTextFormat(AbstractConsoleMessages& console, const
 {
 }
 
-void RepoIndexTextFormat::init()
+void RepoIndexTextFormatWriter::init()
 {
   m_os.open(m_tmpFileName.c_str());
   if (!m_os)
     INDEX_CORE_STOP("Error creating temporary file \'" + m_tmpFileName + "\'");
 }
 
-void RepoIndexTextFormat::add(const PkgFile& pkgFile,
+void RepoIndexTextFormatWriter::add(const PkgFile& pkgFile,
 			      const NamedPkgRelList& provides,
 			      const NamedPkgRelList& requires,
 			      const NamedPkgRelList& conflicts,
@@ -197,7 +197,7 @@ void RepoIndexTextFormat::add(const PkgFile& pkgFile,
   m_os << std::endl;
 }
 
-void RepoIndexTextFormat::commit()
+void RepoIndexTextFormatWriter::commit()
 {
   m_os.close();
   m_tmpFileName = concatUnixPath(m_dir, TMP_FILE);
@@ -213,7 +213,7 @@ void RepoIndexTextFormat::commit()
   File::unlink(m_tmpFileName);
 }
 
-void RepoIndexTextFormat::additionalPhase()
+void RepoIndexTextFormatWriter::additionalPhase()
 {
   assert(m_provideMap.empty());
   assert(m_resolvingItems.empty());
@@ -259,7 +259,7 @@ void RepoIndexTextFormat::additionalPhase()
   //FIXME:  File::unlink(inputFileName);
 }
 
-void RepoIndexTextFormat::firstProvideReg(const std::string& pkgName, const std::string& provideName)
+void RepoIndexTextFormatWriter::firstProvideReg(const std::string& pkgName, const std::string& provideName)
 {
   StringToIntMap::iterator it;
   it = m_provideMap.find(pkgName);
@@ -271,7 +271,7 @@ void RepoIndexTextFormat::firstProvideReg(const std::string& pkgName, const std:
     it->second++;
 }
 
-void RepoIndexTextFormat::prepareResolvingData()
+void RepoIndexTextFormatWriter::prepareResolvingData()
 {
   m_resolvingItems.reserve(m_provideMap.size());
   for(StringToIntMap::const_iterator it = m_provideMap.begin();it != m_provideMap.end();it++)
@@ -285,7 +285,7 @@ void RepoIndexTextFormat::prepareResolvingData()
     m_resolvingData[i] = (size_t) -1;
 }
 
-void RepoIndexTextFormat::secondPhase()
+void RepoIndexTextFormatWriter::secondPhase()
 {
   assert(!m_tmpFileName.empty());
   std::ifstream is(m_tmpFileName.c_str());
@@ -317,7 +317,7 @@ void RepoIndexTextFormat::secondPhase()
     } //while(1);
 }
 
-void RepoIndexTextFormat::secondProvideReg(const std::string& pkgName, const std::string& provideName)
+void RepoIndexTextFormatWriter::secondProvideReg(const std::string& pkgName, const std::string& provideName)
 {
   const ProvideResolvingItemVector::size_type itemIndex = findProvideResolvingItem(provideName);
   assert(itemIndex < m_resolvingItems.size());
@@ -332,7 +332,7 @@ void RepoIndexTextFormat::secondProvideReg(const std::string& pkgName, const std
   m_resolvingData[i] = pkgIndex;
 }
 
-void RepoIndexTextFormat::writeProvideResolvingData()
+void RepoIndexTextFormatWriter::writeProvideResolvingData()
 {
   std::ofstream os(m_providesFileName.c_str());
   if (!os)
@@ -352,7 +352,7 @@ void RepoIndexTextFormat::writeProvideResolvingData()
     }
 }
 
-RepoIndexTextFormat::ProvideResolvingItemVector::size_type RepoIndexTextFormat::findProvideResolvingItem(const std::string& name)
+RepoIndexTextFormatWriter::ProvideResolvingItemVector::size_type RepoIndexTextFormatWriter::findProvideResolvingItem(const std::string& name)
 {
   assert(!m_resolvingItems.empty());
   ProvideResolvingItemVector::size_type l = 0, r = m_resolvingItems.size();
@@ -370,7 +370,7 @@ RepoIndexTextFormat::ProvideResolvingItemVector::size_type RepoIndexTextFormat::
   return 0;//Just to reduce warning messages;
 }
 
-size_t RepoIndexTextFormat::fillProvideResolvingItemsPos(ProvideResolvingItemVector& v)
+size_t RepoIndexTextFormatWriter::fillProvideResolvingItemsPos(ProvideResolvingItemVector& v)
 {
   size_t c = 0;
   for(ProvideResolvingItemVector::size_type i = 0;i < v.size();i++)

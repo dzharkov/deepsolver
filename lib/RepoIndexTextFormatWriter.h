@@ -1,15 +1,15 @@
 
-#ifndef FIXME_REPO_INDEX_TEXT_FORMAT_H
-#define FIXME_REPO_INDEX_TEXT_FORMAT_H
+#ifndef FIXME_REPO_INDEX_TEXT_FORMAT_WRITER_H
+#define FIXME_REPO_INDEX_TEXT_FORMAT_WRITER_H
 
 #include"PkgFile.h"
 #include"NamedPkgRel.h"
 #include"AbstractConsoleMessages.h"
 
-class RepoIndexTextFormat
+class RepoIndexTextFormatWriter
 {
 public:
-  RepoIndexTextFormat(AbstractConsoleMessages& console, const std::string& dir, bool filterProvidesByRequires, const StringSet& additionalRequires, const StringList& filterProvidesByDirs);
+  RepoIndexTextFormatWriter(AbstractConsoleMessages& console, const std::string& dir, bool filterProvidesByRequires, const StringSet& additionalRequires, const StringList& filterProvidesByDirs);
 
 public:
   void init();
@@ -73,6 +73,6 @@ private:
   const StringSet& m_additionalRequires;
   const StringList& m_filterProvidesByDirs;
   StringSet m_requiresSet;
-}; //class RepoIndexTextFormat ;
+}; //class RepoIndexTextFormatWriter;
 
-#endif //FIXME_REPO_INDEX_TEXT_FORMAT_H;
+#endif //FIXME_REPO_INDEX_TEXT_FORMAT_WRITER_H;

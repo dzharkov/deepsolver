@@ -2,7 +2,7 @@
 #include"basic-header.h"
 #include"IndexCore.h"
 #include"RepoIndexInfoFile.h"
-#include"RepoIndexTextFormat.h"
+#include"RepoIndexTextFormatWriter.h"
 #include"rpm/RpmFile.h"
 #include"rpm/RpmFileHeaderReader.h"
 
@@ -53,7 +53,7 @@ void IndexCore::processRpms(const std::string& indexDir, const std::string& pkgD
   StringSet additionalRequires;
   if (params.provideFilteringByRequires)
     collectRequiresFromDirs(params.provideFilterDirs, additionalRequires);
-  RepoIndexTextFormat handler(m_console, indexDir, params.provideFilteringByRequires, additionalRequires, params.provideFilterDirs);
+  RepoIndexTextFormatWriter handler(m_console, indexDir, params.provideFilteringByRequires, additionalRequires, params.provideFilterDirs);
   handler.init();
   m_console.msg() << "Looking through " << pkgDir << " to pick packages for repository index...";
   std::auto_ptr<Directory::Iterator> it = Directory::enumerate(pkgDir);

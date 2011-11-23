@@ -12,5 +12,5 @@ libfixme_a_SOURCES = \
 IndexCore.cpp \
 NamedPkgRel.cpp \
 RepoIndexInfoFile.cpp \
-RepoIndexTextFormat.cpp \
+RepoIndexTextFormatWriter.cpp \
 string-utils.cpp 
