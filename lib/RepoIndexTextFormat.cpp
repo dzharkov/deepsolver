@@ -118,8 +118,9 @@ static bool fileFromDirs(const std::string& fileName, const StringList& dirs)
   return 0;
 }
 
-RepoIndexTextFormat::RepoIndexTextFormat(const std::string& dir, bool filterProvidesByRequires, const StringSet& additionalRequires, const StringList& filterProvidesByDirs)
-  : m_dir(dir),
+RepoIndexTextFormat::RepoIndexTextFormat(AbstractConsoleMessages& console, const std::string& dir, bool filterProvidesByRequires, const StringSet& additionalRequires, const StringList& filterProvidesByDirs)
+  : m_console(console),
+    m_dir(dir),
     m_rpmsFileName(concatUnixPath(dir, REPO_INDEX_RPMS_DATA_FILE)),
     m_providesFileName(concatUnixPath(dir, REPO_INDEX_PROVIDES_DATA_FILE)),
     m_tmpFileName(concatUnixPath(dir, TMP_FILE)),
@@ -198,25 +199,22 @@ void RepoIndexTextFormat::add(const PkgFile& pkgFile,
 
 void RepoIndexTextFormat::commit()
 {
-  std::cout << "begin commit" << std::endl;//KILLME:
   m_os.close();
   m_tmpFileName = concatUnixPath(m_dir, TMP_FILE);
-  std::cout << "tmpFileName=" << m_tmpFileName << std::endl;
   if (m_filterProvidesByRequires)
-    additionalPhase();
+    {
+      m_console.msg() << "Saved " << m_requiresSet.size() << " requires from repository for provides filtering, running additional step...";
+      additionalPhase();
+      m_console.msg() << " provides filtering completed!" << std::endl;
+    }
   prepareResolvingData();
-  std::cout << "resolving data prepared" << std::endl;
   secondPhase();
-  std::cout << "second phase completed" << std::endl;
   writeProvideResolvingData();
-  //FIXME:  File::unlink(m_tmpFileName);
-//KILLME:  std::cout << "Finished!!!" << std::endl;
-  while(1);
+  File::unlink(m_tmpFileName);
 }
 
 void RepoIndexTextFormat::additionalPhase()
 {
-  std::cout << "Beginning additional phase" << std::endl;
   assert(m_provideMap.empty());
   assert(m_resolvingItems.empty());
   assert(m_resolvingData.empty());
@@ -321,13 +319,12 @@ void RepoIndexTextFormat::secondPhase()
 
 void RepoIndexTextFormat::secondProvideReg(const std::string& pkgName, const std::string& provideName)
 {
-  //  std::cout << "secondProvideReg(" << pkgName << ", " << provideName << ")" << std::endl;
   const ProvideResolvingItemVector::size_type itemIndex = findProvideResolvingItem(provideName);
   assert(itemIndex < m_resolvingItems.size());
   const ProvideResolvingItem& item = m_resolvingItems[itemIndex];
   const ProvideResolvingItemVector::size_type pkgIndex = findProvideResolvingItem(pkgName);
   assert(pkgIndex < m_resolvingItems.size());
-  SizeVector::size_type i = item.pos;;
+  SizeVector::size_type i = item.pos;
   while(i < item.pos + item.count && m_resolvingData[i] != (size_t)-1)
     i++;
   assert(i <item.pos + item.count);

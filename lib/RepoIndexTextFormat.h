@@ -4,11 +4,12 @@
 
 #include"PkgFile.h"
 #include"NamedPkgRel.h"
+#include"AbstractConsoleMessages.h"
 
 class RepoIndexTextFormat
 {
 public:
-  RepoIndexTextFormat(const std::string& dir, bool filterProvidesByRequires, const StringSet& additionalRequires, const StringList& filterProvidesByDirs);
+  RepoIndexTextFormat(AbstractConsoleMessages& console, const std::string& dir, bool filterProvidesByRequires, const StringSet& additionalRequires, const StringList& filterProvidesByDirs);
 
 public:
   void init();
@@ -60,6 +61,7 @@ private:
   void additionalPhase();
 
 private:
+  AbstractConsoleMessages& m_console;
   const std::string m_dir;
   const std::string m_rpmsFileName, m_providesFileName;
   std::string m_tmpFileName;

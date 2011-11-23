@@ -6,8 +6,9 @@
 #include"rpm/RpmFile.h"
 #include"rpm/RpmFileHeaderReader.h"
 
-static void collectRequires(const std::string& dirName, StringSet& res)
+void IndexCore::collectRequires(const std::string& dirName, StringSet& res) 
 {
+  m_console.msg() << "Collecting additional requires from " << dirName << "...";
   std::auto_ptr<Directory::Iterator> it = Directory::enumerate(dirName);
   while(it->moveNext())
     {
@@ -26,9 +27,10 @@ static void collectRequires(const std::string& dirName, StringSet& res)
 	    res.insert(it->pkgName);
 	}
     }
+  m_console.msg() << " " << res.size() << " found!" << std::endl;
 }
 
-static void collectRequiresFromDirs(const StringList& dirs, StringSet& res)
+void IndexCore::collectRequiresFromDirs(const StringList& dirs, StringSet& res)
 {
   res.clear();
   for(StringList::const_iterator it = dirs.begin();it != dirs.end();it++)
@@ -51,9 +53,11 @@ void IndexCore::processRpms(const std::string& indexDir, const std::string& pkgD
   StringSet additionalRequires;
   if (params.provideFilteringByRequires)
     collectRequiresFromDirs(params.provideFilterDirs, additionalRequires);
-  RepoIndexTextFormat handler(indexDir, params.provideFilteringByRequires, additionalRequires, params.provideFilterDirs);
+  RepoIndexTextFormat handler(m_console, indexDir, params.provideFilteringByRequires, additionalRequires, params.provideFilterDirs);
   handler.init();
+  m_console.msg() << "Looking through " << pkgDir << " to pick packages for repository index...";
   std::auto_ptr<Directory::Iterator> it = Directory::enumerate(pkgDir);
+  size_t count = 0;
   while(it->moveNext())
     {
       if (it->getName() == "." || it->getName() == "..")
@@ -65,12 +69,15 @@ void IndexCore::processRpms(const std::string& indexDir, const std::string& pkgD
       StringList files;
       readRpmPkgFile(it->getFullPath(), pkgFile, provides, requires, conflicts, obsoletes, files);
       handler.add(pkgFile, provides, requires, conflicts, obsoletes, files);
+      count++;
     }
+  m_console.msg() << " picked up " << count << " binary packages!" << std::endl;
   handler.commit();
 }
 
 void IndexCore::writeInfoFile(const std::string& fileName, const RepoIndexParams& params)
 {
+  m_console.msg() << "Creating repository index info file " << fileName << "..." << std::endl;
   RepoIndexInfoFile infoFile;
   switch(params.compressionType)
     {

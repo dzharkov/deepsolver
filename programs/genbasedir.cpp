@@ -7,6 +7,23 @@
 
 static RepoIndexParams params;
 
+class ConsoleMessages: public AbstractConsoleMessages
+{
+public:
+  ConsoleMessages() {}
+
+public:
+  std::ostream& msg()
+  {
+    return std::cout;
+  }
+
+  std::ostream& verboseMsg()
+  {
+    return std::cout;
+  }
+}; //class ConsoleMessages;
+
 class WarningHandler: public AbstractWarningHandler
 {
 public:
@@ -191,8 +208,9 @@ return 0;
 
 void run()
 {
+  ConsoleMessages consoleMessages;
   WarningHandler warningHandler(std::cerr);
-  IndexCore indexCore(warningHandler);
+  IndexCore indexCore(consoleMessages, warningHandler);
   indexCore.build(params);
 }
 

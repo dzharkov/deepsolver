@@ -2,6 +2,7 @@
 #ifndef FIXME_INDEX_CORE_H
 #define FIXME_INDEX_CORE_H
 
+#include"AbstractConsoleMessages.h"
 #include"AbstractWarningHandler.h"
 #include"IndexCoreException.h"
 
@@ -39,17 +40,20 @@ public:
 class IndexCore
 {
 public:
-  IndexCore(AbstractWarningHandler& warningHandler):
-    m_warningHandler(warningHandler) {}
+  IndexCore(AbstractConsoleMessages& console, AbstractWarningHandler& warningHandler)
+    : m_console(console), m_warningHandler(warningHandler) {}
 
 public:
   void build(const RepoIndexParams& params);
 
 private:
-    void processRpms(const std::string& indexDir, const std::string& pkgDir, const RepoIndexParams& params);
+  void collectRequires(const std::string& dirName, StringSet& res);
+  void collectRequiresFromDirs(const StringList& dirs, StringSet& res);
+  void processRpms(const std::string& indexDir, const std::string& pkgDir, const RepoIndexParams& params);
   void writeInfoFile(const std::string& fileName, const RepoIndexParams& params);
 
 private:
+  AbstractConsoleMessages& m_console;
   AbstractWarningHandler& m_warningHandler;
 }; //class IndexCore;
 

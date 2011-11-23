@@ -5,6 +5,9 @@
 class AbstractWarningHandler 
 {
 public:
+  virtual ~AbstractWarningHandler() {}
+
+public:
   virtual void onWarning(const std::string& message) = 0;
 }; //class AbstractWarningHandler;
 
