@@ -2,8 +2,7 @@
 #ifndef DEPSOLVER_INDEX_CORE_EXCEPTION_H
 #define DEPSOLVER_INDEX_CORE_EXCEPTION_H
 
-//FIXME:basic exception;
-class IndexCoreException 
+class IndexCoreException: public DepsolverException 
 {
 public:
   IndexCoreException() {}

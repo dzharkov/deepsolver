@@ -2,8 +2,9 @@
 #ifndef DEPSOLVER_H
 #define DEPSOLVER_H
 
-#include"DefaultValues.h"
 #include"os/system.h"
+#include"DefaultValues.h"
+#include"DepsolverException.h"
 #include"os/SystemException.h"
 #include"os/File.h"
 #include"os/Directory.h"

@@ -2,7 +2,7 @@
 #ifndef DEPSOLVER_SYSTEM_EXCEPTION_H
 #define DEPSOLVER_SYSTEM_EXCEPTION_H
 
-class SystemException
+class SystemException: public DepsolverException
 {
 public:
   SystemException()

@@ -2,8 +2,7 @@
 #ifndef DEPSOLVER_RPM_EXCEPTION_H
 #define DEPSOLVER_RPM_EXCEPTION_H
 
-//FIXME:basic general exception class;
-class RpmException
+class RpmException: public DepsolverException
 {
 public:
   RpmException() {}
