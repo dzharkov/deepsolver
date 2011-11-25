@@ -1,5 +1,5 @@
 
-#include"basic-header.h"//FIXME:
+#include"depsolver.h"
 #include"IndexCore.h"
 #include"rpm/RpmException.h"
 

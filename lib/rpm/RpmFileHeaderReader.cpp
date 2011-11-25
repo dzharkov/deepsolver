@@ -1,7 +1,7 @@
 //Written with librpm-4.0.4-alt100.29;
 //FIXME:directories without files;
 
-#include"basic-header.h"
+#include"depsolver.h"
 #include"RpmFileHeaderReader.h"
 
 //FIXME:requires flags for package install and removing;

@@ -1,5 +1,5 @@
 
-#include"basic-header.h"
+#include"depsolver.h"
 #include"IndexCore.h"
 #include"RepoIndexInfoFile.h"
 #include"RepoIndexTextFormatWriter.h"

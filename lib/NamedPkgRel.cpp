@@ -1,5 +1,5 @@
 
-#include"basic-header.h"//FIXME:
+#include"depsolver.h"
 #include"NamedPkgRel.h"
 
 std::ostream& operator <<(std::ostream& s, const NamedPkgRel& r)

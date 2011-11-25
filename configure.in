@@ -1,5 +1,5 @@
 
-AC_INIT(fixme, 0.0.1, msp@altlinux.org)
+AC_INIT(depsolver, 0.0.1, msp@altlinux.org)
 AM_INIT_AUTOMAKE([-Wall foreign])
 
 if test "x$CFLAGS" == 'x'; then
