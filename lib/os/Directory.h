@@ -1,6 +1,6 @@
 
-#ifndef FIXME_DIRECTORY_H
-#define FIXME_DIRECTORY_H
+#ifndef DEPSOLVER_DIRECTORY_H
+#define DEPSOLVER_DIRECTORY_H
 
 class Directory
 {
@@ -34,4 +34,4 @@ public:
   static std::auto_ptr<Iterator> enumerate(const std::string& path);
 }; //class Directory;
 
-#endif //FIXME_DIRECTORY_H;
+#endif //DEPSOLVER_DIRECTORY_H;

@@ -1,6 +1,6 @@
 
-#ifndef FIXME_CONFIG_CENTER_H
-#define FIXME_CONFIG_CENTER_H
+#ifndef DEPSOLVER_CONFIG_CENTER_H
+#define DEPSOLVER_CONFIG_CENTER_H
 
 #include"DefaultValues.h"
 
@@ -16,4 +16,4 @@ public:
   std::string attachedRepoList;
 }; //class ConfigCenter;
 
-#endif //FIXME_CONFIG_CENTER_H;
+#endif //DEPSOLVER_CONFIG_CENTER_H;

@@ -1,6 +1,6 @@
 
-#ifndef FIXME_RPM_FILE_H
-#define FIXME_RPM_FILE_H
+#ifndef DEPSOLVER_RPM_FILE_H
+#define DEPSOLVER_RPM_FILE_H
 
 #include"PkgFile.h"
 #include"NamedPkgRel.h"
@@ -14,4 +14,4 @@ bool readRpmPkgFile(const std::string& fileName,
 		    NamedPkgRelList& obsoletes,
 		    StringList& files);
 
-#endif //FIXME_RPM_FILE_H;
+#endif //DEPSOLVER_RPM_FILE_H;

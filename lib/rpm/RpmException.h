@@ -1,6 +1,6 @@
 
-#ifndef FIXME_RPM_EXCEPTION_H
-#define FIXME_RPM_EXCEPTION_H
+#ifndef DEPSOLVER_RPM_EXCEPTION_H
+#define DEPSOLVER_RPM_EXCEPTION_H
 
 //FIXME:basic general exception class;
 class RpmException
@@ -25,4 +25,4 @@ private:
 
 #define RPM_STOP(x) throw RpmException(x)
 
-#endif //FIXME_RPM_EXCEPTION_H;
+#endif //DEPSOLVER_RPM_EXCEPTION_H;

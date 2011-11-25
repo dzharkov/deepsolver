@@ -1,7 +1,7 @@
 //FIXME:requires flags for package install and removing;
 
-#ifndef FIXME_NAMED_PKG_REL_H
-#define FIXME_NAMED_PKG_REL_H
+#ifndef DEPSOLVER_NAMED_PKG_REL_H
+#define DEPSOLVER_NAMED_PKG_REL_H
 
 /**\brief The relation between two packages with package specifications by name
  *
@@ -46,4 +46,4 @@ std::ostream& operator <<(std::ostream& s, const NamedPkgRel& r);
 typedef std::list<NamedPkgRel> NamedPkgRelList;
 typedef std::vector<NamedPkgRel> NamedPkgRelVector;
 
-#endif //FIXME_NAMED_PKG_REL_H;
+#endif //DEPSOLVER_NAMED_PKG_REL_H;

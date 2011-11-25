@@ -1,6 +1,6 @@
 
-#ifndef FIXME_OPERATION_CORE_H
-#define FIXME_OPERATION_CORE_H
+#ifndef DEPSOLVER_OPERATION_CORE_H
+#define DEPSOLVER_OPERATION_CORE_H
 
 #include"ConfigCenter.h"
 #include"AttachedRepo.h"
@@ -24,4 +24,4 @@ private:
   AttachedRepoVector m_repos;
 }; //class OperationCore;
 
-#endif //FIXME_OPERATION_CORE_H;
+#endif //DEPSOLVER_OPERATION_CORE_H;

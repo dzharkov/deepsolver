@@ -1,6 +1,6 @@
 
-#ifndef FIXME_REPO_INDEX_INFO_FILE_H
-#define FIXME_REPO_INDEX_INFO_FILE_H
+#ifndef DEPSOLVER_REPO_INDEX_INFO_FILE_H
+#define DEPSOLVER_REPO_INDEX_INFO_FILE_H
 
 class RepoIndexInfoFile
 {
@@ -69,4 +69,4 @@ private:
   StringToStringMap m_userParams;
 }; //class RepoIndexInfoFile;
 
-#endif //FIXME_REPO_INDEX_INFO_FILE_H;
+#endif //DEPSOLVER_REPO_INDEX_INFO_FILE_H;

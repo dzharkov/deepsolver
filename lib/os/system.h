@@ -1,6 +1,6 @@
 
-#ifndef FIXME_SYSTEM_H
-#define FIXME_SYSTEM_H
+#ifndef DEPSOLVER_SYSTEM_H
+#define DEPSOLVER_SYSTEM_H
 
 #include<stdlib.h>
 #include<stdarg.h>
@@ -48,4 +48,4 @@ typedef std::map<std::string, std::string> StringToStringMap;
 #define ERRNO_MSG (strerror(errno))
 #define NEW_FILE_MODE (S_IRWXU | S_IRWXG | S_IRWXO)
 
-#endif //FIXME_SYSTEM_H;
+#endif //DEPSOLVER_SYSTEM_H;

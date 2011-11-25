@@ -1,6 +1,6 @@
 
-#ifndef FIXME_DATE_TIME_H
-#define FIXME_DATE_TIME_H
+#ifndef DEPSOLVER_DATE_TIME_H
+#define DEPSOLVER_DATE_TIME_H
 
 struct DateTime
 {
@@ -8,4 +8,4 @@ struct DateTime
   unsigned char month, day, hour, minute, second;
 }; //struct DateTime;
 
-#endif //FIXME_DATE_TIME_H;
+#endif //DEPSOLVER_DATE_TIME_H;

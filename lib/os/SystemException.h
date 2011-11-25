@@ -1,6 +1,6 @@
 
-#ifndef FIXME_SYSTEM_EXCEPTION_H
-#define FIXME_SYSTEM_EXCEPTION_H
+#ifndef DEPSOLVER_SYSTEM_EXCEPTION_H
+#define DEPSOLVER_SYSTEM_EXCEPTION_H
 
 class SystemException
 {
@@ -47,4 +47,4 @@ private:
 #define TRY_SYS_CALL(expr, msg) if (!(expr)) throw SystemException(msg)
 #define SYS_STOP(msg) throw SystemException(msg)
 
-#endif //FIXME_SYSTEM_EXCEPTION_H
+#endif //DEPSOLVER_SYSTEM_EXCEPTION_H

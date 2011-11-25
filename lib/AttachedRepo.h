@@ -1,6 +1,6 @@
 
-#ifndef FIXME_ATTACHED_REPO_H
-#define FIXME_ATTACHED_REPO_H
+#ifndef DEPSOLVER_ATTACHED_REPO_H
+#define DEPSOLVER_ATTACHED_REPO_H
 
 typedef size_t AttachedRepoId;
 #define ATTACHED_REPO_BAD_ID (AttachedRepoId)-1
@@ -26,4 +26,4 @@ private:
 typedef std::list<AttachedRepo*> AttachedRepoList;
 typedef std::vector<AttachedRepo*> AttachedRepoVector;
 
-#endif //FIXME_ATTACHED_REPO_H;
+#endif //DEPSOLVER_ATTACHED_REPO_H;

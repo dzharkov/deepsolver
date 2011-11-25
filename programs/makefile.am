@@ -1,13 +1,13 @@
 
-AM_CXXFLAGS = $(FIXME_CXXFLAGS) $(FIXME_INCLUDES)
+AM_CXXFLAGS = $(DEPSOLVER_CXXFLAGS) $(DEPSOLVER_INCLUDES)
 LIBS += -lrpm
 
 bin_PROGRAMS = genbasedir
 
 genbasedir_LDADD = \
-$(top_srcdir)/lib/libfixme.a  \
-$(top_srcdir)/lib/rpm/libfixmerpm.a  \
-$(top_srcdir)/lib/os/libfixmeos.a 
+$(top_srcdir)/lib/libdepsolver.a  \
+$(top_srcdir)/lib/rpm/libdepsolverrpm.a  \
+$(top_srcdir)/lib/os/libdepsolveros.a 
 
 genbasedir_DEPENDENCIES = $(genbasedir_LDADD)
 

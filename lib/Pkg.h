@@ -1,6 +1,6 @@
 
-#ifndef FIXME_PKG_H
-#define FIXME_PKG_H
+#ifndef DEPSOLVER_PKG_H
+#define DEPSOLVER_PKG_H
 
 #include"DateTime.h"
 
@@ -27,4 +27,4 @@ public:
   DateTime m_buildDateTime;
 }; //class Pkg;
 
-#endif //FIXME_PKG_H;
+#endif //DEPSOLVER_PKG_H;

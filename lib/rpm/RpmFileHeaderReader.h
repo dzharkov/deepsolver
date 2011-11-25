@@ -1,6 +1,6 @@
 
-#ifndef FIXME_RPM_FILE_HEADER_READER_H
-#define FIXME_RPM_FILE_HEADER_READER_H
+#ifndef DEPSOLVER_RPM_FILE_HEADER_READER_H
+#define DEPSOLVEr_RPM_FILE_HEADER_READER_H
 
 #include"PkgFile.h"
 #include"NamedPkgRel.h"
@@ -42,4 +42,4 @@ private:
   std::string m_fileName;
 }; //class RpmFileHeaderReader;
 
-#endif //FIXME_RPM_FILE_HEADER_READER_H;
+#endif //DEPSOLVER_RPM_FILE_HEADER_READER_H;

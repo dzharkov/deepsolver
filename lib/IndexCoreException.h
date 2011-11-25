@@ -1,6 +1,6 @@
 
-#ifndef FIXME_INDEX_CORE_EXCEPTION_H
-#define FIXME_INDEX_CORE_EXCEPTION_H
+#ifndef DEPSOLVER_INDEX_CORE_EXCEPTION_H
+#define DEPSOLVER_INDEX_CORE_EXCEPTION_H
 
 //FIXME:basic exception;
 class IndexCoreException 
@@ -24,4 +24,4 @@ private:
 
 #define INDEX_CORE_STOP(x) throw IndexCoreException(x)
 
-#endif //FIXME_INDEX_CORE_EXCEPTION_H;
+#endif //DEPSOLVER_INDEX_CORE_EXCEPTION_H;

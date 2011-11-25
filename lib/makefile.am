@@ -1,14 +1,14 @@
 
 SUBDIRS=os rpm
 
-AM_CXXFLAGS = $(FIXME_CXXFLAGS) $(FIXME_INCLUDES)
+AM_CXXFLAGS = $(DEPSOLVER_CXXFLAGS) $(DEPSOLVER_INCLUDES)
 
 noinst_HEADERS = \
 IndexCore.h
 
-noinst_LIBRARIES = libfixme.a
+noinst_LIBRARIES = libdepsolver.a
 
-libfixme_a_SOURCES = \
+libdepsolver_a_SOURCES = \
 IndexCore.cpp \
 NamedPkgRel.cpp \
 RepoIndexInfoFile.cpp \

@@ -1,10 +1,10 @@
 
-#ifndef FIXME_DEFAULT_VALUES_H
-#define FIXME_DEFAULT_VALUES_H
+#ifndef DEPSOLVER_DEFAULT_VALUES_H
+#define DEPSOLVER_DEFAULT_VALUES_H
 
 //Configuration parameters;
-#define DEFAULT_CONFIG_DIR "/etc/apt-ng"//FIXME:
-#define DEFAULT_CONFIG_FILE_NAME "apt-ng.conf"//FIXME:
+#define DEFAULT_CONFIG_DIR "/etc/depsolver"
+#define DEFAULT_CONFIG_FILE_NAME "depsolver.conf"
 
 //Repo structure;
 #define REPO_RPMS_DIR_NAME "RPMS"
@@ -19,4 +19,4 @@
 #define DEFAULT_REPO_INDEX_COMPRESSION_TYPE CompressionTypeGzip
 #define DEFAULT_REPO_INDEX_FORMAT_TYPE FormatTypeText
 
-#endif //FIXME_DEFAULT_VALUES_H;
+#endif //DEPSOLVER_DEFAULT_VALUES_H;

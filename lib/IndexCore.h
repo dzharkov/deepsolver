@@ -1,6 +1,6 @@
 
-#ifndef FIXME_INDEX_CORE_H
-#define FIXME_INDEX_CORE_H
+#ifndef DEPSOLVER_INDEX_CORE_H
+#define DEPSOLVER_INDEX_CORE_H
 
 #include"AbstractConsoleMessages.h"
 #include"AbstractWarningHandler.h"
@@ -57,4 +57,4 @@ private:
   AbstractWarningHandler& m_warningHandler;
 }; //class IndexCore;
 
-#endif //FIXME_INDEX_CORE_H;
+#endif //DEPSOLVER_INDEX_CORE_H;

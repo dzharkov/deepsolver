@@ -1,6 +1,6 @@
 
-#ifndef FIXME_REPO_INDEX_TEXT_FORMAT_WRITER_H
-#define FIXME_REPO_INDEX_TEXT_FORMAT_WRITER_H
+#ifndef DEPSOLVER_REPO_INDEX_TEXT_FORMAT_WRITER_H
+#define DEPSOLVER_REPO_INDEX_TEXT_FORMAT_WRITER_H
 
 #include"PkgFile.h"
 #include"NamedPkgRel.h"
@@ -107,4 +107,4 @@ private:
   StringSet m_requiresSet;
 }; //class RepoIndexTextFormatWriter;
 
-#endif //FIXME_REPO_INDEX_TEXT_FORMAT_WRITER_H;
+#endif //DEPSOLVER_REPO_INDEX_TEXT_FORMAT_WRITER_H;

@@ -1,6 +1,6 @@
 
-#ifndef FIXME_FILE_H
-#define FIXME_FILE_H
+#ifndef DEPSOLVER_FILE_H
+#define DEPSOLVER_FILE_H
 
 class File
 {
@@ -49,4 +49,4 @@ protected:
   int m_fd;
 }; //class File;
 
-#endif //FIXME_FILE_H;
+#endif //DEPSOLVER_FILE_H;

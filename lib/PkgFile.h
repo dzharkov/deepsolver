@@ -1,6 +1,6 @@
 
-#ifndef FIXME_PKG_FILE_H
-#define FIXME_PKG_FILE_H
+#ifndef DEPSOLVER_PKG_FILE_H
+#define DEPSOLVER_PKG_FILE_H
 
 #include"Pkg.h"
 
@@ -17,4 +17,4 @@ public:
   bool source;
 }; //class PkgFile;
 
-#endif //FIXME_PKG_FILE_H;
+#endif //DEPSOLVER_PKG_FILE_H;
