@@ -54,49 +54,32 @@ enum {
 
 //GZip constants;
 
-//------------------Definitions of constants----------------------------------//
+enum {
+  GZipZLibError = 1,
+  GZipBadCRC = 2, // Recorded crc doesn't match data;
+  GZipBadLength = 3, // Recorded length doesn't match data;
+  GZipBadHeader = 4, // Malformed header;
+  GZipBadFooter = 5, // Malformed footer;
+  GZipBadMethod = 6 // Unsupported compression method;
+};
 
-namespace gzip {
+//Magic numbers used by gzip header;
+const int GZipMagicID1 = 0x1f;
+const int GZipMagicID2 = 0x8b;
 
-using namespace boost::iostreams::zlib;
+//The code used for the 'CM' byte of the gzip header;
+enum {
+  GZipMethodDeflate = 8
+};
 
-    // Error codes used by gzip_error.
-
-const int zlib_error        = 1;
-const int bad_crc           = 2; // Recorded crc doesn't match data.
-const int bad_length        = 3; // Recorded length doesn't match data.
-const int bad_header        = 4; // Malformed header.
-const int bad_footer        = 5; // Malformed footer.
-const int bad_method        = 6; // Unsupported compression method.
-
-namespace magic {
-
-    // Magic numbers used by gzip header.
-
-const int id1               = 0x1f;
-const int id2               = 0x8b;
-
-} // End namespace magic.
-
-namespace method {
-
-    // Codes used for the 'CM' byte of the gzip header.
-
-const int deflate           = 8;
-
-} // End namespace method.
-
-namespace flags {
-
-    // Codes used for the 'FLG' byte of the gzip header.
-
-const int text              = 1;
-const int header_crc        = 2;
-const int extra             = 4;
-const int name              = 8;
-const int comment           = 16;
-
-} // End namespace flags.
+//Codes used for the 'FLG' byte of the gzip header;
+enum {
+  GZipFlagText = 1,
+  GZipFlagHeaderCRC = 2,
+  GZipFlagExtra = 4,
+  GZipFlagName  = 8,
+  GZipFlagComment = 16
+};
 
 namespace extra_flags {
 
