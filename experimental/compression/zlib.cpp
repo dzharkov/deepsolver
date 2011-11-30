@@ -13,31 +13,6 @@
 // knows that we are building the library (possibly exporting code), rather 
 // than using it (possibly importing code).
 
-#include "zlib.h"   // Jean-loup Gailly's and Mark Adler's "zlib.h" header.
-
-const int no_compression       = Z_NO_COMPRESSION;
-const int best_speed           = Z_BEST_SPEED;
-const int best_compression     = Z_BEST_COMPRESSION;
-const int default_compression  = Z_DEFAULT_COMPRESSION;
-
-const int deflated             = Z_DEFLATED;
-
-const int default_strategy     = Z_DEFAULT_STRATEGY;
-const int filtered             = Z_FILTERED;
-const int huffman_only         = Z_HUFFMAN_ONLY;
-
-const int okay                 = Z_OK;
-const int stream_end           = Z_STREAM_END;
-const int stream_error         = Z_STREAM_ERROR;
-const int version_error        = Z_VERSION_ERROR;
-const int data_error           = Z_DATA_ERROR;
-const int mem_error            = Z_MEM_ERROR;
-const int buf_error            = Z_BUF_ERROR;
-
-const int finish               = Z_FINISH;
-const int no_flush             = Z_NO_FLUSH;
-const int sync_flush           = Z_SYNC_FLUSH;
-
 void zlib_error::check BOOST_PREVENT_MACRO_SUBSTITUTION(int error)
 {
   switch (error) {
