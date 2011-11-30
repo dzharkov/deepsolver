@@ -11,6 +11,11 @@
 //FIXME:typedef void* (*xalloc_func)(void*, zlib::uint, zlib::uint);
 //FIXME:typedef void (*xfree_func)(void*, void*);
 
+
+
+//FIXME:typedef void* (*xalloc_func)(void*, zlib::uint, zlib::uint);
+//FIXME:typedef void (*xfree_func)(void*, void*);
+
 template<typename Alloc>
 struct zlib_allocator_traits 
 {
