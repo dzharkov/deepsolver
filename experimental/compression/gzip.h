@@ -18,48 +18,6 @@
 // Note: custom allocators are not supported on VC6, since that compiler
 // had trouble finding the function zlib_base::do_init.
 
-const int zlib_error        = 1;
-const int bad_crc           = 2; // Recorded crc doesn't match data.
-const int bad_length        = 3; // Recorded length doesn't match data.
-const int bad_header        = 4; // Malformed header.
-const int bad_footer        = 5; // Malformed footer.
-const int bad_method        = 6; // Unsupported compression method.
-
-namespace magic 
-{
-const int id1               = 0x1f;
-const int id2               = 0x8b;
-} // End namespace magic.
-
-const int deflate           = 8;
-
-} // End namespace method.
-
-const int text              = 1;
-const int header_crc        = 2;
-const int extra             = 4;
-const int name              = 8;
-const int comment           = 16;
-
-const int best_compression  = 2;
-const int best_speed        = 4;
-
-const int os_fat            = 0;
-const int os_amiga          = 1;
-const int os_vms            = 2;
-const int os_unix           = 3;
-const int os_vm_cms         = 4;
-const int os_atari          = 5;
-const int os_hpfs           = 6;
-const int os_macintosh      = 7;
-const int os_z_system       = 8;
-const int os_cp_m           = 9;
-const int os_tops_20        = 10;
-const int os_ntfs           = 11;
-const int os_qdos           = 12;
-const int os_acorn          = 13;
-const int os_unknown        = 255;
-
 template<typename Alloc = std::allocator<char> >
 class basic_gzip_compressor : basic_zlib_compressor<Alloc> 
 {
