@@ -38,11 +38,6 @@ const int finish               = Z_FINISH;
 const int no_flush             = Z_NO_FLUSH;
 const int sync_flush           = Z_SYNC_FLUSH;
 
-zlib_error::zlib_error(int error) 
-  : BOOST_IOSTREAMS_FAILURE("zlib error"), error_(error) 
-{ 
-}
-
 void zlib_error::check BOOST_PREVENT_MACRO_SUBSTITUTION(int error)
 {
   switch (error) {

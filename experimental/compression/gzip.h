@@ -60,43 +60,6 @@ const int os_qdos           = 12;
 const int os_acorn          = 13;
 const int os_unknown        = 255;
 
-struct gzip_params : zlib_params 
-{
-  gzip_params( int level              = gzip::default_compression,
-	       int method             = gzip::deflated,
-	       int window_bits        = gzip::default_window_bits,
-	       int mem_level          = gzip::default_mem_level,
-	       int strategy           = gzip::default_strategy,
-	       std::string file_name  = "",
-	       std::string comment    = "",
-	       std::time_t mtime      = 0 )
-    : zlib_params(level, method, window_bits, mem_level, strategy),
-      file_name(file_name), comment(comment), mtime(mtime)
-  { }
-
-    std::string  file_name;
-  std::string  comment;
-  std::time_t  mtime;
-};
-
-class gzip_error 
-{
-public:
-  explicit gzip_error(int error)
-    : BOOST_IOSTREAMS_FAILURE("gzip error"),
-      error_(error), zlib_error_code_(zlib::okay) { }
-  explicit gzip_error(const zlib_error& e)
-    : BOOST_IOSTREAMS_FAILURE("gzip error"),
-      error_(gzip::zlib_error), zlib_error_code_(e.error())
-  { }
-  int error() const { return error_; }
-  int zlib_error_code() const { return zlib_error_code_; }
-
-private:
-  int error_;
-  int zlib_error_code_;
-};
-
 template<typename Alloc = std::allocator<char> >
 class basic_gzip_compressor : basic_zlib_compressor<Alloc> 
 {

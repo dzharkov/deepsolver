@@ -8,77 +8,8 @@
 // Note: custom allocators are not supported on VC6, since that compiler
 // had trouble finding the function zlib_base::do_init.
 
-typedef uint32_t uint;
-typedef uint8_t byte;
-typedef uint32_t ulong;
-
-typedef void* (*xalloc_func)(void*, zlib::uint, zlib::uint);
-typedef void (*xfree_func)(void*, void*);
-
-extern const int no_compression;
-extern const int best_speed;
-extern const int best_compression;
-extern const int default_compression;
-
-extern const int deflated;
-
-extern const int default_strategy;
-extern const int filtered;
-extern const int huffman_only;
-
-extern const int okay;
-extern const int stream_end;
-extern const int stream_error;
-extern const int version_error;
-extern const int data_error;
-extern const int mem_error;
-extern const int buf_error;
-
-extern const int finish;
-extern const int no_flush;
-extern const int sync_flush;
-
-const int null                               = 0;
-
-const int default_window_bits                = 15;
-const int default_mem_level                  = 8;
-const bool default_crc                       = false;
-const bool default_noheader                  = false;
-
-struct zlib_params 
-{
-  zlib_params( int level           = zlib::default_compression,
-	       int method          = zlib::deflated,
-	       int window_bits     = zlib::default_window_bits, 
-	       int mem_level       = zlib::default_mem_level, 
-	       int strategy        = zlib::default_strategy,
-	       bool noheader       = zlib::default_noheader,
-	       bool calculate_crc  = zlib::default_crc )
-    : level(level), method(method), window_bits(window_bits),
-      mem_level(mem_level), strategy(strategy),  
-      noheader(noheader), calculate_crc(calculate_crc)
-  { }
-
-    int level;
-  int method;
-  int window_bits;
-  int mem_level;
-  int strategy;
-  bool noheader;
-  bool calculate_crc;
-};
-
-class zlib_error : public BOOST_IOSTREAMS_FAILURE 
-{
-public:
-  explicit zlib_error(int error);
-
-  int error() const { return error_; }
-  static void check BOOST_PREVENT_MACRO_SUBSTITUTION(int error);
-
-private:
-  int error_;
-};
+//FIXME:typedef void* (*xalloc_func)(void*, zlib::uint, zlib::uint);
+//FIXME:typedef void (*xfree_func)(void*, void*);
 
 template<typename Alloc>
 struct zlib_allocator_traits 
