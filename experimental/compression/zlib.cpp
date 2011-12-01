@@ -15,17 +15,17 @@
 
 void zlib_error::check BOOST_PREVENT_MACRO_SUBSTITUTION(int error)
 {
-  switch (error) {
-  case Z_OK: 
-  case Z_STREAM_END: 
+  switch (error) 
+    {
+    case Z_OK: 
+    case Z_STREAM_END: 
     //case Z_BUF_ERROR: 
-    return;
+      return;
   case Z_MEM_ERROR: 
     boost::throw_exception(std::bad_alloc());
-  default:
-    boost::throw_exception(zlib_error(error));
-    ;
-  }
+    default:
+      boost::throw_exception(zlib_error(error));
+    }
 }
 
 zlib_base::zlib_base()
@@ -38,19 +38,19 @@ zlib_base::~zlib_base()
   delete static_cast<z_stream*>(stream_);
 }
 
-void zlib_base::before( const char*& src_begin, const char* src_end,
-                        char*& dest_begin, char* dest_end )
+void ZLibBase::before( const char*& src_begin, const char* src_end,
+		       char*& dest_begin, char* dest_end )
 {
-  z_stream* s = static_cast<z_stream*>(stream_);
+  z_stream* s = static_cast<z_stream*>(m_stream);
   s->next_in = reinterpret_cast<zlib::byte*>(const_cast<char*>(src_begin));
   s->avail_in = static_cast<zlib::uint>(src_end - src_begin);
   s->next_out = reinterpret_cast<zlib::byte*>(dest_begin);
   s->avail_out= static_cast<zlib::uint>(dest_end - dest_begin);
 }
 
-void zlib_base::after(const char*& src_begin, char*& dest_begin, bool compress)
+void ZLibBase::after(const char*& src_begin, char*& dest_begin, bool compress)
 {
-  z_stream* s = static_cast<z_stream*>(stream_);
+  z_stream* s = static_cast<z_stream*>(m_stream);
   char* next_in = reinterpret_cast<char*>(s->next_in);
   char* next_out = reinterpret_cast<char*>(s->next_out);
   if (calculate_crc_) {
@@ -96,9 +96,6 @@ void zlib_base::reset(bool compress, bool realloc)
 
 void zlib_base::do_init
 ( const zlib_params& p, bool compress, 
-#if !BOOST_WORKAROUND(BOOST_MSVC, < 1300)
-  zlib::xalloc_func /* alloc */, zlib::xfree_func /* free*/, 
-#endif
   void* derived )
 {
   calculate_crc_ = p.calculate_crc;

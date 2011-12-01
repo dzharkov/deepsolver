@@ -42,52 +42,7 @@ public:
   static void deallocate(void* self, void* address);
 };
 
-class zlib_base { 
-public:
-    typedef char char_type;
-protected:
-  zlib_base();
-  ~zlib_base();
-  void* stream() { return stream_; }
-  template<typename Alloc> 
-  void init( const zlib_params& p, 
-	     bool compress,
-	     zlib_allocator<Alloc>& zalloc )
-  {
-    bool custom = zlib_allocator<Alloc>::custom;
-    do_init( p, compress,
-#if !BOOST_WORKAROUND(BOOST_MSVC, < 1300)
-	     custom ? zlib_allocator<Alloc>::allocate : 0,
-	     custom ? zlib_allocator<Alloc>::deallocate : 0,
-#endif
-	     &zalloc );
-  }
-  void before( const char*& src_begin, const char* src_end,
-	       char*& dest_begin, char* dest_end );
-  void after( const char*& src_begin, char*& dest_begin, 
-	      bool compress );
-  int xdeflate(int flush);  // Prefix 'x' prevents symbols from being 
-  int xinflate(int flush);  // redefined when Z_PREFIX is defined
-  void reset(bool compress, bool realloc);
-public:
-  zlib::ulong crc() const { return crc_; }
-  int total_in() const { return total_in_; }
-  int total_out() const { return total_out_; }
-
-private:
-  void do_init( const zlib_params& p, bool compress, 
-#if !BOOST_WORKAROUND(BOOST_MSVC, < 1300)
-		zlib::xalloc_func, 
-		zlib::xfree_func, 
-#endif
-		void* derived );
-  void*        stream_;         // Actual type: z_stream*.
-  bool         calculate_crc_;
-  zlib::ulong  crc_;
-  zlib_ulong  crc_imp_;
-    int          total_in_;
-    int          total_out_;
-};
+//zlib_base;
 
 template<typename Alloc = std::allocator<char> >
 class zlib_compressor_impl : public zlib_base, public zlib_allocator<Alloc> 

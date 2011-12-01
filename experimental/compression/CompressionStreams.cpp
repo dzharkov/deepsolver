@@ -41,3 +41,44 @@ const int ZLibBufError = Z_BUF_ERROR;
 const int ZLibFinish  = Z_FINISH;
 const int ZLibNoFlush = Z_NO_FLUSH;
 const int ZLibSyncFlush = Z_SYNC_FLUSH;
+
+
+//ZLib;
+
+
+ZLibBase::ZLibBase()
+  : m_stream(new z_stream), 
+    m_calculateCrc(false),
+    m_crc(0),
+    m_crcImp(0)
+{ 
+  memset(m_stream, 0, sizeof(z_stream));
+}
+
+ZLibBase::~ZLibBase()
+{
+  delete static_cast<z_stream*>(m_stream);
+}
+
+void ZLibBase::do_init(const ZLibParams& p, bool compress, void* derived)
+{
+
+  //FIXME:general clean up;
+  calculate_crc_ = p.calculate_crc;
+  z_stream* s = static_cast<z_stream*>(stream_);
+  s->zalloc = 0;
+  s->zfree = 0;
+  s->opaque = derived;
+  int window_bits = p.noheader? -p.window_bits : p.window_bits;
+  zlib_error::check BOOST_PREVENT_MACRO_SUBSTITUTION(
+						     compress ?
+						     deflateInit2( s, 
+								   p.level,
+								   p.method,
+								   window_bits,
+								   p.mem_level,
+								   p.strategy ) :
+						     inflateInit2(s, window_bits)
+						     );
+}
+
