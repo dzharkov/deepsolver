@@ -18,7 +18,7 @@
 
 typedef uint32_t ZLibUInt;
 typedef uint8_t ZLibByte;
-typedef uint32_t ZLibULongulong
+typedef uint32_t ZLibULong;
 
 //ZLib constants;
 
@@ -200,3 +200,57 @@ struct GZipParams: ZLibParams
 };
 
 #endif //DEPSOLVER_COMPRESSION_STREAMS_H;
+
+//ZLib classes;
+
+class ZLibBase
+{
+public:
+  typedef char char_type;
+
+protected:
+  ZLibBase();
+  ~ZLibBase();
+
+protected:
+  void* stream() 
+  {
+    return m_stream; 
+  }
+
+  void init(const ZLibParams& p, bool compress);
+
+  void before(const char*& srcBegin, const char* srcEnd,
+	      char*& destBegin, char* destEnd);
+
+  void after(const char*& srcBegin, char*& destBegin,
+	     bool compress);
+
+  int xdeflate(int flush);
+  int xinflate(int flush);
+  void reset(bool compress, bool realloc);
+
+public:
+  ZLibULong crc() const 
+  { 
+    return m_crc; 
+  }
+
+  int totalIn() const
+  { 
+    return m_totalIn;
+  }
+
+  int totalOut() const 
+  { 
+    return m_totalOut; 
+  }
+
+private:
+  void* m_stream; // Actual type: z_stream*;
+  bool m_calculateCrc;
+  ZLibULong  m_crc;
+  ZLibULong m_crcImp_;
+  int m_totalIn;
+  int m_totalOut;
+}; //class ZLibBase;
