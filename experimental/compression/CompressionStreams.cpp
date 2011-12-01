@@ -46,7 +46,7 @@ const int ZLibSyncFlush = Z_SYNC_FLUSH;
 
 //FIXME:
 /*
-void zlib_error::check BOOST_PREVENT_MACRO_SUBSTITUTION(int error)
+void ZLibError::check(int error)
 {
   switch (error) 
     {
@@ -70,6 +70,7 @@ ZLibBase::ZLibBase()
     m_crc(0),
     m_crcImp(0)
 { 
+  assert(m_stream);
   memset(m_stream, 0, sizeof(z_stream));
 }
 

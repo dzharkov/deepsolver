@@ -254,3 +254,84 @@ private:
   int m_totalIn;
   int m_totalOut;
 }; //class ZLibBase;
+
+//Here;
+
+class ZLibCompressorImpl: public ZLibBase
+{
+public: 
+  ZLibCompressorImpl(const ZLibParams& p = ZLibDefaultCompression)
+  {
+    init(p, 1);
+  }
+
+  ~ZLibCompressorImpl()
+  { 
+    reset(1, 0); 
+  }
+
+public:
+  bool filter(const char*& srcBegin, const char* srcEnd,
+	      char*& destBegin, char* destEnd, bool flush)
+  {
+    before(srcBegin, srcEnd, destBegin, destEnd);
+    const int result = xdeflate(flush?ZLibFinish :ZLibNoFlush);
+    after(srcBegin, destBegin, 1);
+    ZLibError::check(result);
+    return result != ZLibStreamEnd; 
+  }
+
+  void close()
+  {
+    reset(t1, 1);
+  }
+};
+
+class ZLibDecompressorImpl: public ZLibBase
+{
+public:
+  ZLibDecompressorImpl(const ZLibParams& p)
+    : m_eof(0)
+  {
+    init(p, 0);
+  }
+
+  ZLibDecompressorImpl(int windowBits = ZLibDefaultWindowBits)
+    : m_eof(0)
+  {
+    ZLibParams p;
+    p.windowBits = windowBits;
+    init(p, 0);
+  }
+
+  ~ZLibDecompressorImpl()
+  {
+    reset(0, 0);
+  }
+
+public:
+  bool filter(const char*& beginIn, const char* endIn,
+	      char*& beginOut, char* endOut, bool flush)
+  {
+    before(srcBegin, srcEnd, destBegin, destEnd);
+    const int result = xinflate(ZLibSyncFlush);
+    after(srcBegin, destBegin, 0);
+    ZLibError::check(result);
+    return !(m_eof = result == ZLibStreamEnd);
+  }
+
+  void close()
+  {
+    m_eof = 0;
+    reset(0, 1);
+  }
+
+  bool eof() const 
+  {
+    return m_eof_; 
+  }
+
+private:
+  bool m_eof;
+};
+
