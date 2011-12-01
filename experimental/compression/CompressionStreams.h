@@ -81,34 +81,30 @@ enum {
   GZipFlagComment = 16
 };
 
-namespace extra_flags {
+// Codes used for the 'XFL' byte of the gzip header;
+enum {
+  GZipExtraFlagBestCompression = 2,
+  GZipExtraFlagBestSpeed  = 4
+};
 
-    // Codes used for the 'XFL' byte of the gzip header.
-
-const int best_compression  = 2;
-const int best_speed        = 4;
-
-} // End namespace extra_flags.
-
-    // Codes used for the 'OS' byte of the gzip header.
-
-const int os_fat            = 0;
-const int os_amiga          = 1;
-const int os_vms            = 2;
-const int os_unix           = 3;
-const int os_vm_cms         = 4;
-const int os_atari          = 5;
-const int os_hpfs           = 6;
-const int os_macintosh      = 7;
-const int os_z_system       = 8;
-const int os_cp_m           = 9;
-const int os_tops_20        = 10;
-const int os_ntfs           = 11;
-const int os_qdos           = 12;
-const int os_acorn          = 13;
-const int os_unknown        = 255;
-
-} // End namespace gzip.
+// Codes used for the 'OS' byte of the gzip header;
+enum {
+  GZipOSFat = 0,
+  GZipOSAmiga = 1,
+  GZipOSVms = 2,
+  GZipOSUnix = 3,
+  GZipOSVmCms = 4,
+  GZipOSAtari = 5,
+  GZipOSHpFs = 6,
+  GZipOSMacintosh = 7,
+  GZipOSZSystem = 8,
+  GZipOSCpM = 9,
+  GZipOSTops20 = 10,
+  GZipOSNtfs = 11,
+  GZipOSQDos = 12,
+  GZipOSAcorn = 13,
+  GZipOSUnknown = 255
+};
 
 //Error information classes;
 
@@ -181,6 +177,26 @@ struct ZLibParams
   int strategy;
   bool noHeader;
   bool calculateCRC;
+};
+
+struct GZipParams: ZLibParams
+{
+  GZipParams(int level = GZipDefaultCompression,
+	     int method = GZipDeflated,
+	     int windowBits = GZipDefaultWindowBits,
+	     int memLevel = GZipDefaultMemLevel,
+	     int strategy = GZipDefaultStrategy,
+	     std::string fileName = "",
+	     std::string comment = "",
+	     std::time_t mtime = 0)
+    : ZLibParams(level, method, windowBits, memLevel, strategy),
+      fileName(fileName),
+      comment(comment),
+      mtime(mtime) {}
+
+  std::string  fileName;
+  std::string  comment;
+  std::time_t  mtime;
 };
 
 #endif //DEPSOLVER_COMPRESSION_STREAMS_H;
