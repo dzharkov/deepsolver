@@ -1,4 +1,7 @@
 
+#include<assert.h>
+#include<stdlib.h>
+#include<stdio.h>
 #include<iostream>
 #include<sys/types.h>
 #include<unistd.h>
@@ -20,15 +23,11 @@
  *  - the 4 bytes of data length.
  */
 
-//Magic numbers used by gzip header;
+#define GZIP_HEADER_SIZE 10
+
+//Magic numbers used in gzip header;
 #define GZIP_MAGIC1 0x1f
 #define GZIP_MAGIC2 0x8b
-
-void GZIP_STOP(const std::string& msg)
-{
-  std::cerr << msg << std::endl;
-  exit(EXIT_FAILURE);
-}
 
 class GZipFile
 {
@@ -77,24 +76,48 @@ public:
   void open(const std::string& fileName);
 
 private:
+  void stop(const std::string& msg) const
+  {
+    std::cerr << m_fileName << ":" << msg << std::endl;
+    exit(EXIT_FAILURE);
+  }
+
   void readHeader();
 
 private:
   int m_fd;//FIXME:replace by 'File' class;
+  std::string m_fileName;
   char m_flags, m_extraFlags, m_os;
 }; //class GZipFile;
 
-void GZipFile::open(const std:;string& fileName)
+void GZipFile::open(const std::string& fileName)
 {
-  //FIXME:
+  m_fd = ::open(fileName.c_str(), O_RDONLY);
+  assert(m_fd != -1);
+  m_fileName = fileName;
+  readHeader();
 }
 
 void GZipFile::readHeader()
 {
-  //FIXME:
+  unsigned char header[GZIP_HEADER_SIZE];
+  const ssize_t res = ::read(m_fd, header, GZIP_HEADER_SIZE);
+  assert(res == GZIP_HEADER_SIZE);
+  if (header[0] != GZIP_MAGIC1)
+    stop("invalid header first magic byte");
+  if (header[1] != GZIP_MAGIC2)
+    stop("invalid header second magic byte");
+  if (header[2] != MethodDeflate)
+    stop("invalid header compression information (expecting \'deflate\')");
+  m_flags = header[3];
+  //No mtime processing (bytes 4-7): needs additional information about BigEndian/LittleEndian compatibility;
+  m_extraFlags = header[8];
+  m_os = header[9];
 }
 
 int main(int argc, char* argv[])
 {
+  GZipFile file;
+  file.open("data.gz");
   return 0;
 }
