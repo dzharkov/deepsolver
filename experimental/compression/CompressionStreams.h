@@ -67,7 +67,7 @@ enum {
 const int GZipMagicID1 = 0x1f;
 const int GZipMagicID2 = 0x8b;
 
-//The code used for the 'CM' byte of the gzip header;
+//The code used for the 'CM' (compression method) byte of the gzip header;
 enum {
   GZipMethodDeflate = 8
 };
