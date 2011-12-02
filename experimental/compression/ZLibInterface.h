@@ -11,16 +11,12 @@
 //FIXME:typedef void* (*xalloc_func)(void*, zlib::uint, zlib::uint);
 //FIXME:typedef void (*xfree_func)(void*, void*);
 
-#ifndef DEPSOLVER_COMPRESSION_STREAMS_H
-#define DEPSOLVER_COMPRESSION_STREAMS_H
-
-//General types;
+#ifndef DEPSOLVER_ZLIB_INTERFACE_H
+#define DEPSOLVER_ZLIB_INTERFACE_H
 
 typedef uint32_t ZLibUInt;
 typedef uint8_t ZLibByte;
 typedef uint32_t ZLibULong;
-
-//ZLib constants;
 
 extern const int ZLibNoCompression;
 extern const int ZLibBestSpeed;
@@ -52,10 +48,10 @@ enum {
   ZLibDefaultNoHeader  = 0
 };
 
-class ZLibError 
+class ZLibException;//FIXME:DepsolverException;
 {
 public:
-  explicit ZLibError(int error)
+  explicit ZLibException(int error)
     : m_error(error) {}
 
 public:
@@ -66,7 +62,7 @@ public:
 
 private:
   int m_error;
-}; //class ZLibError;
+}; //class ZLibException;
 
 //Algorithms parameter structures;
 
