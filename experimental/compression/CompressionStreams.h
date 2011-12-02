@@ -52,62 +52,6 @@ enum {
   ZLibDefaultNoHeader  = 0
 };
 
-//GZip constants;
-
-enum {
-  GZipZLibError = 1,
-  GZipBadCRC = 2, // Recorded crc doesn't match data;
-  GZipBadLength = 3, // Recorded length doesn't match data;
-  GZipBadHeader = 4, // Malformed header;
-  GZipBadFooter = 5, // Malformed footer;
-  GZipBadMethod = 6 // Unsupported compression method;
-};
-
-//Magic numbers used by gzip header;
-const int GZipMagicID1 = 0x1f;
-const int GZipMagicID2 = 0x8b;
-
-//The code used for the 'CM' (compression method) byte of the gzip header;
-enum {
-  GZipMethodDeflate = 8
-};
-
-//Codes used for the 'FLG' byte of the gzip header;
-enum {
-  GZipFlagText = 1,
-  GZipFlagHeaderCRC = 2,
-  GZipFlagExtra = 4,
-  GZipFlagName  = 8,
-  GZipFlagComment = 16
-};
-
-// Codes used for the 'XFL' byte of the gzip header;
-enum {
-  GZipExtraFlagBestCompression = 2,
-  GZipExtraFlagBestSpeed  = 4
-};
-
-// Codes used for the 'OS' byte of the gzip header;
-enum {
-  GZipOSFat = 0,
-  GZipOSAmiga = 1,
-  GZipOSVms = 2,
-  GZipOSUnix = 3,
-  GZipOSVmCms = 4,
-  GZipOSAtari = 5,
-  GZipOSHpFs = 6,
-  GZipOSMacintosh = 7,
-  GZipOSZSystem = 8,
-  GZipOSCpM = 9,
-  GZipOSTops20 = 10,
-  GZipOSNtfs = 11,
-  GZipOSQDos = 12,
-  GZipOSAcorn = 13,
-  GZipOSUnknown = 255
-};
-
-//Error information classes;
-
 class ZLibError 
 {
 public:
@@ -123,33 +67,6 @@ public:
 private:
   int m_error;
 }; //class ZLibError;
-
-class GZipError 
-{
-public:
-  explicit GZipError(int error)
-    : m_error(error), 
-      m_zlibErrorCode(ZLibOKay) { }
-
-  explicit GZipError(const ZLibError& e)
-    : m_error(GZipZLibError), 
-      m_zlibErrorCode(e.getCode()) {}
-
-public:
-  int getCode() const
-  {
-    return m_error;
-  }
-
-  int getZLibErrorCode() const 
-  { 
-    return m_ZLibErrorCode;
-  }
-
-private:
-  int m_error;
-  int m_ZLibErrorCode_;
-};
 
 //Algorithms parameter structures;
 
@@ -177,31 +94,7 @@ struct ZLibParams
   int strategy;
   bool noHeader;
   bool calculateCRC;
-};
-
-struct GZipParams: ZLibParams
-{
-  GZipParams(int level = GZipDefaultCompression,
-	     int method = GZipDeflated,
-	     int windowBits = GZipDefaultWindowBits,
-	     int memLevel = GZipDefaultMemLevel,
-	     int strategy = GZipDefaultStrategy,
-	     std::string fileName = "",
-	     std::string comment = "",
-	     std::time_t mtime = 0)
-    : ZLibParams(level, method, windowBits, memLevel, strategy),
-      fileName(fileName),
-      comment(comment),
-      mtime(mtime) {}
-
-  std::string  fileName;
-  std::string  comment;
-  std::time_t  mtime;
-};
-
-#endif //DEPSOLVER_COMPRESSION_STREAMS_H;
-
-//ZLib classes;
+}; //class ZLibParams;
 
 class ZLibBase
 {
@@ -255,8 +148,6 @@ private:
   int m_totalOut;
 }; //class ZLibBase;
 
-//Here;
-
 class ZLibCompressorImpl: public ZLibBase
 {
 public: 
@@ -285,7 +176,7 @@ public:
   {
     reset(t1, 1);
   }
-};
+}; //class ZLibCompressorImpl;
 
 class ZLibDecompressorImpl: public ZLibBase
 {
@@ -333,5 +224,6 @@ public:
 
 private:
   bool m_eof;
-};
+}; //class ZLibDecompressorImpl;
 
+#endif //DEPSOLVER_COMPRESSION_STREAMS_H;
