@@ -48,10 +48,10 @@ enum {
   ZLibDefaultNoHeader  = 0
 };
 
-class ZLibException;//FIXME:DepsolverException;
+class ZLibException//FIXME:DepsolverException;
 {
 public:
-  explicit ZLibException(int error)
+  ZLibException(int error)
     : m_error(error) {}
 
 public:
@@ -107,16 +107,17 @@ protected:
     return m_stream; 
   }
 
-  void init(const ZLibParams& p, bool compress);
+  void initDeflate(const ZLibParams& p);
+  void initInflate(const ZLibParams& p);
+  void controlErrorCode(int errorCode) const;
 
   void before(const char*& srcBegin, const char* srcEnd,
 	      char*& destBegin, char* destEnd);
 
-  void after(const char*& srcBegin, char*& destBegin,
-	     bool compress);
+  void after(const char*& srcBegin, char*& destBegin, bool compress);
 
-  int xdeflate(int flush);
-  int xinflate(int flush);
+  int runDeflate(int flush);
+  int runInflate(int flush);
   void reset(bool compress, bool realloc);
 
 public:
@@ -138,8 +139,7 @@ public:
 private:
   void* m_stream; // Actual type: z_stream*;
   bool m_calculateCrc;
-  ZLibULong  m_crc;
-  ZLibULong m_crcImp_;
+  ZLibULong  m_crc, m_crcImp;
   int m_totalIn;
   int m_totalOut;
 }; //class ZLibBase;
