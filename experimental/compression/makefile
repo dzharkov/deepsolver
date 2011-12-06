@@ -7,5 +7,8 @@ clean:
 ZLibInterface.o: ZLibInterface.cpp ZLibInterface.h
 	g++ -c ZLibInterface.cpp
 
-proba: main.cpp
-	g++ -oproba main.cpp
+main.o: main.cpp
+	g++ -c main.cpp
+
+proba: main.o ZLibInterface.o
+	g++ -oproba main.o ZLibInterface.o -lz
