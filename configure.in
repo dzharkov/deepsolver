@@ -23,6 +23,8 @@ AC_CONFIG_FILES([
   lib/os/makefile
   lib/rpm/makefile
   programs/makefile
+  tests/makefile
+  tests/zlib/makefile
 ])
 
 AC_OUTPUT

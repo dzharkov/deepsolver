@@ -1,6 +1,7 @@
 SUBDIRS =  \
 lib \
-programs
+programs \
+tests
 
 #sysconf_DATA = 
 #dist_pkgdata_DATA = 
