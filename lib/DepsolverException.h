@@ -9,6 +9,7 @@ public:
   virtual ~DepsolverException() {}
 
 public:
+  virtual std::string getType() const = 0;
   virtual std::string getMessage() const = 0;
 }; //class DepsolverException;
 

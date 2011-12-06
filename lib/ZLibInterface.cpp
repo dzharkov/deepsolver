@@ -13,12 +13,9 @@
 // knows that we are building the library (possibly exporting code), rather 
 // than using it (possibly importing code).
 
-//FIXME:#include"depsolver.h"
+#include"depsolver.h"
 #include"ZLibInterface.h"
 #include <zlib.h>   // Jean-loup Gailly's and Mark Adler's "zlib.h" header;
-
-#include<assert.h>//KILLME:
-#include<string.h>//KILLME:
 
 //ZLib constants;
 

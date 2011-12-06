@@ -5,16 +5,10 @@
 
 // See http://www.boost.org/libs/iostreams for documentation.
 
-// Note: custom allocators are not supported on VC6, since that compiler
-// had trouble finding the function zlib_base::do_init.
-
-//FIXME:typedef void* (*xalloc_func)(void*, zlib::uint, zlib::uint);
-//FIXME:typedef void (*xfree_func)(void*, void*);
-
 #ifndef DEPSOLVER_ZLIB_INTERFACE_H
 #define DEPSOLVER_ZLIB_INTERFACE_H
 
-#include<stdint.h>
+#include"DepsolverException.h"
 
 typedef uint32_t ZLibUInt;
 typedef uint8_t ZLibByte;
@@ -50,23 +44,45 @@ enum {
   ZLibDefaultNoHeader  = 0
 };
 
-class ZLibException//FIXME:DepsolverException;
+class ZLibException: public DepsolverException
 {
 public:
-  ZLibException(int error)
-    : m_error(error) {}
+  ZLibException(int code)
+    : m_code(code) {}
 
 public:
   int getCode() const
   { 
-    return m_error; 
+    return m_code;
+  }
+
+  std::string getType() const
+  {
+    return "zlib";
+  }
+
+  std::string getMessage() const
+  {
+    assert(m_code != ZLibOKay);//The valid code but not an error;
+    if (m_code == ZLibStreamEnd)
+      return "unexpected end of stream";
+    if (m_code == ZLibStreamError)
+      return "stream problem";
+    if (m_code == ZLibVersionError)
+      return "unsupported data version";
+    if (m_code == ZLibDataError)
+      return "broken data";
+    if (m_code == ZLibMemError)
+      return "no enough memory for allocation";
+    if (m_code == ZLibBufError)
+      return "buffer problem";
+    assert(0);
+    return "";//Just to reduce warning messages;
   }
 
 private:
-  int m_error;
+  int m_code;
 }; //class ZLibException;
-
-//Algorithms parameter structures;
 
 struct ZLibParams 
 {

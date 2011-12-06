@@ -19,6 +19,12 @@ public:
 
   virtual ~SystemException() {}
 
+public:
+  std::string getType() const
+  {
+    return "system call";
+  }
+
   int getCode() const
   {
     return m_code;

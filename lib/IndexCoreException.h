@@ -12,6 +12,11 @@ public:
   virtual ~IndexCoreException() {}
 
 public:
+  std::string getType() const
+  {
+    return "index core";
+  }
+
   std::string getMessage() const
   {
     return m_message;

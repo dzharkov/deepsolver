@@ -13,6 +13,11 @@ public:
       virtual ~RpmException() {}
 
 public:
+  std::string getType() const
+  {
+    return "rpm";
+  }
+
   std::string getMessage() const
   {
     return m_message;
