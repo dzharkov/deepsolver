@@ -14,6 +14,8 @@
 #ifndef DEPSOLVER_ZLIB_INTERFACE_H
 #define DEPSOLVER_ZLIB_INTERFACE_H
 
+#include<stdint.h>
+
 typedef uint32_t ZLibUInt;
 typedef uint8_t ZLibByte;
 typedef uint32_t ZLibULong;
@@ -74,14 +76,14 @@ struct ZLibParams
 	     int memLevel = ZLibDefaultMemLevel,
 	     int strategy = ZLibDefaultStrategy,
 	     bool noHeader = ZLibDefaultNoHeader,
-	     bool calculateCRC = ZLibDefaultCRC)
+	     bool calculateCrc = ZLibDefaultCRC)
     : level(level), 
       method(method), 
       windowBits(windowBits),
       memLevel(memLevel), 
       strategy(strategy), 
       noHeader(noHeader), 
-      calculateCRC(calculateCRC) { }
+      calculateCrc(calculateCrc) { }
 
   int level;
   int method;
@@ -89,7 +91,7 @@ struct ZLibParams
   int memLevel;
   int strategy;
   bool noHeader;
-  bool calculateCRC;
+  bool calculateCrc;
 }; //class ZLibParams;
 
 class ZLibBase
@@ -144,17 +146,17 @@ private:
   int m_totalOut;
 }; //class ZLibBase;
 
-class ZLibCompressorImpl: public ZLibBase
+class ZLibCompressor: public ZLibBase
 {
 public: 
-  ZLibCompressorImpl(const ZLibParams& p = ZLibDefaultCompression)
+  ZLibCompressor(const ZLibParams& p = ZLibDefaultCompression)
   {
-    init(p, 1);
+    initDeflate(p);
   }
 
-  ~ZLibCompressorImpl()
+  ~ZLibCompressor()
   { 
-    reset(1, 0); 
+    ZLibBase::reset(1, 0);//1 means base was initialized for compression, 0 means we destroy object finally;
   }
 
 public:
@@ -162,64 +164,64 @@ public:
 	      char*& destBegin, char* destEnd, bool flush)
   {
     before(srcBegin, srcEnd, destBegin, destEnd);
-    const int result = xdeflate(flush?ZLibFinish :ZLibNoFlush);
+    const int result = runDeflate(flush?ZLibFinish :ZLibNoFlush);
     after(srcBegin, destBegin, 1);
-    ZLibError::check(result);
+    controlErrorCode(result);
     return result != ZLibStreamEnd; 
   }
 
-  void close()
+  void reset()
   {
-    reset(t1, 1);
+    ZLibBase::reset(1, 1);//first 1 means object was created for compression, the second 1 means we are reinitializing it;
   }
-}; //class ZLibCompressorImpl;
+}; //class ZLibCompressor;
 
-class ZLibDecompressorImpl: public ZLibBase
+class ZLibDecompressor: public ZLibBase
 {
 public:
-  ZLibDecompressorImpl(const ZLibParams& p)
+  ZLibDecompressor(const ZLibParams& p)
     : m_eof(0)
   {
-    init(p, 0);
+    initInflate(p);
   }
 
-  ZLibDecompressorImpl(int windowBits = ZLibDefaultWindowBits)
+  ZLibDecompressor(int windowBits = ZLibDefaultWindowBits)
     : m_eof(0)
   {
     ZLibParams p;
     p.windowBits = windowBits;
-    init(p, 0);
+    initInflate(p);
   }
 
-  ~ZLibDecompressorImpl()
+  ~ZLibDecompressor()
   {
-    reset(0, 0);
+    ZLibBase::reset(0, 0);//Zeroes mean the object was initialized for decompressing and must be closed finally;
   }
 
 public:
   bool filter(const char*& beginIn, const char* endIn,
 	      char*& beginOut, char* endOut, bool flush)
   {
-    before(srcBegin, srcEnd, destBegin, destEnd);
-    const int result = xinflate(ZLibSyncFlush);
-    after(srcBegin, destBegin, 0);
-    ZLibError::check(result);
+    before(beginIn, endIn, beginOut, endOut);
+    const int result = runInflate(ZLibSyncFlush);
+    after(beginIn, beginOut, 0);
+controlErrorCode(result);
     return !(m_eof = result == ZLibStreamEnd);
   }
 
-  void close()
+  void reset()
   {
     m_eof = 0;
-    reset(0, 1);
+    ZLibBase::reset(0, 1);//Zero means the object was initialized for decompressing and must be reinitialized;
   }
 
   bool eof() const 
   {
-    return m_eof_; 
+    return m_eof; 
   }
 
 private:
   bool m_eof;
-}; //class ZLibDecompressorImpl;
+}; //class ZLibDecompressor;
 
 #endif //DEPSOLVER_COMPRESSION_STREAMS_H;

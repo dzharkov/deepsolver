@@ -14,8 +14,11 @@
 // than using it (possibly importing code).
 
 //FIXME:#include"depsolver.h"
-#include"CompressionStreams.h"
+#include"ZLibInterface.h"
 #include <zlib.h>   // Jean-loup Gailly's and Mark Adler's "zlib.h" header;
+
+#include<assert.h>//KILLME:
+#include<string.h>//KILLME:
 
 //ZLib constants;
 
@@ -68,7 +71,7 @@ void ZLibBase::initDeflate(const ZLibParams& p)
   s->zfree = Z_NULL;
   s->opaque = Z_NULL;
   const int windowBits = p.noHeader? -p.windowBits : p.windowBits;
-  const int errorCode = deflateInit2( s, p.level, p.method, window_bits, p.mem_level, p.strategy);
+  const int errorCode = deflateInit2( s, p.level, p.method, windowBits, p.memLevel, p.strategy);
   controlErrorCode(errorCode);
 }
 
@@ -85,7 +88,7 @@ void ZLibBase::initInflate(const ZLibParams& p)
   controlErrorCode(errorCode);
 }
 
-void ZLibBase::controlErrorCode(int errorCode)
+void ZLibBase::controlErrorCode(int errorCode) const
 {
   assert(errorCode == Z_OK || errorCode == Z_STREAM_END);
   /*FIXME:
@@ -129,26 +132,26 @@ void ZLibBase::after(const char*& srcBegin, char*& destBegin, bool compress)
       reinterpret_cast<const ZLibByte*>(const_cast<const char*>(destBegin));
     const ZLibUInt length = compress ?
       static_cast<ZLibUInt>(nextIn - srcBegin) :
-      static_cast<zZLibUInt>(nextOut - destBegin);
+      static_cast<ZLibUInt>(nextOut - destBegin);
     if (length > 0)
       m_crc = m_crcImp = crc32(m_crcImp, buf, length);
     }
   m_totalIn = s->total_in;
-  m_totalOut = s->totalOut;
+  m_totalOut = s->total_out;
   srcBegin = const_cast<const char*>(nextIn);
   destBegin = nextOut;
 }
 
 int ZLibBase::runDeflate(int flush)
 { 
-  z_stream s = static_cast<z_stream*>(m_stream);
+  z_stream* s = static_cast<z_stream*>(m_stream);
   assert(s);
   return ::deflate(s, flush);
 }
 
 int ZLibBase::runInflate(int flush)
 { 
-  z_stream s = static_cast<z_stream*>(m_stream);
+  z_stream* s = static_cast<z_stream*>(m_stream);
   assert(s);
   return ::inflate(s, flush);
 }
