@@ -1,0 +1,15 @@
+#!/bin/sh -e
+# Performs regression testing of zlib interface;
+
+./test
+echo 'File sizes:'
+wc -c orig.data decompressed.data compressed.data
+echo 
+echo 'Md5sums:'
+md5sum --binary orig.data decompressed.data
+echo
+echo 'decompressed.data verification:'
+md5sum --binary orig.data | sed s/orig.data/decompressed.data/ | md5sum --check 
+echo
+echo 'zlib interface OK!'
+/bin/rm -f orig.data compressed.data decompressed.data 
