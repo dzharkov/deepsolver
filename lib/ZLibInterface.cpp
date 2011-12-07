@@ -89,16 +89,18 @@ void ZLibBase::controlErrorCode(int errorCode) const
 {
   if (errorCode == Z_OK || errorCode == Z_STREAM_END)
     return;
-  /*
-  if (error == Z_MEM_ERROR) 
-    throw std::bad_alloc();
-  */
   throw ZLibException(errorCode);
 }
 
 void ZLibBase::before(const char* srcBegin, size_t srcLength,
 		      char* destBegin, size_t destLength)
 {
+  /*
+   * NOTE: srcLength can be zero for compression mode but cannot be zero in
+   * decompression mode. If srcLength is zero in decompression mode zlib
+   * returns Z_BUF_ERROR on inflate (ignoring Z_BUF_ERROR still gives
+   * correct decompressed data).
+   */
   assert(srcBegin);
   assert(destBegin);
   z_stream* s = static_cast<z_stream*>(m_stream);

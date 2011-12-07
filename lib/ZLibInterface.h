@@ -261,6 +261,7 @@ public:
   bool filter(const char* srcBegin, size_t srcLength,
 	      char* destBegin, size_t destLength)
   {
+    assert(srcLength > 0);
     before(srcBegin, srcLength, destBegin, destLength);
     const int result = runInflate(ZLibSyncFlush);
     after(&m_srcPos, &m_destPos, 0);//0 means decompressing;

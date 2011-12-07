@@ -3,7 +3,7 @@
 #include"ZLibInterface.h"
 
 #define TEST_BLOCK_SIZE 512
-#define TEST_BLOCK_COUNT 1048576
+#define TEST_BLOCK_COUNT 16384
 
 #define ORIG_FILE_NAME "orig.data"
 #define COMPRESSED_FILE_NAME "compressed.data"
@@ -42,7 +42,7 @@ void compress()
 	  if (compressor.getDestProcessed() > 0)
 	    {
 	      const ssize_t written = write(zlibFd, zlibBuf, compressor.getDestProcessed());
-	      assert(written == compressor.getDestProcessed());
+	      assert((size_t)written == compressor.getDestProcessed());
 	    }
 	  if (compressor.getDestProcessed() < sizeof(zlibBuf))
 	    break;
@@ -72,19 +72,21 @@ void decompress()
       char zlibBuf[TEST_BLOCK_SIZE];
       while(1)
 	{
-	  assert(readCount >= srcProcessed);
+	  assert(readCount != -1 && (size_t)readCount >= srcProcessed);
+	  if ((size_t)readCount == srcProcessed)//No data to decompress;
+	    break;
 	  decompressor.filter(srcPos, (size_t)readCount - srcProcessed, zlibBuf, sizeof(zlibBuf));//FIXME:eof!!!
 	  srcPos = decompressor.getSrcPos();
 	  srcProcessed += decompressor.getSrcProcessed(); 
 	  if (decompressor.getDestProcessed() > 0)
 	    {
 	      const ssize_t written = write(zlibFd, zlibBuf, decompressor.getDestProcessed());
-	      assert(written == decompressor.getDestProcessed());
+	      assert((size_t)written == decompressor.getDestProcessed());
 	    }
 	  if (decompressor.getDestProcessed() != sizeof(zlibBuf))
 	    break;
 	}
-	  assert(srcProcessed == readCount);
+      assert(srcProcessed == (size_t)readCount);
     }
   close(origFd);
   close(zlibFd);
