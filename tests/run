@@ -1,0 +1,11 @@
+#!/bin/sh -e
+# Runs all prepared regression tests;
+# NOTE: You must run 'make'  from the root directory first to build all test binaries;
+
+# zlib interface test;
+cd zlib
+./run
+cd ..
+
+echo
+echo 'All tests was passed successfully!'
