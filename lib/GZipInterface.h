@@ -50,4 +50,28 @@ private:
   std::string m_fileName;
 }; //class GZipOutputFile;
 
+class GZipInputFile
+{
+public:
+  GZipInputFile()
+    : m_fd(-1),
+      m_gzfile(NULL) {}
+
+  ~GZipInputFile()
+  {
+    close();
+  }
+
+public:
+  void open(const std::string& fileName);
+  //The method below returns less data than requested block size in case of end of file;
+  size_t read(void* buf, size_t bufSize);
+  void close();
+
+private:
+  int m_fd;
+  void* m_gzfile;
+  std::string m_fileName;
+}; //class GZipOutputFile;
+
 #endif //DEPSOLVER_GZIP_INTERFACE_H;

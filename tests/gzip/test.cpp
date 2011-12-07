@@ -36,43 +36,23 @@ void compress()
 
 void decompress()
 {
-  /*
-  const int origFd = open(COMPRESSED_FILE_NAME, O_RDONLY);
-  assert(origFd > 0);
-  const int zlibFd = open(DECOMPRESSED_FILE_NAME, O_CREAT | O_TRUNC | O_WRONLY, 0666);
-  assert(zlibFd > 0);
-  ZLibDecompressor decompressor;
+  GZipInputFile gzip;
+  gzip.open(COMPRESSED_FILE_NAME);
+  const int outputFd = open(DECOMPRESSED_FILE_NAME, O_CREAT | O_TRUNC | O_WRONLY, 0666);
+  assert(outputFd > 0);
   while(1)
     {
       char buf[TEST_BLOCK_SIZE];
-      const ssize_t readCount = read(origFd, buf, sizeof(buf));
-      assert(readCount >= 0);
-      if (readCount == 0)
-	break;
-      const char* srcPos = buf;
-      size_t srcProcessed = 0;
-      char zlibBuf[TEST_BLOCK_SIZE];
-      while(1)
+      const size_t readCount = gzip.read(buf, sizeof(buf));
+      if (readCount > 0)
 	{
-	  assert(readCount != -1 && (size_t)readCount >= srcProcessed);
-	  if ((size_t)readCount == srcProcessed)//No data to decompress;
-	    break;
-	  decompressor.filter(srcPos, (size_t)readCount - srcProcessed, zlibBuf, sizeof(zlibBuf));//FIXME:eof!!!
-	  srcPos = decompressor.getSrcPos();
-	  srcProcessed += decompressor.getSrcProcessed(); 
-	  if (decompressor.getDestProcessed() > 0)
-	    {
-	      const ssize_t written = write(zlibFd, zlibBuf, decompressor.getDestProcessed());
-	      assert((size_t)written == decompressor.getDestProcessed());
-	    }
-	  if (decompressor.getDestProcessed() != sizeof(zlibBuf))
-	    break;
+	  const ssize_t written = write(outputFd, buf, readCount);
+	  assert((size_t)written == readCount);
 	}
-      assert(srcProcessed == (size_t)readCount);
+      if (readCount < sizeof(buf))
+	break;
     }
-  close(origFd);
-  close(zlibFd);
-  */
+  close(outputFd);
 }
 
 int main(int argc, char* argv[])
