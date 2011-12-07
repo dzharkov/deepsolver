@@ -103,40 +103,44 @@ void ZLibBase::controlErrorCode(int errorCode) const
   */
 }
 
-void ZLibBase::before(const char*& srcBegin, const char* srcEnd,
-		      char*& destBegin, char* destEnd)
+void ZLibBase::before(const char* srcBegin, size_t srcLength,
+		      char* destBegin, size_t destLength)
 {
+  assert(srcBegin);
+  assert(destBegin);
   z_stream* s = static_cast<z_stream*>(m_stream);
   assert(s);
   s->next_in = reinterpret_cast<ZLibByte*>(const_cast<char*>(srcBegin));
-  s->avail_in = static_cast<ZLibUInt>(srcEnd - srcBegin);
+  s->avail_in = srcLength;
   s->next_out = reinterpret_cast<ZLibByte*>(destBegin);
-  s->avail_out= static_cast<ZLibUInt>(destEnd - destBegin);
+  s->avail_out= destLength;
 }
 
-void ZLibBase::after(const char*& srcBegin, char*& destBegin, bool compress)
+void ZLibBase::after(const char** srcBegin, char** destBegin, bool compress)
 {
+  assert(srcBegin);
+  assert(destBegin);
   z_stream* s = static_cast<z_stream*>(m_stream);
   assert(s);
   char* nextIn = reinterpret_cast<char*>(s->next_in);
-  char* nextOut = reinterpret_cast<char*>(s->next_out);
   assert(nextIn);
+  char* nextOut = reinterpret_cast<char*>(s->next_out);
   assert(nextOut);
   if (m_calculateCrc) 
     {
     const ZLibByte* buf = compress ?
-      reinterpret_cast<const ZLibByte*>(srcBegin) :
-      reinterpret_cast<const ZLibByte*>(const_cast<const char*>(destBegin));
+      reinterpret_cast<const ZLibByte*>(*srcBegin) :
+      reinterpret_cast<const ZLibByte*>(const_cast<const char*>(*destBegin));
     const ZLibUInt length = compress ?
-      static_cast<ZLibUInt>(nextIn - srcBegin) :
-      static_cast<ZLibUInt>(nextOut - destBegin);
+      static_cast<ZLibUInt>(nextIn - *srcBegin) :
+      static_cast<ZLibUInt>(nextOut - *destBegin);
     if (length > 0)
       m_crc = m_crcImp = crc32(m_crcImp, buf, length);
     }
   m_totalIn = s->total_in;
   m_totalOut = s->total_out;
-  srcBegin = const_cast<const char*>(nextIn);
-  destBegin = nextOut;
+  *srcBegin = const_cast<const char*>(nextIn);
+  *destBegin = nextOut;
 }
 
 int ZLibBase::runDeflate(int flush)

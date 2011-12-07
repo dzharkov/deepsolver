@@ -129,10 +129,10 @@ protected:
   void initInflate(const ZLibParams& p);
   void controlErrorCode(int errorCode) const;
 
-  void before(const char*& srcBegin, const char* srcEnd,
-	      char*& destBegin, char* destEnd);
+  void before(const char* srcBegin, size_t srcLength,
+	      char* destBegin, size_t destLength);
 
-  void after(const char*& srcBegin, char*& destBegin, bool compress);
+  void after(const char** srcBegin, char** destBegin, bool compress);
 
   int runDeflate(int flush);
   int runInflate(int flush);
@@ -166,6 +166,10 @@ class ZLibCompressor: public ZLibBase
 {
 public: 
   ZLibCompressor(const ZLibParams& p = ZLibDefaultCompression)
+    : m_srcPos(NULL),
+      m_destPos(NULL),
+      m_srcProcessed(0),
+      m_destProcessed(0)
   {
     initDeflate(p);
   }
@@ -176,13 +180,17 @@ public:
   }
 
 public:
-  bool filter(const char*& srcBegin, const char* srcEnd,
-	      char*& destBegin, char* destEnd, bool flush)
+  bool filter(const char* srcBegin, size_t srcLength,
+	      char* destBegin, size_t destLength, bool flush)
   {
-    before(srcBegin, srcEnd, destBegin, destEnd);
+    before(srcBegin, srcLength, destBegin, destLength);
     const int result = runDeflate(flush?ZLibFinish :ZLibNoFlush);
-    after(srcBegin, destBegin, 1);
+    after(&m_srcPos, &m_destPos, 1);//1 means compressing mode;
+    assert(m_srcPos);
+    assert(m_destPos);
     controlErrorCode(result);
+    m_srcProcessed = static_cast<size_t>(m_srcPos - srcBegin);
+    m_destProcessed = static_cast<size_t>(m_destPos - destBegin);
     return result != ZLibStreamEnd; 
   }
 
@@ -190,19 +198,54 @@ public:
   {
     ZLibBase::reset(1, 1);//first 1 means object was created for compression, the second 1 means we are reinitializing it;
   }
+
+  const char* getSrcPos() const
+  {
+    assert(m_srcPos);
+    return m_srcPos;
+  }
+
+  char* getDestPos()
+  {
+    assert(m_destPos);
+    return m_destPos;
+  }
+
+  size_t getSrcProcessed() const
+  {
+    return m_srcProcessed;
+  }
+
+  size_t getDestProcessed() const
+  {
+    return m_destProcessed;
+  }
+
+private:
+  const char* m_srcPos;
+  char* m_destPos;
+  size_t m_srcProcessed, m_destProcessed;
 }; //class ZLibCompressor;
 
 class ZLibDecompressor: public ZLibBase
 {
 public:
   ZLibDecompressor(const ZLibParams& p)
-    : m_eof(0)
+    : m_eof(0),
+      m_srcPos(0),
+      m_destPos(0),
+      m_srcProcessed(0),
+      m_destProcessed(0)
   {
     initInflate(p);
   }
 
   ZLibDecompressor(int windowBits = ZLibDefaultWindowBits)
-    : m_eof(0)
+    : m_eof(0),
+      m_srcPos(0),
+      m_destPos(0),
+      m_srcProcessed(0),
+      m_destProcessed(0)
   {
     ZLibParams p;
     p.windowBits = windowBits;
@@ -215,14 +258,17 @@ public:
   }
 
 public:
-  bool filter(const char*& beginIn, const char* endIn,
-	      char*& beginOut, char* endOut, bool flush)
+  bool filter(const char* srcBegin, size_t srcLength,
+	      char* destBegin, size_t destLength)
   {
-    before(beginIn, endIn, beginOut, endOut);
+    before(srcBegin, srcLength, destBegin, destLength);
     const int result = runInflate(ZLibSyncFlush);
-    after(beginIn, beginOut, 0);
+    after(&m_srcPos, &m_destPos, 0);//0 means decompressing;
 controlErrorCode(result);
-    return !(m_eof = result == ZLibStreamEnd);
+    m_srcProcessed = static_cast<size_t>(m_srcPos - srcBegin);
+    m_destProcessed = static_cast<size_t>(m_destPos - destBegin);
+    m_eof = result == ZLibStreamEnd;
+    return !m_eof;
   }
 
   void reset()
@@ -236,8 +282,33 @@ controlErrorCode(result);
     return m_eof; 
   }
 
+  const char* getSrcPos() const
+  {
+    assert(m_srcPos);
+    return m_srcPos;
+  }
+
+  char* getDestPos()
+  {
+    assert(m_destPos);
+    return m_destPos;
+  }
+
+  size_t getSrcProcessed() const
+  {
+    return m_srcProcessed;
+  }
+
+  size_t getDestProcessed() const
+  {
+    return m_destProcessed;
+  }
+
 private:
   bool m_eof;
+  const char* m_srcPos;
+  char* m_destPos;
+  size_t m_srcProcessed, m_destProcessed;
 }; //class ZLibDecompressor;
 
 #endif //DEPSOLVER_COMPRESSION_STREAMS_H;
