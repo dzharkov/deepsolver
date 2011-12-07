@@ -1,0 +1,19 @@
+#!/bin/sh -e
+# Performs regression testing of gzip interface;
+
+./test
+echo 'File sizes:'
+wc -c orig.data decompressed.data compressed.data.gz
+echo 
+echo 'Md5sums:'
+md5sum --binary orig.data decompressed.data
+echo
+echo 'decompressed.data verification:'
+md5sum --binary orig.data | sed s/orig.data/decompressed.data/ | md5sum --check 
+echo
+echo 'Checking decompression with system gzip utility'
+gunzip compressed.data.gz
+md5sum --binary orig.data | sed s/orig.data/compressed.data/ | md5sum --check 
+echo
+echo 'gzip interface OK!'
+/bin/rm -f orig.data compressed.data.gz compressed.data decompressed.data 

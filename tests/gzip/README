@@ -1,0 +1,7 @@
+This test must create three files:
+* orig.data: randomly generated sequence of digits;
+* compressed.data.gz: compressed with gzip stream from orig.data;
+* decompressed.data: decompressed stream from compressed.data.
+
+On success orig.data and decompressed.data must have the same content. The `run' script
+lets be sure   everything is correct with md5sum checking.

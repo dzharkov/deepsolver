@@ -7,5 +7,10 @@ cd zlib
 ./run
 cd ..
 
+# gzip interface test;
+cd gzip
+./run
+cd ..
+
 echo
 echo 'All tests was passed successfully!'
