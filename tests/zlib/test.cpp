@@ -92,7 +92,16 @@ void decompress()
 
 int main(int argc, char* argv[])
 {
-  compress();
-  decompress();
+  try {
+    std::cout << "Compressing " << (TEST_BLOCK_SIZE * TEST_BLOCK_COUNT) / 1024 << "k of random data" << std::endl;
+    compress();
+    std::cout << "Decompressing..." << std::endl;
+    decompress();
+  }
+  catch (const DepsolverException& e)
+    {
+      std::cerr << e.getType() << " error:" << e.getMessage() << std::endl;
+      return 1;
+    }
   return 0;
 }

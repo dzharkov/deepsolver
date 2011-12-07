@@ -87,20 +87,13 @@ void ZLibBase::initInflate(const ZLibParams& p)
 
 void ZLibBase::controlErrorCode(int errorCode) const
 {
-  assert(errorCode == Z_OK || errorCode == Z_STREAM_END);
-  /*FIXME:
-  switch (error) 
-    {
-    case Z_OK: 
-    case Z_STREAM_END: 
-    //case Z_BUF_ERROR: 
-      return;
-  case Z_MEM_ERROR: 
-    boost::throw_exception(std::bad_alloc());
-    default:
-      boost::throw_exception(zlib_error(error));
-    }
+  if (errorCode == Z_OK || errorCode == Z_STREAM_END)
+    return;
+  /*
+  if (error == Z_MEM_ERROR) 
+    throw std::bad_alloc();
   */
+  throw ZLibException(errorCode);
 }
 
 void ZLibBase::before(const char* srcBegin, size_t srcLength,
