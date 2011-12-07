@@ -25,6 +25,7 @@ AC_CONFIG_FILES([
   programs/makefile
   tests/makefile
   tests/zlib/makefile
+  tests/gzip/makefile
 ])
 
 AC_OUTPUT

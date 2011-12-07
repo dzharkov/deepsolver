@@ -7,13 +7,13 @@
 class GZipException: public DepsolverException
 {
 public:
-  GZipException(const std:;string& msg)
+  GZipException(const std::string& msg)
     : m_msg(msg) {}
 
   virtual ~GZipException() {}
 
 public:
-std:;string getType() const
+  std::string getType() const
   {
     return "gzip";
   }
@@ -47,7 +47,7 @@ public:
 private:
   int m_fd;
   void* m_gzfile;
-std:;string m_fileName;
+  std::string m_fileName;
 }; //class GZipOutputFile;
 
 #endif //DEPSOLVER_GZIP_INTERFACE_H;

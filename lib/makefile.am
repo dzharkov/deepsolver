@@ -14,4 +14,5 @@ NamedPkgRel.cpp \
 RepoIndexInfoFile.cpp \
 RepoIndexTextFormatWriter.cpp \
 string-utils.cpp  \
-ZLibInterface.cpp
+ZLibInterface.cpp \
+GZipInterface.cpp
