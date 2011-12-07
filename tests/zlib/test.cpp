@@ -3,7 +3,7 @@
 #include"ZLibInterface.h"
 
 #define TEST_BLOCK_SIZE 512
-#define TEST_BLOCK_COUNT 1024
+#define TEST_BLOCK_COUNT 1048576
 
 #define ORIG_FILE_NAME "orig.data"
 #define COMPRESSED_FILE_NAME "compressed.data"
@@ -14,7 +14,7 @@ void fillRandomBuf(void* buf, size_t len)
   assert(buf);
   unsigned char* c = static_cast<unsigned char*>(buf);
   for(size_t i = 0;i < len;i++)
-    c[i] = (rand() % 10) + '0';
+    c[i] = (rand() % 10) + '0';//Using only digits to make data more suitable for compressing;
 }
 
 void compress()
@@ -29,28 +29,25 @@ void compress()
       char buf[TEST_BLOCK_SIZE];
       fillRandomBuf(buf, sizeof(buf));
       const ssize_t written = write(origFd, buf, sizeof(buf));
-      assert(written == sizeof(buf));
+      assert(written == sizeof(buf));//FIXME:
+      const char* srcPos = buf;
+      size_t srcProcessed = 0;
       char zlibBuf[TEST_BLOCK_SIZE];
-      const char* srcBegin = buf;
-      const char *srcEnd = srcBegin + TEST_BLOCK_SIZE;
-      char * destBegin;
-      char * destEnd;
       while(1)
 	{
-	  destBegin = zlibBuf;
-	  destEnd = destBegin + TEST_BLOCK_SIZE;
-	  char* origValue = destBegin;
-	  compressor.filter(srcBegin, srcEnd, destBegin, destEnd, i == TEST_BLOCK_COUNT - 1);
-	  const int has = static_cast<int>(destBegin - origValue);
-	  if (has > 0)
+	  assert(srcProcessed <= sizeof(buf));
+	  compressor.filter(srcPos, sizeof(buf) - srcProcessed, zlibBuf, sizeof(zlibBuf), i == TEST_BLOCK_COUNT - 1);
+	  srcPos = compressor.getSrcPos();
+	  srcProcessed += compressor.getSrcProcessed();
+	  if (compressor.getDestProcessed() > 0)
 	    {
-	      const ssize_t written = write(zlibFd, zlibBuf, has);
-	      assert(written == has);
+	      const ssize_t written = write(zlibFd, zlibBuf, compressor.getDestProcessed());
+	      assert(written == compressor.getDestProcessed());
 	    }
-	  if (destEnd != destBegin)
+	  if (compressor.getDestProcessed() < sizeof(zlibBuf))
 	    break;
 	}
-      assert(srcBegin == srcEnd);
+      assert(srcProcessed == sizeof(buf));
     }
   close(origFd);
   close(zlibFd);
@@ -70,27 +67,24 @@ void decompress()
       assert(readCount >= 0);
       if (readCount == 0)
 	break;
+      const char* srcPos = buf;
+      size_t srcProcessed = 0;
       char zlibBuf[TEST_BLOCK_SIZE];
-      const char* srcBegin = buf;
-      const char *srcEnd = srcBegin + readCount;
-      char* destBegin;
-      char* destEnd;
       while(1)
 	{
-	  destBegin = zlibBuf;
-	  destEnd = destBegin + TEST_BLOCK_SIZE;
-	  char* origValue = destBegin;
-	  decompressor.filter(srcBegin, srcEnd, destBegin, destEnd, readCount < (ssize_t)sizeof(buf));//FIXME:eof!!!
-	  const int has = static_cast<int>(destBegin - origValue);
-	  if (has > 0)
+	  assert(readCount >= srcProcessed);
+	  decompressor.filter(srcPos, (size_t)readCount - srcProcessed, zlibBuf, sizeof(zlibBuf));//FIXME:eof!!!
+	  srcPos = decompressor.getSrcPos();
+	  srcProcessed += decompressor.getSrcProcessed(); 
+	  if (decompressor.getDestProcessed() > 0)
 	    {
-	      const ssize_t written = write(zlibFd, zlibBuf, has);
-	      assert(written == has);
+	      const ssize_t written = write(zlibFd, zlibBuf, decompressor.getDestProcessed());
+	      assert(written == decompressor.getDestProcessed());
 	    }
-	  if (destEnd != destBegin)
+	  if (decompressor.getDestProcessed() != sizeof(zlibBuf))
 	    break;
 	}
-	  assert(srcBegin == srcEnd);
+	  assert(srcProcessed == readCount);
     }
   close(origFd);
   close(zlibFd);
