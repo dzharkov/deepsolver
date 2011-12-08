@@ -6,7 +6,7 @@
 
 enum {
   TextFileStd = 0,
-  TextFileGZip = 1;
+  TextFileGZip = 1
 };
 
 class TextFileException: public DepsolverException
@@ -32,7 +32,7 @@ private:
   std::string m_msg;
 }; //class TextFileException;
 
-class abstractTextFileWriter
+class AbstractTextFileWriter
 {
 public:
   virtual ~AbstractTextFileWriter() {}
@@ -42,7 +42,7 @@ public:
   virtual void close() = 0;
 }; //class AbstractTextFileWriter;
 
-class abstractTextFileReader
+class AbstractTextFileReader
 {
 public:
   virtual ~AbstractTextFileReader() {}

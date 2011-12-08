@@ -2,12 +2,13 @@
 
 #include"depsolver.h"
 #include"TextFiles.h"
+#include"GZipInterface.h"
 
 #define TEXT_FILE_STOP(x) throw TextFileException(x)
 
 //Text files with stdstreams;
 
-class StdTextFileWriter: public abstractTextFileWriter
+class StdTextFileWriter: public AbstractTextFileWriter
 {
 public:
   StdTextFileWriter()
@@ -48,7 +49,7 @@ private:
   std::ofstream m_stream;
 }; //class StdTextFileWriter;
 
-class StdTextFileReader: public abstractTextFileReader
+class StdTextFileReader: public AbstractTextFileReader
 {
 public:
   StdTextFileReader()
@@ -63,7 +64,7 @@ public:
   void open(const std::string& fileName)
   {
     assert(!m_opened);
-    assert(!m_fileName.empty());
+    assert(!fileName.empty());
     m_stream.open(fileName.c_str());
     if (!m_stream)
       TEXT_FILE_STOP("Cannot open \'" + fileName + "\' for reading");
@@ -97,7 +98,7 @@ private:
 
 //GZip text files;
 
-class GZipTextFileWriter: public abstractTextFileWriter
+class GZipTextFileWriter: public AbstractTextFileWriter
 {
 public:
   GZipTextFileWriter() {}
@@ -134,7 +135,7 @@ public:
   virtual ~GZipTextFileReader() {}
 
 public:
-  void open(const std:;string& fileName)
+  void open(const std::string& fileName)
   {
     m_gzipFile.open(fileName);
   }
@@ -168,7 +169,7 @@ public:
 	  if (buf[i] != '\r')
 	    m_pending += buf[i];
 	//Checking is there enough data to return;
-	const std::string::size_type newLinePos = = m_pending.find("\n");
+	const std::string::size_type newLinePos = m_pending.find("\n");
 	if (newLinePos == std::string::npos && !m_eof)
 	  continue;//Still no enough data but we can read more;
 	if (newLinePos == std::string::npos)
@@ -196,6 +197,7 @@ public:
 private:
   GZipInputFile m_gzipFile;
   bool m_eof;
+  std::string m_pending;
 }; //class AbstractTextFileReader;
 
 std::auto_ptr<AbstractTextFileReader> createTextFileReader(int type, const std::string& fileName)
@@ -203,7 +205,7 @@ std::auto_ptr<AbstractTextFileReader> createTextFileReader(int type, const std::
   assert(!fileName.empty());
   if (type == TextFileStd)
     {
-      std::auto_ptr<StdTextFileReader> reader(new stdTextFileReader());
+      std::auto_ptr<StdTextFileReader> reader(new StdTextFileReader());
       reader->open(fileName);
       return std::auto_ptr<AbstractTextFileReader>(reader.release());
     }
@@ -222,7 +224,7 @@ std::auto_ptr<AbstractTextFileWriter> createTextFileWriter(int type, const std::
   assert(!fileName.empty());
   if (type == TextFileStd)
     {
-      std::auto_ptr<StdTextFileWriter> writer(new stdTextFileWriter());
+      std::auto_ptr<StdTextFileWriter> writer(new StdTextFileWriter());
       writer->open(fileName);
       return std::auto_ptr<AbstractTextFileWriter>(writer.release());
     }
