@@ -30,7 +30,7 @@ public:
 
 private:
   std::string m_msg;
-}; //class DepsolverException;
+}; //class TextFileException;
 
 class abstractTextFileWriter
 {
