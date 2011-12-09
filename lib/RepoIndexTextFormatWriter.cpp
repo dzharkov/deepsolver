@@ -132,9 +132,7 @@ RepoIndexTextFormatWriter::RepoIndexTextFormatWriter(AbstractConsoleMessages& co
 
 void RepoIndexTextFormatWriter::init()
 {
-  m_os.open(m_tmpFileName.c_str());
-  if (!m_os)
-    INDEX_CORE_STOP("Error creating temporary file \'" + m_tmpFileName + "\'");
+  m_tmpFile = createTextFileWriter(TextFileStd, m_tmpFileName);
 }
 
 void RepoIndexTextFormatWriter::add(const PkgFile& pkgFile,
@@ -144,17 +142,17 @@ void RepoIndexTextFormatWriter::add(const PkgFile& pkgFile,
 			      const NamedPkgRelList& obsoletes,
 			      const StringList& fileList)
 {
-  m_os << "[" << File::baseName(pkgFile.fileName) << "]" << std::endl;
-  m_os << NAME_STR << pkgFile.name << std::endl;
-  m_os << EPOCH_STR << pkgFile.epoch << std::endl;
-  m_os << VERSION_STR << pkgFile.version << std::endl;
-  m_os << RELEASE_STR << pkgFile.release << std::endl;
-  m_os << ARCH_STR << pkgFile.arch << std::endl;
-  m_os << URL_STR << pkgFile.url << std::endl;
-  m_os << LICENSE_STR << pkgFile.license << std::endl;
-  m_os << PACKAGER_STR << pkgFile.packager << std::endl;
-  m_os << SUMMARY_STr << pkgFile.summary << std::endl;
-  m_os << DESCRIPTION_STR << encodeDescr(pkgFile.description) << std::endl;
+  m_tmpFile->writeLine("[" + File::baseName(pkgFile.fileName) + "]");
+  m_tmpFile->writeLine(NAME_STR + pkgFile.name);
+  m_tmpFile->writeLine(EPOCH_STR + pkgFile.epoch);
+  m_tmpFile->writeLine(VERSION_STR + pkgFile.version);
+  m_tmpFile->writeLine(RELEASE_STR + pkgFile.release);
+  m_tmpFile->writeLine(ARCH_STR + pkgFile.arch);
+  m_tmpFile->writeLine(URL_STR + pkgFile.url);
+  m_tmpFile->writeLine(LICENSE_STR + pkgFile.license);
+  m_tmpFile->writeLine(PACKAGER_STR + pkgFile.packager);
+  m_tmpFile->writeLine(SUMMARY_STr + pkgFile.summary);
+  m_tmpFile->writeLine(DESCRIPTION_STR + encodeDescr(pkgFile.description));
   for(NamedPkgRelList::const_iterator it = provides.begin();it != provides.end();it++)
     {
       /*
@@ -163,7 +161,7 @@ void RepoIndexTextFormatWriter::add(const PkgFile& pkgFile,
        * saving all provides, if filtering is enabled we will proceed real
        * filtering on additional phase.
        */
-      m_os << PROVIDES_STR << saveNamedPkgRel(*it) << std::endl;
+      m_tmpFile->writeLine(PROVIDES_STR + saveNamedPkgRel(*it));
       //But registration must be done only if we have no additional phase ;
       if (!m_filterProvidesByRequires)
 	firstProvideReg(pkgFile.name, it->pkgName);
@@ -179,28 +177,28 @@ void RepoIndexTextFormatWriter::add(const PkgFile& pkgFile,
      */
     if (m_filterProvidesByRequires || m_filterProvidesByDirs.empty() || fileFromDirs(*it, m_filterProvidesByDirs))
       {
-	m_os << PROVIDES_STR << saveFileName(*it) << std::endl;
+	m_tmpFIle->writeLine(PROVIDES_STR + saveFileName(*it));
 	//But we are performing registration only if there is no additional phase ;
 	if (!m_filterProvidesByRequires)
 	  firstProvideReg(pkgFile.name, *it);
       }
   for(NamedPkgRelList::const_iterator it = requires.begin();it != requires.end();it++)
     {
-      m_os << REQUIRES_STR << saveNamedPkgRel(*it) << std::endl;
+      m_tmpFile->writeLine(REQUIRES_STR + saveNamedPkgRel(*it));
       if (m_filterProvidesByRequires)
 	m_requiresSet.insert(it->pkgName);
     }
   for(NamedPkgRelList::const_iterator it = conflicts.begin();it != conflicts.end();it++)
-    m_os << CONFLICTS_STR << saveNamedPkgRel(*it) << std::endl;
+    m_tmpFile->writeLine(CONFLICTS_STR + saveNamedPkgRel(*it));
   for(NamedPkgRelList::const_iterator it = obsoletes.begin();it != obsoletes.end();it++)
-    m_os << OBSOLETES_STR << saveNamedPkgRel(*it) << std::endl;
-  m_os << std::endl;
+    m_tmpFile->writeLine(OBSOLETES_STR + saveNamedPkgRel(*it));
+  m_tmpFile->writeLine("");
 }
 
 void RepoIndexTextFormatWriter::commit()
 {
-  m_os.close();
-  m_tmpFileName = concatUnixPath(m_dir, TMP_FILE);
+  m_tmpFile->close();
+  assert(m_tmpFileName == concatUnixPath(m_dir, TMP_FILE));//KILLME:
   if (m_filterProvidesByRequires)
     {
       m_console.msg() << "Saved " << m_requiresSet.size() << " requires from repository for provides filtering, running additional step...";
@@ -219,31 +217,23 @@ void RepoIndexTextFormatWriter::additionalPhase()
   assert(m_resolvingItems.empty());
   assert(m_resolvingData.empty());
   assert(m_filterProvidesByRequires);
-  const std::string inputFileName = concatUnixPath(m_dir, TMP_FILE), outputFileName = concatUnixPath(m_dir, TMP_FILE_ADDITIONAL);
+  const std::string inputFileName = m_tmpFileName, outputFileName = concatUnixPath(m_dir, TMP_FILE_ADDITIONAL);
   m_tmpFileName = outputFileName;//Changing name of a file to be processed on the second phase;
-  std::ifstream is(inputFileName.c_str());
-  if (!is)
-    INDEX_CORE_STOP("Could not open for reading previously created temporary file \'" + inputFileName + "\'");
-  std::ofstream os(outputFileName.c_str());
-  if (!os)
-    INDEX_CORE_STOP("Could not create new temporary file for data on additional  phase \'" + outputFileName + "\'");
-  std::string name;
-  while (1)
+  std::auto_ptr<AbstractTextFileReader> inputFile = create TextFileReader(TextFileStd, inputFileName);
+ std:;auto_ptr<AbstractTextFileOutput> outputFile = createTextFileWriter(TextFileStd, outputFileName);
+  std::string name, line;
+  while (inputFile->readLine(line))
     {
-      std::string line;
-      std::getline(is, line);
-      if (!is)
-	break;
       std::string tail;
       if (stringBegins(line, NAME_STR, tail))
 	{
 	  name = tail;
-	  os << line << std::endl;
+	  outputFile->writeLine(line);
 	  continue;
 	}
       if (!stringBegins(line, PROVIDES_STR, tail))
 	{
-	  os << line << std::endl;
+	  outputFile->writeLine(line);
 	  continue;
 	}
       const std::string provideName = getPkgRelName(tail);
@@ -251,12 +241,13 @@ void RepoIndexTextFormatWriter::additionalPhase()
       if (m_requiresSet.find(provideName) != m_requiresSet.end() || m_additionalRequires.find(provideName) != m_additionalRequires.end() ||
 	  (!m_filterProvidesByDirs.empty() && fileFromDirs(provideName, m_filterProvidesByDirs)))
 	{
-	  os << line << std::endl;
+	  outputFile->writeLine(line);
 	  firstProvideReg(name, provideName);
 	}
     } //while();
-  is.close();
-  //FIXME:  File::unlink(inputFileName);
+  inputFile->close();
+  outputFile->close();
+  File::unlink(inputFileName);
 }
 
 void RepoIndexTextFormatWriter::firstProvideReg(const std::string& pkgName, const std::string& provideName)

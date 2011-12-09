@@ -5,6 +5,7 @@
 #include"PkgFile.h"
 #include"NamedPkgRel.h"
 #include"AbstractConsoleMessages.h"
+#include"TextFiles.h"
 
 /**\brief The class to write repo index data in text format
  *
@@ -100,7 +101,7 @@ private:
   StringToIntMap m_provideMap;
   ProvideResolvingItemVector m_resolvingItems;
   SizeVector m_resolvingData;
-  std::ofstream m_os;
+  std::auto_ptr<AbstractTextFileWriter> m_tmpFile;
   const bool m_filterProvidesByRequires;
   const StringSet& m_additionalRequires;
   const StringList& m_filterProvidesByDirs;
