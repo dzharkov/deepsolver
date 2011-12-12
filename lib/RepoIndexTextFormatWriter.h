@@ -4,6 +4,7 @@
 
 #include"PkgFile.h"
 #include"NamedPkgRel.h"
+#include"IndexCore.h"
 #include"AbstractConsoleMessages.h"
 #include"TextFiles.h"
 
@@ -42,7 +43,10 @@
 class RepoIndexTextFormatWriter
 {
 public:
-  RepoIndexTextFormatWriter(AbstractConsoleMessages& console, const std::string& dir, bool filterProvidesByRequires, const StringSet& additionalRequires, const StringList& filterProvidesByDirs);
+  RepoIndexTextFormatWriter(const RepoIndexParams& params,
+			    AbstractConsoleMessages& console,
+			    const std::string& dir,
+			    const StringSet& additionalRequires);
 
 public:
   void init();
@@ -93,14 +97,17 @@ private:
   void secondPhase();
   void additionalPhase();
 
-private:
-  AbstractConsoleMessages& m_console;
-  const std::string m_dir;
-  const std::string m_rpmsFileName, m_providesFileName;
-  std::string m_tmpFileName;
+private://Fields for provides resolving;
   StringToIntMap m_provideMap;
   ProvideResolvingItemVector m_resolvingItems;
   SizeVector m_resolvingData;
+
+private:
+  const RepoIndexParams& m_params;
+  AbstractConsoleMessages& m_console;
+  const std::string m_dir;
+  const std::string m_rpmsFileName, m_providesFileName;
+  std::string m_tmpFileName;//Additional phase modifies this file name;
   std::auto_ptr<AbstractTextFileWriter> m_tmpFile;
   const bool m_filterProvidesByRequires;
   const StringSet& m_additionalRequires;

@@ -53,7 +53,7 @@ void IndexCore::processRpms(const std::string& indexDir, const std::string& pkgD
   StringSet additionalRequires;
   if (params.provideFilteringByRequires)
     collectRequiresFromDirs(params.provideFilterDirs, additionalRequires);
-  RepoIndexTextFormatWriter handler(m_console, indexDir, params.provideFilteringByRequires, additionalRequires, params.provideFilterDirs);
+  RepoIndexTextFormatWriter handler(params, m_console, indexDir, additionalRequires);
   handler.init();
   m_console.msg() << "Looking through " << pkgDir << " to pick packages for repository index...";
   std::auto_ptr<Directory::Iterator> it = Directory::enumerate(pkgDir);

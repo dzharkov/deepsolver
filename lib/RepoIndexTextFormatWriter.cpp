@@ -23,6 +23,28 @@
 #define CONFLICTS_STR "conflicts:"
 #define OBSOLETES_STR "obsoletes:"
 
+static int selectTextFileType(int compressionParam)
+{
+  switch(compressionParam)
+    {
+    case RepoIndexParams::CompressionTypeNone:
+      return TextFileStd;
+    case RepoIndexParams::CompressionTypeGzip:
+      return TextFileGZip;
+    default:
+      assert(0);
+    }; //switch();
+  return 0;//Just to reduce warning messages;
+}
+
+static std::string addCompressionExtension(const std::string& fileName, const RepoIndexParams& params)
+{
+  if (params.compressionType == RepoIndexParams::CompressionTypeGzip)
+    return fileName + ".gz";
+  assert(params.compressionType == RepoIndexParams::CompressionTypeNone);
+  return fileName;
+}
+
 static std::string getPkgRelName(const std::string& line)
 {
   //Name is stored at the beginning of line until first space without previously used backslash;
@@ -118,15 +140,19 @@ static bool fileFromDirs(const std::string& fileName, const StringList& dirs)
   return 0;
 }
 
-RepoIndexTextFormatWriter::RepoIndexTextFormatWriter(AbstractConsoleMessages& console, const std::string& dir, bool filterProvidesByRequires, const StringSet& additionalRequires, const StringList& filterProvidesByDirs)
-  : m_console(console),
+RepoIndexTextFormatWriter::RepoIndexTextFormatWriter(const RepoIndexParams& params,
+						     AbstractConsoleMessages& console,
+						     const std::string& dir,
+						     const StringSet& additionalRequires)
+  : m_params(params),
+    m_console(console),
     m_dir(dir),
-    m_rpmsFileName(concatUnixPath(dir, REPO_INDEX_RPMS_DATA_FILE)),
-    m_providesFileName(concatUnixPath(dir, REPO_INDEX_PROVIDES_DATA_FILE)),
+    m_rpmsFileName(addCompressionExtension(concatUnixPath(dir, REPO_INDEX_RPMS_DATA_FILE), params)),
+    m_providesFileName(addCompressionExtension(concatUnixPath(dir, REPO_INDEX_PROVIDES_DATA_FILE), params)),
     m_tmpFileName(concatUnixPath(dir, TMP_FILE)),
-    m_filterProvidesByRequires(filterProvidesByRequires),
+    m_filterProvidesByRequires(params.provideFilteringByRequires),
     m_additionalRequires(additionalRequires),
-    m_filterProvidesByDirs(filterProvidesByDirs)
+    m_filterProvidesByDirs(params.provideFilterDirs)
 {
 }
 
@@ -177,7 +203,7 @@ void RepoIndexTextFormatWriter::add(const PkgFile& pkgFile,
      */
     if (m_filterProvidesByRequires || m_filterProvidesByDirs.empty() || fileFromDirs(*it, m_filterProvidesByDirs))
       {
-	m_tmpFIle->writeLine(PROVIDES_STR + saveFileName(*it));
+	m_tmpFile->writeLine(PROVIDES_STR + saveFileName(*it));
 	//But we are performing registration only if there is no additional phase ;
 	if (!m_filterProvidesByRequires)
 	  firstProvideReg(pkgFile.name, *it);
@@ -219,8 +245,8 @@ void RepoIndexTextFormatWriter::additionalPhase()
   assert(m_filterProvidesByRequires);
   const std::string inputFileName = m_tmpFileName, outputFileName = concatUnixPath(m_dir, TMP_FILE_ADDITIONAL);
   m_tmpFileName = outputFileName;//Changing name of a file to be processed on the second phase;
-  std::auto_ptr<AbstractTextFileReader> inputFile = create TextFileReader(TextFileStd, inputFileName);
- std:;auto_ptr<AbstractTextFileOutput> outputFile = createTextFileWriter(TextFileStd, outputFileName);
+  std::auto_ptr<AbstractTextFileReader> inputFile = createTextFileReader(TextFileStd, inputFileName);
+  std::auto_ptr<AbstractTextFileWriter> outputFile = createTextFileWriter(TextFileStd, outputFileName);
   std::string name, line;
   while (inputFile->readLine(line))
     {
@@ -279,32 +305,24 @@ void RepoIndexTextFormatWriter::prepareResolvingData()
 void RepoIndexTextFormatWriter::secondPhase()
 {
   assert(!m_tmpFileName.empty());
-  std::ifstream is(m_tmpFileName.c_str());
-  if (!is)
-    INDEX_CORE_STOP("Could not open temporary file \'" + m_tmpFileName + "\' for second phase processing");
-  std::ofstream os(m_rpmsFileName.c_str());
-  if (!os)
-    INDEX_CORE_STOP("Could not create file with package headers information \'" + m_rpmsFileName + "\'");
-  std::string name;
-  while (1)
+  std::auto_ptr<AbstractTextFileReader> inputFile = createTextFileReader(TextFileStd, m_tmpFileName);
+  std::auto_ptr<AbstractTextFileWriter> outputFile = createTextFileWriter(selectTextFileType(m_params.compressionType), m_rpmsFileName);
+  std::string name, line;
+  while(inputFile->readLine(line))
     {
-      std::string line;
-      std::getline(is, line);
-      if (!is)
-	break;
       std::string tail;
       if (stringBegins(line, NAME_STR, tail))
 	name = tail;
       if (!stringBegins(line, PROVIDES_STR, tail))
 	{
-	  os << line << std::endl;
+	  outputFile->writeLine(line);
 	  continue;
 	}
       const std::string provideName = getPkgRelName(tail);
       assert(!provideName.empty());
       assert(!name.empty());
       secondProvideReg(name, provideName);
-      os << line << std::endl;
+      outputFile->writeLine(line);
     } //while(1);
 }
 
@@ -325,21 +343,19 @@ void RepoIndexTextFormatWriter::secondProvideReg(const std::string& pkgName, con
 
 void RepoIndexTextFormatWriter::writeProvideResolvingData()
 {
-  std::ofstream os(m_providesFileName.c_str());
-  if (!os)
-    INDEX_CORE_STOP("Could not create file for provides data \'" + m_providesFileName + "\'");
+  std::auto_ptr<AbstractTextFileWriter> file = createTextFileWriter(selectTextFileType(m_params.compressionType), m_providesFileName);
   for(ProvideResolvingItemVector::size_type i = 0;i < m_resolvingItems.size();i++)
     {
       const ProvideResolvingItem& item = m_resolvingItems[i];
       if (item.count == 0)
 	continue;
-      os << "[" << item.name << "]" << std::endl;
+      file->writeLine("[" + item.name + "]");
       for(SizeVector::size_type k = item.pos;k < item.pos + item.count && m_resolvingData[k] != (size_t)-1;k++)
 	{
 	  assert(m_resolvingData[k] < m_resolvingItems.size());
-	  os << m_resolvingItems[m_resolvingData[k]].name << std::endl;
+	  file->writeLine(m_resolvingItems[m_resolvingData[k]].name);
 	}
-      os << std::endl;
+      file->writeLine("");
     }
 }
 
