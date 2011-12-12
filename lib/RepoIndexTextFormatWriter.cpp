@@ -170,7 +170,9 @@ void RepoIndexTextFormatWriter::add(const PkgFile& pkgFile,
 {
   m_tmpFile->writeLine("[" + File::baseName(pkgFile.fileName) + "]");
   m_tmpFile->writeLine(NAME_STR + pkgFile.name);
-  m_tmpFile->writeLine(EPOCH_STR + pkgFile.epoch);
+  std::ostringstream epochStr;
+  epochStr << EPOCH_STR << pkgFile.epoch;
+  m_tmpFile->writeLine(epochStr.str());
   m_tmpFile->writeLine(VERSION_STR + pkgFile.version);
   m_tmpFile->writeLine(RELEASE_STR + pkgFile.release);
   m_tmpFile->writeLine(ARCH_STR + pkgFile.arch);
