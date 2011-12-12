@@ -229,13 +229,18 @@ void RepoIndexTextFormatWriter::commit()
   assert(m_tmpFileName == concatUnixPath(m_dir, TMP_FILE));//KILLME:
   if (m_filterProvidesByRequires)
     {
-      m_console.msg() << "Saved " << m_requiresSet.size() << " requires from repository for provides filtering, running additional step...";
+      m_console.msg() << "Collected " << m_requiresSet.size() << " requires among picked packages for provides filtering" << std::endl; 
+      m_console.msg() << "running additional phase...";
       additionalPhase();
       m_console.msg() << " provides filtering completed!" << std::endl;
     }
   prepareResolvingData();
+  m_console.msg() << "" "Writing final binary package index file " << m_rpmsFileName << "...";
   secondPhase();
+  m_console.msg() << " OK!" << std::endl;
+  m_console.msg() << "Writing provide resolving file " << m_providesFileName << "...";
   writeProvideResolvingData();
+  m_console.msg() << " OK!" << std::endl;
   File::unlink(m_tmpFileName);
 }
 

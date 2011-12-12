@@ -77,7 +77,6 @@ void IndexCore::processRpms(const std::string& indexDir, const std::string& pkgD
 
 void IndexCore::writeInfoFile(const std::string& fileName, const RepoIndexParams& params)
 {
-  m_console.msg() << "Creating repository index info file " << fileName << "..." << std::endl;
   RepoIndexInfoFile infoFile;
   switch(params.compressionType)
     {
@@ -112,4 +111,5 @@ void IndexCore::writeInfoFile(const std::string& fileName, const RepoIndexParams
     m_warningHandler.onWarning(*it);
   if (!res)
     INDEX_CORE_STOP(errorMessage);
+  m_console.msg() << "Created repository index info file " << fileName << std::endl;
 }
