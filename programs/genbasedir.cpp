@@ -128,6 +128,7 @@ static bool processUserParam(const std::string& s)
 
 static bool parseCmdLine(int argc, char* argv[])
 {
+  params.topDir = ".";
   while(1)
     {
       const int p = getopt(argc, argv, "c:d:hu:rp:");
@@ -182,14 +183,12 @@ return 0;
   assert(optind <= argc);
   if (optind == argc)
     {
-      std::cerr << PREFIX << "packages architecture is not specified" << std::endl << std::endl;
-	printHelp();
+      std::cerr << PREFIX << "packages architecture is not specified" << std::endl;
 	return 0;
     }
   if (optind + 2 < argc)
     {
-      std::cerr << PREFIX << "too many command line arguments" << std::endl << std::endl;
-	printHelp();
+      std::cerr << PREFIX << "too many command line arguments" << std::endl;
 	return 0;
 }
   params.arch = argv[optind];
@@ -197,12 +196,12 @@ return 0;
     params.topDir = argv[optind + 1];
   if (!hasNonSpaces(params.arch))
     {
-      std::cout << PREFIX << "Required architecture cannot be an empty string" << std::endl;
+      std::cerr << PREFIX << "Required architecture cannot be an empty string" << std::endl;
       return 0;
     }
   if (!hasNonSpaces(params.topDir))
     {
-      std::cout << PREFIX << "Repository directory cannot be an empty string" << std::endl;
+      std::cerr << PREFIX << "Repository directory cannot be an empty string" << std::endl;
       return 0;
     }
   return 1;
@@ -214,6 +213,7 @@ void run()
   WarningHandler warningHandler(std::cerr);
   IndexCore indexCore(consoleMessages, warningHandler);
   indexCore.build(params);
+  consoleMessages.msg() << "Repository index was built successfully!" << std::endl;
 }
 
 int main(int argc, char* argv[])
@@ -223,20 +223,10 @@ int main(int argc, char* argv[])
   try {
     run();
   }
-  catch(const IndexCoreException& e)
+  catch(const DepsolverException& e)
     {
-      std::cerr << PREFIX << "index error:" << e.getMessage() << std::endl;
+      std::cerr << PREFIX << e.getType() << " error:" << e.getMessage() << std::endl;
       return 1;
-    }
-  catch(const RpmException& e)
-    {
-      std::cerr << PREFIX << "rpm error:" << e.getMessage() << std::endl;
-      return 1;
-    }
-  catch(const SystemException& e)
-    {
-      std::cerr << PREFIX << "error:" << e.getMessage() << std::endl;
-	return 1;
     }
   catch(std::bad_alloc)
     {
