@@ -169,11 +169,12 @@ void RepoIndexTextFormatWriter::initSource()
 }
 
 void RepoIndexTextFormatWriter::addBinary(const PkgFile& pkgFile,
-			      const NamedPkgRelList& provides,
-			      const NamedPkgRelList& requires,
-			      const NamedPkgRelList& conflicts,
-			      const NamedPkgRelList& obsoletes,
-			      const StringList& fileList)
+					  const NamedPkgRelList& provides,
+					  const NamedPkgRelList& requires,
+					  const NamedPkgRelList& conflicts,
+					  const NamedPkgRelList& obsoletes,
+					  const StringList& fileList,
+					  const ChangeLog& changeLog)
 {
   m_tmpFile->writeLine("[" + File::baseName(pkgFile.fileName) + "]");
   m_tmpFile->writeLine(NAME_STR + pkgFile.name);
@@ -228,6 +229,7 @@ void RepoIndexTextFormatWriter::addBinary(const PkgFile& pkgFile,
     m_tmpFile->writeLine(CONFLICTS_STR + saveNamedPkgRel(*it));
   for(NamedPkgRelList::const_iterator it = obsoletes.begin();it != obsoletes.end();it++)
     m_tmpFile->writeLine(OBSOLETES_STR + saveNamedPkgRel(*it));
+  //FIXME:change log;
   m_tmpFile->writeLine("");
 }
 

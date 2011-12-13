@@ -238,6 +238,48 @@ void RpmFileHeaderReader::fillRequires(NamedPkgRelList& v)
   headerFreeData(versions, RPM_STRING_ARRAY_TYPE);
 }
 
+void RpmFileHeaderReader::fillChangeLog(ChangeLog& changeLog)
+{
+  changeLog.clear();
+  int_32 count = 0;
+  int_32 type = 0;
+  char** text = NULL;
+  int res;
+  res = headerGetEntry(m_header, RPMTAG_CHANGELOGTEXT, &type, (void **)&text, &count);
+  if (res == 0)//What exact constant must be used here?
+    return;
+  assert(type == RPM_STRING_ARRAY_TYPE);
+  assert(text);
+  changeLog.resize(count);
+  for(ChangeLog::size_type i = 0;i < changeLog.size();i++)
+    {
+      assert(text[i]);
+      changeLog[i].text = text[i];
+    }
+  headerFreeData(text, RPM_STRING_ARRAY_TYPE);
+  res = headerGetEntry(m_header, RPMTAG_CHANGELOGNAME, &type, (void **)&text, &count);
+  if (res == 0)//What exact constant must be used here?
+    RPM_STOP("RPM file \'" + m_fileName + "\' does not contain change log names but contains change log text");
+  assert(type == RPM_STRING_ARRAY_TYPE);
+  assert(text);
+  assert((size_t)count == changeLog.size());
+  for(ChangeLog::size_type i = 0;i < changeLog.size();i++)
+    {
+      assert(text[i]);
+      changeLog[i].name = text[i];
+    }
+  headerFreeData(text, RPM_STRING_ARRAY_TYPE);
+  int_32* time = NULL;
+  res = headerGetEntry(m_header, RPMTAG_CHANGELOGTIME, &type, (void **)&time, &count);
+  if (res == 0)//What exact constant must be used here?
+    RPM_STOP("RPM file \'" + m_fileName + "\' does not contain change log time entries but contains change log text entries");
+  assert(type == RPM_INT32_TYPE);
+  assert(time);
+  assert((size_t)count == changeLog.size());
+  for(ChangeLog::size_type i = 0;i < changeLog.size();i++)
+    changeLog[i].time = time[i];
+}
+
 void RpmFileHeaderReader::fillFileList(StringList& v)
 {
   v.clear();
@@ -359,7 +401,8 @@ void readRpmPkgFile(const std::string& fileName,
 		 NamedPkgRelList& requires,
 		 NamedPkgRelList& conflicts,
 		    NamedPkgRelList& obsoletes,
-		    StringList& fileList)
+		    StringList& fileList,
+		    ChangeLog& changeLog)
 {
   RpmFileHeaderReader reader;
   reader.load(fileName);
@@ -368,6 +411,7 @@ void readRpmPkgFile(const std::string& fileName,
   reader.fillConflicts(conflicts);
   reader.fillObsoletes(obsoletes);
   reader.fillRequires(requires);
+  reader.fillChangeLog(changeLog);
   reader.fillFileList(fileList);
   reader.close();
   pkgFile.fileName = fileName;

@@ -4,6 +4,7 @@
 
 #include"PkgFile.h"
 #include"NamedPkgRel.h"
+#include"ChangeLog.h"
 #include"RpmException.h"
 
 bool readRpmPkgFile(const std::string& fileName,
@@ -12,6 +13,7 @@ bool readRpmPkgFile(const std::string& fileName,
 		 NamedPkgRelList& requires,
 		 NamedPkgRelList& conflicts,
 		    NamedPkgRelList& obsoletes,
-		    StringList& files);
+		    StringList& files,
+		    ChangeLog& changeLog);
 
 #endif //DEPSOLVER_RPM_FILE_H;

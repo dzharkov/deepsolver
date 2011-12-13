@@ -4,6 +4,8 @@
 
 #include"PkgFile.h"
 #include"NamedPkgRel.h"
+#include"ChangeLog.h"
+#include"ChangeLog.h"
 #include"RpmException.h"
 #include<rpm/rpmlib.h>
 
@@ -26,6 +28,7 @@ public:
   void fillConflicts(NamedPkgRelList& v);
   void fillObsoletes(NamedPkgRelList& v);
   void fillRequires(NamedPkgRelList& v);
+  void fillChangeLog(ChangeLog& changeLog);
   void fillFileList(StringList& v);
 
 private:

@@ -4,6 +4,7 @@
 
 #include"PkgFile.h"
 #include"NamedPkgRel.h"
+#include"ChangeLog.h"
 #include"IndexCore.h"
 #include"AbstractConsoleMessages.h"
 #include"TextFiles.h"
@@ -53,11 +54,12 @@ public:
   void initSource();
 
   void addBinary(const PkgFile& pkgFile,
-	   const NamedPkgRelList& provides,
-	   const NamedPkgRelList& requires,
-	   const NamedPkgRelList& conflicts,
-	   const NamedPkgRelList& obsoletes,
-	   const StringList& fileList);
+		 const NamedPkgRelList& provides,
+		 const NamedPkgRelList& requires,
+		 const NamedPkgRelList& conflicts,
+		 const NamedPkgRelList& obsoletes,
+		 const StringList& fileList,
+		 const ChangeLog& changeLog);
   void addSource(const PkgFile& pkgFile);
 
   void commitBinary();
