@@ -53,14 +53,20 @@ void IndexCore::build(const RepoIndexParams& params)
 void IndexCore::processPackages(const std::string& indexDir, const std::string& rpmsDir, const std::string& srpmsDir, const RepoIndexParams& params)
 {
   assert(params.formatType == RepoIndexParams::FormatTypeText);//FIXME:binary format support;
+  logMsg(LOG_DEBUG, "IndexCore began processing directories with packages");
   StringSet additionalRequires;
   if (params.provideFilteringByRequires)
-    collectRequiresFromDirs(params.provideFilterDirs, additionalRequires);
+    {
+      logMsg(LOG_DEBUG, "Provide filtering by used requires is enabled, checking additional directories with packages to collect requires entries");
+      collectRequiresFromDirs(params.provideFilterDirs, additionalRequires);
+    }
   RepoIndexTextFormatWriter handler(params, m_console, indexDir, additionalRequires);
   //Binary packages;
   handler.initBinary();
+  logMsg(LOG_DEBUG, "RepoIndexTextFormatWriter created and initialized for binary packages");
   m_console.msg() << "Looking through " << rpmsDir << " to pick packages for repository index...";
   std::auto_ptr<Directory::Iterator> it = Directory::enumerate(rpmsDir);
+  logMsg(LOG_DEBUG, "Created directory iterator for enumerating \'%s\'", rpmsDir.c_str());
   size_t count = 0;
   while(it->moveNext())
     {
@@ -77,10 +83,15 @@ void IndexCore::processPackages(const std::string& indexDir, const std::string& 
     }
   m_console.msg() << " picked up " << count << " binary packages!" << std::endl;
   handler.commitBinary();
+  logMsg(LOG_DEBUG, "Committed %zu binary packages", count);
   //Source packages;
+  logMsg(LOG_DEBUG, "Binary packages processing is finished, switching to sources");
   m_console.msg() << "Looking through " << srpmsDir << " to pick source packages...";
   it = Directory::enumerate(srpmsDir);
+  logMsg(LOG_DEBUG, "Created directory iterator for enumerating \'%s\'", srpmsDir.c_str());
   count = 0;
+  handler.initSource();
+  logMsg(LOG_DEBUG, "RepoIndexTextFormatWriter initialized for source packages");
   while(it->moveNext())
     {
       if (it->getName() == "." || it->getName() == "..")
@@ -95,6 +106,7 @@ void IndexCore::processPackages(const std::string& indexDir, const std::string& 
       count++;
     }
   m_console.msg() << " picked up " << count << " source packages!" << std::endl;
+  logMsg(LOG_DEBUG, "Committed %zu source packages", count);
   handler.commitSource();
 }
 

@@ -22,7 +22,7 @@ public:
 public:
   std::string getType() const
   {
-    return "system call";
+    return "system";
   }
 
   int getCode() const

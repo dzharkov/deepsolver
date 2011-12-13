@@ -265,6 +265,7 @@ void RepoIndexTextFormatWriter::commitBinary()
   m_console.msg() << "Writing provide resolving file " << m_providesFileName << "...";
   writeProvideResolvingData();
   m_console.msg() << " OK!" << std::endl;
+  logMsg(LOG_DEBUG, "Removing \'%s\'", m_tmpFileName.c_str());
   File::unlink(m_tmpFileName);
 }
 
@@ -309,6 +310,7 @@ void RepoIndexTextFormatWriter::additionalPhase()
     } //while();
   inputFile->close();
   outputFile->close();
+  logMsg(LOG_DEBUG, "Removing \'%s\'", inputFileName.c_str());
   File::unlink(inputFileName);
 }
 

@@ -220,16 +220,19 @@ int main(int argc, char* argv[])
 {
   if (!parseCmdLine(argc, argv))
     return 1;
+  initLogging("/tmp/depsolver.log", LOG_DEBUG);//FIXME:
   try {
     run();
   }
   catch(const DepsolverException& e)
     {
+      std::cerr << std::endl;
       std::cerr << PREFIX << e.getType() << " error:" << e.getMessage() << std::endl;
       return 1;
     }
   catch(std::bad_alloc)
     {
+      std::cerr << std::endl;
       std::cerr << PREFIX << "no enough free memory to complete operation" << std::endl;
       return 1;
     }
