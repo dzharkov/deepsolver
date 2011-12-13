@@ -4,6 +4,7 @@
 
 #include"os/system.h"
 #include"DefaultValues.h"
+#include"logging.h"
 #include"DepsolverException.h"
 #include"os/SystemException.h"
 #include"os/File.h"

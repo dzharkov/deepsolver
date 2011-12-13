@@ -16,4 +16,5 @@ RepoIndexTextFormatWriter.cpp \
 string-utils.cpp  \
 ZLibInterface.cpp \
 GZipInterface.cpp \
-TextFiles.cpp
+TextFiles.cpp \
+logging.cpp
