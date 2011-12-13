@@ -17,6 +17,7 @@
 #define PACKAGER_STR "packager="
 #define SUMMARY_STr "summary="
 #define DESCRIPTION_STR "descr="
+#define SRCRPM_STR "src.rpm="
 
 #define PROVIDES_STR "provides:"
 #define REQUIRES_STR "requires:"
@@ -187,6 +188,7 @@ void RepoIndexTextFormatWriter::addBinary(const PkgFile& pkgFile,
   m_tmpFile->writeLine(PACKAGER_STR + pkgFile.packager);
   m_tmpFile->writeLine(SUMMARY_STr + pkgFile.summary);
   m_tmpFile->writeLine(DESCRIPTION_STR + encodeDescr(pkgFile.description));
+  m_tmpFile->writeLine(SRCRPM_STR + pkgFile.srcRpm);
   for(NamedPkgRelList::const_iterator it = provides.begin();it != provides.end();it++)
     {
       /*
@@ -244,6 +246,7 @@ void RepoIndexTextFormatWriter::addSource(const PkgFile& pkgFile)
   m_srpmsFile->writeLine(PACKAGER_STR + pkgFile.packager);
   m_srpmsFile->writeLine(SUMMARY_STr + pkgFile.summary);
   m_srpmsFile->writeLine(DESCRIPTION_STR + encodeDescr(pkgFile.description));
+  //No need to write src.rpm entry, usually it is empty for source packages;
   m_srpmsFile->writeLine("");
 }
 

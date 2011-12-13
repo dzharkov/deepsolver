@@ -22,6 +22,7 @@ public:
   std::string packager;
   std::string url;
   std::string license;
+  std::string srcRpm;
   std::string summary;
   std::string description;
   DateTime m_buildDateTime;

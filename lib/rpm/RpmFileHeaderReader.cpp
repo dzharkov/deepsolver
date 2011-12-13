@@ -1,5 +1,5 @@
 //Written with librpm-4.0.4-alt100.29;
-//FIXME:directories without files;
+//FIXME:requires just for install/removing
 
 #include"depsolver.h"
 #include"RpmFileHeaderReader.h"
@@ -61,7 +61,10 @@ void RpmFileHeaderReader::fillMainData(PkgFile& pkg)
   getStringTagValueRelaxed(RPMTAG_URL, pkg.url);
   pkg.packager.erase();
   getStringTagValueRelaxed(RPMTAG_PACKAGER, pkg.packager);
+  pkg.license.erase();
   getStringTagValueRelaxed(RPMTAG_LICENSE, pkg.license);
+  pkg.srcRpm.erase();
+  getStringTagValueRelaxed(RPMTAG_SOURCERPM, pkg.srcRpm);
   //No i18n processing, is it required here?
   getStringTagValue(RPMTAG_SUMMARY, pkg.summary);
   //No i18n processing, is it required here?
