@@ -49,7 +49,7 @@ public:
 private:
   void collectRequires(const std::string& dirName, StringSet& res);
   void collectRequiresFromDirs(const StringList& dirs, StringSet& res);
-  void processRpms(const std::string& indexDir, const std::string& pkgDir, const RepoIndexParams& params);
+  void processPackages(const std::string& indexDir, const std::string& rpmsDir, const std::string& srpmsDir, const RepoIndexParams& params);
   void writeInfoFile(const std::string& fileName, const RepoIndexParams& params);
 
 private:

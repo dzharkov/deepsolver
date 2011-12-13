@@ -44,19 +44,23 @@ void IndexCore::build(const RepoIndexParams& params)
   const std::string infoFile = concatUnixPath(indexDir, REPO_INDEX_INFO_FILE);
   Directory::ensureExists(indexDir);
   writeInfoFile(infoFile, params);
-  processRpms(indexDir, concatUnixPath(archDir, REPO_RPMS_DIR_NAME), params);
+  processPackages(indexDir,
+		  concatUnixPath(archDir, REPO_RPMS_DIR_NAME),
+		  concatUnixPath(archDir, REPO_SRPMS_DIR_NAME),
+		  params);
 }
 
-void IndexCore::processRpms(const std::string& indexDir, const std::string& pkgDir, const RepoIndexParams& params)
+void IndexCore::processPackages(const std::string& indexDir, const std::string& rpmsDir, const std::string& srpmsDir, const RepoIndexParams& params)
 {
   assert(params.formatType == RepoIndexParams::FormatTypeText);//FIXME:binary format support;
   StringSet additionalRequires;
   if (params.provideFilteringByRequires)
     collectRequiresFromDirs(params.provideFilterDirs, additionalRequires);
   RepoIndexTextFormatWriter handler(params, m_console, indexDir, additionalRequires);
-  handler.init();
-  m_console.msg() << "Looking through " << pkgDir << " to pick packages for repository index...";
-  std::auto_ptr<Directory::Iterator> it = Directory::enumerate(pkgDir);
+  //Binary packages;
+  handler.initBinary();
+  m_console.msg() << "Looking through " << rpmsDir << " to pick packages for repository index...";
+  std::auto_ptr<Directory::Iterator> it = Directory::enumerate(rpmsDir);
   size_t count = 0;
   while(it->moveNext())
     {
@@ -68,11 +72,30 @@ void IndexCore::processRpms(const std::string& indexDir, const std::string& pkgD
       NamedPkgRelList provides, requires, conflicts, obsoletes;
       StringList files;
       readRpmPkgFile(it->getFullPath(), pkgFile, provides, requires, conflicts, obsoletes, files);
-      handler.add(pkgFile, provides, requires, conflicts, obsoletes, files);
+      handler.addBinary(pkgFile, provides, requires, conflicts, obsoletes, files);
       count++;
     }
   m_console.msg() << " picked up " << count << " binary packages!" << std::endl;
-  handler.commit();
+  handler.commitBinary();
+  //Source packages;
+  m_console.msg() << "Looking through " << srpmsDir << " to pick source packages...";
+  it = Directory::enumerate(srpmsDir);
+  count = 0;
+  while(it->moveNext())
+    {
+      if (it->getName() == "." || it->getName() == "..")
+	continue;
+      if (!checkExtension(it->getName(), ".src.rpm"))
+	continue;
+      PkgFile pkgFile;
+      NamedPkgRelList provides, requires, conflicts, obsoletes;
+      StringList files;
+      readRpmPkgFile(it->getFullPath(), pkgFile, provides, requires, conflicts, obsoletes, files);
+      handler.addSource(pkgFile);
+      count++;
+    }
+  m_console.msg() << " picked up " << count << " source packages!" << std::endl;
+  handler.commitSource();
 }
 
 void IndexCore::writeInfoFile(const std::string& fileName, const RepoIndexParams& params)

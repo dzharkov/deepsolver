@@ -148,6 +148,7 @@ RepoIndexTextFormatWriter::RepoIndexTextFormatWriter(const RepoIndexParams& para
     m_console(console),
     m_dir(dir),
     m_rpmsFileName(addCompressionExtension(concatUnixPath(dir, REPO_INDEX_RPMS_DATA_FILE), params)),
+    m_srpmsFileName(addCompressionExtension(concatUnixPath(dir, REPO_INDEX_SRPMS_DATA_FILE), params)),
     m_providesFileName(addCompressionExtension(concatUnixPath(dir, REPO_INDEX_PROVIDES_DATA_FILE), params)),
     m_tmpFileName(concatUnixPath(dir, TMP_FILE)),
     m_filterProvidesByRequires(params.provideFilteringByRequires),
@@ -156,12 +157,17 @@ RepoIndexTextFormatWriter::RepoIndexTextFormatWriter(const RepoIndexParams& para
 {
 }
 
-void RepoIndexTextFormatWriter::init()
+void RepoIndexTextFormatWriter::initBinary()
 {
   m_tmpFile = createTextFileWriter(TextFileStd, m_tmpFileName);
 }
 
-void RepoIndexTextFormatWriter::add(const PkgFile& pkgFile,
+void RepoIndexTextFormatWriter::initSource()
+{
+  m_srpmsFile = createTextFileWriter(selectTextFileType(m_params.compressionType), m_srpmsFileName);
+}
+
+void RepoIndexTextFormatWriter::addBinary(const PkgFile& pkgFile,
 			      const NamedPkgRelList& provides,
 			      const NamedPkgRelList& requires,
 			      const NamedPkgRelList& conflicts,
@@ -223,7 +229,25 @@ void RepoIndexTextFormatWriter::add(const PkgFile& pkgFile,
   m_tmpFile->writeLine("");
 }
 
-void RepoIndexTextFormatWriter::commit()
+void RepoIndexTextFormatWriter::addSource(const PkgFile& pkgFile)
+{
+  m_srpmsFile->writeLine("[" + File::baseName(pkgFile.fileName) + "]");
+  m_srpmsFile->writeLine(NAME_STR + pkgFile.name);
+  std::ostringstream epochStr;
+  epochStr << EPOCH_STR << pkgFile.epoch;
+  m_srpmsFile->writeLine(epochStr.str());
+  m_srpmsFile->writeLine(VERSION_STR + pkgFile.version);
+  m_srpmsFile->writeLine(RELEASE_STR + pkgFile.release);
+  m_srpmsFile->writeLine(ARCH_STR + pkgFile.arch);
+  m_srpmsFile->writeLine(URL_STR + pkgFile.url);
+  m_srpmsFile->writeLine(LICENSE_STR + pkgFile.license);
+  m_srpmsFile->writeLine(PACKAGER_STR + pkgFile.packager);
+  m_srpmsFile->writeLine(SUMMARY_STr + pkgFile.summary);
+  m_srpmsFile->writeLine(DESCRIPTION_STR + encodeDescr(pkgFile.description));
+  m_srpmsFile->writeLine("");
+}
+
+void RepoIndexTextFormatWriter::commitBinary()
 {
   m_tmpFile->close();
   assert(m_tmpFileName == concatUnixPath(m_dir, TMP_FILE));//KILLME:
@@ -242,6 +266,11 @@ void RepoIndexTextFormatWriter::commit()
   writeProvideResolvingData();
   m_console.msg() << " OK!" << std::endl;
   File::unlink(m_tmpFileName);
+}
+
+void RepoIndexTextFormatWriter::commitSource()
+{
+  m_srpmsFile->close();
 }
 
 void RepoIndexTextFormatWriter::additionalPhase()

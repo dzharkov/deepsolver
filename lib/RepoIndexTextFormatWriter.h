@@ -49,16 +49,25 @@ public:
 			    const StringSet& additionalRequires);
 
 public:
-  void init();
+  void initBinary();
+  void initSource();
 
-  void add(const PkgFile& pkgFile,
+  void addBinary(const PkgFile& pkgFile,
 	   const NamedPkgRelList& provides,
 	   const NamedPkgRelList& requires,
 	   const NamedPkgRelList& conflicts,
 	   const NamedPkgRelList& obsoletes,
 	   const StringList& fileList);
+  void addSource(const PkgFile& pkgFile);
 
-  void commit();
+  void commitBinary();
+  void commitSource();
+
+
+
+
+
+
 
 private:
   struct ProvideResolvingItem
@@ -106,9 +115,9 @@ private:
   const RepoIndexParams& m_params;
   AbstractConsoleMessages& m_console;
   const std::string m_dir;
-  const std::string m_rpmsFileName, m_providesFileName;
+  const std::string m_rpmsFileName, m_srpmsFileName, m_providesFileName;
   std::string m_tmpFileName;//Additional phase modifies this file name;
-  std::auto_ptr<AbstractTextFileWriter> m_tmpFile;
+  std::auto_ptr<AbstractTextFileWriter> m_tmpFile, m_srpmsFile;
   const bool m_filterProvidesByRequires;
   const StringSet& m_additionalRequires;
   const StringList& m_filterProvidesByDirs;
