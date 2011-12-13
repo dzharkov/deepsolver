@@ -86,7 +86,7 @@ static void printHelp()
 	 "Valid command line options are:\n"
 	 "\t-h - print this help screen;\n"
 	 "\t-c TYPE - choose compression type: none or gzip (default is gzip);\n"
-	 "\t-d DIRLIST - add colon-delimited list of directories to take requires from for provides filtering;\n"
+	 "\t-d DIRLIST - add colon-delimited list of directories to take requires from for provides filtering (in addition to \'-r\' if it is used);\n"
 	 //TODO:	 "\t-f FORMAT - choose data format: binary or text (default is text);\n"
 	 "\t-p DIRLIST - enable provides filtering by colon-delimited list of directories;\n"
 	 "\t-r - enable provides filtering by used requires (recommended) (see also \'-d\' option);\n"

@@ -238,7 +238,7 @@ void RepoIndexTextFormatWriter::addSource(const PkgFile& pkgFile)
   m_srpmsFile->writeLine(epochStr.str());
   m_srpmsFile->writeLine(VERSION_STR + pkgFile.version);
   m_srpmsFile->writeLine(RELEASE_STR + pkgFile.release);
-  m_srpmsFile->writeLine(ARCH_STR + pkgFile.arch);
+  //No nned need to write arch for source packages;
   m_srpmsFile->writeLine(URL_STR + pkgFile.url);
   m_srpmsFile->writeLine(LICENSE_STR + pkgFile.license);
   m_srpmsFile->writeLine(PACKAGER_STR + pkgFile.packager);
