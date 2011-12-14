@@ -20,8 +20,16 @@
  * Still in the public domain.
  */
 
+#include<assert.h>
+#include<iostream>
+#include<string>
+#include<stdio.h>
 #include<string.h>
 #include<stdint.h>
+#include<sys/types.h>
+#include<unistd.h>
+#include<fcntl.h>
+#include<sys/stat.h>
 
 typedef unsigned char md5byte;
 typedef uint32_t UWORD32;
@@ -200,7 +208,30 @@ void MD5Transform(UWORD32 buf[4], UWORD32 const in[16])
 }
 
 
-int main()
+int main(int argc, char* argv[])
 {
+  assert(argc == 2);
+  MD5Context c;
+  MD5Init(&c);
+  const int fd = open(argv[1], O_RDONLY);
+  assert(fd >= 0);
+  while (1)
+    {
+      unsigned char buf[512];
+      const ssize_t count = read(fd, buf, sizeof(buf));
+      assert(count >= 0);
+      if (count == 0)
+	break;
+MD5Update(&c, buf, count);
+    }
+  unsigned char d[16];
+  MD5Final(&c, d);
+  for(size_t i = 0;i < 16;i++)
+    {
+      if (d[i] < 0x10)
+	printf("0%x", d[i]); else
+	printf("%x", d[i]);
+    }
+  printf(" *%s\n", argv[1]);
   return 0;
 }
