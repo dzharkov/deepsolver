@@ -17,4 +17,5 @@ string-utils.cpp  \
 ZLibInterface.cpp \
 GZipInterface.cpp \
 TextFiles.cpp \
-logging.cpp
+logging.cpp \
+MD5.cpp

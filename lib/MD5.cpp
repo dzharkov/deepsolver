@@ -52,7 +52,7 @@ std::string MD5::commit(const std::string& fileName)
 #define MD5STEP(f,w,x,y,z,in,s) \
 	 (w += f(x,y,z) + in, w = (w<<s | w>>(32-s)) + x)
 
-static void md5Transform(uint32_t buf[4], uint32_t in[16])
+void MD5::transform(uint32_t buf[4], uint32_t in[16]) const
 {
   register uint32_t a, b, c, d;
   a = buf[0];
@@ -129,7 +129,7 @@ static void md5Transform(uint32_t buf[4], uint32_t in[16])
   buf[3] += d;
 }
 
-static void md5ByteSwap(uint32_t *buf, size_t count)
+void MD5::byteSwap(uint32_t *buf, size_t count) const
 {
   size_t words = count;
   const uint32_t byteOrderTest = 0x1;
@@ -158,15 +158,15 @@ void MD5::updateImpl(Context* ctx, Md5Byte* buf, size_t len) const
       return;
     }
   memcpy((Md5Byte *)ctx->in + 64 - t, buf, t);
-  md5ByteSwap(ctx->in, 16);
-  MD5Transform(ctx->buf, ctx->in);
+  byteSwap(ctx->in, 16);
+  transform(ctx->buf, ctx->in);
   buf += t;
   len -= t;
   while (len >= 64) 
     {
       memcpy(ctx->in, buf, 64);
-      md5ByteSwap(ctx->in, 16);
-      MD5Transform(ctx->buf, ctx->in);
+      byteSwap(ctx->in, 16);
+      transform(ctx->buf, ctx->in);
       buf += 64;
       len -= 64;
     }
@@ -182,17 +182,17 @@ void MD5::commitImpl(Context* ctx, unsigned char* digest) const
   if (count < 0) /* Padding forces an extra block */
     {
       memset(p, 0, count + 8);
-      md5ByteSwap(ctx->in, 16);
-      MD5Transform(ctx->buf, ctx->in);
+      byteSwap(ctx->in, 16);
+      transform(ctx->buf, ctx->in);
       p = (Md5Byte *)ctx->in;
       count = 56;
     }
   memset(p, 0, count);
-  md5ByteSwap(ctx->in, 14);
+  byteSwap(ctx->in, 14);
   ctx->in[14] = ctx->bytes[0] << 3;
   ctx->in[15] = ctx->bytes[1] << 3 | ctx->bytes[0] >> 29;
-  MD5Transform(ctx->buf, ctx->in);
-  md5ByteSwap(ctx->buf, 4);
+  transform(ctx->buf, ctx->in);
+  byteSwap(ctx->buf, 4);
   memcpy(digest, ctx->buf, 16);
   memset(ctx, 0, sizeof(ctx));	/* In case it's sensitive */
 }

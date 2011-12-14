@@ -17,7 +17,7 @@ public:
   std::string commit(const std::string& fileName);
 
 private:
-  struct MD5Context 
+  struct Context 
   {
     uint32_t buf[4];
     uint32_t bytes[2];
@@ -25,7 +25,9 @@ private:
   }; //struct Context;
 
 private:
-  void updateImpl(Context* ctx, Md5Byte* buf, size_t len) const;
+  void transform(uint32_t buf[4], uint32_t in[16]) const;
+  void byteSwap(uint32_t *buf, size_t count) const;
+    void updateImpl(Context* ctx, Md5Byte* buf, size_t len) const;
   void commitImpl(Context* ctx, unsigned char* digest) const;
 
 private:
