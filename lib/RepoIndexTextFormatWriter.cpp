@@ -23,6 +23,7 @@
 #define REQUIRES_STR "requires:"
 #define CONFLICTS_STR "conflicts:"
 #define OBSOLETES_STR "obsoletes:"
+#define CHANGELOG_STR "changelog:"
 
 static int selectTextFileType(int compressionParam)
 {
@@ -105,7 +106,7 @@ static std::string saveFileName(const std::string& fileName)
   return s;
 }
 
-static std::string encodeDescr(const std::string& s)
+static std::string encodeMultiline(const std::string& s)
 {
   std::string r;
   for(std::string::size_type i = 0;i < s.length();i++)
@@ -120,14 +121,28 @@ static std::string encodeDescr(const std::string& s)
 	  break;
 	case '\r':
 	  continue;
-	case '\t':
-	  r += "\\t";
-	  break;
 	default:
 	  r += s[i];
 	}; //switch(s[i]);
     }
   return r;
+}
+
+static std::string encodeChangeLogEntry(const ChangeLogEntry& entry)
+{
+  struct tm brTime;
+  gmtime_r(&entry.time, &brTime);
+  std::ostringstream s;
+  s << (brTime.tm_year + 1900) << "-";
+  if (brTime.tm_mon < 10)
+    s << "0";
+  s << (brTime.tm_mon + 1) << "-";
+  if (brTime.tm_mday < 10)
+    s << "0";
+  s << brTime.tm_mday << std::endl;
+  s << entry.name << std::endl;
+  s << entry.text;
+  return encodeMultiline(s.str());
 }
 
 static bool fileFromDirs(const std::string& fileName, const StringList& dirs)
@@ -188,7 +203,7 @@ void RepoIndexTextFormatWriter::addBinary(const PkgFile& pkgFile,
   m_tmpFile->writeLine(LICENSE_STR + pkgFile.license);
   m_tmpFile->writeLine(PACKAGER_STR + pkgFile.packager);
   m_tmpFile->writeLine(SUMMARY_STr + pkgFile.summary);
-  m_tmpFile->writeLine(DESCRIPTION_STR + encodeDescr(pkgFile.description));
+  m_tmpFile->writeLine(DESCRIPTION_STR + encodeMultiline(pkgFile.description));
   m_tmpFile->writeLine(SRCRPM_STR + pkgFile.srcRpm);
   for(NamedPkgRelList::const_iterator it = provides.begin();it != provides.end();it++)
     {
@@ -229,7 +244,8 @@ void RepoIndexTextFormatWriter::addBinary(const PkgFile& pkgFile,
     m_tmpFile->writeLine(CONFLICTS_STR + saveNamedPkgRel(*it));
   for(NamedPkgRelList::const_iterator it = obsoletes.begin();it != obsoletes.end();it++)
     m_tmpFile->writeLine(OBSOLETES_STR + saveNamedPkgRel(*it));
-  //FIXME:change log;
+  for(ChangeLog::size_type i = 0;i < changeLog.size();i++)
+    m_tmpFile->writeLine(CHANGELOG_STR + encodeChangeLogEntry(changeLog[i]));
   m_tmpFile->writeLine("");
 }
 
@@ -247,7 +263,7 @@ void RepoIndexTextFormatWriter::addSource(const PkgFile& pkgFile)
   m_srpmsFile->writeLine(LICENSE_STR + pkgFile.license);
   m_srpmsFile->writeLine(PACKAGER_STR + pkgFile.packager);
   m_srpmsFile->writeLine(SUMMARY_STr + pkgFile.summary);
-  m_srpmsFile->writeLine(DESCRIPTION_STR + encodeDescr(pkgFile.description));
+  m_srpmsFile->writeLine(DESCRIPTION_STR + encodeMultiline(pkgFile.description));
   //No need to write src.rpm entry, usually it is empty for source packages;
   m_srpmsFile->writeLine("");
 }
