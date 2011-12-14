@@ -20,106 +20,28 @@
  * Still in the public domain.
  */
 
-#include<assert.h>
-#include<iostream>
-#include<string>
-#include<stdio.h>
-#include<string.h>
-#include<stdint.h>
-#include<sys/types.h>
-#include<unistd.h>
-#include<fcntl.h>
-#include<sys/stat.h>
+#include"depsolver.h"
+#include"MD5.h"
 
-typedef unsigned char md5byte;
-typedef uint32_t UWORD32;
-
-struct MD5Context 
+void MD5::init()
 {
-  UWORD32 buf[4];
-  UWORD32 bytes[2];
-  UWORD32 in[16];
-};
-
-void MD5Init(struct MD5Context *context);
-void MD5Update(struct MD5Context *context, md5byte const *buf, unsigned len);
-void MD5Final(struct MD5Context *context, unsigned char digest[16]);
-void MD5Transform(UWORD32 buf[4], UWORD32 const in[16]);
-
-void byteSwap(UWORD32 *buf, unsigned words)
-{
-  const uint32_t byteOrderTest = 0x1;
-  if (((char *)&byteOrderTest)[0] == 0) 
-    {
-      md5byte *p = (md5byte *)buf;
-      do {
-	*buf++ = (UWORD32)((unsigned)p[3] << 8 | p[2]) << 16 |
-	  ((unsigned)p[1] << 8 | p[0]);
-	p += 4;
-      } while (--words);
-    }
+  memset(&m_ctx, 0, sizeof(Context));
+  m_ctx.buf[0] = 0x67452301;
+  m_ctx.buf[1] = 0xefcdab89;
+  m_ctx.buf[2] = 0x98badcfe;
+  m_ctx.buf[3] = 0x10325476;
 }
 
-void MD5Init(struct MD5Context *ctx)
+void MD5::update(void* buf, size_t len)
 {
-  ctx->buf[0] = 0x67452301;
-  ctx->buf[1] = 0xefcdab89;
-  ctx->buf[2] = 0x98badcfe;
-  ctx->buf[3] = 0x10325476;
-  ctx->bytes[0] = 0;
-  ctx->bytes[1] = 0;
+  assert(buf);
+  updateImpl(&m_ctx, static_cast<Md5Byte*>(buf), len);
 }
 
-void MD5Update(struct MD5Context *ctx, md5byte const *buf, unsigned len)
+std::string MD5::commit(const std::string& fileName)
 {
-  UWORD32 t;
-  t = ctx->bytes[0];
-  if ((ctx->bytes[0] = t + len) < t)
-    ctx->bytes[1]++;	/* Carry from low to high */
-  t = 64 - (t & 0x3f);	/* Space available in ctx->in (at least 1) */
-  if (t > len) 
-    {
-      memcpy((md5byte *)ctx->in + 64 - t, buf, len);
-      return;
-    }
-  memcpy((md5byte *)ctx->in + 64 - t, buf, t);
-  byteSwap(ctx->in, 16);
-  MD5Transform(ctx->buf, ctx->in);
-  buf += t;
-  len -= t;
-  while (len >= 64) 
-    {
-      memcpy(ctx->in, buf, 64);
-      byteSwap(ctx->in, 16);
-      MD5Transform(ctx->buf, ctx->in);
-      buf += 64;
-      len -= 64;
-    }
-  memcpy(ctx->in, buf, len);
-}
-
-void MD5Final(struct MD5Context *ctx, md5byte digest[16])
-{
-  int count = ctx->bytes[0] & 0x3f;	/* Number of bytes in ctx->in */
-  md5byte *p = (md5byte *)ctx->in + count;
-  *p++ = 0x80;
-  count = 56 - 1 - count;
-  if (count < 0) /* Padding forces an extra block */
-    {
-      memset(p, 0, count + 8);
-      byteSwap(ctx->in, 16);
-      MD5Transform(ctx->buf, ctx->in);
-      p = (md5byte *)ctx->in;
-      count = 56;
-    }
-  memset(p, 0, count);
-  byteSwap(ctx->in, 14);
-  ctx->in[14] = ctx->bytes[0] << 3;
-  ctx->in[15] = ctx->bytes[1] << 3 | ctx->bytes[0] >> 29;
-  MD5Transform(ctx->buf, ctx->in);
-  byteSwap(ctx->buf, 4);
-  memcpy(digest, ctx->buf, 16);
-  memset(ctx, 0, sizeof(ctx));	/* In case it's sensitive */
+  //FIXME:
+  return "";
 }
 
 #define F1(x, y, z) (z ^ (x & (y ^ z)))
@@ -130,9 +52,9 @@ void MD5Final(struct MD5Context *ctx, md5byte digest[16])
 #define MD5STEP(f,w,x,y,z,in,s) \
 	 (w += f(x,y,z) + in, w = (w<<s | w>>(32-s)) + x)
 
-void MD5Transform(UWORD32 buf[4], UWORD32 const in[16])
+static void md5Transform(uint32_t buf[4], uint32_t in[16])
 {
-  register UWORD32 a, b, c, d;
+  register uint32_t a, b, c, d;
   a = buf[0];
   b = buf[1];
   c = buf[2];
@@ -207,31 +129,70 @@ void MD5Transform(UWORD32 buf[4], UWORD32 const in[16])
   buf[3] += d;
 }
 
-
-int main(int argc, char* argv[])
+static void md5ByteSwap(uint32_t *buf, size_t count)
 {
-  assert(argc == 2);
-  MD5Context c;
-  MD5Init(&c);
-  const int fd = open(argv[1], O_RDONLY);
-  assert(fd >= 0);
-  while (1)
+  size_t words = count;
+  const uint32_t byteOrderTest = 0x1;
+  if (((char *)&byteOrderTest)[0] == 0) 
     {
-      unsigned char buf[512];
-      const ssize_t count = read(fd, buf, sizeof(buf));
-      assert(count >= 0);
-      if (count == 0)
-	break;
-MD5Update(&c, buf, count);
+      Md5Byte *p = (Md5Byte *)buf;
+      do {
+	*buf++ = (uint32_t)((unsigned)p[3] << 8 | p[2]) << 16 |
+	  ((unsigned)p[1] << 8 | p[0]);
+	p += 4;
+      } while (--words);
     }
-  unsigned char d[16];
-  MD5Final(&c, d);
-  for(size_t i = 0;i < 16;i++)
+}
+
+void MD5::updateImpl(Context* ctx, Md5Byte* buf, size_t len) const
+{
+  assert(buf);
+  uint32_t t;
+  t = ctx->bytes[0];
+  if ((ctx->bytes[0] = t + len) < t)
+    ctx->bytes[1]++;	/* Carry from low to high */
+  t = 64 - (t & 0x3f);	/* Space available in ctx->in (at least 1) */
+  if (t > len) 
     {
-      if (d[i] < 0x10)
-	printf("0%x", d[i]); else
-	printf("%x", d[i]);
+      memcpy((Md5Byte *)ctx->in + 64 - t, buf, len);
+      return;
     }
-  printf(" *%s\n", argv[1]);
-  return 0;
+  memcpy((Md5Byte *)ctx->in + 64 - t, buf, t);
+  md5ByteSwap(ctx->in, 16);
+  MD5Transform(ctx->buf, ctx->in);
+  buf += t;
+  len -= t;
+  while (len >= 64) 
+    {
+      memcpy(ctx->in, buf, 64);
+      md5ByteSwap(ctx->in, 16);
+      MD5Transform(ctx->buf, ctx->in);
+      buf += 64;
+      len -= 64;
+    }
+  memcpy(ctx->in, buf, len);
+}
+
+void MD5::commitImpl(Context* ctx, unsigned char* digest) const
+{
+  int count = ctx->bytes[0] & 0x3f;	/* Number of bytes in ctx->in */
+  Md5Byte *p = (Md5Byte *)ctx->in + count;
+  *p++ = 0x80;
+  count = 56 - 1 - count;
+  if (count < 0) /* Padding forces an extra block */
+    {
+      memset(p, 0, count + 8);
+      md5ByteSwap(ctx->in, 16);
+      MD5Transform(ctx->buf, ctx->in);
+      p = (Md5Byte *)ctx->in;
+      count = 56;
+    }
+  memset(p, 0, count);
+  md5ByteSwap(ctx->in, 14);
+  ctx->in[14] = ctx->bytes[0] << 3;
+  ctx->in[15] = ctx->bytes[1] << 3 | ctx->bytes[0] >> 29;
+  MD5Transform(ctx->buf, ctx->in);
+  md5ByteSwap(ctx->buf, 4);
+  memcpy(digest, ctx->buf, 16);
+  memset(ctx, 0, sizeof(ctx));	/* In case it's sensitive */
 }
