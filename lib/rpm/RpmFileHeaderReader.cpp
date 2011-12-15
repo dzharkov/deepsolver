@@ -69,6 +69,9 @@ void RpmFileHeaderReader::fillMainData(PkgFile& pkg)
   getStringTagValue(RPMTAG_SUMMARY, pkg.summary);
   //No i18n processing, is it required here?
   getStringTagValue(RPMTAG_DESCRIPTION, pkg.description);
+  int32_t buildTime = 0;
+  getInt32TagValueRelaxed(RPMTAG_BUILDTIME, buildTime);
+  pkg.buildTime = buildTime;
 }
 
 void RpmFileHeaderReader::fillProvides(NamedPkgRelList& v)

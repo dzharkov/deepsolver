@@ -18,6 +18,7 @@
 #define SUMMARY_STr "summ="
 #define DESCRIPTION_STR "descr="
 #define SRCRPM_STR "src="
+#define BUILDTIME_STR "btime="
 
 #define PROVIDES_STR "p:"
 #define REQUIRES_STR "r:"
@@ -205,6 +206,9 @@ void RepoIndexTextFormatWriter::addBinary(const PkgFile& pkgFile,
   m_tmpFile->writeLine(SUMMARY_STr + pkgFile.summary);
   m_tmpFile->writeLine(DESCRIPTION_STR + encodeMultiline(pkgFile.description));
   m_tmpFile->writeLine(SRCRPM_STR + pkgFile.srcRpm);
+  std::ostringstream bt;
+  bt << pkgFile.buildTime;
+  m_tmpFile->writeLine(BUILDTIME_STR + bt.str());
   for(NamedPkgRelList::const_iterator it = provides.begin();it != provides.end();it++)
     {
       /*

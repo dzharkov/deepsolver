@@ -10,7 +10,7 @@ class Pkg
 {
 public:
   Pkg()
-    : epoch(0) {}
+    : epoch(0), buildTime(0)  {}
   virtual ~Pkg() {}
 
 public:
@@ -25,7 +25,7 @@ public:
   std::string srcRpm;
   std::string summary;
   std::string description;
-  DateTime m_buildDateTime;
+  time_t buildTime;
 }; //class Pkg;
 
 #endif //DEPSOLVER_PKG_H;
