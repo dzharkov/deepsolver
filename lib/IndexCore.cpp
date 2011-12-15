@@ -58,7 +58,7 @@ void IndexCore::processPackages(const std::string& indexDir, const std::string& 
   if (params.provideFilteringByRequires)
     {
       logMsg(LOG_DEBUG, "Provide filtering by used requires is enabled, checking additional directories with packages to collect requires entries");
-      collectRequiresFromDirs(params.provideFilterDirs, additionalRequires);
+      collectRequiresFromDirs(params.takeRequiresFromPackageDirs, additionalRequires);
     }
   RepoIndexTextFormatWriter handler(params, m_console, indexDir, additionalRequires);
   //Binary packages;
