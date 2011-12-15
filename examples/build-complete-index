@@ -1,0 +1,8 @@
+#!/bin/sh -e
+
+VENDOR='ALt Linux'
+NAME=Sisyphus
+
+genbasedir -r -d i586/RPMS:x86_64/RPMS -p "$PATH" -u "name=$NAME" -u "vendor=$VENDOR" noarch
+genbasedir -r -d noarch/RPMS -p "$PATH" -u "name=$NAME" -u "vendor=$VENDOR" i586
+genbasedir -r -d noarch/RPMS -p "$PATH" -u "name=$NAME" -u "vendor=$VENDOR" x86_64
