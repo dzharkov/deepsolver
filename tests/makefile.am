@@ -1,5 +1,2 @@
 
-SUBDIRS = \
-zlib \
-gzip \
-unmets 
+SUBDIRS = regression integrity

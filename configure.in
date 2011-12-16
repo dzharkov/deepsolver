@@ -24,9 +24,11 @@ AC_CONFIG_FILES([
   lib/rpm/makefile
   programs/makefile
   tests/makefile
-  tests/zlib/makefile
-  tests/gzip/makefile
-  tests/unmets/makefile
+  tests/regression/makefile
+  tests/integrity/makefile
+  tests/regression/zlib/makefile
+  tests/regression/gzip/makefile
+  tests/integrity/unmets/makefile
 ])
 
 AC_OUTPUT
