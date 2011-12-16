@@ -1,4 +1,5 @@
 #!/bin/sh -e
+# Builds full valid repo indices;
 
 VENDOR='ALt Linux'
 NAME=Sisyphus
