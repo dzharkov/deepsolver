@@ -38,10 +38,39 @@ void MD5::update(void* buf, size_t len)
   updateImpl(&m_ctx, static_cast<Md5Byte*>(buf), len);
 }
 
+void MD5::updateFromFile(const std::string& fileName)
+{
+  File f;
+  f.openReadOnly(fileName);
+  char buf[2048];
+  while(1)
+    {
+      const size_t count = f.read(buf, sizeof(buf));
+      if (!count)
+	break;
+      update(buf, count);
+    }
+}
+
 std::string MD5::commit(const std::string& fileName)
 {
-  //FIXME:
-  return "";
+  unsigned char buf[16];
+  commitImpl(&m_ctx, buf);
+  std::string res;
+  for(size_t i = 0;i < 16;i++)
+    {
+      char cbuf[4];
+      if (buf[i] < 0x10)
+      snprintf(cbuf, sizeof(cbuf), "0%x", buf[i]); else
+      snprintf(cbuf, sizeof(cbuf), "%x", buf[i]);
+      res += cbuf;
+    }
+  if (!fileName.empty())
+    {
+      res += " *";
+      res += fileName;
+    }
+  return res;
 }
 
 #define F1(x, y, z) (z ^ (x & (y ^ z)))

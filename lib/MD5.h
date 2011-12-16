@@ -14,6 +14,7 @@ public:
 public:
   void init();
   void update(void* buf, size_t len);
+  void updateFromFile(const std::string& fileName);
   std::string commit(const std::string& fileName);
 
 private:

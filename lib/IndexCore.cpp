@@ -5,6 +5,7 @@
 #include"RepoIndexTextFormatWriter.h"
 #include"rpm/RpmFile.h"
 #include"rpm/RpmFileHeaderReader.h"
+#include"MD5.h"
 
 void IndexCore::collectRequires(const std::string& dirName, StringSet& res) 
 {
@@ -124,6 +125,23 @@ void IndexCore::processPackages(const std::string& indexDir, const std::string& 
   m_console.msg() << " picked up " << count << " source packages!" << std::endl;
   logMsg(LOG_DEBUG, "Committed %zu source packages", count);
   handler.commitSource();
+  //Saving md5sum;
+  m_console.msg() << "Creating " << REPO_INDEX_MD5SUM_FILE << "...";
+  std::auto_ptr<AbstractTextFileWriter> md5sum = createTextFileWriter(TextFileStd, concatUnixPath(indexDir, REPO_INDEX_MD5SUM_FILE));
+  MD5 md5;
+  md5.init();
+  md5.updateFromFile(concatUnixPath(indexDir, REPO_INDEX_INFO_FILE));
+  md5sum->writeLine(md5.commit(REPO_INDEX_INFO_FILE));
+  md5.init();
+  md5.updateFromFile(handler.getRpmsFileName());
+  md5sum->writeLine(md5.commit(File::baseName(handler.getRpmsFileName())));
+  md5.init();
+  md5.updateFromFile(handler.getSrpmsFileName());
+  md5sum->writeLine(md5.commit(File::baseName(handler.getSrpmsFileName())));
+  md5.init();
+  md5.updateFromFile(handler.getProvidesFileName());
+  md5sum->writeLine(md5.commit(File::baseName(handler.getProvidesFileName())));
+  m_console.msg() << " OK!" << std::endl;
 }
 
 void IndexCore::writeInfoFile(const std::string& fileName, const RepoIndexParams& params)

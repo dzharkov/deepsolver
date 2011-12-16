@@ -65,11 +65,20 @@ public:
   void commitBinary();
   void commitSource();
 
+  std::string getRpmsFileName() const
+  {
+    return m_rpmsFileName;
+  }
 
+  std::string getSrpmsFileName() const
+  {
+    return m_srpmsFileName;
+  }
 
-
-
-
+  std::string getProvidesFileName() const
+  {
+    return m_providesFileName;
+  }
 
 private:
   struct ProvideResolvingItem
