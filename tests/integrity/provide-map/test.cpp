@@ -8,6 +8,16 @@ struct MapItem
   MapItem(const std::string& pkgName, const std::string& provideName)
     : pkg(pkgName), provide(provideName) {}
 
+  bool operator ==(const MapItem& item) const
+  {
+    return pkg == item.pkg && provide == item.provide;
+  }
+
+  bool operator !=(const MapItem& item) const
+  {
+    return pkg != item.pkg || provide != item.provide;
+  }
+
   std::string pkg, provide;
 }; //struct MapItem;
 
@@ -70,7 +80,7 @@ void processProvidesFile(const std::string& fileName)
   std::cout << "Reading " << fileName << "..." << std::endl;
   std::auto_ptr<AbstractTextFileReader> reader = openIndexFile(fileName);
   std::string line, provideName;
-  bool wasEmpty = 0;
+  bool wasEmpty = 1;
   while(reader->readLine(line))
     {
       if (line.empty())
@@ -80,7 +90,7 @@ void processProvidesFile(const std::string& fileName)
 	}
       if (wasEmpty && line.length() > 2 && line[0] == '[' && line[line.length() - 1] == ']')
 	{
-	  provideName.resize(line.length() - 1);
+	  provideName.resize(line.length() - 2);
 	  for(std::string::size_type i = 1;i < line.length() - 1;i++)
 	    provideName[i - 1] = line[i];
 	  wasEmpty = 0;
@@ -99,5 +109,20 @@ int main(int argc, char* argv[])
   processProvidesFile(argv[2]);
   std::cout << "First list size: " << list1.size() << std::endl;
   std::cout << "Second list size: " << list2.size() << std::endl;
+  assert(list1.size() == list2.size());
+  for(MapItemList::const_iterator it1 = list1.begin();it1 != list1.end();it1++)
+    {
+      MapItemList::const_iterator it2 = list2.begin();
+      while (it2 != list2.end() && *it1 != *it2)
+	it2++;
+      assert(it2 != list2.end());
+    }
+  for(MapItemList::const_iterator it2 = list2.begin();it2 != list2.end();it2++)
+    {
+      MapItemList::const_iterator it1 = list1.begin();
+      while (it1 != list1.end() && *it2 != *it1)
+	it1++;
+      assert(it1 != list1.end());
+    }
   return 0;
 }

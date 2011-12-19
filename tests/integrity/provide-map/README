@@ -1,0 +1,8 @@
+This test compares two mapping sets: from package names to its
+provides and provides sets to package names they are providing. Test
+binary file takes two parameters: rpms data file (usually 'rpms.data'
+or 'rpms.data.gz') and provides mapping file (usually 'provides.data)
+or 'provides.data.gz'. During test execution the program prints sizes
+of both mappings (must be equal) and checks the every item in each set
+must be included in another. If something is wrong corresponding
+assertion fails.
