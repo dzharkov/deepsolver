@@ -1,3 +1,15 @@
 #!/bin/sh -e
 
-./test 01.data 64
+MD5FILE=md5sum.txt
+
+for i in 0 2 5 11 64 100 512 999 1000 1024 2000 2222 5000; do
+    ./test $i.data $i >> $MD5FILE
+    if [ "$(wc -c "$i.data" | cut -f1 -d' ')" -ne $i ]; then
+	echo "$i.data:INvalid file size" >&2
+	exit 1
+    fi
+done
+
+md5sum --check < "$MD5FILE"
+/bin/rm -f ./*.data "$MD5FILE"
+echo "Md5 regression test was passed successfully!"
