@@ -1,0 +1,9 @@
+This test creates several randomly generated binary files of various
+size, calculates with the integrated code their md5sums and checks
+these md5sums with system md5sum utility. The binary 'test' program
+called by 'run' script takes two command line arguments: the name of a
+file to write random data into and its length. Calculated md5sum
+prints to stdout stream.
+
+You should just call './run' command in this directory to perform the
+testing.

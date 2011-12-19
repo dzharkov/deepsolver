@@ -1,0 +1,14 @@
+This test takes as command line arguments several files with generated
+repo indices and compares sets of 'requires' tags and 'provides' tags
+without comparing version information.
+
+There can be several types of result:
+
+* each require tag has the corresponding provide tag - the perfect
+  case;
+
+* some require tags have no corresponding provide tags - the generally
+  error case with found unmets;
+
+* some provide tags have no require tags for them - usually the valid
+  case, but user is encouraged to know what is the reason.
