@@ -1,0 +1,3 @@
+#!/bin/sh -e
+
+./test 01.data 64
