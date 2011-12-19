@@ -118,8 +118,7 @@ void IndexCore::processPackages(const std::string& indexDir, const std::string& 
       StringList files;
       ChangeLog changeLog;
       readRpmPkgFile(it->getFullPath(), pkgFile, provides, requires, conflicts, obsoletes, files, changeLog);
-      //Is change log needed for source package information;
-      handler.addSource(pkgFile);
+      handler.addSource(pkgFile, changeLog);
       count++;
     }
   m_console.msg() << " picked up " << count << " source packages!" << std::endl;

@@ -22,7 +22,9 @@ public:
   RepoIndexParams()
     : compressionType(DEFAULT_REPO_INDEX_COMPRESSION_TYPE), //Real value is defined in DefaultValues.h;
       formatType(DEFAULT_REPO_INDEX_FORMAT_TYPE), //Real value is defined in DefaultValues.h;
-      provideFilteringByRequires(0)
+    provideFilteringByRequires(0),
+    changeLogBinary(0),
+      changeLogSources(0)
   {}
 
 public:
@@ -35,6 +37,8 @@ public:
   StringList provideFilterDirs;
   bool provideFilteringByRequires;
   StringList takeRequiresFromPackageDirs;
+  bool changeLogBinary;
+  bool changeLogSources;
 }; //class RepoIndexParams;
 
 class IndexCore

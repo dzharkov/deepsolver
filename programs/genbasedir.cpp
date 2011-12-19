@@ -87,6 +87,7 @@ static void printHelp()
 	 "\t-h - print this help screen;\n"
 	 "\t-c TYPE - choose compression type: none or gzip (default is gzip);\n"
 	 "\t-d DIRLIST - add colon-delimited list of directories to take requires from for provides filtering (in addition to \'-r\' if it is used);\n"
+	 "\t-l - include change log into binary and source indices;\n"
 	 //TODO:	 "\t-f FORMAT - choose data format: binary or text (default is text);\n"
 	 "\t-p DIRLIST - enable provides filtering by colon-delimited list of directories;\n"
 	 "\t-r - enable provides filtering by used requires (recommended) (see also \'-d\' option);\n"
@@ -131,7 +132,7 @@ static bool parseCmdLine(int argc, char* argv[])
   params.topDir = ".";
   while(1)
     {
-      const int p = getopt(argc, argv, "c:d:hu:rp:");
+      const int p = getopt(argc, argv, "c:d:hu:rp:l");
       if (p == -1)
 	break;
       if (p == '?')
@@ -141,6 +142,10 @@ static bool parseCmdLine(int argc, char* argv[])
 	case 'h':
 	  printHelp();
 	  exit(EXIT_SUCCESS);
+	  break;
+	case 'l':
+	  params.changeLogSources = 1;
+	  params.changeLogBinary = 1;
 	  break;
 	case 'r':
 	  params.provideFilteringByRequires = 1;

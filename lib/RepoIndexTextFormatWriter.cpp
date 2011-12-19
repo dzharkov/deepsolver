@@ -248,12 +248,13 @@ void RepoIndexTextFormatWriter::addBinary(const PkgFile& pkgFile,
     m_tmpFile->writeLine(CONFLICTS_STR + saveNamedPkgRel(*it));
   for(NamedPkgRelList::const_iterator it = obsoletes.begin();it != obsoletes.end();it++)
     m_tmpFile->writeLine(OBSOLETES_STR + saveNamedPkgRel(*it));
-  for(ChangeLog::size_type i = 0;i < changeLog.size();i++)
-    m_tmpFile->writeLine(CHANGELOG_STR + encodeChangeLogEntry(changeLog[i]));
+  if (m_params.changeLogBinary)
+    for(ChangeLog::size_type i = 0;i < changeLog.size();i++)
+      m_tmpFile->writeLine(CHANGELOG_STR + encodeChangeLogEntry(changeLog[i]));
   m_tmpFile->writeLine("");
 }
 
-void RepoIndexTextFormatWriter::addSource(const PkgFile& pkgFile)
+void RepoIndexTextFormatWriter::addSource(const PkgFile& pkgFile, const ChangeLog& changeLog)
 {
   m_srpmsFile->writeLine("[" + File::baseName(pkgFile.fileName) + "]");
   m_srpmsFile->writeLine(NAME_STR + pkgFile.name);
@@ -269,6 +270,9 @@ void RepoIndexTextFormatWriter::addSource(const PkgFile& pkgFile)
   m_srpmsFile->writeLine(SUMMARY_STr + pkgFile.summary);
   m_srpmsFile->writeLine(DESCRIPTION_STR + encodeMultiline(pkgFile.description));
   //No need to write src.rpm entry, usually it is empty for source packages;
+  if (m_params.changeLogSources)
+    for(ChangeLog::size_type i = 0;i < changeLog.size();i++)
+      m_srpmsFile->writeLine(CHANGELOG_STR + encodeChangeLogEntry(changeLog[i]));
   m_srpmsFile->writeLine("");
 }
 

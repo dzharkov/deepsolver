@@ -60,7 +60,7 @@ public:
 		 const NamedPkgRelList& obsoletes,
 		 const StringList& fileList,
 		 const ChangeLog& changeLog);
-  void addSource(const PkgFile& pkgFile);
+  void addSource(const PkgFile& pkgFile, const ChangeLog& changeLog);
 
   void commitBinary();
   void commitSource();
