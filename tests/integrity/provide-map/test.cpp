@@ -61,8 +61,6 @@ void processPkgFile(const std::string& fileName)
 	  std::string pkgName = extractPackageName(tail);
 	  assert(!pkgName.empty());
 	  list1.push_back(MapItem(name, pkgName));
-	  provides.insert(pkgName);
-	  continue;
 	}
     }
 }
@@ -82,7 +80,9 @@ void processProvidesFile(const std::string& fileName)
 	}
       if (wasEmpty && line.length() > 2 && line[0] == '[' && line[line.length() - 1] == ']')
 	{
-	  //FIXME:	  provideName = ;
+	  provideName.resize(line.length() - 1);
+	  for(std::string::size_type i = 1;i < line.length() - 1;i++)
+	    provideName[i - 1] = line[i];
 	  wasEmpty = 0;
 	  continue;
 	}
@@ -96,6 +96,8 @@ int main(int argc, char* argv[])
 {
   assert(argc == 3);
   processPkgFile(argv[1]);
-  processProvidesFile(argv[1]);
-  return count == 0?0:1;
+  processProvidesFile(argv[2]);
+  std::cout << "First list size: " << list1.size() << std::endl;
+  std::cout << "Second list size: " << list2.size() << std::endl;
+  return 0;
 }

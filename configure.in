@@ -29,6 +29,7 @@ AC_CONFIG_FILES([
   tests/regression/zlib/makefile
   tests/regression/gzip/makefile
   tests/integrity/unmets/makefile
+  tests/integrity/provide-map/makefile
 ])
 
 AC_OUTPUT
