@@ -4,6 +4,9 @@
 
 #include"DateTime.h"
 
+typedef size_t PackageId;
+#define BAD_PACKAGE_ID (PackageId)-1
+
 typedef unsigned short Epoch;
 
 class Pkg
