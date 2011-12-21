@@ -10,6 +10,8 @@ public:
 public:
   virtual size_t getClauseCount() const = 0;
   virtual size_t getLiteralCount(size_t clauseIndex) const = 0;
+  virtual bool empty() const = 0;
+  virtual void clear() = 0;
   virtual size_t addEmptyClause() = 0;
   virtual void removeClause(size_t clauseIndex) = 0;
   virtual PackageId getPackageId(size_t clauseIndex, size_t literalIndex) const = 0;
