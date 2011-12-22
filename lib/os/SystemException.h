@@ -20,6 +20,7 @@ class SystemException: public DepsolverException
 public:
   /**\brief The default constructor
    *
+   * This constructor implies automatic errno analyzing but without
    * developer string, so the getMessage() method will return only the
    * single line description provided by operating system.
    */
