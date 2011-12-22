@@ -1,5 +1,6 @@
 //Written with librpm-4.0.4-alt100.29;
 //FIXME:requires just for install/removing
+//FIXME:package size and required disk space;
 
 #include"depsolver.h"
 #include"RpmFileHeaderReader.h"
