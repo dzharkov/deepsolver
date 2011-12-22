@@ -15,11 +15,12 @@
 
 typedef size_t PackageId;
 #define BAD_PACKAGE_ID (PackageId)-1
+typedef std::vector<PackageId> PackageIdVector;
+typedef std::list<PackageId> PackageIdList;
 
 typedef size_t VarId;
 #define BAD_VAR_ID (VarId)-1
-
-
-
+typedef std::vector<VarId> VarIdVector;
+typedef std::list<VarId> VarIdList;
 
 #endif //DEPSOLVER_H
