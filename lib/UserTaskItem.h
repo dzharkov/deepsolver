@@ -1,6 +1,6 @@
 
-#ifndef DEPSOLVER_USER_TASK_ITEM_H
-#define DEPSOLVER_USER_TASK_ITEM_H
+#ifndef DEPSOLVER_USER_TASK_H
+#define DEPSOLVER_USER_TASK_H
 
 enum {
   TaskItemNone = 0,
@@ -51,4 +51,4 @@ typedef std::list<UserTaskItem> UserTaskItemList;
 typedef std::vector<UserTaskItem> UserTaskItemVector;
 typedef UserTaskItemVector UserTask;
 
-#endif //DEPSOLVER_USER_TASK_ITEM_H;
+#endif //DEPSOLVER_USER_TASK_H;
