@@ -9,7 +9,7 @@
  * variable and can construct informative error description with text
  * provided by operating system about error occurred. The error message
  * consists of two parts: the short string provided by developer with any
- * information his want and the string given by the operating system. The
+ * information hi want and the string given by the operating system. The
  * developer can save in the string, for example, the name of system call
  * with its arguments which execution failed.
  *
@@ -26,7 +26,7 @@ public:
   SystemException()
     : m_code(errno) {}
 
-  /**\brief The constructor with automatic errno analyzing with developer commant
+  /**\brief The constructor with automatic errno analyzing with developer comment
    *
    * This constructor allows developer to give short comment of the error
    * and automatically add string from operating system got with errno
