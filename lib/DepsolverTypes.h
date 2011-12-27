@@ -48,7 +48,10 @@ public:
     : version(v), less(0), equals(1), greater(0) {} 
 
   VersionCond(const std::string& v, bool l, bool e, bool g)
-    : version(v), less(l), equals(e), greater(g) {}
+    : version(v), less(l), equals(e), greater(g) 
+  {
+    assert(!l || !g);
+  }
 
 public:
   std::string version;

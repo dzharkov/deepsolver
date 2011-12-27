@@ -19,7 +19,9 @@ public:
 
 private:
   //Never returns BAD_PACKAGE_ID, must throw an exception;
-VarId processUserTaskItemToInstall(const UserTaskItemToInstall& item)
+  VarId processUserTaskItemToInstall(const UserTaskItemToInstall& item);
+  //Never returns BAD_PACKAGE_ID, must throw an exception;
+  VarId processPriority(const VarIdVector& vars, PackageId provideEntry) const;
 
 private:
   PackageScope& m_scope;

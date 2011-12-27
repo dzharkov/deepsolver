@@ -31,11 +31,13 @@ public:
   //Only by real names without provides;
   void selectMatchingVars(PackageId packageId, VarIdVector& vars);
   //Only by real names but respecting version info;
-  void selectMatchingVars(PackageId packageId, VarIdVector& vars, const VersionCond& ver);
+  void selectMatchingWithVersionVars(PackageId packageId, const VersionCond& ver, VarIdVector& vars);
   //By real names and provides;
   void selectMatchingVarsWithProvides(PackageId packageId, VarIdVector& vars);
   //Only by provides;
   void selectMatchingVarsAmongProvides(PackageId packageId, VarIdVector& vars);
+  //Only by provides but respecting version info (entries without version must be silently skipped);
+  void selectMatchingWithVersionVarsAmongProvides(PackageId packageId, const VersionCond& ver, VarIdVector& vars);
 
   //Only by real names;
   bool isINstalled(PackageId packageId) const;
@@ -43,7 +45,13 @@ public:
   bool isInstallWithProvides(PackageId packageId);
 
   //Only by versions of real names;
-  VarId selectTheNewest(const VarIdVector& vars);
+  void selectTheNewest(VarIdVector& vars);
+  //Only by versions of exact provide entry;
+  void selectTheNewestByProvide(VarIdVector& vars, PackageId provideEntry);
+
+
+
+  bool allProvidesHaveTheVersion(const VarIdVector& vars, PackageId provideEntry);
 
   //  void whatRequiresAmongInstalled();
 }; //class PackageScope; 
