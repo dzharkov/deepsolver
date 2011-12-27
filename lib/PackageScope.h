@@ -1,7 +1,7 @@
 
 #ifndef DEPSOLVER_PACKAGE_SCOPE_H
 #define DEPSOLVER_PACKAGE_SCOPE_H
-
+//All methods can throw only SystemException;
 class PackageScope 
 {
 public:
@@ -9,6 +9,9 @@ public:
   virtual ~PackageScope() {}
 
 public:
+  PackageId strToPackageId(const std::string& name) const;
+  std::string packageNameToStr(PackageId packageId) const;
+
   /**\brief Adds to the database the package not presented in available scope
    *
    * This method adds to the current package database new record as a
@@ -25,8 +28,24 @@ public:
    */
   VarId registerTemporarily(const std::string& url); 
 
-  void selectVarIdByRealName(PackageId packageId, VarIdVector& varIdVector);
-  void whatRequiresAmongInstalled();
+  //Only by real names without provides;
+  void selectMatchingVars(PackageId packageId, VarIdVector& vars);
+  //Only by real names but respecting version info;
+  void selectMatchingVars(PackageId packageId, VarIdVector& vars, const VersionCond& ver);
+  //By real names and provides;
+  void selectMatchingVarsWithProvides(PackageId packageId, VarIdVector& vars);
+  //Only by provides;
+  void selectMatchingVarsAmongProvides(PackageId packageId, VarIdVector& vars);
+
+  //Only by real names;
+  bool isINstalled(PackageId packageId) const;
+  //By real name and provides;
+  bool isInstallWithProvides(PackageId packageId);
+
+  //Only by versions of real names;
+  VarId selectTheNewest(const VarIdVector& vars);
+
+  //  void whatRequiresAmongInstalled();
 }; //class PackageScope; 
 
 #endif //DEPSOLVER_PACKAGE_SCOPE_H;

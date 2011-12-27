@@ -18,6 +18,10 @@ public:
   void preprocess(const UserTask& userTask);
 
 private:
+  //Never returns BAD_PACKAGE_ID, must throw an exception;
+VarId processUserTaskItemToInstall(const UserTaskItemToInstall& item)
+
+private:
   PackageScope& m_scope;
 }; //class taskPreprocessor;
 

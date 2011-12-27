@@ -39,7 +39,6 @@
 #include<locale.h>
 #include<time.h>
 
-
 typedef std::vector<size_t> SizeVector;
 typedef std::vector<std::string> StringVector;
 typedef std::list<std::string> StringList;
