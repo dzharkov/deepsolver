@@ -160,7 +160,7 @@ static bool fileFromDirs(const std::string& fileName, const StringList& dirs)
 RepoIndexTextFormatWriter::RepoIndexTextFormatWriter(const RepoIndexParams& params,
 						     AbstractConsoleMessages& console,
 						     const std::string& dir,
-						     const StringSet& additionalRequires)
+						     const StringSet& additionalRefs)
   : m_params(params),
     m_console(console),
     m_dir(dir),
@@ -168,8 +168,8 @@ RepoIndexTextFormatWriter::RepoIndexTextFormatWriter(const RepoIndexParams& para
     m_srpmsFileName(addCompressionExtension(concatUnixPath(dir, REPO_INDEX_SRPMS_DATA_FILE), params)),
     m_providesFileName(addCompressionExtension(concatUnixPath(dir, REPO_INDEX_PROVIDES_DATA_FILE), params)),
     m_tmpFileName(concatUnixPath(dir, TMP_FILE)),
-    m_filterProvidesByRequires(params.provideFilteringByRequires),
-    m_additionalRequires(additionalRequires),
+    m_filterProvidesByRefs(params.provideFilteringByRefs),
+    m_additionalRefs(additionalRefs),
     m_filterProvidesByDirs(params.provideFilterDirs)
 {
 }
@@ -213,39 +213,43 @@ void RepoIndexTextFormatWriter::addBinary(const PkgFile& pkgFile,
     {
       /*
        * The following operation must be done in both cases: in filtering by
-       * requires mode and without filtering. If there is no filtering we just
+       * references mode and without filtering. If there is no filtering we just
        * saving all provides, if filtering is enabled we will proceed real
        * filtering on additional phase.
        */
       m_tmpFile->writeLine(PROVIDES_STR + saveNamedPkgRel(*it));
       //But registration must be done only if we have no additional phase ;
-      if (!m_filterProvidesByRequires)
+      if (!m_filterProvidesByRefs)
 	firstProvideReg(pkgFile.name, it->pkgName);
     }
   for(StringList::const_iterator it = fileList.begin();it != fileList.end();it++)
     /*
-     * If filtering by requires is enabled we are writing all possible
+     * If filtering by references is enabled we are writing all possible
      * provides to filter them on additional phase. If filterProvidesByDirs
      * string list is empty it means filtering by directories is disabled and
      * we also must write current file as provides. If filtering by
      * directories is enabled we are writing file as provides only if its
      * directory presents in directory list.
      */
-    if (m_filterProvidesByRequires || m_filterProvidesByDirs.empty() || fileFromDirs(*it, m_filterProvidesByDirs))
+    if (m_filterProvidesByRefs || m_filterProvidesByDirs.empty() || fileFromDirs(*it, m_filterProvidesByDirs))
       {
 	m_tmpFile->writeLine(PROVIDES_STR + saveFileName(*it));
 	//But we are performing registration only if there is no additional phase ;
-	if (!m_filterProvidesByRequires)
+	if (!m_filterProvidesByRefs)
 	  firstProvideReg(pkgFile.name, *it);
       }
   for(NamedPkgRelList::const_iterator it = requires.begin();it != requires.end();it++)
     {
       m_tmpFile->writeLine(REQUIRES_STR + saveNamedPkgRel(*it));
-      if (m_filterProvidesByRequires)
-	m_requiresSet.insert(it->pkgName);
+      if (m_filterProvidesByRefs)
+	m_refsSet.insert(it->pkgName);
     }
   for(NamedPkgRelList::const_iterator it = conflicts.begin();it != conflicts.end();it++)
-    m_tmpFile->writeLine(CONFLICTS_STR + saveNamedPkgRel(*it));
+    {
+      m_tmpFile->writeLine(CONFLICTS_STR + saveNamedPkgRel(*it));
+      if (m_filterProvidesByRefs)
+	m_refsSet.insert(it->pkgName);
+    }
   for(NamedPkgRelList::const_iterator it = obsoletes.begin();it != obsoletes.end();it++)
     m_tmpFile->writeLine(OBSOLETES_STR + saveNamedPkgRel(*it));
   if (m_params.changeLogBinary)
@@ -280,9 +284,9 @@ void RepoIndexTextFormatWriter::commitBinary()
 {
   m_tmpFile->close();
   assert(m_tmpFileName == concatUnixPath(m_dir, TMP_FILE));//KILLME:
-  if (m_filterProvidesByRequires)
+  if (m_filterProvidesByRefs)
     {
-      m_console.msg() << "Collected " << m_requiresSet.size() << " requires among picked packages for provides filtering" << std::endl; 
+      m_console.msg() << "Collected " << m_refsSet.size() << " references among picked packages for provides filtering" << std::endl; 
       m_console.msg() << "running additional phase...";
       additionalPhase();
       m_console.msg() << " provides filtering completed!" << std::endl;
@@ -308,7 +312,7 @@ void RepoIndexTextFormatWriter::additionalPhase()
   assert(m_provideMap.empty());
   assert(m_resolvingItems.empty());
   assert(m_resolvingData.empty());
-  assert(m_filterProvidesByRequires);
+  assert(m_filterProvidesByRefs);
   const std::string inputFileName = m_tmpFileName, outputFileName = concatUnixPath(m_dir, TMP_FILE_ADDITIONAL);
   m_tmpFileName = outputFileName;//Changing name of a file to be processed on the second phase;
   std::auto_ptr<AbstractTextFileReader> inputFile = createTextFileReader(TextFileStd, inputFileName);
@@ -330,7 +334,7 @@ void RepoIndexTextFormatWriter::additionalPhase()
 	}
       const std::string provideName = getPkgRelName(tail);
       assert(!provideName.empty());
-      if (m_requiresSet.find(provideName) != m_requiresSet.end() || m_additionalRequires.find(provideName) != m_additionalRequires.end() ||
+      if (m_refsSet.find(provideName) != m_refsSet.end() || m_additionalRefs.find(provideName) != m_additionalRefs.end() ||
 	  (!m_filterProvidesByDirs.empty() && fileFromDirs(provideName, m_filterProvidesByDirs)))
 	{
 	  outputFile->writeLine(line);

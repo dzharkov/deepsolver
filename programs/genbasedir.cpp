@@ -86,11 +86,11 @@ static void printHelp()
 	 "Valid command line options are:\n"
 	 "\t-h - print this help screen;\n"
 	 "\t-c TYPE - choose compression type: none or gzip (default is gzip);\n"
-	 "\t-d DIRLIST - add colon-delimited list of directories to take requires from for provides filtering (in addition to \'-r\' if it is used);\n"
+	 "\t-d DIRLIST - add colon-delimited list of directories to take references from for provides filtering (in addition to \'-r\' if it is used);\n"
 	 "\t-l - include change log into binary and source indices;\n"
 	 //TODO:	 "\t-f FORMAT - choose data format: binary or text (default is text);\n"
 	 "\t-p DIRLIST - enable provides filtering by colon-delimited list of directories;\n"
-	 "\t-r - enable provides filtering by used requires (recommended) (see also \'-d\' option);\n"
+	 "\t-r - enable provides filtering by used requires/conflicts (recommended) (see also \'-d\' option);\n"
 	 "\t-u NAME=VALUE - add a user defined parameter to repository index information file.\n\n"
 	 "If directory is not specified current directory is used to search packages of repository.\n"
 	 );
@@ -148,10 +148,10 @@ static bool parseCmdLine(int argc, char* argv[])
 	  params.changeLogBinary = 1;
 	  break;
 	case 'r':
-	  params.provideFilteringByRequires = 1;
+	  params.provideFilteringByRefs = 1;
 	  break;
 	case 'd':
-	  splitColonDelimitedList(optarg, params.takeRequiresFromPackageDirs);
+	  splitColonDelimitedList(optarg, params.takeRefsFromPackageDirs);
 	  break;
 	case 'p':
 	  splitColonDelimitedList(optarg, params.provideFilterDirs);

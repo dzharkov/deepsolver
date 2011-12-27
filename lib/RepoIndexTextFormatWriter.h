@@ -33,13 +33,13 @@
  * installation and removing operations. 
  *
  * There are two options for provide filtering:register the provide entry
- * if corresponding require dependency is present and filter provides by
+ * if corresponding require/conflict reference is present and filter provides by
  * directories list. The second case is actual only for provides as files
- * from the file list of the package. The filtering mode by require
- * dependencies includes dependencies from collected packages and in
+ * from the file list of the package. The filtering mode by require/conflict
+ * references includes dependencies from collected packages and in
  * additional from optional string list.
+ *
  * \sa IndexCore RepoIndexInfoFile
- * 
  */
 class RepoIndexTextFormatWriter
 {
@@ -47,7 +47,7 @@ public:
   RepoIndexTextFormatWriter(const RepoIndexParams& params,
 			    AbstractConsoleMessages& console,
 			    const std::string& dir,
-			    const StringSet& additionalRequires);
+			    const StringSet& additionalRefs);
 
 public:
   void initBinary();
@@ -129,10 +129,10 @@ private:
   const std::string m_rpmsFileName, m_srpmsFileName, m_providesFileName;
   std::string m_tmpFileName;//Additional phase modifies this file name;
   std::auto_ptr<AbstractTextFileWriter> m_tmpFile, m_srpmsFile;
-  const bool m_filterProvidesByRequires;
-  const StringSet& m_additionalRequires;
+  const bool m_filterProvidesByRefs;
+  const StringSet& m_additionalRefs;
   const StringList& m_filterProvidesByDirs;
-  StringSet m_requiresSet;
+  StringSet m_refsSet;
 }; //class RepoIndexTextFormatWriter;
 
 #endif //DEPSOLVER_REPO_INDEX_TEXT_FORMAT_WRITER_H;

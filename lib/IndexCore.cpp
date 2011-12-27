@@ -7,9 +7,9 @@
 #include"rpm/RpmFileHeaderReader.h"
 #include"MD5.h"
 
-void IndexCore::collectRequires(const std::string& dirName, StringSet& res) 
+void IndexCore::collectRefs(const std::string& dirName, StringSet& res) 
 {
-  m_console.msg() << "Collecting additional requires from " << dirName << "...";
+  m_console.msg() << "Collecting additional references from " << dirName << "...";
   std::auto_ptr<Directory::Iterator> it = Directory::enumerate(dirName);
   while(it->moveNext())
     {
@@ -17,25 +17,24 @@ void IndexCore::collectRequires(const std::string& dirName, StringSet& res)
 	continue;
       if (!checkExtension(it->getName(), ".rpm"))
 	continue;
-      NamedPkgRelList requires;
+      NamedPkgRelList requires, conflicts;
       RpmFileHeaderReader reader;
       reader.load(it->getFullPath());
       reader.fillRequires(requires);
+      reader.fillConflicts(conflicts);
       for(NamedPkgRelList::const_iterator it = requires.begin();it != requires.end();it++)
-	{
-	  StringSet::iterator resIt = res.find(it->pkgName);
-	  if (resIt == res.end())
-	    res.insert(it->pkgName);
-	}
+	res.insert(it->pkgName);
+      for(NamedPkgRelList::const_iterator it = conflicts.begin();it != conflicts.end();it++)
+	res.insert(it->pkgName);
     }
   m_console.msg() << " " << res.size() << " found!" << std::endl;
 }
 
-void IndexCore::collectRequiresFromDirs(const StringList& dirs, StringSet& res)
+void IndexCore::collectRefsFromDirs(const StringList& dirs, StringSet& res)
 {
   res.clear();
   for(StringList::const_iterator it = dirs.begin();it != dirs.end();it++)
-    collectRequires(*it, res);
+    collectRefs(*it, res);
 }
 
 void IndexCore::build(const RepoIndexParams& params)
@@ -55,13 +54,13 @@ void IndexCore::processPackages(const std::string& indexDir, const std::string& 
 {
   assert(params.formatType == RepoIndexParams::FormatTypeText);//FIXME:binary format support;
   logMsg(LOG_DEBUG, "IndexCore began processing directories with packages");
-  StringSet additionalRequires;
-  if (params.provideFilteringByRequires)
+  StringSet additionalRefs;
+  if (params.provideFilteringByRefs)
     {
-      logMsg(LOG_DEBUG, "Provide filtering by used requires is enabled, checking additional directories with packages to collect requires entries");
-      collectRequiresFromDirs(params.takeRequiresFromPackageDirs, additionalRequires);
+      logMsg(LOG_DEBUG, "Provide filtering by used references is enabled, checking additional directories with packages to collect references entries");
+      collectRefsFromDirs(params.takeRefsFromPackageDirs, additionalRefs);
     }
-  RepoIndexTextFormatWriter handler(params, m_console, indexDir, additionalRequires);
+  RepoIndexTextFormatWriter handler(params, m_console, indexDir, additionalRefs);
   //Binary packages;
   handler.initBinary();
   logMsg(LOG_DEBUG, "RepoIndexTextFormatWriter created and initialized for binary packages");

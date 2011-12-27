@@ -22,7 +22,7 @@ public:
   RepoIndexParams()
     : compressionType(DEFAULT_REPO_INDEX_COMPRESSION_TYPE), //Real value is defined in DefaultValues.h;
       formatType(DEFAULT_REPO_INDEX_FORMAT_TYPE), //Real value is defined in DefaultValues.h;
-    provideFilteringByRequires(0),
+    provideFilteringByRefs(0),
     changeLogBinary(0),
       changeLogSources(0)
   {}
@@ -35,8 +35,8 @@ public:
   StringToStringMap userParams;
   //If the following list is empty provide filtering by directories is disabled;
   StringList provideFilterDirs;
-  bool provideFilteringByRequires;
-  StringList takeRequiresFromPackageDirs;
+  bool provideFilteringByRefs;
+  StringList takeRefsFromPackageDirs;
   bool changeLogBinary;
   bool changeLogSources;
 }; //class RepoIndexParams;
@@ -51,8 +51,8 @@ public:
   void build(const RepoIndexParams& params);
 
 private:
-  void collectRequires(const std::string& dirName, StringSet& res);
-  void collectRequiresFromDirs(const StringList& dirs, StringSet& res);
+  void collectRefs(const std::string& dirName, StringSet& res);
+  void collectRefsFromDirs(const StringList& dirs, StringSet& res);
   void processPackages(const std::string& indexDir, const std::string& rpmsDir, const std::string& srpmsDir, const RepoIndexParams& params);
   void writeInfoFile(const std::string& fileName, const RepoIndexParams& params);
 
