@@ -33,7 +33,7 @@ public:
   ~UserTask() {}
 
 public:
-  UserTaskItemToINstall itemsToINstall;
+  UserTaskItemToINstallVector itemsToINstall;
   StringSet urlsToInstall;
   StringSet namesToRemove;
 }; //class UserTask;

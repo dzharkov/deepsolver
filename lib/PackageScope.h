@@ -1,7 +1,7 @@
 
 #ifndef DEPSOLVER_PACKAGE_SCOPE_H
 #define DEPSOLVER_PACKAGE_SCOPE_H
-//All methods can throw only SystemException;
+//All methods can throw only SystemException and RpmException;
 class PackageScope 
 {
 public:
@@ -9,8 +9,9 @@ public:
   virtual ~PackageScope() {}
 
 public:
+  //Package Id replaces both the real names and provides entries;
   PackageId strToPackageId(const std::string& name) const;
-  std::string packageNameToStr(PackageId packageId) const;
+  std::string packageIdToStr(PackageId packageId) const;
 
   /**\brief Adds to the database the package not presented in available scope
    *

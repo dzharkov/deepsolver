@@ -3,16 +3,48 @@
 #include"depsolver.h"
 #include"TaskPreprocessor.h"
 
-void TaskPreprocessor::preprocess(const UserTask& userTask)
+void TaskPreprocessor::preprocess(const UserTask& userTask,
+				  VarIdVector& strongToInstall,
+				  VarIdVector& strongToRemove)
 {
-  VarIdVector strongInstall, strongRemove;
+  strongToInstall.clear();
+  strongToRemove.clear();
   /*
    * First of all adding to scope all packages newly temporarily available;
-   * The set of temporary packages must be definitely install;
+   * the set of temporary packages must be definitely install;
    */
   for(StringSet::const_iterator it = userTask.urlsToInstall.begin(); it != userTask.urlsToInstall.end();it++) 
     strongInstall.push_back(m_scope.registerTemporarily(*it));
-  //FIXME:downgrade;
+  for(UserTaskItemToInstallVector::size_type i = 0;i < userTask.itemsToInstall.size();i++)
+    {
+      const VarId varId = processUserTaskItemToInstall(userTask.temsToInstall[i]);
+      assert(varId != BAD_VAR_ID);
+      strongToInstall.push_back(varId);
+    }
+  for(StringSet::const_iterator it = userTask.namesToRemove.begin() ;it != userTask.namesToRemove.end();it++)
+    {
+      const PackageId pkgId = m_scope.strToPackageId(*it);
+      if (pkgId == BAD_PACKAGE_ID)
+	TASK_STOP("\'" + *it + "\' is not a known package name");
+      VarIdVector vars;
+      //The following line does not take into account provide entries;
+      m_scope.selectMatchingVars(pkgId, vars);
+      for(varIdVector::size_type k = 0;k < vars.size();k++)
+	strongToRemove.push_back(vars[k]);
+    }
+  //For every package to install we must prohibit all other versions except selected;
+  //FIXME:
+  //The same package cannot be included both into strongToInstall and strongToRemove;
+  for(VarIdVector::size_type i1 = 0;i1 < strongToInstall.size();i1++)
+    for(VarIdVector::size_type i2 = 0;i2 < strongToRemove.size();i2++)
+      if (strongToInstall[i1] == strongToRemove[i2])
+	{
+	  const std::string pkgName = m_scope.PackageIdToStr(strongToInstall[i1]);
+	  assert(!pkgName.empty());
+	  TASK_STOP("User task requires the impossible solution: \'" + pkgName + "\' was selected to be installed and to be removed simultaneously");
+	}
+  removeDublications(strongToInstall);
+  removeDublications(strongToRemove);
 }
 
 VarId TaskPreprocessor::processUserTaskItemToInstall(const UserTaskItemToInstall& item)
@@ -21,7 +53,8 @@ VarId TaskPreprocessor::processUserTaskItemToInstall(const UserTaskItemToInstall
   const bool hasVersion = !item.version.empty();
   assert(!hasVersion || !item.less || !item.greater);
   const PackageId pkgId = m_scope.strToPackageId(item.pkgName);
-  assert(pkgId != BAD_PACKAGE_ID);
+if (pkgId == BAD_PACKAGE_ID)
+  TASK_STOP("\'" + item.pkgName + "\' is not a known package name");
   VarIdVector vars;
   if (!hasVersion)
     {

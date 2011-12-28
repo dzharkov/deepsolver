@@ -2,6 +2,7 @@
 #ifndef DEPSOLVER_TASK_EXCEPTION_H
 #define DEPSOLVER_TASK_EXCEPTION_H
 
+//This class must have i18n support in the future;
 class TaskException: public DepsolverException
 {
 public:
