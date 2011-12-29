@@ -38,13 +38,13 @@ typedef size_t VarId;
 typedef std::vector<VarId> VarIdVector;
 typedef std::list<VarId> VarIdList;
 
-class VersionConf
+class VersionCond
 {
 public:
   VersionCond()
     : less(0), equals(0), greater(0) {}
 
-  versionCond(const std::string& v)
+  VersionCond(const std::string& v)
     : version(v), less(0), equals(1), greater(0) {} 
 
   VersionCond(const std::string& v, bool l, bool e, bool g)
