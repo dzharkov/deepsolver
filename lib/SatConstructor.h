@@ -20,6 +20,7 @@ public:
 
 private:
   const PackageScope& m_scope;
+  VarIdSet m_pendingToInstall, m_pendingToRemove;
 }; //class SatConstructor;
 
 #endif //DEPSOLVER_SAT_CONSTRUCTOR_H;

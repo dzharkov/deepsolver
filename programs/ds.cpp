@@ -13,6 +13,7 @@ int main(int argc, char* argv[])
   //FIXME://Package scope initialization;
   TaskPreprocessor taskPreprocessor(scope);
   taskPreprocessor.preprocess(task, strongToInstall, strongToRemove);
+  //FIXME:no work to do;
   Sat2 sat;
   SatConstructor satConstructor(scope);
   satConstructor.construct(strongToInstall, strongToRemove, sat);
