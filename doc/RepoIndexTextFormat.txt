@@ -66,3 +66,67 @@ value and has no special processing rules.
 
 Here is the list of section parameters:
 
+* 'n=' - the package name;
+
+* 'e=' - the package epoch;
+
+* 'v=' - the package version;
+
+* 'r=' - the package release;
+
+* 'arch=' - the package architecture;
+
+* 'URL=' - the URL to the project homepage;
+
+* 'lic=' - the license of the package content;
+
+* 'pckgr=' - the package maintainer;
+
+* 'summ=' - the single-line package summary;
+
+* 'descr=' - the detailed multilined package description;
+
+* 'src=' - the file name of the source package this binary one was built from;
+
+* 'btime=' - the build time stamp (usually the time stamp of the spec file);
+
+* 'pkgsize=' - the size of package file in bytes;
+
+* 'consize=' - the size of package content after installation in bytes;
+
+* 'p:' - one provides entry;
+
+* 'r:' - one requires entry;
+
+* 'o:' - one obsolete entry;
+
+* 'cl:' - one change log entry.
+
+Some of these parameters need more detailed description. The build
+time stored as the single integer number in time_t format appropriate
+for using by gmtime(3). The multilined package description text is
+encoded and stored in the single-line value. Its encoding includes
+replacing every new line character ('\n') into exact string "\n" and
+replacing of every slash character into string with two slashes. Every
+change log entry is represented as multilined text where the first
+line is the entry date in iso-8601 format (for example 2012-01-31),
+the second line is the information about maintainer and package
+version. All following lines are the change log entry text. This
+multilined value is encoded into one line by the same way as
+multilined package description above.
+
+Every provides, requires, conflicts or obsoletes entry have the same
+format. The string after the line prefix to the first space without
+precedent backslash is the corresponding package name. IN the package
+name every space must be marked by previously used backslash and every
+backslash must be used twice. Usually package names cannot include
+space character but some files in package content can be interpreted
+as provide entries and can include spaces in their names. 
+
+After package name can be added version information if there is
+any. Version information consists of one of the strings '<', '>' or
+'=' rounded by spaces and corresponding version string without any
+additional formatting. (TODO:this document currently does not cover
+what marks must be used to indicate the require entry is actual only
+for package installation or package removing, because it is not
+considered now what exact approach must be used)
