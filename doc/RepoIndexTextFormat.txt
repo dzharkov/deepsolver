@@ -1,0 +1,68 @@
+
+This file describes the text variant of repository index format
+considered in Depsolver project. The future Depsolver versions may
+include also support of binary repository index format but text one is
+better suited for debug purposes. If some Depsolver utilities does not
+follow this document it is a bug and must be fixed as soon as
+possible. Everybody are welcome to comment anything written below and
+suggest improvements.
+
+1. Repository index reading rules
+
+The every utility for repository index reading must implement the
+rules written below to keep reading process reliable and secure. All
+index files must be placed in the single directory (usually i586/base
+or noarch/base, etc). Since index files can be accessed through
+network protocols without file list retrieving support this document
+does not depend on this feature.
+
+First of all the program must read the 'info' file (see
+RepoIndexInfoFile.txt for details). It must have name 'info' and must
+be stored directly inside of index directory (for example
+'i586/base/info').
+
+On next step the program must get the name of md5sum file, ensure this
+md5sum file includes the record for info file itself and check all
+md5sums. Implies the other types of hash algorithms can be supported
+in future versions of Depsolver but are not considered right now. The
+md5sum file can contain the GPG signature and if it is present it must
+be checked with known keys.
+
+The main repository index data is stored inside of three files:
+rpms.data, srpms.data and provides.data. The actual their names depend
+on used compression method. Used compression type can be got from the
+info file. In case of using any compression special suffix must be
+attached to the names of files with the main index content. For
+example, if GZIP method is used, real file names must be rpms.data.gz,
+srpms.data.gz and provides.data.gz. The info file itself does not
+contain names of these files and they must be built by these
+rules. All of main index files must be placed in the same directory as
+info file. Be sure all of them is covered by md5sum entries. 
+
+2. Format of the file with binary package list
+
+The index file with information about binary packages, named
+rpms.data.*, consists of set of sections. One section describes one
+binary package. The section include the one line of header and several
+lines of required attributes. Empty lines or lines only with blank
+characters are silently skipped. No comments are allowed. No blank
+characters at line beginnings are allowed.
+
+The section header line has the form '[PACKAGE_FILE_NAME]'. For
+example: '[altlinux-release-sisyphus-20081222-alt1.noarch.rpm]'. Any
+non-header lines before the first header is invalid. The section
+header cannot be confused with other types of lines since it has
+square brackets at the beginning and the end. No other lines can start
+with opening square bracket. Between the brackets the binary package
+name must be stored with file extension but without any parent
+directories information.
+
+The section value line contains the line prefix and line value. The
+usual line prefixes are 'n=', 'v=', 'r=', 'r:', 'p:'. Line prefixes
+ending by '=' sign may be used ine the every section only once, but
+lines with the prefix ending by ':' sign can be used multiple
+times. Teh rest of the line after the prefix is considered as the
+value and has no special processing rules.
+
+Here is the list of section parameters:
+
