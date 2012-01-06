@@ -61,7 +61,7 @@ The section value line contains the line prefix and line value. The
 usual line prefixes are 'n=', 'v=', 'r=', 'r:', 'p:'. Line prefixes
 ending by '=' sign may be used ine the every section only once, but
 lines with the prefix ending by ':' sign can be used multiple
-times. Teh rest of the line after the prefix is considered as the
+times. The rest of the line after the prefix is considered as the
 value and has no special processing rules.
 
 Here is the list of section parameters:
@@ -123,10 +123,34 @@ backslash must be used twice. Usually package names cannot include
 space character but some files in package content can be interpreted
 as provide entries and can include spaces in their names. 
 
-After package name can be added version information if there is
-any. Version information consists of one of the strings '<', '>' or
-'=' rounded by spaces and corresponding version string without any
-additional formatting. (TODO:this document currently does not cover
-what marks must be used to indicate the require entry is actual only
-for package installation or package removing, because it is not
+After the package name version information can be added if there is
+any. Version information consists of combination of the strings '<',
+'>' or '=' rounded by spaces and corresponding version string without
+any additional formatting. (TODO:this document currently does not
+cover what marks must be used to indicate the require entry is actual
+only for package installation or package removing, because it is not
 considered now what exact approach must be used)
+
+3. Source package section format
+
+The information about available sources packages (src.rpm) must be
+stored in srpms.data file. The entire format is just the same as for
+binary packages but not all of the parameters can be used. The
+information about the source packages cannot include requires,
+obsoletes, provides and conflicts entries. Also there cannot present
+fields about package architecture, content size and name of the source
+package.
+
+4/ Provides file format
+
+The provides information is stored in the file with name
+provides.data. It contains the reverse mapping from package names to
+their provides entries from file rpms.data. The provides mapping is
+the set of sections where the section head saves the provide name and
+its content is the list of packages containing this provide. The
+section head has the format '[provide_name]'. Since there is no strong
+rule the package name cannot include square brackets the section head
+can present at first file line or after the blank line. In other cases
+it must be processed as the part of section body. The section body is
+the package name list with one package name per line without any
+additional formatting. No comments are allowed.
