@@ -24,7 +24,8 @@ private:
   const std::string& m_dir;
   const char m_compressionType;
   std::auto_ptr<AbstractTextFileReader> m_reader;
-
+  std::string m_lastSectionHeader;
+  bool m_noMoreData;
 }; //class RepoIndexTextFormatReader;
 
 #endif //DEPSOLVER_REPO_INDEX_TEXT_FORMAT_READER_H;
