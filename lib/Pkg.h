@@ -2,16 +2,16 @@
 #ifndef DEPSOLVER_PKG_H
 #define DEPSOLVER_PKG_H
 
-#include"DateTime.h"
+#include"NamedPkgRel.h"
 
 typedef unsigned short Epoch;
 
-class Pkg
+class PkgBase
 {
 public:
-  Pkg()
+  PkgBase()
     : epoch(0), buildTime(0)  {}
-  virtual ~Pkg() {}
+  virtual ~PkgBase() {}
 
 public:
   Epoch epoch;
@@ -26,6 +26,28 @@ public:
   std::string summary;
   std::string description;
   time_t buildTime;
-}; //class Pkg;
+}; //class PkgBase;
+
+class PkgFileBase: public PkBaseg
+{
+public:
+  PkgFileBase()
+    : source(0)  {}
+
+  virtual ~PkgFileBase() {}
+
+public:
+  std::string fileName;
+  bool source;
+}; //class PkgFileBase;
+
+class PkgRelations
+{
+public:
+  NamedPkgRelVector requires, provides, conflicts, obsoletes;
+}; //class PkgRelations;
+
+class Pkg: public PkgBase, PkgRelations{};
+class PkgFile: public PkgFileBase, PkgRelations {};
 
 #endif //DEPSOLVER_PKG_H;
