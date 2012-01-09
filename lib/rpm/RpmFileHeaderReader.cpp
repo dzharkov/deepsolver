@@ -49,7 +49,7 @@ void RpmFileHeaderReader::close()
   m_fd = NULL;
 }
 
-void RpmFileHeaderReader::fillMainData(PkgFile& pkg)
+void RpmFileHeaderReader::fillMainData(PkgFileBase& pkg)
 {
   getStringTagValue(RPMTAG_NAME, pkg.name);
   int32_t epoch = 0;
@@ -75,7 +75,7 @@ void RpmFileHeaderReader::fillMainData(PkgFile& pkg)
   pkg.buildTime = buildTime;
 }
 
-void RpmFileHeaderReader::fillProvides(NamedPkgRelList& v)
+void RpmFileHeaderReader::fillProvides(NamedPkgRelVector& v)
 {
   v.clear();
   int_32 count1 = 0, count2 = 0, count3 = 0, type = 0;
@@ -116,7 +116,7 @@ void RpmFileHeaderReader::fillProvides(NamedPkgRelList& v)
   headerFreeData(versions, RPM_STRING_ARRAY_TYPE);
 }
 
-void RpmFileHeaderReader::fillConflicts(NamedPkgRelList& v)
+void RpmFileHeaderReader::fillConflicts(NamedPkgRelVector& v)
 {
   v.clear();
   int_32 count1 = 0, count2 = 0, count3 = 0, type = 0;
@@ -157,7 +157,7 @@ void RpmFileHeaderReader::fillConflicts(NamedPkgRelList& v)
   headerFreeData(versions, RPM_STRING_ARRAY_TYPE);
 }
 
-void RpmFileHeaderReader::fillObsoletes(NamedPkgRelList& v)
+void RpmFileHeaderReader::fillObsoletes(NamedPkgRelVector& v)
 {
   v.clear();
   int_32 count1 = 0, count2 = 0, count3 = 0, type = 0;
@@ -198,7 +198,7 @@ void RpmFileHeaderReader::fillObsoletes(NamedPkgRelList& v)
   headerFreeData(versions, RPM_STRING_ARRAY_TYPE);
 }
 
-void RpmFileHeaderReader::fillRequires(NamedPkgRelList& v)
+void RpmFileHeaderReader::fillRequires(NamedPkgRelVector& v)
 {
   v.clear();
   int_32 count1 = 0, count2 = 0, count3 = 0, type = 0;
@@ -399,23 +399,16 @@ void RpmFileHeaderReader::getInt32TagValueRelaxed(int_32 tag, int_32& value)
   return;
 }
 
-void readRpmPkgFile(const std::string& fileName,
-		 PkgFile& pkgFile,
-		 NamedPkgRelList& provides,
-		 NamedPkgRelList& requires,
-		 NamedPkgRelList& conflicts,
-		    NamedPkgRelList& obsoletes,
-		    StringList& fileList,
-		    ChangeLog& changeLog)
+void readRpmPkgFile(const std::string& fileName, PkgFile& pkgFile, StringList& fileList)
 {
   RpmFileHeaderReader reader;
   reader.load(fileName);
   reader.fillMainData(pkgFile);
-  reader.fillProvides(provides);
-  reader.fillConflicts(conflicts);
-  reader.fillObsoletes(obsoletes);
-  reader.fillRequires(requires);
-  reader.fillChangeLog(changeLog);
+  reader.fillProvides(pkgFile.provides);
+  reader.fillConflicts(pkgFile.conflicts);
+  reader.fillObsoletes(pkgFile.obsoletes);
+  reader.fillRequires(pkgFile.requires);
+  reader.fillChangeLog(pkgFile.changeLog);
   reader.fillFileList(fileList);
   reader.close();
   pkgFile.fileName = fileName;

@@ -1,7 +1,24 @@
 
-
 #include"depsolver.h"
 #include"RepoIndexTextFormatReader.h"
+
+static void parsePkgFileSection(const StringList& sect, PkgFile& pkgFile)
+{
+  pkgFile.source = 0;
+  assert(!sect.empty());
+  StringList::const_iterator it = sect.begin();
+  pkgFile.fileName = *it;
+  assert(pkgFile.fileName.length() > 2);//FIXME:must be exception;
+  for(std:;string::size_type i = 1;i < pkgFile.fileName.length();i++)
+    pkgFile.fileName[i - 1] = pkgFile.fileName[i];
+  pkgFile.fileName.resize(pkgFile.size() - 2);
+  it++;
+  assert(it != sect.end());//FIXME:must be exception;
+  while(it != sect.end())
+    {
+      const std::string& line = *it;
+    }
+
 
 void RepoIndexTextFormatReader::openRpms();
 {

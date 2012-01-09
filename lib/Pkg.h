@@ -3,6 +3,7 @@
 #define DEPSOLVER_PKG_H
 
 #include"NamedPkgRel.h"
+#include"ChangeLog.h"
 
 typedef unsigned short Epoch;
 
@@ -28,7 +29,7 @@ public:
   time_t buildTime;
 }; //class PkgBase;
 
-class PkgFileBase: public PkBaseg
+class PkgFileBase: public PkgBase
 {
 public:
   PkgFileBase()
@@ -47,7 +48,16 @@ public:
   NamedPkgRelVector requires, provides, conflicts, obsoletes;
 }; //class PkgRelations;
 
-class Pkg: public PkgBase, PkgRelations{};
-class PkgFile: public PkgFileBase, PkgRelations {};
+class Pkg: public PkgBase, public PkgRelations
+{
+public:
+  ChangeLog changeLog;
+};
+
+class PkgFile: public PkgFileBase, public PkgRelations 
+{
+public:
+  ChangeLog changeLog;
+};
 
 #endif //DEPSOLVER_PKG_H;

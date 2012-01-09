@@ -2,7 +2,7 @@
 #ifndef DEPSOLVER_RPM_FILE_HEADER_READER_H
 #define DEPSOLVEr_RPM_FILE_HEADER_READER_H
 
-#include"PkgFile.h"
+#include"Pkg.h"
 #include"NamedPkgRel.h"
 #include"ChangeLog.h"
 #include"ChangeLog.h"
@@ -23,11 +23,11 @@ public:
 public:
   void load(const std::string& fileName);
   void close();
-  void fillMainData(PkgFile& pkg);
-  void fillProvides(NamedPkgRelList& v);
-  void fillConflicts(NamedPkgRelList& v);
-  void fillObsoletes(NamedPkgRelList& v);
-  void fillRequires(NamedPkgRelList& v);
+  void fillMainData(PkgFileBase& pkg);
+  void fillProvides(NamedPkgRelVector& v);
+  void fillConflicts(NamedPkgRelVector& v);
+  void fillObsoletes(NamedPkgRelVector& v);
+  void fillRequires(NamedPkgRelVector& v);
   void fillChangeLog(ChangeLog& changeLog);
   void fillFileList(StringList& v);
 
