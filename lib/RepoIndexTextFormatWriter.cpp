@@ -184,13 +184,7 @@ void RepoIndexTextFormatWriter::initSource()
   m_srpmsFile = createTextFileWriter(selectTextFileType(m_params.compressionType), m_srpmsFileName);
 }
 
-void RepoIndexTextFormatWriter::addBinary(const PkgFile& pkgFile,
-					  const NamedPkgRelList& provides,
-					  const NamedPkgRelList& requires,
-					  const NamedPkgRelList& conflicts,
-					  const NamedPkgRelList& obsoletes,
-					  const StringList& fileList,
-					  const ChangeLog& changeLog)
+void RepoIndexTextFormatWriter::addBinary(const PkgFile& pkgFile, const StringList& fileList)
 {
   m_tmpFile->writeLine("[" + File::baseName(pkgFile.fileName) + "]");
   m_tmpFile->writeLine(NAME_STR + pkgFile.name);
@@ -209,7 +203,7 @@ void RepoIndexTextFormatWriter::addBinary(const PkgFile& pkgFile,
   std::ostringstream bt;
   bt << pkgFile.buildTime;
   m_tmpFile->writeLine(BUILDTIME_STR + bt.str());
-  for(NamedPkgRelList::const_iterator it = provides.begin();it != provides.end();it++)
+  for(NamedPkgRelVector::const_iterator it = pkgFile.provides.begin();it != pkgFile.provides.end();it++)
     {
       /*
        * The following operation must be done in both cases: in filtering by
@@ -238,27 +232,27 @@ void RepoIndexTextFormatWriter::addBinary(const PkgFile& pkgFile,
 	if (!m_filterProvidesByRefs)
 	  firstProvideReg(pkgFile.name, *it);
       }
-  for(NamedPkgRelList::const_iterator it = requires.begin();it != requires.end();it++)
+  for(NamedPkgRelVector::const_iterator it = pkgFile.requires.begin();it != pkgFile.requires.end();it++)
     {
       m_tmpFile->writeLine(REQUIRES_STR + saveNamedPkgRel(*it));
       if (m_filterProvidesByRefs)
 	m_refsSet.insert(it->pkgName);
     }
-  for(NamedPkgRelList::const_iterator it = conflicts.begin();it != conflicts.end();it++)
+  for(NamedPkgRelVector::const_iterator it = pkgFile.conflicts.begin();it != pkgFile.conflicts.end();it++)
     {
       m_tmpFile->writeLine(CONFLICTS_STR + saveNamedPkgRel(*it));
       if (m_filterProvidesByRefs)
 	m_refsSet.insert(it->pkgName);
     }
-  for(NamedPkgRelList::const_iterator it = obsoletes.begin();it != obsoletes.end();it++)
+  for(NamedPkgRelVector::const_iterator it = pkgFile.obsoletes.begin();it != pkgFile.obsoletes.end();it++)
     m_tmpFile->writeLine(OBSOLETES_STR + saveNamedPkgRel(*it));
   if (m_params.changeLogBinary)
-    for(ChangeLog::size_type i = 0;i < changeLog.size();i++)
-      m_tmpFile->writeLine(CHANGELOG_STR + encodeChangeLogEntry(changeLog[i]));
+    for(ChangeLog::size_type i = 0;i < pkgFile.changeLog.size();i++)
+      m_tmpFile->writeLine(CHANGELOG_STR + encodeChangeLogEntry(pkgFile.changeLog[i]));
   m_tmpFile->writeLine("");
 }
 
-void RepoIndexTextFormatWriter::addSource(const PkgFile& pkgFile, const ChangeLog& changeLog)
+void RepoIndexTextFormatWriter::addSource(const PkgFile& pkgFile)
 {
   m_srpmsFile->writeLine("[" + File::baseName(pkgFile.fileName) + "]");
   m_srpmsFile->writeLine(NAME_STR + pkgFile.name);
@@ -275,8 +269,8 @@ void RepoIndexTextFormatWriter::addSource(const PkgFile& pkgFile, const ChangeLo
   m_srpmsFile->writeLine(DESCRIPTION_STR + encodeMultiline(pkgFile.description));
   //No need to write src.rpm entry, usually it is empty for source packages;
   if (m_params.changeLogSources)
-    for(ChangeLog::size_type i = 0;i < changeLog.size();i++)
-      m_srpmsFile->writeLine(CHANGELOG_STR + encodeChangeLogEntry(changeLog[i]));
+    for(ChangeLog::size_type i = 0;i < pkgFile.changeLog.size();i++)
+      m_srpmsFile->writeLine(CHANGELOG_STR + encodeChangeLogEntry(pkgFile.changeLog[i]));
   m_srpmsFile->writeLine("");
 }
 

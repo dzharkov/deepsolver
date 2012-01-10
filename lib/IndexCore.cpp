@@ -17,15 +17,15 @@ void IndexCore::collectRefs(const std::string& dirName, StringSet& res)
 	continue;
       if (!checkExtension(it->getName(), ".rpm"))
 	continue;
-      NamedPkgRelList requires, conflicts;
+      NamedPkgRelVector requires, conflicts;
       RpmFileHeaderReader reader;
       reader.load(it->getFullPath());
       reader.fillRequires(requires);
       reader.fillConflicts(conflicts);
-      for(NamedPkgRelList::const_iterator it = requires.begin();it != requires.end();it++)
-	res.insert(it->pkgName);
-      for(NamedPkgRelList::const_iterator it = conflicts.begin();it != conflicts.end();it++)
-	res.insert(it->pkgName);
+      for(NamedPkgRelVector::size_type i =0; i < requires.size();i++)
+	res.insert(requires[i].pkgName);
+      for(NamedPkgRelVector::size_type i = 0;i < conflicts.size();i++)
+	res.insert(conflicts[i].pkgName);
     }
   m_console.msg() << " " << res.size() << " found!" << std::endl;
 }
@@ -75,24 +75,9 @@ void IndexCore::processPackages(const std::string& indexDir, const std::string& 
       if (!checkExtension(it->getName(), ".rpm"))
 	continue;
       PkgFile pkgFile;
-      NamedPkgRelList provides, requires, conflicts, obsoletes;
       StringList files;
-      ChangeLog changeLog;
-      readRpmPkgFile(it->getFullPath(),
-		     pkgFile,
-		     provides,
-		     requires,
-		     conflicts,
-		     obsoletes,
-		     files,
-		     changeLog);
-      handler.addBinary(pkgFile,
-			provides,
-			requires,
-			conflicts,
-			obsoletes,
-			files,
-			changeLog);
+      readRpmPkgFile(it->getFullPath(), pkgFile, files);
+      handler.addBinary(pkgFile, files);
       count++;
     }
   m_console.msg() << " picked up " << count << " binary packages!" << std::endl;
@@ -113,11 +98,9 @@ void IndexCore::processPackages(const std::string& indexDir, const std::string& 
       if (!checkExtension(it->getName(), ".src.rpm"))
 	continue;
       PkgFile pkgFile;
-      NamedPkgRelList provides, requires, conflicts, obsoletes;
       StringList files;
-      ChangeLog changeLog;
-      readRpmPkgFile(it->getFullPath(), pkgFile, provides, requires, conflicts, obsoletes, files, changeLog);
-      handler.addSource(pkgFile, changeLog);
+      readRpmPkgFile(it->getFullPath(), pkgFile, files);
+      handler.addSource(pkgFile);
       count++;
     }
   m_console.msg() << " picked up " << count << " source packages!" << std::endl;

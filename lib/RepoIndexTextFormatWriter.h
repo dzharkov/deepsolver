@@ -2,9 +2,7 @@
 #ifndef DEPSOLVER_REPO_INDEX_TEXT_FORMAT_WRITER_H
 #define DEPSOLVER_REPO_INDEX_TEXT_FORMAT_WRITER_H
 
-#include"PkgFile.h"
-#include"NamedPkgRel.h"
-#include"ChangeLog.h"
+#include"Pkg.h"
 #include"IndexCore.h"
 #include"AbstractConsoleMessages.h"
 #include"TextFiles.h"
@@ -53,14 +51,8 @@ public:
   void initBinary();
   void initSource();
 
-  void addBinary(const PkgFile& pkgFile,
-		 const NamedPkgRelList& provides,
-		 const NamedPkgRelList& requires,
-		 const NamedPkgRelList& conflicts,
-		 const NamedPkgRelList& obsoletes,
-		 const StringList& fileList,
-		 const ChangeLog& changeLog);
-  void addSource(const PkgFile& pkgFile, const ChangeLog& changeLog);
+  void addBinary(const PkgFile& pkgFile, const StringList& fileList);
+  void addSource(const PkgFile& pkgFile);
 
   void commitBinary();
   void commitSource();
