@@ -10,7 +10,7 @@ noinst_LIBRARIES = libdepsolver.a
 
 libdepsolver_a_SOURCES = \
 IndexCore.cpp \
-NamedPkgRel.cpp \
+Pkg.cpp \
 RepoIndexInfoFile.cpp \
 RepoIndexTextFormatWriter.cpp \
 string-utils.cpp  \

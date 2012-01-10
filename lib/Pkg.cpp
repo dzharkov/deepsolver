@@ -1,6 +1,6 @@
 
 #include"depsolver.h"
-#include"NamedPkgRel.h"
+#include"Pkg.h"
 
 std::ostream& operator <<(std::ostream& s, const NamedPkgRel& r)
 {

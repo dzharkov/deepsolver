@@ -3,9 +3,6 @@
 #define DEPSOLVEr_RPM_FILE_HEADER_READER_H
 
 #include"Pkg.h"
-#include"NamedPkgRel.h"
-#include"ChangeLog.h"
-#include"ChangeLog.h"
 #include"RpmException.h"
 #include<rpm/rpmlib.h>
 
