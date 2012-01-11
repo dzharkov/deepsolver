@@ -14,11 +14,12 @@ public:
   ~RepoIndexTextFormatReader() {}
 
 public:
-  void openRpms();
-  void openSrpms();
-  void openProvides();
+  void openPackagesFile();
+  void openSourcePackagesFile();
+  void openProvidesFile();
   bool readPackage(PkgFile& pkgFile);
-  bool readProvides(std::string& provideName, StringList& providers);
+  bool readPackage(PkgFile& pkgFile);
+  bool readSourceProvides(std::string& provideName, StringList& providers);
 
 private:
   const std::string& m_dir;

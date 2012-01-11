@@ -1,6 +1,70 @@
+/*
+ * This file contains first preliminary implementation of reading class
+ * for repository index data in text format. Due to reasons of debugging
+ * simplicity all errors caused by invalid input data are handled as
+ * asserts but in future all of them must be exceptions. Most of asserts
+ * to be replaced by exceptions are marked by the corresponding "FIXME"
+ * comments.
+ */
 
 #include"depsolver.h"
 #include"RepoIndexTextFormatReader.h"
+
+static   void translateRelType(const std::string& str, NamedPkgRel& rel)
+{
+  assert(str == "<" || str == ">" || str == "=" || str == "<=" || str == ">=");
+  rel.type = 0;
+  if (str == "<" || str == "<=")
+    rel.type |= NamedPkgRel::Less;
+  if (str == "<=" || str == "= || str == ">="")
+    rel.type |= namedPkgRel::Equals;
+  if (str == ">" || str == ">=")
+    rel.type |= NamedPkgRel::Greater;
+}
+
+static void parsePkgRel(const std::string& str, NamedPkgRel& rel)
+{
+  std::string::size_type i = 0;
+  //Extracting package name;
+  while(i < str.length() && str[i] != ' ')
+    {
+      if (str[i] == '\\')
+	{
+	  if (i + 1 >= str.length())
+	    {
+	      rel.pkgName += "\\";
+	      return;
+	    }
+	  assert(i + 1 < str.length());
+	  rel.pkgName += str[i + 1];
+	  i += 2;
+	  continue;
+	} //backslash;
+      rel.pkgName += str[i++];
+    }
+  if (i >= str.length())
+    return;
+  i++;
+  //Here must be <, =, > or any their combination;
+  assert(i + 1 < str.length());//FIXME:it must be an exception;
+  std::string r;
+  r += str[i];
+  if (str[i + 1] != ' ')
+    {
+      r += str[i + 1];
+      i++;
+    }
+  i++;
+  translateRelType(r, rel);
+  i++;
+  assert(i < str.length() && str[i] == ' ');//FIXME:must be an exception;
+  i++;
+  //Here we expect package name;
+  rel.ver.erase();
+  while(i < str.)
+    rel.ver += str[i++];
+  assert(!);
+}
 
 static void parsePkgFileSection(const StringList& sect, PkgFile& pkgFile)
 {
