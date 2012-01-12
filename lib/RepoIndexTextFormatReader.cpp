@@ -81,37 +81,111 @@ static void parsePkgFileSection(const StringList& sect, PkgFile& pkgFile)
   while(it != sect.end())
     {
       const std::string& line = *it;
+      assert(!line.empty());
+      std::string tail;
+      //Parsing only name, epoch, version, release and all relations;
+      if (string Begins(line, "n=", tail))
+	{
+	pkgFile.name = tail;
+	continue;
+	}
+      if (stringBegins(line, "e=", tail))
+	{
+	  std::istringstream ss(tail);
+	  if (!(ss >> pkgFile.epoch))
+	    {
+	      assert(0);//FIXME:must be an exception;
+	    }
+	  continue;
+	}
+      if (stringBegins(line, "v=", tail))
+	{
+	  pkgFile.version = tail;
+	  continue;
+	}
+      if (stringBegins(line, "r=", tail))
+	{
+	  pkgFile.release = tail;
+	  continue;
+	}
+      if (stringBegins(line, "r:", tail))
+	{
+	  NamedPkgRel r;
+	  parsePkgRel(tail, r);
+	  pkgFile.requires.push_back(r);
+	  continue;
+	}
+      if (stringBegins(line, "c:", tail))
+	{
+	  NamedPkgRel r;
+	  parsePkgRel(tail, r);
+	  pkgFile.conflicts.push_back(r);
+	  continue;
+	}
+      if (stringBegins(line, "p:", tail))
+	{
+	  NamedPkgRel r;
+	  parsePkgRel(tail, r);
+	  pkgFile.provides.push_back(r);
+	  continue;
+	}
+      if (stringBegins(line, "o:", tail))
+	{
+	  NamedPkgRel r;
+	  parsePkgRel(tail, r);
+	  pkgFile.obsoletes.push_back(r);
+	  continue;
+	}
     }
+}
 
 
-void RepoIndexTextFormatReader::openRpms();
+void RepoIndexTextFormatReader::openPackagesFile();
 {
   assert(m_reader.get() == NULL);
   m_noMoreData = 0;
+  if (m_compressionType == RepoIndexParams::CompressionTypeNone)
+    m_reader = createTextFileReader(TextFileStd, concatUnixPath(m_dir, REPO_INDEX_RPMS_DATA_FILE)); else
+  if (m_compressionType == RepoIndexParams::CompressionTypeGZip)
+    m_reader = createTextFileReader(TextFileGZip, concatUnixPath(m_dir, std::string(REPO_INDEX_RPMS_DATA_FILE) + ".gz")); else 
+    {
+      assert(0);
+    }
+}
+
+void RepoIndexTextFormatReader::openSourcePackagesFile()
+{
+  assert(0);
   //FIXME:
 }
 
-void RepoIndexTextFormatReader::openSrpms()
+void RepoIndexTextFormatReader::openProvidesFile()
 {
-  assert(m_reader.get() == NULL);
-  m_noMoreData = 0;
-  //FIXME:
-}
-
-void RepoIndexTextFormatReader::openProvides()
-{
-  assert(m_reader.get() == NULL);
-  m_noMoreData = 0;
-  //FIXME:
+  assert(0);
 }
 
 bool RepoIndexTextFormatReader::readPackage(PkgFile& pkgFile)
 {
   if (m_noMoreData || m_reader.get() == NULL)
     return 0;
-  StringList section;
-  section.push_back(m_lastSectionHeader);
   std::string line;
+  StringList section;
+  if (m_lastSectionHeader.empty())
+    {
+      //There is no previously recognized section header, so we must find it;
+      while(m_reader.->readLine(line))
+	if (!line.empty())
+	  break;
+      if (line.empty())//It is just empty file;
+	{
+	  m_noMoreData = 1;
+	  return 0;
+	}
+      assert(line.length() > 2 && line[0] == '[' && line[line.length() - 1] == ']');//FIXME:must be an exception;
+      section.push_back(line);
+      //OK, we have found section header and can process it content;
+    } else
+    section.push_back(m_lastSectionHeader);//Adding section header from previous reading attempt;
   m_noMoreData = 1;
   while(m_reader.->readLine(line))
     {
