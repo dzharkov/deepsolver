@@ -1,3 +1,7 @@
+/*FIXME:
+strToPackageId(name);
+packageIdToStr(packageId);
+*/
 
 #ifndef DEPSOLVER_PACKAGE_SCOPE_CONTENT_H
 #define DEPSOLVER_PACKAGE_SCOPE_CONTENT_H

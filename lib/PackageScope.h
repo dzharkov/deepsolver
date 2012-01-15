@@ -2,15 +2,26 @@
 #ifndef DEPSOLVER_PACKAGE_SCOPE_H
 #define DEPSOLVER_PACKAGE_SCOPE_H
 //All methods can throw only SystemException and RpmException;
+//Vars is the indices in the main PackageScopeContent array;
 class PackageScope 
 {
 public:
-  PackageScope() {}
+  PackageScope(const PackageScopeContent& content)
+    : m_content(content) {}
+
   virtual ~PackageScope() {}
 
 public:
-  //Package Id replaces both the real names and provides entries;
+  /**\brief Translates package name as a string to PackageId value
+   *
+   * Package Id replaces both the real names and provides entries
+   */
   PackageId strToPackageId(const std::string& name) const;
+
+  /**\brief Translates the package name replaced by PackageId value to original string
+   *
+   * Package Id replaces both the real names and provides entries
+   */
   std::string packageIdToStr(PackageId packageId) const;
 
   /**\brief Adds to the database the package not presented in available scope
@@ -55,6 +66,9 @@ public:
   bool allProvidesHaveTheVersion(const VarIdVector& vars, PackageId provideEntry);
 
   //  void whatRequiresAmongInstalled();
+
+private:
+  const PackageScopeContent& m_content;
 }; //class PackageScope; 
 
 #endif //DEPSOLVER_PACKAGE_SCOPE_H;
