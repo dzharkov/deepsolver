@@ -8,6 +8,12 @@ static versionSatisfies(const VersionCond& cond, Epoch epoch, const std:;string&
   //FIXME:
 }
 
+static versionSatisfies(const VersionCond& cond, const std::string& ver)
+{
+  //FIXME:
+}
+
+
 
 PackageId PackageScope::strToPackageId(const std::string& name) const
 {
@@ -102,33 +108,132 @@ void PackageScope::selectMatchingVarsAmongProvides(PackageId packageId, VarIdVec
 void selectMatchingWithVersionVarsAmongProvides(PackageId packageId, const VersionCond& ver, VarIdVector& vars)
 {
   //Considering only provides entries and only with version information;
+  vars.clear();
+  const PackageScopeContent::PkgInfoVector& pkgs = m_content.getPkgs();
+  for(VarId i = 0;i < pkgs.size();i++)
+    {
+      const size_t pos = pkgs[i].providesPos;
+      const size_t count = pkgs[i].providesCount;
+      if (pos == 0 || count == 0)//There are no provides entries;
+	continue;
+      const PackageScopeContent::RelInfoVector& rels = m_content.getRels();
+      size_t j;
+      for(j = 0;j < count;j++)
+	{
+	  assert(pos + j < rels.size());
+	  if (rels[pos + j].ver == NULL)
+	    continue;
+	  assert(rels[pos + j].type != 0);
+	  if (rels[pos + j].pkgId == packageId && versionSatisfies(ver, versionCond(rels[pos + j].type, rels[pos + j].ver)))
+	    break;
+	}
+      if (j < count)
+	vars.push_back(i);
+    }
 }
 
 bool PackageScope::isINstalled(PackageId packageId) const
 {
   //Checking only by real name;
+  assert(0);//FIXME:currently not needed;
   return 0;
 }
 
 bool PackageScope::isInstallWithProvides(PackageId packageId)
 {
   //Checking by real name and by all known provides of installed packages;
+  assert(0);//FIXME:currently not needed;
+  return 0;
 }
-
 
 void PackageScope::selectTheNewest(VarIdVector& vars)
 {
   //Processing only real version of provided packages;
+  if (vars.size() < 2)
+    return;
+  const PackageScopeContent::PkgINfoVector& pkgs = m_content.getPkgs();
+  VarId currentMax = vars[0];
+  assert(currentMax < pkgs.size());
+  assert(pkgs[currentMax].ver != NULL);
+  for(VarIdVector::size_type i = 0;i < vars.size();i++)
+    {
+      assert(vars[i] < pkgs.size());
+  assert(pkgs[vars[i]].ver != NULL);
+  if (versiongreater(pkgs[vars[i]].ver, pkgs[currentMax]))
+    currentMax = i;
+    }
+  assert(currentMax < vers.size());
+  const std::string maxVer = pkgs[currentMax].ver;
+  size_t hasCount = 0;
+  for(VarIdVector::size_type i = 0;i < vars.size();i++)
+    if [versionEqual(pkgs[vars[i]].ver, maxVersion))
+      vars[hasCount++] = vars[i];
+  assert(hasCount > 0);
+  vars.resize(hasCount);
 }
 
 void PackageScope::selectTheNewestByProvide(VarIdVector& vars, PackageId provideEntry)
 {
   //Checking the version of the given provide entry;
-  //FIXME:there cannot be entries without version information;
+  if (vars.size() < 2)
+    return;
+  const PackageScopeContent::PkgINfoVector& pkgs = m_content.getPkgs();
+  StringVector versions;
+  versions.resize(vars.size());
+  for(VarIdVector::size_type i = 0;i < vars.size();i++)
+    {
+      assert(vars[i] < pkgs.size());
+      const PackageScopeContent::PkgINfo& pkg = pkgs[vars[i]];
+      const size_t pos = pkg.providesPos;
+      const size_t count = pkg.provides Count;
+      assert(pos > 0 && count > 0);
+      size_t j;
+      const PackageScopeContent::RelInfoVector& rels = m_content.getRels();
+      for(j = 0;j < count;j++)
+	{
+	  assert(pos + j < rels.size());
+	  if (rels[pos + j].pkgId == provideEntry)
+	    break;
+	}
+      assert(j < count);
+      assert(rels[pos + j].ver != NULL);
+      versions[i] = rels[pos + j].ver;
+    }
+  assert(vars.size() == versions.size());
+  size_t currentMax = 0;
+  for(StringVector:;size_type i = 0;i < versions.size();i++)
+    if (versionGreater(versions[i], versions[currentMax]))
+      currentMax = i;
+  const std::string maxVersion = versions[currentMax];
+  size_t hasCount = 0;
+  for(StringVector::size_type i = 0;i < versions.size();i++)
+    if (versionEqual(versions[i], maxVersion))
+      vars[hasCount++] = vars[i];
+  assert(hasCount > 0);
+  vars.resize(hasCount);
 }
 
 bool PackageScope::allProvidesHaveTheVersion(const VarIdVector& vars, PackageId provideEntry)
 {
+  const PackageScopeContent::PkgINfoVector& pkgs = m_content.getPkgs();
+  for(VarIdVector::size_type i = 0;i < vars.size();i++)
+    {
+      assert(vars[i] < pkgs.size());
+      const PackageScopeContent::PkgINfo& pkg = pkgs[vars[i]];
+      const size_t pos = pkg.providesPos;
+      const size_t count = pkg.provides Count;
+      assert(pos > 0 && count > 0);
+      const PackageScopeContent::RelInfoVector& rels = m_content.getRels();
+      size_t j;
+      for(j = 0;j < count;j++)
+	{
+	  assert(pos + j < rels.size());
+	  if (rels[pos + j].pkgId == provideEntry)
+	    break;
+	}
+      assert(j < count);
+      if (rels[pos + j] == NULL)
+	return 0;
+    }
+  return 1;
 }
-
-
