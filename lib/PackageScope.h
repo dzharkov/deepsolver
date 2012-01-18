@@ -1,6 +1,10 @@
 
 #ifndef DEPSOLVER_PACKAGE_SCOPE_H
 #define DEPSOLVER_PACKAGE_SCOPE_H
+
+#include"Pkg.h"
+#include"PackageScopeContent.h"
+
 //All methods can throw only SystemException and RpmException;
 //Vars is the indices in the main PackageScopeContent array;
 class PackageScope 

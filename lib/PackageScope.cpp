@@ -2,6 +2,7 @@
 
 #include"depsolver.h"
 #include"PackageScope.h"
+#include"version.h"
 
 PackageId PackageScope::strToPackageId(const std::string& name) const
 {
@@ -93,7 +94,7 @@ void PackageScope::selectMatchingVarsAmongProvides(PackageId packageId, VarIdVec
     }
 }
 
-void selectMatchingWithVersionVarsAmongProvides(PackageId packageId, const VersionCond& ver, VarIdVector& vars)
+void PackageScope::selectMatchingWithVersionVarsAmongProvides(PackageId packageId, const VersionCond& ver, VarIdVector& vars)
 {
   //Considering only provides entries and only with version information;
   vars.clear();
@@ -112,7 +113,7 @@ void selectMatchingWithVersionVarsAmongProvides(PackageId packageId, const Versi
 	  if (rels[pos + j].ver == NULL)
 	    continue;
 	  assert(rels[pos + j].type != 0);
-	  if (rels[pos + j].pkgId == packageId && versionSatisfies(ver, versionCond(rels[pos + j].type, rels[pos + j].ver)))
+	  if (rels[pos + j].pkgId == packageId && versionSatisfies(ver, VersionCond(rels[pos + j].type, rels[pos + j].ver)))
 	    break;
 	}
       if (j < count)

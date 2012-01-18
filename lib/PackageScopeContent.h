@@ -1,7 +1,3 @@
-/*FIXME:
-strToPackageId(name);
-packageIdToStr(packageId);
-*/
 
 #ifndef DEPSOLVER_PACKAGE_SCOPE_CONTENT_H
 #define DEPSOLVER_PACKAGE_SCOPE_CONTENT_H
@@ -14,23 +10,23 @@ private:
   typedef std::map<std::string, PackageId> NameToPackageIdMap;
   typedef std::map<PackageId, std::string> PackageIdToNameMap;
 
-private:
+public:
   struct RelInfo
   {
-    RelINfo()
-      : pkgId(BAD_PACKAGE_Id), type(0), ver(NULL)  {}
+    RelInfo()
+      : pkgId(BAD_PACKAGE_ID), type(0), ver(NULL)  {}
 
     PackageId pkgId;
     char type;
     char* ver;
   }; //struct RelINfo;
 
-  typedef std::list<RelINfo> RelInfoList;
+  typedef std::list<RelInfo> RelInfoList;
   typedef std::vector<RelInfo> RelInfoVector;
 
   struct PkgInfo
   {
-    PkgINfo()
+    PkgInfo()
       : pkgId(BAD_PACKAGE_ID),
 	epoch(0),
 	ver(NULL),
@@ -38,8 +34,8 @@ private:
 	buildTime(0),
 	requiresPos(0), requiresCount(0),
 	providesPos(0), providesCount(0),
-	conflictsPos(0), conflictsCount(0)
-	obsoletesPOs(0), obsoletesCOunt(0)
+      conflictsPos(0), conflictsCount(0),
+      obsoletesPos(0), obsoletesCount(0) {}
 
     PackageId pkgId;
     Epoch epoch;
@@ -49,11 +45,11 @@ private:
     size_t requiresPos, requiresCount;
     size_t providesPos, providesCount;
     size_t conflictsPos, conflictsCount;
-    size_t obsoletesPOs, obsoletesCOunt;
+    size_t obsoletesPos, obsoletesCount;
   }; //struct PkgInfo;
 
-  typedef std::list<PkgINfo> PkgINfoList;
-  typedef std::vector<PkgINfo> PkgINfoVector;
+  typedef std::list<PkgInfo> PkgInfoList;
+  typedef std::vector<PkgInfo> PkgInfoVector;
 
 public:
   PackageScopeContent() {}
@@ -62,8 +58,13 @@ public:
 public:
   void add(const PkgFile& pkgFile);
   void commit();
+  PackageId strToPackageId(const std::string& name) const;
+  std::string packageIdToStr(PackageId packageId) const;
+  const PkgInfoVector& getPkgs() const;
+  const RelInfoVector& getRels() const;
 
 private:
+  void processRels(const NamedPkgRelVector& rels, size_t& pos, size_t& count);
   PackageId registerName(const std::string& name);
 
 private:
@@ -71,8 +72,8 @@ private:
   StringVector m_names;
   PkgInfoList m_pkgInfoList;
   PkgInfoVector m_pkgInfoVector;
-  PkgRelList m_pkgRelList;
-  PkgRelVector m_pkgRelVector;
+  RelInfoList m_relInfoList;
+  RelInfoVector m_relInfoVector;
 }; //class PackageScopeContent;
 
 #endif //DEPSOLVER_PACKAGE_SCOPE_CONTENT_H;

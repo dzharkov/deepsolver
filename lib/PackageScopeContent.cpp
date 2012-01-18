@@ -13,20 +13,20 @@
 void PackageScopeContent::add(const PkgFile& pkgFile)
 {
   //We are interested only in name, epoch, version, release, and all relations;
-  PkgINfo pkg;
+  PkgInfo pkg;
   pkg.pkgId = registerName(pkgFile.name);
   pkg.epoch = pkgFile.epoch;
   assert(!pkgFile.version.empty() && !pkgFile.release.empty());
-  pkgFile.ver = new char[pkgFile.ver.length() + 1];//FIXME:this string must be registered to be automatically deallocated;
-  strcpy(pkg.ver, pkgFile.ver.c_str());
-  pkgFile.release = new char[pkgFile.release.length() + 1];//FIXME:this string must be registered to be automatically deallocated;
+  pkg.ver = new char[pkgFile.version.length() + 1];//FIXME:this string must be registered to be automatically deallocated;
+  strcpy(pkg.ver, pkgFile.version.c_str());
+  pkg.release = new char[pkgFile.release.length() + 1];//FIXME:this string must be registered to be automatically deallocated;
   strcpy(pkg.release, pkgFile.release.c_str());
   pkg.buildTime = pkgFile.buildTime;
   processRels(pkgFile.requires, pkg.requiresPos, pkg.requiresCount);
   processRels(pkgFile.conflicts, pkg.conflictsPos, pkg.conflictsCount);
   processRels(pkgFile.provides, pkg.providesPos, pkg.providesCount);
   processRels(pkgFile.obsoletes, pkg.obsoletesPos, pkg.obsoletesCount);
-  m_pkgINfoList.push_back(pkg);
+  m_pkgInfoList.push_back(pkg);
 }
 
 void PackageScopeContent::commit()
@@ -41,7 +41,7 @@ void PackageScopeContent::commit()
   m_relInfoList.clear();
 }
 
-void PackageScopeContent::processRels(const NamedPkgRelVector^& rels, size_t& pos, size_t& count)
+void PackageScopeContent::processRels(const NamedPkgRelVector& rels, size_t& pos, size_t& count)
 {
   if (rels.empty())
     {
@@ -49,7 +49,7 @@ void PackageScopeContent::processRels(const NamedPkgRelVector^& rels, size_t& po
       count = 0;
       return;
     }
-  pos = m_pkgRelList.size();
+  pos = m_relInfoList.size();
   count = rels.size();
   for(NamedPkgRelVector::size_type i = 0;i < rels.size();i++)
     {
@@ -75,6 +75,30 @@ PackageId PackageScopeContent::registerName(const std::string& name)
     return it->second;
   m_names.push_back(name);
   const PackageId packageId = m_names.size() - 1;
-  m_namesToId.push_back(NameToPackageIdMap::value_type(name, packageId));
+  m_namesToId.insert(NameToPackageIdMap::value_type(name, packageId));
   return packageId;
+}
+
+PackageId PackageScopeContent::strToPackageId(const std::string& name) const
+{
+  assert(!name.empty());
+  NameToPackageIdMap::const_iterator it = m_namesToId.find(name);
+  assert(it != m_namesToId.end());
+  return it->second;
+}
+
+std::string PackageScopeContent::packageIdToStr(PackageId packageId) const
+{
+  assert(packageId < m_names.size());
+  return m_names[packageId];
+}
+
+const PackageScopeContent::PkgInfoVector& PackageScopeContent::getPkgs() const
+{
+  return m_pkgInfoVector;
+}
+
+const PackageScopeContent::RelInfoVector& PackageScopeContent::getRels() const
+{
+  return m_relInfoVector;
 }
