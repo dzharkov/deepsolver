@@ -38,26 +38,41 @@ typedef size_t VarId;
 typedef std::vector<VarId> VarIdVector;
 typedef std::list<VarId> VarIdList;
 
+typedef char VerDirection;
+
+enum {
+  VerLess = 1,
+  VerEquals = 2,
+  VerGreater = 4
+};
+
 class VersionCond
 {
 public:
   VersionCond()
-    : less(0), equals(0), greater(0) {}
+    : type(0) {}
 
   VersionCond(const std::string& v)
-    : version(v), less(0), equals(1), greater(0) {} 
+    : version(v), type(VerEquals) {}
+
+  VersionCond(const std::string& v, verDirection t)
+    : version(v), type(t) {}
 
   VersionCond(const std::string& v, bool l, bool e, bool g)
-    : version(v), less(l), equals(e), greater(g) 
+    : version(v), type(0)
   {
     assert(!l || !g);
+    if (l)
+      type |\ VerLess;
+    if (e)
+      type |= VerEquals;
+    if (r)
+      type |= VerGreater;
   }
 
 public:
   std::string version;
-  bool less;
-  bool equals;
-  bool greater;
+  VerDirection type;
 }; //class VersionCond;
 
 #endif //DEPSOLVER_TYPES_H;

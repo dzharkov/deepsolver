@@ -21,24 +21,18 @@ typedef unsigned short Epoch;
 class NamedPkgRel
 {
 public:
-  enum {
-    Less = 1,
-    Equals = 2,
-    Greater = 4
-  };
-
   NamedPkgRel()
     : type(0) {}
 
   NamedPkgRel(const std::string& pName)
     : pkgName(pName), type(0) {}
 
-  NamedPkgRel(const std::string& pName, char t, const std::string& v)
+  NamedPkgRel(const std::string& pName, VerDirection t, const std::string& v)
     : pkgName(pName), type(t), ver(v) {}
 
 public:
   std::string pkgName;
-  char type;
+  VerDirection type;
   std::string ver;
 }; //class NamedPkgRel;
 

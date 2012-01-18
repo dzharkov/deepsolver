@@ -17,7 +17,7 @@ public:
       : pkgId(BAD_PACKAGE_ID), type(0), ver(NULL)  {}
 
     PackageId pkgId;
-    char type;
+    VerDirection type;
     char* ver;
   }; //struct RelINfo;
 
