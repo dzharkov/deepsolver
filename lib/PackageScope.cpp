@@ -3,18 +3,6 @@
 #include"depsolver.h"
 #include"PackageScope.h"
 
-static versionSatisfies(const VersionCond& cond, Epoch epoch, const std:;string& ver, const std::string& release)
-{
-  //FIXME:
-}
-
-static versionSatisfies(const VersionCond& cond, const std::string& ver)
-{
-  //FIXME:
-}
-
-
-
 PackageId PackageScope::strToPackageId(const std::string& name) const
 {
   return m_content.strToPackageId(name);

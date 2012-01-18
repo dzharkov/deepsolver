@@ -9,13 +9,42 @@ IndexCore.h
 noinst_LIBRARIES = libdepsolver.a
 
 libdepsolver_a_SOURCES = \
-IndexCore.cpp \
-Pkg.cpp \
-RepoIndexInfoFile.cpp \
-RepoIndexTextFormatWriter.cpp \
-string-utils.cpp  \
-ZLibInterface.cpp \
+AbstractConsoleMessages.h \
+AbstractWarningHandler.h \
+DefaultValues.h \
+DepsolverException.h \
+depsolver.h \
+DepsolverTypes.h \
 GZipInterface.cpp \
-TextFiles.cpp \
+GZipInterface.h \
+IndexCore.cpp \
+IndexCoreException.h \
+IndexCore.h \
 logging.cpp \
-MD5.cpp
+logging.h \
+MD5.cpp \
+MD5.h \
+PackageScopeContent.cpp \
+PackageScopeContent.h \
+PackageScope.cpp \
+PackageScope.h \
+Pkg.cpp \
+Pkg.h \
+RepoIndexInfoFile.cpp \
+RepoIndexInfoFile.h \
+RepoIndexTextFormatReader.cpp \
+RepoIndexTextFormatReader.h \
+RepoIndexTextFormatWriter.cpp \
+RepoIndexTextFormatWriter.h \
+string-utils.cpp \
+string-utils.h \
+TaskException.h \
+TaskPreprocessor.cpp \
+TaskPreprocessor.h \
+TextFiles.cpp \
+TextFiles.h \
+UserTask.h \
+version.cpp \
+version.h \
+ZLibInterface.cpp \
+ZLibInterface.h
