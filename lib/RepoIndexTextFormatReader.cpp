@@ -9,17 +9,20 @@
 
 #include"depsolver.h"
 #include"RepoIndexTextFormatReader.h"
+#include"IndexCore.h"
 
 static   void translateRelType(const std::string& str, NamedPkgRel& rel)
 {
   assert(str == "<" || str == ">" || str == "=" || str == "<=" || str == ">=");
   rel.type = 0;
   if (str == "<" || str == "<=")
-    rel.type |= NamedPkgRel::Less;
-  if (str == "<=" || str == "= || str == ">="")
-    rel.type |= namedPkgRel::Equals;
+    rel.type |= VerLess;
+  if (str == "<=" ||
+      str == "=" ||
+      str == ">=")
+    rel.type |= VerEquals;
   if (str == ">" || str == ">=")
-    rel.type |= NamedPkgRel::Greater;
+    rel.type |= VerGreater;
 }
 
 static void parsePkgRel(const std::string& str, NamedPkgRel& rel)
@@ -61,9 +64,8 @@ static void parsePkgRel(const std::string& str, NamedPkgRel& rel)
   i++;
   //Here we expect package name;
   rel.ver.erase();
-  while(i < str.)
+  while(i < str.length())
     rel.ver += str[i++];
-  assert(!);
 }
 
 static void parsePkgFileSection(const StringList& sect, PkgFile& pkgFile)
@@ -73,9 +75,9 @@ static void parsePkgFileSection(const StringList& sect, PkgFile& pkgFile)
   StringList::const_iterator it = sect.begin();
   pkgFile.fileName = *it;
   assert(pkgFile.fileName.length() > 2);//FIXME:must be exception;
-  for(std:;string::size_type i = 1;i < pkgFile.fileName.length();i++)
+  for(std::string::size_type i = 1;i < pkgFile.fileName.length();i++)
     pkgFile.fileName[i - 1] = pkgFile.fileName[i];
-  pkgFile.fileName.resize(pkgFile.size() - 2);
+  pkgFile.fileName.resize(pkgFile.fileName.size() - 2);
   it++;
   assert(it != sect.end());//FIXME:must be exception;
   while(it != sect.end())
@@ -84,7 +86,7 @@ static void parsePkgFileSection(const StringList& sect, PkgFile& pkgFile)
       assert(!line.empty());
       std::string tail;
       //Parsing only name, epoch, version, release and all relations;
-      if (string Begins(line, "n=", tail))
+      if (stringBegins(line, "n=", tail))
 	{
 	pkgFile.name = tail;
 	continue;
@@ -140,13 +142,13 @@ static void parsePkgFileSection(const StringList& sect, PkgFile& pkgFile)
 }
 
 
-void RepoIndexTextFormatReader::openPackagesFile();
+void RepoIndexTextFormatReader::openPackagesFile()
 {
   assert(m_reader.get() == NULL);
   m_noMoreData = 0;
   if (m_compressionType == RepoIndexParams::CompressionTypeNone)
     m_reader = createTextFileReader(TextFileStd, concatUnixPath(m_dir, REPO_INDEX_RPMS_DATA_FILE)); else
-  if (m_compressionType == RepoIndexParams::CompressionTypeGZip)
+  if (m_compressionType == RepoIndexParams::CompressionTypeGzip)
     m_reader = createTextFileReader(TextFileGZip, concatUnixPath(m_dir, std::string(REPO_INDEX_RPMS_DATA_FILE) + ".gz")); else 
     {
       assert(0);
@@ -173,7 +175,7 @@ bool RepoIndexTextFormatReader::readPackage(PkgFile& pkgFile)
   if (m_lastSectionHeader.empty())
     {
       //There is no previously recognized section header, so we must find it;
-      while(m_reader.->readLine(line))
+      while(m_reader->readLine(line))
 	if (!line.empty())
 	  break;
       if (line.empty())//It is just empty file;
@@ -187,7 +189,7 @@ bool RepoIndexTextFormatReader::readPackage(PkgFile& pkgFile)
     } else
     section.push_back(m_lastSectionHeader);//Adding section header from previous reading attempt;
   m_noMoreData = 1;
-  while(m_reader.->readLine(line))
+  while(m_reader->readLine(line))
     {
       if (line.length() > 2 && line[0] == '[' && line[line.length() - 1] == ']')
 	{

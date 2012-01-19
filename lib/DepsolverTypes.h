@@ -55,7 +55,7 @@ public:
   VersionCond(const std::string& v)
     : version(v), type(VerEquals) {}
 
-  VersionCond(const std::string& v, verDirection t)
+  VersionCond(const std::string& v, VerDirection t)
     : version(v), type(t) {}
 
   VersionCond(const std::string& v, bool l, bool e, bool g)
@@ -63,10 +63,10 @@ public:
   {
     assert(!l || !g);
     if (l)
-      type |\ VerLess;
+      type |= VerLess;
     if (e)
       type |= VerEquals;
-    if (r)
+    if (g)
       type |= VerGreater;
   }
 

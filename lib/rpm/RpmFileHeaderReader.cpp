@@ -11,11 +11,11 @@ static char translateRelFlags(int_32 flags)
 {
   char value = 0;
   if (flags & RPMSENSE_LESS)
-    value |= NamedPkgRel::Less;
+    value |= VerLess;
   if (flags & RPMSENSE_EQUAL)
-    value |= NamedPkgRel::Equals;
+    value |= VerEquals;
   if (flags & RPMSENSE_GREATER)
-    value |= NamedPkgRel::Greater;
+    value |= VerGreater;
   return value;
 }
 

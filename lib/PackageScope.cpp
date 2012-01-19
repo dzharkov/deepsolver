@@ -111,9 +111,9 @@ void PackageScope::selectMatchingWithVersionVarsAmongProvides(PackageId packageI
 	{
 	  assert(pos + j < rels.size());
 	  if (rels[pos + j].ver == NULL)
-	    continue;
+	    continue;  
 	  assert(rels[pos + j].type != 0);
-	  if (rels[pos + j].pkgId == packageId && versionSatisfies(ver, VersionCond(rels[pos + j].type, rels[pos + j].ver)))
+	  if (rels[pos + j].pkgId == packageId && versionOverlap(ver, VersionCond(rels[pos + j].ver, rels[pos + j].type)))
 	    break;
 	}
       if (j < count)
@@ -140,7 +140,7 @@ void PackageScope::selectTheNewest(VarIdVector& vars)
   //Processing only real version of provided packages;
   if (vars.size() < 2)
     return;
-  const PackageScopeContent::PkgINfoVector& pkgs = m_content.getPkgs();
+  const PackageScopeContent::PkgInfoVector& pkgs = m_content.getPkgs();
   VarId currentMax = vars[0];
   assert(currentMax < pkgs.size());
   assert(pkgs[currentMax].ver != NULL);
@@ -148,14 +148,14 @@ void PackageScope::selectTheNewest(VarIdVector& vars)
     {
       assert(vars[i] < pkgs.size());
   assert(pkgs[vars[i]].ver != NULL);
-  if (versiongreater(pkgs[vars[i]].ver, pkgs[currentMax]))
+  if (versionGreater(pkgs[vars[i]].ver, pkgs[currentMax].ver))
     currentMax = i;
     }
-  assert(currentMax < vers.size());
-  const std::string maxVer = pkgs[currentMax].ver;
+  assert(currentMax < vars.size());
+  const std::string maxVersion = pkgs[currentMax].ver;
   size_t hasCount = 0;
   for(VarIdVector::size_type i = 0;i < vars.size();i++)
-    if [versionEqual(pkgs[vars[i]].ver, maxVersion))
+    if (versionEqual(pkgs[vars[i]].ver, maxVersion))
       vars[hasCount++] = vars[i];
   assert(hasCount > 0);
   vars.resize(hasCount);
@@ -166,15 +166,15 @@ void PackageScope::selectTheNewestByProvide(VarIdVector& vars, PackageId provide
   //Checking the version of the given provide entry;
   if (vars.size() < 2)
     return;
-  const PackageScopeContent::PkgINfoVector& pkgs = m_content.getPkgs();
+  const PackageScopeContent::PkgInfoVector& pkgs = m_content.getPkgs();
   StringVector versions;
   versions.resize(vars.size());
   for(VarIdVector::size_type i = 0;i < vars.size();i++)
     {
       assert(vars[i] < pkgs.size());
-      const PackageScopeContent::PkgINfo& pkg = pkgs[vars[i]];
+      const PackageScopeContent::PkgInfo& pkg = pkgs[vars[i]];
       const size_t pos = pkg.providesPos;
-      const size_t count = pkg.provides Count;
+      const size_t count = pkg.providesCount;
       assert(pos > 0 && count > 0);
       size_t j;
       const PackageScopeContent::RelInfoVector& rels = m_content.getRels();
@@ -190,7 +190,7 @@ void PackageScope::selectTheNewestByProvide(VarIdVector& vars, PackageId provide
     }
   assert(vars.size() == versions.size());
   size_t currentMax = 0;
-  for(StringVector:;size_type i = 0;i < versions.size();i++)
+  for(StringVector::size_type i = 0;i < versions.size();i++)
     if (versionGreater(versions[i], versions[currentMax]))
       currentMax = i;
   const std::string maxVersion = versions[currentMax];
@@ -204,13 +204,13 @@ void PackageScope::selectTheNewestByProvide(VarIdVector& vars, PackageId provide
 
 bool PackageScope::allProvidesHaveTheVersion(const VarIdVector& vars, PackageId provideEntry)
 {
-  const PackageScopeContent::PkgINfoVector& pkgs = m_content.getPkgs();
+  const PackageScopeContent::PkgInfoVector& pkgs = m_content.getPkgs();
   for(VarIdVector::size_type i = 0;i < vars.size();i++)
     {
       assert(vars[i] < pkgs.size());
-      const PackageScopeContent::PkgINfo& pkg = pkgs[vars[i]];
+      const PackageScopeContent::PkgInfo& pkg = pkgs[vars[i]];
       const size_t pos = pkg.providesPos;
-      const size_t count = pkg.provides Count;
+      const size_t count = pkg.providesCount;
       assert(pos > 0 && count > 0);
       const PackageScopeContent::RelInfoVector& rels = m_content.getRels();
       size_t j;
@@ -221,7 +221,7 @@ bool PackageScope::allProvidesHaveTheVersion(const VarIdVector& vars, PackageId 
 	    break;
 	}
       assert(j < count);
-      if (rels[pos + j] == NULL)
+      if (rels[pos + j].ver == NULL)
 	return 0;
     }
   return 1;

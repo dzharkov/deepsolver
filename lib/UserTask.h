@@ -23,17 +23,17 @@ public:
   bool less, equals, greater;
 }; //class 
 
-typedef std::vector<UserTaskItemToINstall> UserTaskItemToINstallVector;
-typedef std::list<UserTaskItemToINstall> UserTaskItemToINstallList;
+typedef std::vector<UserTaskItemToInstall> UserTaskItemToInstallVector;
+typedef std::list<UserTaskItemToInstall> UserTaskItemToInstallList;
 
-class userTask 
+class UserTask 
 {
 public:
-  UserTask()
+  UserTask() {}
   ~UserTask() {}
 
 public:
-  UserTaskItemToINstallVector itemsToINstall;
+  UserTaskItemToInstallVector itemsToInstall;
   StringSet urlsToInstall;
   StringSet namesToRemove;
 }; //class UserTask;

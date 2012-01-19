@@ -16,7 +16,7 @@ public:
   ~TaskPreprocessor() {}
 
 public:
-  void preprocess(const UserTask& userTask
+  void preprocess(const UserTask& userTask,
 		  VarIdVector& strongToInstall,
 		  VarIdVector& strongToRemove);
 

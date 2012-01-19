@@ -2,7 +2,7 @@
 #ifndef DEPSOLVER_REPO_INDEX_TEXT_FORMAT_READER_H
 #define DEPSOLVER_REPO_INDEX_TEXT_FORMAT_READER_H
 
-#include"PkgFile.h"
+#include"Pkg.h"
 #include"TextFiles.h"
 
 class RepoIndexTextFormatReader
@@ -18,8 +18,8 @@ public:
   void openSourcePackagesFile();
   void openProvidesFile();
   bool readPackage(PkgFile& pkgFile);
-  bool readPackage(PkgFile& pkgFile);
-  bool readSourceProvides(std::string& provideName, StringList& providers);
+  bool readSourcePackage(PkgFile& pkgFile);
+  bool readProvides(std::string& provideName, StringList& providers);
 
 private:
   const std::string& m_dir;
