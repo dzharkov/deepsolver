@@ -208,4 +208,6 @@ bool RepoIndexTextFormatReader::readProvides(std::string& provideName, StringLis
 {
   if (m_reader.get() == NULL)
     return 0;
+  assert(0);//FIXME:
+  return 0;
 }
