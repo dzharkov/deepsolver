@@ -27,6 +27,7 @@ void PackageScopeContent::add(const PkgFile& pkgFile)
   processRels(pkgFile.provides, pkg.providesPos, pkg.providesCount);
   processRels(pkgFile.obsoletes, pkg.obsoletesPos, pkg.obsoletesCount);
     m_pkgInfoList.push_back(pkg);
+    //    std::cout << m_names.size() << std::endl;
 }
 
 void PackageScopeContent::commit()
@@ -51,22 +52,21 @@ void PackageScopeContent::processRels(const NamedPkgRelVector& rels, size_t& pos
     }
   pos = m_relInfoList.size();
   count = rels.size();
+  //  std::cout << pos << ", " << count << std::endl;
   for(NamedPkgRelVector::size_type i = 0;i < count;i++)
     {
       const NamedPkgRel& rel = rels[i];
       RelInfo info;
       assert(!rel.pkgName.empty());
       info.pkgId = registerName(rel.pkgName);
-      /*
-      if (!rels[i].ver.empty())
+      if (!rel.ver.empty())
 	{
-	  assert(rels[i].type != 0);
-	  info.type = rels[i].type;
-	  info.ver = new char[rels[i].ver.length() + 1];//FIXME:registration for automatic deallocationi;
-	  strcpy(info.ver, rels[i].ver.c_str());
+	  assert(rel.type != 0);
+	  info.type = rel.type;
+	  info.ver = new char[rel.ver.length() + 1];//FIXME:registration for automatic deallocationi;
+	  strcpy(info.ver, rel.ver.c_str());
 	}
-      m_relInfoList.push_back(info);
-      */
+            m_relInfoList.push_back(info);
     }
 }
 

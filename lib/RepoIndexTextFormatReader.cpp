@@ -172,6 +172,17 @@ void RepoIndexTextFormatReader::openProvidesFile()
 
 bool RepoIndexTextFormatReader::readPackage(PkgFile& pkgFile)
 {
+  pkgFile.fileName.erase();
+  pkgFile.name.erase();
+  pkgFile.epoch = 0;
+  pkgFile.version.erase();
+  pkgFile.release.erase();
+  //FIXME:other string fields;
+  pkgFile.requires.clear();
+  pkgFile.provides.clear();
+  pkgFile.conflicts.clear();
+  pkgFile.obsoletes.clear();
+  pkgFile.changeLog.clear();
   //  std::cout << "entered reading package " << m_noMoreData << std::endl;
   if (m_noMoreData || m_reader.get() == NULL)
     return 0;
