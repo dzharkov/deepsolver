@@ -26,7 +26,7 @@ void PackageScopeContent::add(const PkgFile& pkgFile)
   processRels(pkgFile.conflicts, pkg.conflictsPos, pkg.conflictsCount);
   processRels(pkgFile.provides, pkg.providesPos, pkg.providesCount);
   processRels(pkgFile.obsoletes, pkg.obsoletesPos, pkg.obsoletesCount);
-  m_pkgInfoList.push_back(pkg);
+    m_pkgInfoList.push_back(pkg);
 }
 
 void PackageScopeContent::commit()
@@ -51,11 +51,13 @@ void PackageScopeContent::processRels(const NamedPkgRelVector& rels, size_t& pos
     }
   pos = m_relInfoList.size();
   count = rels.size();
-  for(NamedPkgRelVector::size_type i = 0;i < rels.size();i++)
+  for(NamedPkgRelVector::size_type i = 0;i < count;i++)
     {
+      const NamedPkgRel& rel = rels[i];
       RelInfo info;
-      assert(rels[i].pkgName.empty());
-      info.pkgId = registerName(rels[i].pkgName);
+      assert(!rel.pkgName.empty());
+      info.pkgId = registerName(rel.pkgName);
+      /*
       if (!rels[i].ver.empty())
 	{
 	  assert(rels[i].type != 0);
@@ -64,6 +66,7 @@ void PackageScopeContent::processRels(const NamedPkgRelVector& rels, size_t& pos
 	  strcpy(info.ver, rels[i].ver.c_str());
 	}
       m_relInfoList.push_back(info);
+      */
     }
 }
 

@@ -87,10 +87,10 @@ static std::string saveNamedPkgRel(const NamedPkgRel& r)
   std::string t;
   if (less)
     t += "<";
-  if (equals)
-    t += "=";
   if (greater)
     t += ">";
+  if (equals)
+    t += "=";
   s << " " << t << " " << r.ver;
   return s.str();
 }

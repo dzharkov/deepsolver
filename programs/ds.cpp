@@ -4,14 +4,38 @@
 #include"TaskPreprocessor.h"
 #include"IndexCore.h"
 
-void run()
+static clock_t clockStarted;
+
+static void beginClock()
 {
-  PackageScopeContent content;
-  RepoIndexTextFormatReader reader(".", RepoIndexParams::CompressionTypeGzip);
+  clockStarted = clock();
+}
+
+double endClock()
+{
+  const clock_t val = clock() - clockStarted;
+  return (double)val / CLOCKS_PER_SEC;
+}
+
+void addPackageList(const std::string& dirName, PackageScopeContent& content)
+{
+  RepoIndexTextFormatReader reader(dirName, RepoIndexParams::CompressionTypeNone);
   PkgFile pkgFile;
   reader.openPackagesFile();
   while(reader.readPackage(pkgFile))
-    content.add(pkgFile);
+    {
+      //      std::cout << pkgFile.name << std::endl;
+      content.add(pkgFile);
+    }
+}
+
+void run()
+{
+  PackageScopeContent content;
+  beginClock();
+  addPackageList("i586/base", content);
+  addPackageList("noarch/base", content);
+  std::cout << "Package data loaded in " << endClock() << " seconds" << std::endl;
   content.commit();
 }
 
