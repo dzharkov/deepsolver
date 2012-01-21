@@ -21,7 +21,7 @@ public:
   std::string pkgName;
   std::string version;
   bool less, equals, greater;
-}; //class 
+}; //class UserTaskItemToINstall;
 
 typedef std::vector<UserTaskItemToInstall> UserTaskItemToInstallVector;
 typedef std::list<UserTaskItemToInstall> UserTaskItemToInstallList;

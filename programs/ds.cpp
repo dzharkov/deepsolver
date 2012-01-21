@@ -6,7 +6,65 @@
 
 static clock_t clockStarted;
 
-static void beginClock()
+bool       translateDirection(UserTaskItemToInstall& item, const std::string& str)
+{
+  //FIXME:
+}
+
+bool parseUserTask(const std::string& line, UserTask& task)
+{
+  std::string:;size_type i = 0;
+  while(1)
+    {
+      UserTaskItemToINstall item;
+      //Expecting package name but must skip spaces;
+      while(i < line.length() && BLANK_CHAR(line[i]))
+	i++;
+      if (i > = line.length())
+	break;
+      item.pkgName.erase();
+      while(i < line.length() && !BLANK_CHAR(line[i]))
+	item.pkgName += line[i++];
+      while(i < line.length() && BLANK_CHAR(line[i]))
+	i++;
+      if (i >= line.length())
+	{
+	  task.itemsToINstall.push_back(item);
+	  break;
+	}
+      if (line[i] != '<' && line[i] != '>' && line[i] != '=')
+	{
+	  task.itemsToInstall.push_back(item);
+	  continue;
+	}
+      std::string r;
+      r += line[i];
+      if (i + 1 < line.length() && !BLANK_CHAR(line[i]))
+	{
+	  i++;
+	  r += line[i];
+	}
+      if (!translateDirection(item, r))
+	return 0;
+      if (BLANK_CHAR(line[i]))
+	return 0;
+      while (i < line.length() && BLANK_CHAR(line[i]))
+	i++;
+      if (i >= line.length())
+	return 0;
+      while(i < line.length() && !BLANK_CHAR(i))
+	item.ver += line[i];
+      task.itemsToInstall.push_back(item);
+    }
+}
+
+void handleRequest(const PackageScope& scope, const std::string& line)
+{
+  UserTask task;
+
+}
+
+void beginClock()
 {
   clockStarted = clock();
 }
@@ -35,8 +93,19 @@ void run()
   beginClock();
   addPackageList("i586/base", content);
   addPackageList("noarch/base", content);
+  PackageScope scope(content);
   std::cout << "Package data loaded in " << endClock() << " seconds" << std::endl;
-  while(1);
+  std::string line;
+  while(1)
+    {
+      std::cout << "Your request> ";
+      std::getline(std::cin, line);
+      if (!std::cin)
+	break;
+      handleRequest(scope, line);
+    }
+  std::cout << std::endl;
+  std::cout << "Exiting..." << std::endl;
 }
 
 int main(int argc, char* argv[])
