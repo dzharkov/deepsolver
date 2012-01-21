@@ -36,7 +36,7 @@ void run()
   addPackageList("i586/base", content);
   addPackageList("noarch/base", content);
   std::cout << "Package data loaded in " << endClock() << " seconds" << std::endl;
-  content.commit();
+  while(1);
 }
 
 int main(int argc, char* argv[])

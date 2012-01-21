@@ -57,7 +57,6 @@ public:
 
 public:
   void add(const PkgFile& pkgFile);
-  void commit();
   PackageId strToPackageId(const std::string& name) const;
   std::string packageIdToStr(PackageId packageId) const;
   const PkgInfoVector& getPkgs() const;
@@ -70,9 +69,7 @@ private:
 private:
   NameToPackageIdMap m_namesToId;
   StringVector m_names;
-  PkgInfoList m_pkgInfoList;
   PkgInfoVector m_pkgInfoVector;
-  RelInfoList m_relInfoList;
   RelInfoVector m_relInfoVector;
 }; //class PackageScopeContent;
 

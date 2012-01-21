@@ -26,20 +26,8 @@ void PackageScopeContent::add(const PkgFile& pkgFile)
   processRels(pkgFile.conflicts, pkg.conflictsPos, pkg.conflictsCount);
   processRels(pkgFile.provides, pkg.providesPos, pkg.providesCount);
   processRels(pkgFile.obsoletes, pkg.obsoletesPos, pkg.obsoletesCount);
-    m_pkgInfoList.push_back(pkg);
+    m_pkgInfoVector.push_back(pkg);
     //    std::cout << m_names.size() << std::endl;
-}
-
-void PackageScopeContent::commit()
-{
-  m_pkgInfoVector.reserve(m_pkgInfoList.size());
-  for(PkgInfoList::const_iterator it = m_pkgInfoList.begin(); it != m_pkgInfoList.end();it++)
-    m_pkgInfoVector.push_back(*it);
-  m_pkgInfoList.clear();
-  m_relInfoVector.reserve(m_relInfoList.size());
-  for(RelInfoList::const_iterator it = m_relInfoList.begin();it != m_relInfoList.end();it++)
-    m_relInfoVector.push_back(*it);
-  m_relInfoList.clear();
 }
 
 void PackageScopeContent::processRels(const NamedPkgRelVector& rels, size_t& pos, size_t& count)
@@ -50,7 +38,7 @@ void PackageScopeContent::processRels(const NamedPkgRelVector& rels, size_t& pos
       count = 0;
       return;
     }
-  pos = m_relInfoList.size();
+  pos = m_relInfoVector.size();
   count = rels.size();
   //  std::cout << pos << ", " << count << std::endl;
   for(NamedPkgRelVector::size_type i = 0;i < count;i++)
@@ -66,7 +54,7 @@ void PackageScopeContent::processRels(const NamedPkgRelVector& rels, size_t& pos
 	  info.ver = new char[rel.ver.length() + 1];//FIXME:registration for automatic deallocationi;
 	  strcpy(info.ver, rel.ver.c_str());
 	}
-            m_relInfoList.push_back(info);
+            m_relInfoVector.push_back(info);
     }
 }
 
