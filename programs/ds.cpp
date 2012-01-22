@@ -53,6 +53,7 @@ bool parseUserTask(const std::string& line, UserTask& task)
       if (i >= line.length())
 	break;
       item.pkgName.erase();
+      item.version.erase();
       while(i < line.length() && !BLANK_CHAR(line[i]))
 	item.pkgName += line[i++];
       while(i < line.length() && BLANK_CHAR(line[i]))
@@ -69,23 +70,25 @@ bool parseUserTask(const std::string& line, UserTask& task)
 	}
       std::string r;
       r += line[i];
-      if (i + 1 < line.length() && !BLANK_CHAR(line[i]))
+      if (i + 1 < line.length() && !BLANK_CHAR(line[i + 1]))
 	{
 	  i++;
 	  r += line[i];
 	}
       if (!translateDirection(item, r))
 	return 0;
-      if (BLANK_CHAR(line[i]))
+      i++;
+      if (i>= line.length() || !BLANK_CHAR(line[i]))
 	return 0;
       while (i < line.length() && BLANK_CHAR(line[i]))
 	i++;
       if (i >= line.length())
 	return 0;
-      while(i < line.length() && !BLANK_CHAR(i))
-	item.version += line[i];
+      while(i < line.length() && !BLANK_CHAR(line[i]))
+	item.version += line[i++];
       task.itemsToInstall.push_back(item);
     }
+  return 1;
 }
 
 void handleRequest(const PackageScope& scope, const std::string& line)

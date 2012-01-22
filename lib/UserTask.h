@@ -20,15 +20,15 @@ public:
     s += " ";
     assert(less || equals || greater);
     if (less && equals)
-      s += "less or equals";
+      s += "less than or equals"; else
     if (greater && equals)
-      s += "greater or equals";
+      s += "greater than or equals"; else
     if (less)
-      s += "less";
+      s += "less than"; else
     if (equals)
-s += "equals";
+s += "equals"; else
     if (greater)
-      s += "greater";
+      s += "greater than";
     s += " " + version;
     return s;
     return "#Needs to implement!#";
