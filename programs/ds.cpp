@@ -8,19 +8,49 @@ static clock_t clockStarted;
 
 bool       translateDirection(UserTaskItemToInstall& item, const std::string& str)
 {
-  //FIXME:
+  item.less = 0;
+  item.equals = 0;
+  item.greater = 0;
+  if (str == ">")
+    {
+      item.greater = 1;
+      return 1;
+    }
+  if (str == "<")
+    {
+      item.less = 1;
+      return 1;
+    }
+  if (str == ">=")
+    {
+      item.greater = 1;
+      item.equals = 1;
+      return 1;
+    }
+  if (str == "<=")
+    {
+      item.less = 1;
+      item.equals = 1;
+      return 1;
+    }
+  if (str == "=")
+    {
+      item.equals = 1;
+      return 1;
+    }
+  return 0;
 }
 
 bool parseUserTask(const std::string& line, UserTask& task)
 {
-  std::string:;size_type i = 0;
+  std::string::size_type i = 0;
   while(1)
     {
-      UserTaskItemToINstall item;
+      UserTaskItemToInstall item;
       //Expecting package name but must skip spaces;
       while(i < line.length() && BLANK_CHAR(line[i]))
 	i++;
-      if (i > = line.length())
+      if (i >= line.length())
 	break;
       item.pkgName.erase();
       while(i < line.length() && !BLANK_CHAR(line[i]))
@@ -29,7 +59,7 @@ bool parseUserTask(const std::string& line, UserTask& task)
 	i++;
       if (i >= line.length())
 	{
-	  task.itemsToINstall.push_back(item);
+	  task.itemsToInstall.push_back(item);
 	  break;
 	}
       if (line[i] != '<' && line[i] != '>' && line[i] != '=')
@@ -53,7 +83,7 @@ bool parseUserTask(const std::string& line, UserTask& task)
       if (i >= line.length())
 	return 0;
       while(i < line.length() && !BLANK_CHAR(i))
-	item.ver += line[i];
+	item.version += line[i];
       task.itemsToInstall.push_back(item);
     }
 }
@@ -61,7 +91,18 @@ bool parseUserTask(const std::string& line, UserTask& task)
 void handleRequest(const PackageScope& scope, const std::string& line)
 {
   UserTask task;
-
+  if (!parseUserTask(line, task))
+    {
+      std::cerr << "Incorrect request, be careful!" << std::endl;
+	return;
+    }
+  if (task.itemsToInstall.empty())
+    {
+      std::cerr << "An empty request!" << std::endl;
+      return;
+    }
+  for(UserTaskItemToInstallVector::size_type i = 0;i < task.itemsToInstall.size();i++)
+    std::cout << "# " << task.itemsToInstall[i].makeStr() << std::endl;
 }
 
 void beginClock()

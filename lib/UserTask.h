@@ -13,7 +13,24 @@ public:
 public:
   std::string makeStr() const
   {
-    //FIXME:
+    assert(!less || !greater);
+    std::string s = pkgName;
+    if (version.empty())
+      return s;
+    s += " ";
+    assert(less || equals || greater);
+    if (less && equals)
+      s += "less or equals";
+    if (greater && equals)
+      s += "greater or equals";
+    if (less)
+      s += "less";
+    if (equals)
+s += "equals";
+    if (greater)
+      s += "greater";
+    s += " " + version;
+    return s;
     return "#Needs to implement!#";
   }
 
