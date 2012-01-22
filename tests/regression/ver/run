@@ -1,0 +1,5 @@
+#!/bin/sh -e
+# Performs regression testing of version ranges overlapping
+
+./test
+echo 'Version overlapping is working!'

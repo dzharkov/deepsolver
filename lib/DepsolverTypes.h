@@ -71,6 +71,22 @@ public:
   }
 
 public:
+  bool isLess() const
+  {
+    return type & VerLess;
+  }
+
+  bool isEqual() const
+  {
+    return type & VerEquals;
+  }
+
+  bool isGreater() const
+  {
+    return type & VerGreater;
+  }
+
+public:
   std::string version;
   VerDirection type;
 }; //class VersionCond;

@@ -12,7 +12,7 @@ bool versionEqual(const std::string& ver1, const std::string& ver2);
 
 /**\brief Checks if one version is newer than another
  *
- * \return /Non-zero if ver1 greater than ver2
+ * \return /Non-zero if ver1 greater than ver2 or zero if ver1 less or equals ver2
  */
 bool versionGreater(const std::string& ver1, const std::string& ver2);
 

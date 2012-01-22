@@ -17,5 +17,10 @@ cd md5
 ./run
 cd ..
 
+# Version overlapping regression test;
+cd ver
+./run
+cd ..
+
 echo
 echo 'All tests was passed successfully!'

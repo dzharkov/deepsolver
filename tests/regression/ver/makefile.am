@@ -1,0 +1,15 @@
+
+AM_CXXFLAGS = $(DEPSOLVER_CXXFLAGS) $(DEPSOLVER_INCLUDES)
+LIBS += -lrpm
+
+bin_PROGRAMS = test
+
+test_LDADD = \
+$(top_srcdir)/lib/libdepsolver.a \
+$(top_srcdir)/lib/rpm/libdepsolverrpm.a \
+$(top_srcdir)/lib/os/libdepsolveros.a 
+
+test_DEPENDENCIES = $(test_LDADD)
+
+test_SOURCES=\
+test.cpp

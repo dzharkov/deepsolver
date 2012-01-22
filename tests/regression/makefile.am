@@ -1,2 +1,2 @@
 
-SUBDIRS = gzip zlib md5
+SUBDIRS = gzip zlib md5 ver

@@ -12,4 +12,6 @@ libdepsolverrpm_a_SOURCES = \
 RpmException.h \
 RpmFile.h \
 RpmFileHeaderReader.cpp \
-RpmFileHeaderReader.h
+RpmFileHeaderReader.h \
+vercmp.cpp \
+vercmp.h

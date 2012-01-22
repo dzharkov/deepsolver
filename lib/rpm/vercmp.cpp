@@ -17,5 +17,5 @@ static int buildSenseFlags(const VersionCond& c)
 int rpmVerOverlap(const VersionCond& v1, const VersionCond& v2)
 {
   return rpmRangesOverlap("", v1.version.c_str(), buildSenseFlags(v1),
-			  r"", v2.version.c_str(), buildSenseFlags(v2));
+			  "", v2.version.c_str(), buildSenseFlags(v2));
 }
