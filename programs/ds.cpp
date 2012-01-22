@@ -91,7 +91,7 @@ bool parseUserTask(const std::string& line, UserTask& task)
   return 1;
 }
 
-void handleRequest(const PackageScope& scope, const std::string& line)
+void handleRequest(PackageScope& scope, const std::string& line)
 {
   UserTask task;
   if (!parseUserTask(line, task))
@@ -106,6 +106,9 @@ void handleRequest(const PackageScope& scope, const std::string& line)
     }
   for(UserTaskItemToInstallVector::size_type i = 0;i < task.itemsToInstall.size();i++)
     std::cout << "# " << task.itemsToInstall[i].makeStr() << std::endl;
+  TaskPreprocessor taskPreprocessor(scope);
+  VarIdVector toInstall, toRemove;
+  taskPreprocessor.preprocess(task, toInstall, toRemove);
 }
 
 void beginClock()
