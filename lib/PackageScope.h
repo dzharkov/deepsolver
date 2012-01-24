@@ -16,6 +16,9 @@ public:
   virtual ~PackageScope() {}
 
 public:
+  std::string constructPackageName(VarId varId) const;
+
+
   /**\brief Translates package name as a string to PackageId value
    *
    * Package Id replaces both the real names and provides entries

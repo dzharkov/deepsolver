@@ -113,6 +113,8 @@ VarId TaskPreprocessor::processPriority(const VarIdVector& vars, PackageId provi
 {
   //Process the system provide priority list using provideEntry;
   //Perform sorting by real package names and take last;
+  assert(!vars.empty());
+  return vars[0];
   assert(0);//FIXME:
   return BAD_VAR_ID;
 }

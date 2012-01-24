@@ -91,6 +91,17 @@ bool parseUserTask(const std::string& line, UserTask& task)
   return 1;
 }
 
+void beginClock()
+{
+  clockStarted = clock();
+}
+
+double endClock()
+{
+  const clock_t val = clock() - clockStarted;
+  return (double)val / CLOCKS_PER_SEC;
+}
+
 void handleRequest(PackageScope& scope, const std::string& line)
 {
   UserTask task;
@@ -108,18 +119,14 @@ void handleRequest(PackageScope& scope, const std::string& line)
     std::cout << "# " << task.itemsToInstall[i].makeStr() << std::endl;
   TaskPreprocessor taskPreprocessor(scope);
   VarIdVector toInstall, toRemove;
+  beginClock();
   taskPreprocessor.preprocess(task, toInstall, toRemove);
-}
-
-void beginClock()
-{
-  clockStarted = clock();
-}
-
-double endClock()
-{
-  const clock_t val = clock() - clockStarted;
-  return (double)val / CLOCKS_PER_SEC;
+  std::cout << std::endl;
+  for(VarIdVector::size_type i = 0;i < toInstall.size();i++)
+    std::cout << scope.constructPackageName(toInstall[i]) << std::endl;
+  std::cout << std::endl;
+  std::cout << "# Answer contains " << toInstall.size() << " entries to install" << std::endl;
+  std::cout << "# Calculated in " << endClock() << " sec" << std::endl;
 }
 
 void addPackageList(const std::string& dirName, PackageScopeContent& content)

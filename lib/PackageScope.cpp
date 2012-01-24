@@ -4,6 +4,20 @@
 #include"PackageScope.h"
 #include"version.h"
 
+std::string PackageScope::constructPackageName(VarId varId) const
+{
+  const PackageScopeContent::PkgInfoVector& pkgs = m_content.getPkgs();
+  assert(varId < pkgs.size());
+  const PackageScopeContent::PkgInfo& pkg = pkgs[varId];
+  std::string res = packageIdToStr(pkg.pkgId);
+  assert(pkg.ver != NULL);
+  res += "-";
+res += pkg.ver;
+  assert(pkg.release != NULL);
+  res += "-";
+res += pkg.release;
+}
+
 PackageId PackageScope::strToPackageId(const std::string& name) const
 {
   return m_content.strToPackageId(name);
