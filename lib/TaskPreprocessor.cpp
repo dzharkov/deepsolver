@@ -2,12 +2,9 @@
 
 #include"depsolver.h"
 #include"TaskPreprocessor.h"
+#include"TaskException.h"
 
-static void TASK_STOP(const std::string& msg)//FIXME:
-{
-  std::cerr << msg << std::endl;
-  assert(0);
-}
+#define TASK_STOP(x) throw TaskException(x)
 
 template<typename T>
 void removeDublications(std::vector<T>& v)

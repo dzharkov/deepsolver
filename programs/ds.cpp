@@ -3,6 +3,7 @@
 #include"RepoIndexTextFormatReader.h"
 #include"TaskPreprocessor.h"
 #include"IndexCore.h"
+#include"TaskException.h"
 
 static clock_t clockStarted;
 
@@ -119,9 +120,16 @@ void handleRequest(PackageScope& scope, const std::string& line)
     std::cout << "# " << task.itemsToInstall[i].makeStr() << std::endl;
   TaskPreprocessor taskPreprocessor(scope);
   VarIdVector toInstall, toRemove;
-  beginClock();
-  taskPreprocessor.preprocess(task, toInstall, toRemove);
   std::cout << std::endl;
+  beginClock();
+  try {
+    taskPreprocessor.preprocess(task, toInstall, toRemove);
+  }
+  catch (const TaskException& e)
+    {
+      std::cout << "# " << e.getMessage() << std::endl;
+      return;
+    }
   for(VarIdVector::size_type i = 0;i < toInstall.size();i++)
     std::cout << scope.constructPackageName(toInstall[i]) << std::endl;
   std::cout << std::endl;

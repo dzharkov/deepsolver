@@ -6,8 +6,8 @@
 class TaskException: public DepsolverException
 {
 public:
-  TaskException() {const std::string& msg}
-  : m_message(msg) {}
+  TaskException(const std::string& msg)
+    : m_message(msg) {}
 
   virtual ~TaskException() {}
 
