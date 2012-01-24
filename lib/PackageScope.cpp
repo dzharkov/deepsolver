@@ -12,10 +12,11 @@ std::string PackageScope::constructPackageName(VarId varId) const
   std::string res = packageIdToStr(pkg.pkgId);
   assert(pkg.ver != NULL);
   res += "-";
-res += pkg.ver;
+  res += pkg.ver;
   assert(pkg.release != NULL);
   res += "-";
-res += pkg.release;
+  res += pkg.release;
+  return res;
 }
 
 PackageId PackageScope::strToPackageId(const std::string& name) const
