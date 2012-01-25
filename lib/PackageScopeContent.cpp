@@ -70,6 +70,12 @@ PackageId PackageScopeContent::registerName(const std::string& name)
   return packageId;
 }
 
+bool PackageScopeContent::checkName(const std::string& name) const
+{
+  assert(!name.empty());
+  return m_namesToId.find(name) != m_namesToId.end();
+}
+
 PackageId PackageScopeContent::strToPackageId(const std::string& name) const
 {
   assert(!name.empty());

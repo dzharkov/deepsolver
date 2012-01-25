@@ -112,24 +112,22 @@ void handleRequest(PackageScope& scope, const std::string& line)
 	return;
     }
   if (task.itemsToInstall.empty())
-    {
-      std::cerr << "An empty request!" << std::endl;
-      return;
-    }
+    return;
+  std::cout << "# You have asked:" << std::endl;
   for(UserTaskItemToInstallVector::size_type i = 0;i < task.itemsToInstall.size();i++)
     std::cout << "# " << task.itemsToInstall[i].makeStr() << std::endl;
   TaskPreprocessor taskPreprocessor(scope);
   VarIdVector toInstall, toRemove;
-  std::cout << std::endl;
   beginClock();
   try {
     taskPreprocessor.preprocess(task, toInstall, toRemove);
   }
   catch (const TaskException& e)
     {
-      std::cout << "# " << e.getMessage() << std::endl;
+      std::cout << e.getMessage() << std::endl;
       return;
     }
+  std::cout << std::endl;
   for(VarIdVector::size_type i = 0;i < toInstall.size();i++)
     std::cout << scope.constructPackageName(toInstall[i]) << std::endl;
   std::cout << std::endl;

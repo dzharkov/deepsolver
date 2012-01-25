@@ -17,7 +17,8 @@ public:
 
 public:
   std::string constructPackageName(VarId varId) const;
-
+  /**\brief FIXME*/
+  bool checkName(const std::string& name) const;
 
   /**\brief Translates package name as a string to PackageId value
    *

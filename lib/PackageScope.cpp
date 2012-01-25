@@ -19,6 +19,11 @@ std::string PackageScope::constructPackageName(VarId varId) const
   return res;
 }
 
+bool PackageScope::checkName(const std::string& name) const
+{
+  return m_content.checkName(name);
+}
+
 PackageId PackageScope::strToPackageId(const std::string& name) const
 {
   return m_content.strToPackageId(name);

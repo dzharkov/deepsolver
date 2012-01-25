@@ -57,6 +57,7 @@ public:
 
 public:
   void add(const PkgFile& pkgFile);
+  bool checkName(const std::string& name) const;
   PackageId strToPackageId(const std::string& name) const;
   std::string packageIdToStr(PackageId packageId) const;
   const PkgInfoVector& getPkgs() const;
