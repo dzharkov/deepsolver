@@ -56,6 +56,47 @@ void TaskPreprocessor::preprocess(const UserTask& userTask,
   removeDublications(strongToRemove);
 }
 
+void TaskPreprocessor::buildDepClosure(VarId varId, VarIdSet& required)
+{
+  VarIdSet processed;
+  VarIdVector pending;
+  processed.push_back(varId);
+  pending.push_back(varId);
+  while(!pending.empty())
+    {
+      const VarId varId = pending[pending.size() - 1];
+      pending.pop_back();
+      VarIdVector depending;
+      processRequires(varId, depending);
+      for(VarIdVector::size_type i = 0;i < depending.size();i++)
+	{
+	  if (processed.find(depending[i]) == processed.end())
+	    continue;
+	  required.push_back(depending[i]);
+	}
+    }
+}
+
+void TaskPreprocessor::processRequires(VarId varId, VarIdVector& dependent)
+{
+  PackageIdVector depWithoutVersion, depWithVersion;
+  VersionCondVector versions;
+  m_scope.getRequires(varId, depWithoutVersion, depWithVersion, versions);
+  assert(depWithVersion.size() == versions.size());
+  for(PackageIdVector::size_type i = 0;i < depWithoutVersion.size();i++)
+    {
+      const VerId res = processRequireWithoutVersion(depWithoutVersion[i]);
+      assert(res != BAD_VAR_ID);
+      dependent.push_back(res);
+    }
+  for(PackageIdVector::size_type i = 0;i < depWithVersion.size();i++)
+    {
+      const VerId res = processRequireWithVersion(depWithVersion[i], versions[i]);
+      assert(res != BAD_VAR_ID);
+      dependent.push_back(res);
+    }
+}
+
 VarId TaskPreprocessor::processUserTaskItemToInstall(const UserTaskItemToInstall& item)
 {
   std::cout << std::endl;
@@ -116,6 +157,65 @@ VarId TaskPreprocessor::processUserTaskItemToInstall(const UserTaskItemToInstall
       std::cout << "# Selecting exact alternative by priority list processing only" << std::endl;
       return processPriority(vars, pkgId);
 }
+
+VarId TaskPreprocessor::processRequireWithoutVersion(PackageId pkgId)
+{
+  assert(pkgId != BAd_PACKAGE_ID);
+  VarIdVector vars;
+  //The following line does not take into account available provides;
+  m_scope.selectMatchingVars(pkgId, vars);
+  if (!vars.empty())
+    {
+      m_scope.selectTheNewest(vars);
+      assert(!vars.empty());
+      //We can get here more than one the newest packages, assuming no difference what exact one to take;
+      return vars.front();
+    }
+  /*
+   * We cannot find anything just by real names, so 
+   * now the time to select anything among presented provides records;
+   */
+  m_scope.selectMatchingVarsAmongProvides(pkgId, vars);
+  if (vars.empty())//No appropriate packages at all;
+    TASK_STOP("Require entry \'" + m_scope.packageIdToStr(pkgId) + "\' has no installation candidat");
+  if (m_scope.allProvidesHaveTheVersion(vars, pkgId))
+    {
+      m_scope.selectTheNewestByProvide(vars, pkgId);
+      assert(!vars.empty());
+      if (vars.size() == 1)
+	return vars.front();
+      return processPriority(vars, pkgId);
+    }
+      return processPriority(vars, pkgId);
+}
+
+VarId TaskPreprocessor::processRequireWithVersion(PackageId pkgId, const VersionCond& cond) 
+{
+  assert(pkgId != BAD_PACKAGE_ID);
+  VarIdVector vars;
+  //This line does not handle provides ;
+  m_scope.selectMatchingWithVersionVars(pkgId, cond, vars);
+  if (!vars.empty())
+    {
+      m_scope.selectTheNewest(vars);
+      assert(!vars.empty());
+      //We can get here more than one the newest packages, assuming no difference what exact one to take;
+      return vars.front();
+    }
+  /*
+   * We cannot find anything just by real names, so 
+   * now the time to select anything among presented provides records;
+   */
+  m_scope.selectMatchingWithVersionVarsAmongProvides(pkgId, cond, vars);
+  if (vars.empty())//No appropriate packages at all;
+    TASK_STOP("Require entry \'" + m_scope.packageIdToStr(pkgId) + "\' with version has no installation candidat");
+  m_scope.selectTheNewestByProvide(vars, pkgId);
+  assert(!vars.empty());
+  if (vars.size() == 1)
+    return vars.front();
+  return processPriority(vars, pkgId);
+}
+
 
 VarId TaskPreprocessor::processPriority(const VarIdVector& vars, PackageId provideEntry) const
 {

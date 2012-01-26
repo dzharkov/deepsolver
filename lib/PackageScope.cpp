@@ -246,3 +246,6 @@ bool PackageScope::allProvidesHaveTheVersion(const VarIdVector& vars, PackageId 
     }
   return 1;
 }
+
+
+//FIXME:   m_scope.getRequires(depWithoutVersion, depWithVersion, versions
