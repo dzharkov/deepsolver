@@ -262,7 +262,7 @@ void PackageScope::getRequires(VarId varId, PackageIdVector& depWithoutVersion, 
   for(size_t i = 0;i < count;i++)
     {
       assert(pos + i < rels.size());
-      if (rels[i].ver == NULL)
+      if (rels[pos + i].ver == NULL)
 	depWithoutVersion.push_back(rels[pos + i].pkgId); else 
 	{
 	  depWithVersion.push_back(rels[pos + i].pkgId);

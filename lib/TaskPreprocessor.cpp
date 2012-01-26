@@ -66,13 +66,15 @@ void TaskPreprocessor::buildDepClosure(VarId varId, VarIdSet& required)
     {
       const VarId varId = pending[pending.size() - 1];
       pending.pop_back();
+      //      std::cout << "Analyzing " << m_scope.constructPackageName(varId) << std::endl;
       VarIdVector depending;
       processRequires(varId, depending);
       for(VarIdVector::size_type i = 0;i < depending.size();i++)
 	{
-	  if (processed.find(depending[i]) == processed.end())
+	  if (processed.find(depending[i]) != processed.end())
 	    continue;
 	  required.insert(depending[i]);
+	  pending.push_back(depending[i]);
 	}
     }
 }
@@ -82,6 +84,8 @@ void TaskPreprocessor::processRequires(VarId varId, VarIdVector& dependent)
   PackageIdVector depWithoutVersion, depWithVersion;
   VersionCondVector versions;
   m_scope.getRequires(varId, depWithoutVersion, depWithVersion, versions);
+  //  std::cout << depWithVersion.size() << " deps with version" << std::endl;
+  //  std::cout << depWithoutVersion.size() << " deps without version" << std::endl;
   assert(depWithVersion.size() == versions.size());
   for(PackageIdVector::size_type i = 0;i < depWithoutVersion.size();i++)
     {
@@ -220,7 +224,6 @@ VarId TaskPreprocessor::processPriority(const VarIdVector& vars, PackageId provi
 {
   //Process the system provide priority list using provideEntry;
   //Perform sorting by real package names and take last;
-  std::cout << "Processing priority from " << vars.size() << " alternatives" << std::endl;
-  assert(!vars.size());
+  assert(!vars.empty());
   return vars[0];//FIXME:
 }

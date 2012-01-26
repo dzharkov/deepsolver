@@ -146,7 +146,7 @@ void handleRequest(PackageScope& scope, const std::string& line)
   for(VarIdSet::const_iterator it = closure.begin();it != closure.end();it++)
     std::cout << scope.constructPackageName(*it) << std::endl;
   std::cout << std::endl;
-  std::cout << "# Answer contains " << toInstall.size() << " entries to install" << std::endl;
+  std::cout << "# Answer contains " << toInstall.size() + closure.size() << " entries to install" << std::endl;
   std::cout << "# Calculated in " << endClock() << " sec" << std::endl;
 }
 
