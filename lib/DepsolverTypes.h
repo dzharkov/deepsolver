@@ -37,6 +37,7 @@ typedef size_t VarId;
 #define BAD_VAR_ID (VarId)-1
 typedef std::vector<VarId> VarIdVector;
 typedef std::list<VarId> VarIdList;
+typedef std::set<VarId> VarIdSet;
 
 typedef char VerDirection;
 
@@ -90,5 +91,8 @@ public:
   std::string version;
   VerDirection type;
 }; //class VersionCond;
+
+typedef std::list<VersionCond> VersionCondList;
+typedef std::vector<VersionCond> VersionCondVector;
 
 #endif //DEPSOLVER_TYPES_H;

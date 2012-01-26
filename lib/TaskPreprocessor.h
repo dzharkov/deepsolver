@@ -19,8 +19,12 @@ public:
   void preprocess(const UserTask& userTask,
 		  VarIdVector& strongToInstall,
 		  VarIdVector& strongToRemove);
+  void buildDepClosure(VarId varId, VarIdSet& required);
 
 private:
+  void processRequires(VarId varId, VarIdVector& dependent);
+  VarId processRequireWithVersion(PackageId pkgId, const VersionCond& cond);
+  VarId processRequireWithoutVersion(PackageId pkgId);
   //Never returns BAD_PACKAGE_ID, must throw an exception;
   VarId processUserTaskItemToInstall(const UserTaskItemToInstall& item);
   //Never returns BAD_PACKAGE_ID, must throw an exception;

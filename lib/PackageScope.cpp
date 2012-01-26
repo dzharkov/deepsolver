@@ -248,4 +248,25 @@ bool PackageScope::allProvidesHaveTheVersion(const VarIdVector& vars, PackageId 
 }
 
 
-//FIXME:   m_scope.getRequires(depWithoutVersion, depWithVersion, versions
+void PackageScope::getRequires(VarId varId, PackageIdVector& depWithoutVersion, PackageIdVector& depWithVersion, VersionCondVector& versions) const
+{
+  depWithoutVersion.clear();
+  depWithVersion.clear();
+  versions.clear();
+  const PackageScopeContent::PkgInfoVector& pkgs = m_content.getPkgs();
+  assert(varId < pkgs.size());
+  const PackageScopeContent::PkgInfo& pkg = pkgs[varId];
+  const PackageScopeContent::RelInfoVector& rels = m_content.getRels();
+  const size_t pos = pkg.requiresPos;
+  const size_t count = pkg.requiresCount;
+  for(size_t i = 0;i < count;i++)
+    {
+      assert(pos + i < rels.size());
+      if (rels[i].ver == NULL)
+	depWithoutVersion.push_back(rels[pos + i].pkgId); else 
+	{
+	  depWithVersion.push_back(rels[pos + i].pkgId);
+	  versions.push_back(VersionCond(rels[pos + i].ver, rels[pos + i].type));
+	}
+    }
+}

@@ -60,7 +60,7 @@ void TaskPreprocessor::buildDepClosure(VarId varId, VarIdSet& required)
 {
   VarIdSet processed;
   VarIdVector pending;
-  processed.push_back(varId);
+  processed.insert(varId);
   pending.push_back(varId);
   while(!pending.empty())
     {
@@ -72,7 +72,7 @@ void TaskPreprocessor::buildDepClosure(VarId varId, VarIdSet& required)
 	{
 	  if (processed.find(depending[i]) == processed.end())
 	    continue;
-	  required.push_back(depending[i]);
+	  required.insert(depending[i]);
 	}
     }
 }
@@ -85,13 +85,13 @@ void TaskPreprocessor::processRequires(VarId varId, VarIdVector& dependent)
   assert(depWithVersion.size() == versions.size());
   for(PackageIdVector::size_type i = 0;i < depWithoutVersion.size();i++)
     {
-      const VerId res = processRequireWithoutVersion(depWithoutVersion[i]);
+      const VarId res = processRequireWithoutVersion(depWithoutVersion[i]);
       assert(res != BAD_VAR_ID);
       dependent.push_back(res);
     }
   for(PackageIdVector::size_type i = 0;i < depWithVersion.size();i++)
     {
-      const VerId res = processRequireWithVersion(depWithVersion[i], versions[i]);
+      const VarId res = processRequireWithVersion(depWithVersion[i], versions[i]);
       assert(res != BAD_VAR_ID);
       dependent.push_back(res);
     }
@@ -160,7 +160,7 @@ VarId TaskPreprocessor::processUserTaskItemToInstall(const UserTaskItemToInstall
 
 VarId TaskPreprocessor::processRequireWithoutVersion(PackageId pkgId)
 {
-  assert(pkgId != BAd_PACKAGE_ID);
+  assert(pkgId != BAD_PACKAGE_ID);
   VarIdVector vars;
   //The following line does not take into account available provides;
   m_scope.selectMatchingVars(pkgId, vars);
@@ -189,7 +189,7 @@ VarId TaskPreprocessor::processRequireWithoutVersion(PackageId pkgId)
       return processPriority(vars, pkgId);
 }
 
-VarId TaskPreprocessor::processRequireWithVersion(PackageId pkgId, const VersionCond& cond) 
+VarId TaskPreprocessor::processRequireWithVersion(PackageId pkgId, const VersionCond& cond)
 {
   assert(pkgId != BAD_PACKAGE_ID);
   VarIdVector vars;
@@ -215,7 +215,6 @@ VarId TaskPreprocessor::processRequireWithVersion(PackageId pkgId, const Version
     return vars.front();
   return processPriority(vars, pkgId);
 }
-
 
 VarId TaskPreprocessor::processPriority(const VarIdVector& vars, PackageId provideEntry) const
 {

@@ -73,6 +73,9 @@ public:
 
   bool allProvidesHaveTheVersion(const VarIdVector& vars, PackageId provideEntry);
 
+  /**\brief FIXME*/
+  void getRequires(VarId varId, PackageIdVector& depWithoutVersion, PackageIdVector& depWithVersion, VersionCondVector& versions) const;
+
   //  void whatRequiresAmongInstalled();
 
 private:
