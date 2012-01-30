@@ -17,7 +17,7 @@ bool versionSatisfies(const VersionCond& cond, Epoch epoch, const std::string& v
 
 bool versionSatisfies(const VersionCond& cond, const std::string& ver)
 {
-  return versionOverlap(cond, VersionCond(ver));
+  return versionOverlap(VersionCond(ver), cond);
 }
 
 bool versionEqual(const std::string& ver1, const std::string& ver2)
