@@ -168,6 +168,7 @@ void run()
   beginClock();
   addPackageList("i586/base", content);
   addPackageList("noarch/base", content);
+  content.commit();
   PackageScope scope(content);
   std::cout << "Package data loaded in " << endClock() << " seconds" << std::endl;
   std::string line;

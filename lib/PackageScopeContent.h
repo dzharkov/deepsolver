@@ -37,6 +37,16 @@ public:
       conflictsPos(0), conflictsCount(0),
       obsoletesPos(0), obsoletesCount(0) {}
 
+    bool operator <(const PkgInfo& pkgInfo) const
+    {
+      return pkgId < pkgInfo.pkgId;
+    }
+
+    bool operator >(const PkgInfo& pkgInfo) const
+    {
+      return pkgId > pkgInfo.pkgId;
+    }
+
     PackageId pkgId;
     Epoch epoch;
     char* ver;
@@ -57,6 +67,7 @@ public:
 
 public:
   void add(const PkgFile& pkgFile);
+  void commit();
   bool checkName(const std::string& name) const;
   PackageId strToPackageId(const std::string& name) const;
   std::string packageIdToStr(PackageId packageId) const;

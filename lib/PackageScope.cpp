@@ -1,8 +1,68 @@
 
-
 #include"depsolver.h"
 #include"PackageScope.h"
 #include"version.h"
+
+static void locateRange(const PackageScopeContent::PkgInfoVector& pkgs, PackageId packageId, VarId& fromPos, VarId& toPos )
+{
+  if (pkgs.empty())
+    {
+      fromPos = 0;
+      toPos = 0;
+      return;
+    }
+  //  std::cout << "called for " << packageId << std::endl;
+  VarId l = 0, r = pkgs.size();
+  while(l + 1 < r)
+    {
+      const VarId center = (l + r) / 2;
+      assert(center < pkgs.size());
+      //      std::cout << l << " " << center << " " << r << std::endl;
+      //      std::cout << "+" << pkgs[l].pkgId << " " << pkgs[center].pkgId << " " << pkgs[r].pkgId << std::endl;
+      if (pkgs[center].pkgId == packageId)
+	{
+	  //	  std::cout << "found" << std::endl;
+	  fromPos = center;
+	  toPos = center;
+	  while(fromPos > 0 && pkgs[fromPos].pkgId == packageId)//VarId is unsigned, so all known overflow troubles is possible here, be careful!
+	    fromPos--;
+	  assert(fromPos < pkgs.size());
+	  if (pkgs[fromPos].pkgId != packageId)
+	    fromPos++;
+	  assert(pkgs[fromPos].pkgId == packageId);
+	  while(toPos < pkgs.size() && pkgs[toPos].pkgId == packageId)
+	    toPos++;
+	  assert(fromPos < toPos);
+	  return;
+	}
+      if (pkgs[center].pkgId > packageId)
+	r = center; else
+	l = center;
+    }
+  assert(l <= r);
+  const VarId center = (l + r) / 2;
+  assert(center < pkgs.size());
+  if (pkgs[center].pkgId == packageId)
+    {
+      //	  std::cout << "found after" << std::endl;
+      fromPos = center;
+      toPos = center;
+      while(fromPos > 0 && pkgs[fromPos].pkgId == packageId)//VarId is unsigned, so all known overflow troubles is possible here, be careful!
+	fromPos--;
+      assert(fromPos < pkgs.size());
+      if (pkgs[fromPos].pkgId != packageId)
+	fromPos++;
+      assert(pkgs[fromPos].pkgId == packageId);
+      while(toPos < pkgs.size() && pkgs[toPos].pkgId == packageId)
+	toPos++;
+      assert(fromPos < toPos);
+      return;
+    }
+  //We cannot find anything here;
+  fromPos = 0;
+  toPos = 0;
+  //	  std::cout << "not found" << std::endl;
+}
 
 std::string PackageScope::constructPackageName(VarId varId) const
 {
@@ -46,9 +106,18 @@ void PackageScope::selectMatchingVars(PackageId packageId, VarIdVector& vars)
   //Here we must process only real package names, no provides are required;
   vars.clear();
   const PackageScopeContent::PkgInfoVector& pkgs = m_content.getPkgs();
-  for(VarId i = 0;i < pkgs.size();i++)
-    if (pkgs[i].pkgId == packageId)
+  VarId fromPos, toPos;
+  locateRange(pkgs, packageId, fromPos, toPos);
+  assert(fromPos <= toPos);
+  if (fromPos == toPos)
+    return;
+  assert(fromPos < pkgs.size() && toPos <= pkgs.size());
+  assert(pkgs[fromPos].pkgId == packageId);
+  for(VarId i = fromPos;i < toPos;i++)
+    {
+      assert(pkgs[i].pkgId == packageId);
       vars.push_back(i);
+    }
 }
 
 void PackageScope::selectMatchingWithVersionVars(PackageId packageId, const VersionCond& ver, VarIdVector& vars)
@@ -56,9 +125,19 @@ void PackageScope::selectMatchingWithVersionVars(PackageId packageId, const Vers
   //Here we must process only real package names, no provides are required;
   vars.clear();
   const PackageScopeContent::PkgInfoVector& pkgs = m_content.getPkgs();
-  for(VarId i = 0;i < pkgs.size();i++)
-    if (pkgs[i].pkgId == packageId && versionSatisfies(ver, pkgs[i].epoch, pkgs[i].ver, pkgs[i].release))
-      vars.push_back(i);
+  VarId fromPos, toPos;
+  locateRange(pkgs, packageId, fromPos, toPos);
+  assert(fromPos <= toPos);
+  if (fromPos == toPos)
+    return;
+  assert(fromPos < pkgs.size() && toPos <= pkgs.size());
+  assert(pkgs[fromPos].pkgId == packageId);
+  for(VarId i = fromPos;i < toPos;i++)
+    {
+      assert(pkgs[i].pkgId == packageId);
+      if (versionSatisfies(ver, pkgs[i].epoch, pkgs[i].ver, pkgs[i].release))
+	vars.push_back(i);
+    }
 }
 
 void PackageScope::selectMatchingVarsWithProvides(PackageId packageId, VarIdVector& vars)

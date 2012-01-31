@@ -30,6 +30,11 @@ void PackageScopeContent::add(const PkgFile& pkgFile)
     //    std::cout << m_names.size() << std::endl;
 }
 
+void PackageScopeContent::commit()
+{
+  std::sort(m_pkgInfoVector.begin(), m_pkgInfoVector.end());
+}
+
 void PackageScopeContent::processRels(const NamedPkgRelVector& rels, size_t& pos, size_t& count)
 {
   if (rels.empty())
