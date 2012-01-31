@@ -61,13 +61,39 @@ public:
   typedef std::list<PkgInfo> PkgInfoList;
   typedef std::vector<PkgInfo> PkgInfoVector;
 
+  struct ProvideMapItem
+  {
+    ProvideMapItem()
+      : provideId(BAD_PACKAGE_ID), pkgId(BAD_PACKAGE_ID) {}
+
+    ProvideMapItem(PackageId prId, PackageId pkId)
+      : provideId(prId), pkgId(pkId) {}
+
+    bool operator <(const ProvideMapItem& item) const
+    {
+      return provideId < item.provideId;
+    }
+
+    bool operator >(const ProvideMapItem& item) const
+    {
+      return provideId > item.provideId;
+    }
+
+    PackageId provideId, pkgId;
+  }; //struct ProvideMapItem;
+
+  typedef std::vector<ProvideMapItem> ProvideMapItemVector;
+  typedef std::list<ProvideMapItem> ProvideMapItemList;
+
 public:
   PackageScopeContent() {}
   ~PackageScopeContent() {}
 
 public:
-  void add(const PkgFile& pkgFile);
+  void addPkg(const PkgFile& pkgFile);
+  void addProvideMapItem(const std::string& provideName, const std::string& packageName);
   void commit();
+  void getProviders(PackageId provideId, PackageIdVector& providers);
   bool checkName(const std::string& name) const;
   PackageId strToPackageId(const std::string& name) const;
   std::string packageIdToStr(PackageId packageId) const;
@@ -83,6 +109,7 @@ private:
   StringVector m_names;
   PkgInfoVector m_pkgInfoVector;
   RelInfoVector m_relInfoVector;
+  ProvideMapItemVector m_provideMap;
 }; //class PackageScopeContent;
 
 #endif //DEPSOLVER_PACKAGE_SCOPE_CONTENT_H;

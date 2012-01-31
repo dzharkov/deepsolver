@@ -158,7 +158,7 @@ void addPackageList(const std::string& dirName, PackageScopeContent& content)
   while(reader.readPackage(pkgFile))
     {
       //      std::cout << pkgFile.name << std::endl;
-      content.add(pkgFile);
+      content.addPkg(pkgFile);
     }
 }
 

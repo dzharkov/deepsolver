@@ -10,7 +10,7 @@
 #include"depsolver.h"
 #include"PackageScopeContent.h"
 
-void PackageScopeContent::add(const PkgFile& pkgFile)
+void PackageScopeContent::addPkg(const PkgFile& pkgFile)
 {
   //We are interested only in name, epoch, version, release, and all relations;
   PkgInfo pkg;
@@ -30,9 +30,21 @@ void PackageScopeContent::add(const PkgFile& pkgFile)
     //    std::cout << m_names.size() << std::endl;
 }
 
+void PackageScopeContent::addProvideMapItem(const std::string& provideName, const std::string& packageName)
+{
+  NameToPackageIdMap::const_iterator it = m_namesToId.find(provideName);
+  assert(it != m_namesToId.end());//FIXME:must be an exception;
+  const PackageId provideId = it->second;
+  it = m_namesToId.find(packageName);
+  assert(it != m_namesToId.end());//FIXME:must be an exception;
+  const PackageId packageId = it->second;
+  m_provideMap.push_back(ProvideMapItem(provideId, packageId));
+}
+
 void PackageScopeContent::commit()
 {
   std::sort(m_pkgInfoVector.begin(), m_pkgInfoVector.end());
+  std::sort(m_provideMap.begin(), m_provideMap.end());
 }
 
 void PackageScopeContent::processRels(const NamedPkgRelVector& rels, size_t& pos, size_t& count)
@@ -73,6 +85,63 @@ PackageId PackageScopeContent::registerName(const std::string& name)
   const PackageId packageId = m_names.size() - 1;
   m_namesToId.insert(NameToPackageIdMap::value_type(name, packageId));
   return packageId;
+}
+
+void PackageScopeContent::getProviders(PackageId provideId, PackageIdVector& providers)
+{
+  providers.clear();
+  if (m_provideMap.empty())
+    return;
+  ProvideMapItemVector::size_type l = 0, r = m_provideMap.size();
+  while(l + 1 < r)
+    {
+      const ProvideMapItemVector::size_type center = (l + r) / 2;
+      assert(center < m_provideMap.size());
+      if (m_provideMap[center].provideId == provideId)
+	{
+	  ProvideMapItemVector::size_type fromPos, toPos;
+	  fromPos = center;
+	  toPos = center;
+	  while(fromPos > 0 && m_provideMap[fromPos].provideId == provideId)//size_type is unsigned, so all known overflow troubles is possible here, be careful!
+	    fromPos--;
+	  assert(fromPos < m_provideMap.size());
+	  if (m_provideMap[fromPos].provideId != provideId)
+	    fromPos++;
+	  assert(m_provideMap[fromPos].provideId == provideId);
+	  while(toPos < m_provideMap.size() && m_provideMap[toPos].provideId == provideId)
+	    toPos++;
+	  assert(fromPos < toPos);
+	  for(ProvideMapItemVector::size_type i = fromPos; i < toPos;i++)
+	    providers.push_back(m_provideMap[i].pkgId);
+	  return;
+	}
+      if (m_provideMap[center].provideId > provideId)
+	r = center; else
+	l = center;
+    }
+  assert(l <= r);
+  const ProvideMapItemVector::size_type center = (l + r) / 2;
+  assert(center < m_provideMap.size());
+  if (m_provideMap[center].provideId == provideId)
+    {
+      ProvideMapItemVector::size_type fromPos, toPos;
+      fromPos = center;
+      toPos = center;
+      while(fromPos > 0 && m_provideMap[fromPos].provideId == provideId)//size_type is unsigned, so all known overflow troubles is possible here, be careful!
+	fromPos--;
+      assert(fromPos < m_provideMap.size());
+      if (m_provideMap[fromPos].provideId != provideId)
+	fromPos++;
+      assert(m_provideMap[fromPos].provideId == provideId);
+      while(toPos < m_provideMap.size() && m_provideMap[toPos].provideId == provideId)
+	toPos++;
+      assert(fromPos < toPos);
+      for(ProvideMapItemVector::size_type i = fromPos; i < toPos;i++)
+	providers.push_back(m_provideMap[i].pkgId);
+      return;
+    }
+  //We cannot find anything here;
+  assert(providers.empty());
 }
 
 bool PackageScopeContent::checkName(const std::string& name) const
