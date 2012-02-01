@@ -93,7 +93,7 @@ public:
   void addPkg(const PkgFile& pkgFile);
   void addProvideMapItem(const std::string& provideName, const std::string& packageName);
   void commit();
-  void getProviders(PackageId provideId, PackageIdVector& providers);
+  void getProviders(PackageId provideId, PackageIdVector& providers) const;
   bool checkName(const std::string& name) const;
   PackageId strToPackageId(const std::string& name) const;
   std::string packageIdToStr(PackageId packageId) const;

@@ -64,6 +64,23 @@ static void locateRange(const PackageScopeContent::PkgInfoVector& pkgs, PackageI
   //	  std::cout << "not found" << std::endl;
 }
 
+static void selectVarsToTry(const PackageScopeContent& content, PackageId packageId, VarIdVector& toTry, bool includeItself)
+{
+  PackageIdVector providers;
+  content.getProviders(packageId, providers);
+  if (includeItself)
+    toTry.clear();
+  for(PackageIdVector::size_type i = 0;i < providers.size();i++)
+    {
+      VarId fromPos, toPos;
+      locateRange(content.getPkgs(), providers[i], fromPos, toPos);
+      if (fromPos == toPos)
+	continue;
+      for(VarId k = fromPos;k < toPos;k++)
+	toTry.push_back(k);
+    }
+}
+
 std::string PackageScope::constructPackageName(VarId varId) const
 {
   const PackageScopeContent::PkgInfoVector& pkgs = m_content.getPkgs();
@@ -144,53 +161,14 @@ void PackageScope::selectMatchingVarsWithProvides(PackageId packageId, VarIdVect
 {
   //Package names and all their provides must be considered;
   vars.clear();
-  const PackageScopeContent::PkgInfoVector& pkgs = m_content.getPkgs();
-  for(VarId i = 0;i < pkgs.size();i++)
-    {
-      if (pkgs[i].pkgId == packageId)
-	{
-	  vars.push_back(i);
-	  continue;
-	}
-      const size_t pos = pkgs[i].providesPos;
-      const size_t count = pkgs[i].providesCount;
-      if (pos == 0 || count == 0)//There are no provides entries;
-	continue;
-      const PackageScopeContent::RelInfoVector& rels = m_content.getRels();
-      size_t j;
-      for(j = 0;j < count;j++)
-	{
-	  assert(pos + j < rels.size());
-	  if (rels[pos + j].pkgId == packageId)
-	    break;
-	}
-      if (j < count)
-	vars.push_back(i);
-    }
+  selectVarsToTry(m_content, packageId, vars, 1);//1 means include packageId itself;
 }
 
 void PackageScope::selectMatchingVarsAmongProvides(PackageId packageId, VarIdVector& vars)
 {
   //Only provides must be considered here;
   vars.clear();
-  const PackageScopeContent::PkgInfoVector& pkgs = m_content.getPkgs();
-  for(VarId i = 0;i < pkgs.size();i++)
-    {
-      const size_t pos = pkgs[i].providesPos;
-      const size_t count = pkgs[i].providesCount;
-      if (pos == 0 || count == 0)//There are no provides entries;
-	continue;
-      const PackageScopeContent::RelInfoVector& rels = m_content.getRels();
-      size_t j;
-      for(j = 0;j < count;j++)
-	{
-	  assert(pos + j < rels.size());
-	  if (rels[pos + j].pkgId == packageId)
-	    break;
-	}
-      if (j < count)
-	vars.push_back(i);
-    }
+  selectVarsToTry(m_content, packageId, vars, 0);//0 means do not include packageId itself;
 }
 
 void PackageScope::selectMatchingWithVersionVarsAmongProvides(PackageId packageId, const VersionCond& ver, VarIdVector& vars)
@@ -304,14 +282,14 @@ void PackageScope::selectTheNewestByProvide(VarIdVector& vars, PackageId provide
 bool PackageScope::allProvidesHaveTheVersion(const VarIdVector& vars, PackageId provideEntry)
 {
   const PackageScopeContent::PkgInfoVector& pkgs = m_content.getPkgs();
+      const PackageScopeContent::RelInfoVector& rels = m_content.getRels();
   for(VarIdVector::size_type i = 0;i < vars.size();i++)
     {
       assert(vars[i] < pkgs.size());
       const PackageScopeContent::PkgInfo& pkg = pkgs[vars[i]];
       const size_t pos = pkg.providesPos;
       const size_t count = pkg.providesCount;
-      assert(pos > 0 && count > 0);
-      const PackageScopeContent::RelInfoVector& rels = m_content.getRels();
+      assert(count > 0);
       size_t j;
       for(j = 0;j < count;j++)
 	{
@@ -325,7 +303,6 @@ bool PackageScope::allProvidesHaveTheVersion(const VarIdVector& vars, PackageId 
     }
   return 1;
 }
-
 
 void PackageScope::getRequires(VarId varId, PackageIdVector& depWithoutVersion, PackageIdVector& depWithVersion, VersionCondVector& versions) const
 {

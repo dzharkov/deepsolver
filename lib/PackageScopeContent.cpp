@@ -88,7 +88,7 @@ PackageId PackageScopeContent::registerName(const std::string& name)
   return packageId;
 }
 
-void PackageScopeContent::getProviders(PackageId provideId, PackageIdVector& providers)
+void PackageScopeContent::getProviders(PackageId provideId, PackageIdVector& providers) const
 {
   providers.clear();
   if (m_provideMap.empty())
