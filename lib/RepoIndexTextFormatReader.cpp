@@ -167,7 +167,14 @@ void RepoIndexTextFormatReader::openSourcePackagesFile()
 
 void RepoIndexTextFormatReader::openProvidesFile()
 {
-  assert(0);
+  m_noMoreData = 0;
+  if (m_compressionType == RepoIndexParams::CompressionTypeNone)
+    m_reader = createTextFileReader(TextFileStd, concatUnixPath(m_dir, REPO_INDEX_PROVIDES_DATA_FILE)); else
+  if (m_compressionType == RepoIndexParams::CompressionTypeGzip)
+    m_reader = createTextFileReader(TextFileGZip, concatUnixPath(m_dir, std::string(REPO_INDEX_PROVIDES_DATA_FILE) + ".gz")); else 
+    {
+      assert(0);
+    }
 }
 
 bool RepoIndexTextFormatReader::readPackage(PkgFile& pkgFile)
@@ -222,10 +229,34 @@ bool RepoIndexTextFormatReader::readPackage(PkgFile& pkgFile)
   return 1;
 }
 
-bool RepoIndexTextFormatReader::readProvides(std::string& provideName, StringList& providers)
+bool RepoIndexTextFormatReader::readProvides(std::string& provideName, StringVector& providers)
 {
-  if (m_reader.get() == NULL)
+  provideName.erase();
+  providers.clear();
+  if (m_reader.get() == NULL || m_noMoreData)
     return 0;
-  assert(0);//FIXME:
-  return 0;
+  std::string line;
+  //Sections are delimited by an empty line, searching first non-empty line;
+      while(m_reader->readLine(line))
+	if (!line.empty())
+	  break;
+      if (line.empty())//No more data;
+	{
+	  m_noMoreData = 1;
+	  return 0;
+	}
+      assert(line.length() > 2 && line[0] == '[' && line[line.length() - 1] == ']');//FIXME:must be an exception;
+  for(std::string::size_type i = 1;i < line.length();i++)
+    line[i - 1] = line[i];
+  line.resize(line.size() - 2);
+  provideName = line;
+      //OK, we have found section header and can process it content;
+  while(m_reader->readLine(line))
+    {
+      if (line.empty())
+	return 1;
+      providers.push_back(line);
+    }
+  m_noMoreData = 1;
+  return 1;
 }

@@ -19,7 +19,7 @@ public:
   void openProvidesFile();
   bool readPackage(PkgFile& pkgFile);
   bool readSourcePackage(PkgFile& pkgFile);
-  bool readProvides(std::string& provideName, StringList& providers);
+  bool readProvides(std::string& provideName, StringVector& providers);
 
 private:
   const std::string& m_dir;

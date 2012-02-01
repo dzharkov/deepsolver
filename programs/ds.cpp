@@ -156,9 +156,20 @@ void addPackageList(const std::string& dirName, PackageScopeContent& content)
   PkgFile pkgFile;
   reader.openPackagesFile();
   while(reader.readPackage(pkgFile))
-    {
-      //      std::cout << pkgFile.name << std::endl;
       content.addPkg(pkgFile);
+}
+
+void addProvides(const std::string& dirName, PackageScopeContent& content)
+{
+  RepoIndexTextFormatReader reader(dirName, RepoIndexParams::CompressionTypeNone);
+  std::string provideName;
+  StringVector providers;
+  reader.openProvidesFile();
+  while(reader.readProvides(provideName, providers))
+    {
+      assert(!provideName.empty());
+      for(StringVector::size_type i = 0;i < providers.size();i++ )
+	content.addProvideMapItem(provideName, providers[i]);
     }
 }
 
@@ -168,6 +179,8 @@ void run()
   beginClock();
   addPackageList("i586/base", content);
   addPackageList("noarch/base", content);
+  addProvides("i586/base", content);
+  addProvides("noarch/base", content);
   content.commit();
   PackageScope scope(content);
   std::cout << "Package data loaded in " << endClock() << " seconds" << std::endl;
