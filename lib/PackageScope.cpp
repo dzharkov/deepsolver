@@ -66,6 +66,7 @@ static void locateRange(const PackageScopeContent::PkgInfoVector& pkgs, PackageI
 
 static void selectVarsToTry(const PackageScopeContent& content, PackageId packageId, VarIdVector& toTry, bool includeItself)
 {
+  //  std::cout << "selectVarsToTry()" << std::endl;
   PackageIdVector providers;
   content.getProviders(packageId, providers);
   if (includeItself)
@@ -79,6 +80,7 @@ static void selectVarsToTry(const PackageScopeContent& content, PackageId packag
       for(VarId k = fromPos;k < toPos;k++)
 	toTry.push_back(k);
     }
+  //  std::cout << "return" << std::endl;
 }
 
 std::string PackageScope::constructPackageName(VarId varId) const
@@ -176,13 +178,16 @@ void PackageScope::selectMatchingWithVersionVarsAmongProvides(PackageId packageI
   //Considering only provides entries and only with version information;
   vars.clear();
   const PackageScopeContent::PkgInfoVector& pkgs = m_content.getPkgs();
-  for(VarId i = 0;i < pkgs.size();i++)
+  const PackageScopeContent::RelInfoVector& rels = m_content.getRels();
+  VarIdVector toTry;
+  selectVarsToTry(m_content, packageId, toTry, 0);//0 means do not include packageId itself;
+  for(VarIdVector::size_type i = 0;i < toTry.size();i++)
     {
-      const size_t pos = pkgs[i].providesPos;
-      const size_t count = pkgs[i].providesCount;
-      if (pos == 0 || count == 0)//There are no provides entries;
+      assert(toTry[i] < pkgs.size());
+      const size_t pos = pkgs[toTry[i]].providesPos;
+      const size_t count = pkgs[toTry[i]].providesCount;
+      if (count == 0)//There are no provides entries;
 	continue;
-      const PackageScopeContent::RelInfoVector& rels = m_content.getRels();
       size_t j;
       for(j = 0;j < count;j++)
 	{
@@ -194,7 +199,7 @@ void PackageScope::selectMatchingWithVersionVarsAmongProvides(PackageId packageI
 	    break;
 	}
       if (j < count)
-	vars.push_back(i);
+	vars.push_back(toTry[i]);
     }
 }
 
