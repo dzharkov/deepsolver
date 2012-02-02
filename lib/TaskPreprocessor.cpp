@@ -74,6 +74,7 @@ void TaskPreprocessor::buildDepClosure(VarId varId, VarIdSet& required)
 	  if (processed.find(depending[i]) != processed.end())
 	    continue;
 	  required.insert(depending[i]);
+	  processed.insert(depending[i]);
 	  pending.push_back(depending[i]);
 	}
     }
