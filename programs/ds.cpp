@@ -143,8 +143,12 @@ void handleRequest(PackageScope& scope, const std::string& line)
     }
   std::cout << "# Dependent packages:" << std::endl;
   std::cout << std::endl;
+  StringVector answer;
   for(VarIdSet::const_iterator it = closure.begin();it != closure.end();it++)
-    std::cout << scope.constructPackageName(*it) << std::endl;
+    answer.push_back(scope.constructPackageName(*it));
+  std::sort(answer.begin(), answer.end());
+  for(StringVector::size_type i = 0;i < answer.size();i++)
+    std::cout << answer[i] << std::endl;
   std::cout << std::endl;
   std::cout << "# Answer contains " << toInstall.size() + closure.size() << " entries to install" << std::endl;
   std::cout << "# Calculated in " << endClock() << " sec" << std::endl;
