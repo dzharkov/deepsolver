@@ -102,6 +102,28 @@ void TaskPreprocessor::processRequires(VarId varId, VarIdVector& dependent)
     }
 }
 
+void TaskPreprocessor::processConflicts(VarId varId, VarIdVector& res)
+{
+  PackageIdVector withoutVersion, withVersion;
+  VersionCondVector versions;
+  m_scope.getConflicts(varId, withoutVersion, withVersion, versions);
+  assert(withVersion.size() == versions.size());
+  for(PackageIdVector::size_type i = 0;i < withoutVersion.size();i++)
+    {
+      VarIdVector vars;
+      m_scope.selectMatchingVarsWithProvides(withoutVersion[i], vars);
+      for(VarIdVector::size_type i = 0;i < vars.size();i++)
+	res.push_back(vars[i]);
+    }
+  for(PackageIdVector::size_type i = 0;i < withVersion.size();i++)
+    {
+      VarIdVector vars;
+      m_scope.selectMatchingWithVersionVarsWithProvides(withVersion[i], versions[i], vars);
+      for(VarIdVector::size_type i = 0;i < vars.size();i++)
+	res.push_back(vars[i]);
+    }
+}
+
 VarId TaskPreprocessor::processUserTaskItemToInstall(const UserTaskItemToInstall& item)
 {
   std::cout << std::endl;

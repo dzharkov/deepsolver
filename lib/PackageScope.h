@@ -54,6 +54,8 @@ public:
   void selectMatchingWithVersionVars(PackageId packageId, const VersionCond& ver, VarIdVector& vars);
   //By real names and provides;
   void selectMatchingVarsWithProvides(PackageId packageId, VarIdVector& vars);
+  //By real names and provides and with version respecting;
+  void selectMatchingWithVersionVarsWithProvides(PackageId packageId, const VersionCond& ver, VarIdVector& vars);
   //Only by provides;
   void selectMatchingVarsAmongProvides(PackageId packageId, VarIdVector& vars);
   //Only by provides but respecting version info (entries without version must be silently skipped);
@@ -75,6 +77,7 @@ public:
 
   /**\brief FIXME*/
   void getRequires(VarId varId, PackageIdVector& depWithoutVersion, PackageIdVector& depWithVersion, VersionCondVector& versions) const;
+  void getConflicts(VarId varId, PackageIdVector& withoutVersion, PackageIdVector& withVersion, VersionCondVector& versions) const;
 
   //  void whatRequiresAmongInstalled();
 

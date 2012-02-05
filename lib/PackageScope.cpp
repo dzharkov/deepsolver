@@ -166,6 +166,41 @@ void PackageScope::selectMatchingVarsWithProvides(PackageId packageId, VarIdVect
   selectVarsToTry(m_content, packageId, vars, 1);//1 means include packageId itself;
 }
 
+void PackageScope::selectMatchingWithVersionVarsWithProvides(PackageId packageId, const VersionCond& ver, VarIdVector& vars)
+{
+  //Considering all package and provide names only with version information;
+  vars.clear();
+  const PackageScopeContent::PkgInfoVector& pkgs = m_content.getPkgs();
+  const PackageScopeContent::RelInfoVector& rels = m_content.getRels();
+  VarIdVector toTry;
+  selectVarsToTry(m_content, packageId, toTry, 1);//1 means include packageId itself;
+  for(VarIdVector::size_type i = 0;i < toTry.size();i++)
+    {
+      assert(toTry[i] < pkgs.size());
+      if (pkgs[toTry[i]].pkgId == packageId && versionSatisfies(ver, pkgs[toTry[i]].epoch, pkgs[toTry[i]].ver, pkgs[toTry[i]].release))
+	{
+	  vars.push_back(toTry[i]);
+	  continue;
+	}
+      const size_t pos = pkgs[toTry[i]].providesPos;
+      const size_t count = pkgs[toTry[i]].providesCount;
+      if (count == 0)//There are no provides entries;
+	continue;
+      size_t j;
+      for(j = 0;j < count;j++)
+	{
+	  assert(pos + j < rels.size());
+	  if (rels[pos + j].ver == NULL)
+	    continue;  
+	  assert(rels[pos + j].type != 0);
+	  if (rels[pos + j].pkgId == packageId && versionOverlap(ver, VersionCond(rels[pos + j].ver, rels[pos + j].type)))
+	    break;
+	}
+      if (j < count)
+	vars.push_back(toTry[i]);
+    }
+}
+
 void PackageScope::selectMatchingVarsAmongProvides(PackageId packageId, VarIdVector& vars)
 {
   //Only provides must be considered here;
@@ -327,6 +362,29 @@ void PackageScope::getRequires(VarId varId, PackageIdVector& depWithoutVersion, 
 	depWithoutVersion.push_back(rels[pos + i].pkgId); else 
 	{
 	  depWithVersion.push_back(rels[pos + i].pkgId);
+	  versions.push_back(VersionCond(rels[pos + i].ver, rels[pos + i].type));
+	}
+    }
+}
+
+void PackageScope::getConflicts(VarId varId, PackageIdVector& withoutVersion, PackageIdVector& withVersion, VersionCondVector& versions) const
+{
+  withoutVersion.clear();
+  withVersion.clear();
+  versions.clear();
+  const PackageScopeContent::PkgInfoVector& pkgs = m_content.getPkgs();
+  assert(varId < pkgs.size());
+  const PackageScopeContent::PkgInfo& pkg = pkgs[varId];
+  const PackageScopeContent::RelInfoVector& rels = m_content.getRels();
+  const size_t pos = pkg.conflictsPos;
+  const size_t count = pkg.conflictsCount;
+  for(size_t i = 0;i < count;i++)
+    {
+      assert(pos + i < rels.size());
+      if (rels[pos + i].ver == NULL)
+	withoutVersion.push_back(rels[pos + i].pkgId); else 
+	{
+	  withVersion.push_back(rels[pos + i].pkgId);
 	  versions.push_back(VersionCond(rels[pos + i].ver, rels[pos + i].type));
 	}
     }

@@ -22,6 +22,7 @@ public:
   void buildDepClosure(VarId varId, VarIdSet& required);
 
 private:
+  void processConflicts(VarId varId, VarIdVector& res);
   void processRequires(VarId varId, VarIdVector& dependent);
   VarId processRequireWithVersion(PackageId pkgId, const VersionCond& cond);
   VarId processRequireWithoutVersion(PackageId pkgId);
