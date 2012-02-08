@@ -19,7 +19,7 @@ public:
   void preprocess(const UserTask& userTask,
 		  VarIdVector& strongToInstall,
 		  VarIdVector& strongToRemove);
-  void buildDepClosure(VarId varId, VarIdSet& required);
+  void buildDepClosure(VarId varId, VarIdSet& required, VarIdSet& conflicted);
 
 private:
   void processConflicts(VarId varId, VarIdVector& res);

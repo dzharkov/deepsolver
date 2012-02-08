@@ -56,7 +56,7 @@ void TaskPreprocessor::preprocess(const UserTask& userTask,
   removeDublications(strongToRemove);
 }
 
-void TaskPreprocessor::buildDepClosure(VarId varId, VarIdSet& required)
+void TaskPreprocessor::buildDepClosure(VarId varId, VarIdSet& required, VarIdSet& conflicted)
 {
   VarIdSet processed;
   VarIdVector pending;
@@ -66,7 +66,6 @@ void TaskPreprocessor::buildDepClosure(VarId varId, VarIdSet& required)
     {
       const VarId varId = pending[pending.size() - 1];
       pending.pop_back();
-      //      std::cout << "Analyzing " << m_scope.constructPackageName(varId) << std::endl;
       VarIdVector depending;
       processRequires(varId, depending);
       for(VarIdVector::size_type i = 0;i < depending.size();i++)
@@ -77,7 +76,11 @@ void TaskPreprocessor::buildDepClosure(VarId varId, VarIdSet& required)
 	  processed.insert(depending[i]);
 	  pending.push_back(depending[i]);
 	}
-    }
+      depending.clear();
+      processConflicts(varId, depending);
+      for(VarIdVector::size_type i = 0;i < depending.size();i++)
+	conflicted.insert(depending[i]);
+    } //while(!pending.empty());
 }
 
 void TaskPreprocessor::processRequires(VarId varId, VarIdVector& dependent)

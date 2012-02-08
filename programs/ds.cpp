@@ -131,26 +131,64 @@ void handleRequest(PackageScope& scope, const std::string& line)
   for(VarIdVector::size_type i = 0;i < toInstall.size();i++)
     std::cout << scope.constructPackageName(toInstall[i]) << std::endl;
   std::cout << std::endl;
-  VarIdSet closure;
+  VarIdSet closure, conflicts;
   try {
     for(VarIdVector::size_type i = 0;i < toInstall.size();i++)
-      taskPreprocessor.buildDepClosure(toInstall[i], closure);
+      taskPreprocessor.buildDepClosure(toInstall[i], closure, conflicts);
   }
   catch (const TaskException& e)
     {
       std::cout << e.getMessage() << std::endl;
       return;
     }
-  std::cout << "# Dependent packages:" << std::endl;
-  std::cout << std::endl;
   StringVector answer;
-  for(VarIdSet::const_iterator it = closure.begin();it != closure.end();it++)
-    answer.push_back(scope.constructPackageName(*it));
-  std::sort(answer.begin(), answer.end());
-  for(StringVector::size_type i = 0;i < answer.size();i++)
-    std::cout << answer[i] << std::endl;
-  std::cout << std::endl;
-  std::cout << "# Answer contains " << toInstall.size() + closure.size() << " entries to install" << std::endl;
+  if (!closure.empty())
+    {
+      std::cout << "# Dependent packages:" << std::endl;
+      std::cout << std::endl;
+      for(VarIdSet::const_iterator it = closure.begin();it != closure.end();it++)
+	answer.push_back(scope.constructPackageName(*it));
+      std::sort(answer.begin(), answer.end());
+      for(StringVector::size_type i = 0;i < answer.size();i++)
+	std::cout << answer[i] << std::endl;
+      std::cout << std::endl;
+    } else 
+    std::cout << "# No dependent packages" << std::endl << std::endl;
+  for(VarIdVector::size_type i = 0;i < toInstall.size();i++)
+    closure.insert(toInstall[i]);//We must explicitly do it since closure contains only dependent packages;
+  //Conflicts;
+  if (!conflicts.empty())
+    {
+      std::cout << "# Conflicted packages:" << std::endl;
+      std::cout << std::endl;
+      answer.clear();
+      for(VarIdSet::const_iterator it = conflicts.begin();it != conflicts.end();it++)
+	answer.push_back(scope.constructPackageName(*it));
+      std::sort(answer.begin(), answer.end());
+      for(StringVector::size_type i = 0;i < answer.size();i++)
+	std::cout << answer[i] << std::endl;
+      std::cout << std::endl;
+      //Required and conflicted entries intersection;
+      answer.clear();
+      for(VarIdSet::const_iterator it1 = closure.begin();it1 != closure.end();it1++)
+	{
+	  VarIdSet::const_iterator it2 = conflicts.find(*it1);
+	  if (it2 != conflicts.end())
+	    answer.push_back(scope.constructPackageName(*it1));
+	}
+      if (!answer.empty())
+	{
+	  std::cout << "# The following packages are presented both in requires and conflicts sets:" << std::endl;
+	  std::cout << std::endl;
+	  for(StringVector::size_type i = 0;i < answer.size();i++)
+	    std::cout << answer[i] << std::endl;
+	  std::cout << std::endl;
+	} else 
+	std::cout << "# No packages included both in requires and conflicts sets" << std::endl << std::endl;
+    } else
+    std::cout << "# No conflicted packages" << std::endl << std::endl;
+  //Answer footer;
+  std::cout << "# Answer contains " << closure.size() << " entries to install and " << conflicts.size() << " conflicted entries" << std::endl;
   std::cout << "# Calculated in " << endClock() << " sec" << std::endl;
 }
 
