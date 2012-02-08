@@ -116,7 +116,9 @@ void handleRequest(PackageScope& scope, const std::string& line)
   std::cout << "# You have asked:" << std::endl;
   for(UserTaskItemToInstallVector::size_type i = 0;i < task.itemsToInstall.size();i++)
     std::cout << "# " << task.itemsToInstall[i].makeStr() << std::endl;
-  TaskPreprocessor taskPreprocessor(scope);
+  ProvidePriorityList priorityList;
+  priorityList.load("pkgpriorities");
+  TaskPreprocessor taskPreprocessor(scope, priorityList);
   VarIdVector toInstall, toRemove;
   beginClock();
   try {

@@ -1,7 +1,8 @@
 
 
 #include"depsolver.h"
-#include"ProvidePriorityLIst.h"
+#include"ProvidePriorityList.h"
+#include"TextFiles.h"
 
 static void splitBySpaces(const std::string& str, StringList& items)
 {
@@ -52,10 +53,10 @@ void ProvidePriorityList::load(const std::string& fileName)
     }
 }
 
-void ProvidePriorityList::getPriorities(const std::string& provideName, StringList& pkgNamePriority) const
+void ProvidePriorityList::getPriority(const std::string& provideName, StringVector& pkgNamePriority) const
 {
   pkgNamePriority.clear();
-  for(ItemVector:;size_type i = 0;i < m_items.size();i++)
+  for(ItemVector::size_type i = 0;i < m_items.size();i++)
     if (m_items[i].provideName == provideName)
-      pkgNamePriority.[push_back(m_items[i].packageName);
+      pkgNamePriority.push_back(m_items[i].packageName);
 }

@@ -83,6 +83,13 @@ static void selectVarsToTry(const PackageScopeContent& content, PackageId packag
   //  std::cout << "return" << std::endl;
 }
 
+PackageId PackageScope::packageIdOfVarId(VarId varId) const
+{
+  const PackageScopeContent::PkgInfoVector& pkgs = m_content.getPkgs();
+  assert(varId < pkgs.size());
+  return pkgs[varId].pkgId;
+}
+
 std::string PackageScope::constructPackageName(VarId varId) const
 {
   const PackageScopeContent::PkgInfoVector& pkgs = m_content.getPkgs();

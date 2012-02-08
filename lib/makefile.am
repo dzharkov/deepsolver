@@ -30,6 +30,8 @@ PackageScope.cpp \
 PackageScope.h \
 Pkg.cpp \
 Pkg.h \
+ProvidePriorityList.cpp \
+ProvidePriorityList.h \
 RepoIndexInfoFile.cpp \
 RepoIndexInfoFile.h \
 RepoIndexTextFormatReader.cpp \

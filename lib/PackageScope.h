@@ -16,6 +16,7 @@ public:
   virtual ~PackageScope() {}
 
 public:
+  PackageId packageIdOfVarId(VarId varId) const;
   std::string constructPackageName(VarId varId) const;
   /**\brief FIXME*/
   bool checkName(const std::string& name) const;

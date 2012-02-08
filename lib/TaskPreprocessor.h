@@ -5,13 +5,14 @@
 
 #include"PackageScope.h"
 #include"UserTask.h"
+#include"ProvidePriorityList.h"
 
 //Must throw the TaskException on any error;
 class TaskPreprocessor
 {
 public:
-  TaskPreprocessor(PackageScope& scope)
-    : m_scope(scope) {}
+ TaskPreprocessor(PackageScope& scope, const ProvidePriorityList& providePriorityList)
+   : m_scope(scope), m_providePriorityList(providePriorityList) {}
 
   ~TaskPreprocessor() {}
 
@@ -33,6 +34,7 @@ private:
 
 private:
   PackageScope& m_scope;
+  const ProvidePriorityList m_providePriorityList;
 }; //class taskPreprocessor;
 
 #endif //DEPSOLVER_TASK_PREPROCESSOR_H;

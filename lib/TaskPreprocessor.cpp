@@ -249,6 +249,17 @@ VarId TaskPreprocessor::processRequireWithVersion(PackageId pkgId, const Version
 VarId TaskPreprocessor::processPriority(const VarIdVector& vars, PackageId provideEntry) const
 {
   //Process the system provide priority list using provideEntry;
+  const std::string provideName = m_scope.packageIdToStr(provideEntry);
+  StringVector providers;
+  m_providePriorityList.getPriority(provideName, providers);
+  for(StringVector::size_type i = 0;i < providers.size();i++)
+    {
+      const PackageId providerId = m_scope.strToPackageId(providers[i]);//FIXME:there can be an error since priority list can return an invalid package name due to its invalid content;
+      assert(providerId != BAD_PACKAGE_ID);
+      for(VarIdVector::size_type k = 0;k < vars.size();k++)
+	if (providerId == m_scope.packageIdOfVarId(vars[k]))
+	  return vars[k];
+    }
   //Perform sorting by real package names and take last;
   assert(!vars.empty());
   return vars[0];//FIXME:

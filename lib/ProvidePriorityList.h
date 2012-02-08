@@ -6,14 +6,14 @@
 class ProvidePriorityList
 {
 public:
-  ProvidePriorityLIst() {}
+  ProvidePriorityList() {}
   ~ProvidePriorityList() {}
 
 public:
   void load(const std::string& fileName);
 
   //The first item in result is the item with the highest priority;
-  void getPriorities(const std::string& provideName, StringList& pkgNamePriority) const;
+  void getPriority(const std::string& provideName, StringVector& pkgNamePriority) const;
 
 private:
   struct Item
@@ -27,7 +27,7 @@ private:
   }; //struct Item;
 
   typedef std::vector<Item> ItemVector;
-  typedef std;:list<Item> ItemList;
+  typedef std::list<Item> ItemList;
 
 private:
   ItemVector m_items;
