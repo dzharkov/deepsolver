@@ -6,6 +6,28 @@
 
 #define TASK_STOP(x) throw TaskException(x)
 
+struct PrioritySortItem
+{
+  PrioritySortItem(VarId v, const std::string& n)
+    : varId(v), name(n) {}
+
+  bool operator <(const PrioritySortItem& item) const
+  {
+    return name < item.name;
+  }
+
+  bool operator >(const PrioritySortItem& item) const
+  {
+    return name > item.name;
+  }
+
+  VarId varId;
+  std::string name;
+}; //struct PrioritySortItem;
+
+typedef std::vector<PrioritySortItem> PrioritySortItemVector;
+typedef std::list<PrioritySortItem> PrioritySortItemList;
+
 template<typename T>
 void removeDublications(std::vector<T>& v)
 {
@@ -248,10 +270,12 @@ VarId TaskPreprocessor::processRequireWithVersion(PackageId pkgId, const Version
 
 VarId TaskPreprocessor::processPriority(const VarIdVector& vars, PackageId provideEntry) const
 {
+  assert(!vars.empty());
   //Process the system provide priority list using provideEntry;
   const std::string provideName = m_scope.packageIdToStr(provideEntry);
   StringVector providers;
   m_providePriorityList.getPriority(provideName, providers);
+  //Providers vector can easily be empty;
   for(StringVector::size_type i = 0;i < providers.size();i++)
     {
       const PackageId providerId = m_scope.strToPackageId(providers[i]);//FIXME:there can be an error since priority list can return an invalid package name due to its invalid content;
@@ -261,6 +285,10 @@ VarId TaskPreprocessor::processPriority(const VarIdVector& vars, PackageId provi
 	  return vars[k];
     }
   //Perform sorting by real package names and take last;
-  assert(!vars.empty());
-  return vars[0];//FIXME:
+  PrioritySortItemVector items;
+  for(VarIdVector::size_type i = 0;i < vars.size();i++)
+    items.push_back(PrioritySortItem(vars[i], m_scope.packageIdToStr(m_scope.packageIdOfVarId(vars[i]))));
+  std::sort(items.begin(), items.end());
+  assert(!items.empty());
+  return items[items.size() - 1].varId;
 }
