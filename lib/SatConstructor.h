@@ -1,6 +1,6 @@
 
-#ifndef DEPSOLVER_SAT_CONSTRUCTOR_H
-#define DEPSOLVER_SAT_CONSTRUCTOR_H
+#ifndef DEEPSOLVER_SAT_CONSTRUCTOR_H
+#define DEEPSOLVER_SAT_CONSTRUCTOR_H
 
 #include"PackageScope.h"
 #include"sat/Sat.h"
@@ -23,4 +23,4 @@ private:
   VarIdSet m_pendingToInstall, m_pendingToRemove;
 }; //class SatConstructor;
 
-#endif //DEPSOLVER_SAT_CONSTRUCTOR_H;
+#endif //DEEPSOLVER_SAT_CONSTRUCTOR_H;

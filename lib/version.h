@@ -1,7 +1,7 @@
 
 
-#ifndef DEPSOLVER_VERSION_H
-#define DEPSOLVER_VERSION_H
+#ifndef DEEPSOLVER_VERSION_H
+#define DEEPSOLVER_VERSION_H
 
 #include"Pkg.h"
 
@@ -18,4 +18,4 @@ bool versionGreater(const std::string& ver1, const std::string& ver2);
 
 
 
-#endif //DEPSOLVER_VERSION_H;
+#endif //DEEPSOLVER_VERSION_H;

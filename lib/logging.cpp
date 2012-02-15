@@ -3,7 +3,7 @@
 #include"logging.h"
 
 #define FILENAME_SYSLOG "syslog"
-#define DEPSOLVER_LOGGER "depsolver"
+#define DEEPSOLVER_LOGGER "deepsolver"
 
 static std::string configLogFileName;
 static int configLogLevel=LOG_WARNING;
@@ -85,5 +85,5 @@ void initLogging(const std::string& logFileName, int logLevel)
   configLogFileName = logFileName;
   configLogLevel = logLevel;
   if (configLogFileName == FILENAME_SYSLOG)
-    openlog(DEPSOLVER_LOGGER, LOG_PID, LOG_DAEMON);
+    openlog(DEEPSOLVER_LOGGER, LOG_PID, LOG_DAEMON);
 }

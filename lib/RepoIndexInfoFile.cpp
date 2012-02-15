@@ -1,5 +1,5 @@
 
-#include"depsolver.h"
+#include"deepsolver.h"
 #include"RepoIndexInfoFile.h"
 
 static std::string escapeString(const std::string& s)

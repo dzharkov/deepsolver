@@ -1,15 +1,15 @@
 
-#ifndef DEPSOLVER_H
-#define DEPSOLVER_H
+#ifndef DEEPSOLVER_H
+#define DEEPSOLVER_H
 
 #include"os/system.h"
 #include"DefaultValues.h"
 #include"logging.h"
-#include"DepsolverException.h"
+#include"DeepsolverException.h"
 #include"os/SystemException.h"
 #include"os/File.h"
 #include"os/Directory.h"
 #include"string-utils.h"
-#include"DepsolverTypes.h"
+#include"DeepsolverTypes.h"
 
-#endif //DEPSOLVER_H
+#endif //DEEPSOLVER_H

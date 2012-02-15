@@ -1,5 +1,5 @@
 
-AC_INIT(depsolver, 0.0.1, msp@altlinux.org)
+AC_INIT(deepsolver, 0.0.1, msp@altlinux.org)
 AM_INIT_AUTOMAKE([-Wall foreign])
 
 if test "x$CFLAGS" == 'x'; then
@@ -14,8 +14,8 @@ AC_PROG_CC
 AC_PROG_CXX
 AC_PROG_RANLIB
 
-AC_SUBST(DEPSOLVER_CXXFLAGS, '-Wall -pedantic -fpic -fno-rtti -DFIXME_DATADIR=\"$(pkgdatadir)\"')
-AC_SUBST(DEPSOLVER_INCLUDES, '-I$(top_srcdir)/lib')
+AC_SUBST(DEEPSOLVER_CXXFLAGS, '-Wall -pedantic -fpic -fno-rtti -DFIXME_DATADIR=\"$(pkgdatadir)\"')
+AC_SUBST(DEEPSOLVER_INCLUDES, '-I$(top_srcdir)/lib')
 
 AC_CONFIG_FILES([
   makefile

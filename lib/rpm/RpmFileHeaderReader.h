@@ -1,6 +1,6 @@
 
-#ifndef DEPSOLVER_RPM_FILE_HEADER_READER_H
-#define DEPSOLVEr_RPM_FILE_HEADER_READER_H
+#ifndef DEEPSOLVER_RPM_FILE_HEADER_READER_H
+#define DEEPSOLVEr_RPM_FILE_HEADER_READER_H
 
 #include"Pkg.h"
 #include"RpmException.h"
@@ -42,4 +42,4 @@ private:
   std::string m_fileName;
 }; //class RpmFileHeaderReader;
 
-#endif //DEPSOLVER_RPM_FILE_HEADER_READER_H;
+#endif //DEEPSOLVER_RPM_FILE_HEADER_READER_H;

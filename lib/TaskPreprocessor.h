@@ -1,7 +1,7 @@
 
 
-#ifndef DEPSOLVER_TASK_PREPROCESSOR_H
-#define DEPSOLVER_TASK_PREPROCESSOR_H
+#ifndef DEEPSOLVER_TASK_PREPROCESSOR_H
+#define DEEPSOLVER_TASK_PREPROCESSOR_H
 
 #include"PackageScope.h"
 #include"UserTask.h"
@@ -37,4 +37,4 @@ private:
   const ProvidePriorityList m_providePriorityList;
 }; //class taskPreprocessor;
 
-#endif //DEPSOLVER_TASK_PREPROCESSOR_H;
+#endif //DEEPSOLVER_TASK_PREPROCESSOR_H;

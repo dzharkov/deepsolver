@@ -1,10 +1,10 @@
 
-#ifndef DEPSOLVER_GZIP_INTERFACE_H
-#define DEPSOLVER_GZIP_INTERFACE_H
+#ifndef DEEPSOLVER_GZIP_INTERFACE_H
+#define DEEPSOLVER_GZIP_INTERFACE_H
 
-#include"DepsolverException.h"
+#include"DeepsolverException.h"
 
-class GZipException: public DepsolverException
+class GZipException: public DeepsolverException
 {
 public:
   GZipException(const std::string& msg)
@@ -74,4 +74,4 @@ private:
   std::string m_fileName;
 }; //class GZipOutputFile;
 
-#endif //DEPSOLVER_GZIP_INTERFACE_H;
+#endif //DEEPSOLVER_GZIP_INTERFACE_H;

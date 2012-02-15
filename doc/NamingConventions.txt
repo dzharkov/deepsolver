@@ -1,6 +1,6 @@
 
 This document describes naming conventions used in coding style in
-Depsolver project. Everybody is welcome to keep all rules considered below
+Deepsolver project. Everybody is welcome to keep all rules considered below
 in effect during any code changing.
 
 Class names must begin with capital letters without any prefix. For

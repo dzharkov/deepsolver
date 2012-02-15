@@ -1,6 +1,6 @@
 
-#ifndef DEPSOLVER_REPO_INDEX_INFO_FILE_H
-#define DEPSOLVER_REPO_INDEX_INFO_FILE_H
+#ifndef DEEPSOLVER_REPO_INDEX_INFO_FILE_H
+#define DEEPSOLVER_REPO_INDEX_INFO_FILE_H
 
 class RepoIndexInfoFile
 {
@@ -69,4 +69,4 @@ private:
   StringToStringMap m_userParams;
 }; //class RepoIndexInfoFile;
 
-#endif //DEPSOLVER_REPO_INDEX_INFO_FILE_H;
+#endif //DEEPSOLVER_REPO_INDEX_INFO_FILE_H;

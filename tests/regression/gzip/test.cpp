@@ -1,5 +1,5 @@
 
-#include"depsolver.h"
+#include"deepsolver.h"
 #include"GZipInterface.h"
 
 #define TEST_BLOCK_SIZE 512
@@ -63,7 +63,7 @@ int main(int argc, char* argv[])
     std::cout << "Decompressing..." << std::endl;
     decompress();
   }
-  catch (const DepsolverException& e)
+  catch (const DeepsolverException& e)
     {
       std::cerr << e.getType() << " error:" << e.getMessage() << std::endl;
       return 1;

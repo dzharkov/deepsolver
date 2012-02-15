@@ -1,6 +1,6 @@
 
-#ifndef DEPSOLVER_INDEX_CORE_H
-#define DEPSOLVER_INDEX_CORE_H
+#ifndef DEEPSOLVER_INDEX_CORE_H
+#define DEEPSOLVER_INDEX_CORE_H
 
 #include"AbstractConsoleMessages.h"
 #include"AbstractWarningHandler.h"
@@ -61,4 +61,4 @@ private:
   AbstractWarningHandler& m_warningHandler;
 }; //class IndexCore;
 
-#endif //DEPSOLVER_INDEX_CORE_H;
+#endif //DEEPSOLVER_INDEX_CORE_H;

@@ -2,7 +2,7 @@
 //FIXME:requires just for install/removing
 //FIXME:package size and required disk space;
 
-#include"depsolver.h"
+#include"deepsolver.h"
 #include"RpmFileHeaderReader.h"
 
 //FIXME:requires flags for package install and removing;

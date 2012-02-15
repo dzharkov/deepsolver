@@ -1,5 +1,5 @@
 
-AM_CXXFLAGS = $(DEPSOLVER_CXXFLAGS) $(DEPSOLVER_INCLUDES)
+AM_CXXFLAGS = $(DEEPSOLVER_CXXFLAGS) $(DEEPSOLVER_INCLUDES)
 
 noinst_HEADERS = \
 Directory.h \
@@ -7,9 +7,9 @@ File.h \
 SystemException.h \
 system.h
 
-noinst_LIBRARIES = libdepsolveros.a
+noinst_LIBRARIES = libdeepsolveros.a
 
-libdepsolveros_a_SOURCES = \
+libdeepsolveros_a_SOURCES = \
 Directory.cpp \
 Directory.h \
 File.cpp \

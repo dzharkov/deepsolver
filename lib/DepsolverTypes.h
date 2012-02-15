@@ -1,7 +1,7 @@
 
 
-#ifndef DEPSOLVER_TYPES_H
-#define DEPSOLVER_TYPES_H
+#ifndef DEEPSOLVER_TYPES_H
+#define DEEPSOLVER_TYPES_H
 
 /*
  * PackageId type is the identifier of an item from the set built by
@@ -95,4 +95,4 @@ public:
 typedef std::list<VersionCond> VersionCondList;
 typedef std::vector<VersionCond> VersionCondVector;
 
-#endif //DEPSOLVER_TYPES_H;
+#endif //DEEPSOLVER_TYPES_H;

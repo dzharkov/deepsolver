@@ -1,5 +1,5 @@
 
-#include"depsolver.h"
+#include"deepsolver.h"
 
 bool Directory::isExist(const std::string& path)
 {

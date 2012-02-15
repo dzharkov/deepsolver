@@ -1,6 +1,6 @@
 
-#ifndef DEPSOLVER_PKG_H
-#define DEPSOLVER_PKG_H
+#ifndef DEEPSOLVER_PKG_H
+#define DEEPSOLVER_PKG_H
 
 typedef unsigned short Epoch;
 
@@ -113,4 +113,4 @@ public:
   ChangeLog changeLog;
 };
 
-#endif //DEPSOLVER_PKG_H;
+#endif //DEEPSOLVER_PKG_H;

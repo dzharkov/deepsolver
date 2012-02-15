@@ -1,7 +1,7 @@
 
 
-#ifndef DEPSOLVER_PROVIDE_PRIORITY_LIST_H
-#define DEPSOLVER_PROVIDE_PRIORITY_LIST_H
+#ifndef DEEPSOLVER_PROVIDE_PRIORITY_LIST_H
+#define DEEPSOLVER_PROVIDE_PRIORITY_LIST_H
 
 class ProvidePriorityList
 {
@@ -33,4 +33,4 @@ private:
   ItemVector m_items;
 }; //class ProvidePriorityList;
 
-#endif //DEPSOLVER_PROVIDE_PRIORITY_LIST_H;
+#endif //DEEPSOLVER_PROVIDE_PRIORITY_LIST_H;

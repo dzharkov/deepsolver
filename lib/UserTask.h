@@ -1,6 +1,6 @@
 
-#ifndef DEPSOLVER_USER_TASK_H
-#define DEPSOLVER_USER_TASK_H
+#ifndef DEEPSOLVER_USER_TASK_H
+#define DEEPSOLVER_USER_TASK_H
 
 class UserTaskItemToInstall
 {
@@ -55,4 +55,4 @@ public:
   StringSet namesToRemove;
 }; //class UserTask;
 
-#endif //DEPSOLVER_USER_TASK_H;
+#endif //DEEPSOLVER_USER_TASK_H;

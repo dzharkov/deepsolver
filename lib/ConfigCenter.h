@@ -1,6 +1,6 @@
 
-#ifndef DEPSOLVER_CONFIG_CENTER_H
-#define DEPSOLVER_CONFIG_CENTER_H
+#ifndef DEEPSOLVER_CONFIG_CENTER_H
+#define DEEPSOLVER_CONFIG_CENTER_H
 
 #include"DefaultValues.h"
 
@@ -16,4 +16,4 @@ public:
   std::string attachedRepoList;
 }; //class ConfigCenter;
 
-#endif //DEPSOLVER_CONFIG_CENTER_H;
+#endif //DEEPSOLVER_CONFIG_CENTER_H;

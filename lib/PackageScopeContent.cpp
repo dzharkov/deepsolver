@@ -7,7 +7,7 @@
  * case of unexpected exceptions.
  */
 
-#include"depsolver.h"
+#include"deepsolver.h"
 #include"PackageScopeContent.h"
 
 void PackageScopeContent::addPkg(const PkgFile& pkgFile)

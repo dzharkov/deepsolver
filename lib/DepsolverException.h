@@ -1,25 +1,25 @@
 
-#ifndef DEPSOLVER_DEPSOLVER_EXCEPTION_H
-#define DEPSOLVER_DEPSOLVER_EXCEPTION_H
+#ifndef DEEPSOLVER_DEEPSOLVER_EXCEPTION_H
+#define DEEPSOLVER_DEEPSOLVER_EXCEPTION_H
 
-/**\brief The main exception class of Depsolver project
+/**\brief The main exception class of Deepsolver project
  *
- * The every exception class used for error indication in Depsolver
+ * The every exception class used for error indication in Deepsolver
  * project must be the child (not strongly directly) of this
- * DepsolverException class. It is created to simplify error handling and
+ * DeepsolverException class. It is created to simplify error handling and
  * make it unified. The main information this class must provide is the
  * error type and single line error description.
  *
  * \sa SystemException RpmException IndexCoreException
  */
-class DepsolverException
+class DeepsolverException
 {
 public:
   /**\brief The default constructor*/
-  DepsolverException() {}
+  DeepsolverException() {}
 
   /**\brief the destructor*/
-  virtual ~DepsolverException() {}
+  virtual ~DeepsolverException() {}
 
 public:
   /**\brief Returns the string with error type
@@ -43,6 +43,6 @@ public:
    * \return The single line error description
    */
   virtual std::string getMessage() const = 0;
-}; //class DepsolverException;
+}; //class DeepsolverException;
 
-#endif //DEPSOLVER_DEPSOLVER_EXCEPTION_H;
+#endif //DEEPSOLVER_DEEPSOLVER_EXCEPTION_H;

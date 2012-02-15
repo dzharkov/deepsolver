@@ -1,8 +1,8 @@
 
-#ifndef DEPSOLVER_INDEX_CORE_EXCEPTION_H
-#define DEPSOLVER_INDEX_CORE_EXCEPTION_H
+#ifndef DEEPSOLVER_INDEX_CORE_EXCEPTION_H
+#define DEEPSOLVER_INDEX_CORE_EXCEPTION_H
 
-class IndexCoreException: public DepsolverException 
+class IndexCoreException: public DeepsolverException 
 {
 public:
   IndexCoreException() {}
@@ -28,4 +28,4 @@ private:
 
 #define INDEX_CORE_STOP(x) throw IndexCoreException(x)
 
-#endif //DEPSOLVER_INDEX_CORE_EXCEPTION_H;
+#endif //DEEPSOLVER_INDEX_CORE_EXCEPTION_H;

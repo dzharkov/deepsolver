@@ -1,9 +1,9 @@
 
-#ifndef DEPSOLVER_TASK_EXCEPTION_H
-#define DEPSOLVER_TASK_EXCEPTION_H
+#ifndef DEEPSOLVER_TASK_EXCEPTION_H
+#define DEEPSOLVER_TASK_EXCEPTION_H
 
 //This class must have i18n support in the future;
-class TaskException: public DepsolverException
+class TaskException: public DeepsolverException
 {
 public:
   TaskException(const std::string& msg)
@@ -26,4 +26,4 @@ private:
   std::string m_message;
 }; //class TaskException;
 
-#endif //DEPSOLVER_TASK_EXCEPTION_H;
+#endif //DEEPSOLVER_TASK_EXCEPTION_H;

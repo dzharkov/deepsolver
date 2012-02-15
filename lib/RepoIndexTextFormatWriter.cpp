@@ -1,6 +1,6 @@
 //FIXME:change log;
 
-#include"depsolver.h"
+#include"deepsolver.h"
 #include"RepoIndexTextFormatWriter.h"
 #include"IndexCoreException.h"
 

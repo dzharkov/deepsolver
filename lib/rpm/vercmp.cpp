@@ -1,5 +1,5 @@
 
-#include"depsolver.h"
+#include"deepsolver.h"
 #include<rpm/rpmlib.h>
 
 static int buildSenseFlags(const VersionCond& c)

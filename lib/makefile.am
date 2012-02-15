@@ -1,20 +1,20 @@
 
 SUBDIRS=os rpm
 
-AM_CXXFLAGS = $(DEPSOLVER_CXXFLAGS) $(DEPSOLVER_INCLUDES)
+AM_CXXFLAGS = $(DEEPSOLVER_CXXFLAGS) $(DEEPSOLVER_INCLUDES)
 
 noinst_HEADERS = \
 IndexCore.h
 
-noinst_LIBRARIES = libdepsolver.a
+noinst_LIBRARIES = libdeepsolver.a
 
-libdepsolver_a_SOURCES = \
+libdeepsolver_a_SOURCES = \
 AbstractConsoleMessages.h \
 AbstractWarningHandler.h \
 DefaultValues.h \
-DepsolverException.h \
-depsolver.h \
-DepsolverTypes.h \
+DeepsolverException.h \
+deepsolver.h \
+DeepsolverTypes.h \
 GZipInterface.cpp \
 GZipInterface.h \
 IndexCore.cpp \

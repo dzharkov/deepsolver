@@ -225,11 +225,11 @@ int main(int argc, char* argv[])
 {
   if (!parseCmdLine(argc, argv))
     return 1;
-  initLogging("/tmp/depsolver.log", LOG_DEBUG);//FIXME:
+  initLogging("/tmp/deepsolver.log", LOG_DEBUG);//FIXME:
   try {
     run();
   }
-  catch(const DepsolverException& e)
+  catch(const DeepsolverException& e)
     {
       std::cerr << std::endl;
       std::cerr << PREFIX << e.getType() << " error:" << e.getMessage() << std::endl;

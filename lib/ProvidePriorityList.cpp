@@ -1,6 +1,6 @@
 
 
-#include"depsolver.h"
+#include"deepsolver.h"
 #include"ProvidePriorityList.h"
 #include"TextFiles.h"
 

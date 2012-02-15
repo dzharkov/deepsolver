@@ -1,8 +1,8 @@
 
 This file describes the text variant of repository index format
-considered in Depsolver project. The future Depsolver versions may
+considered in Deepsolver project. The future Deepsolver versions may
 include also support of binary repository index format but text one is
-better suited for debug purposes. If some Depsolver utilities does not
+better suited for debug purposes. If some Deepsolver utilities does not
 follow this document it is a bug and must be fixed as soon as
 possible. Everybody are welcome to comment anything written below and
 suggest improvements.
@@ -24,7 +24,7 @@ be stored directly inside of index directory (for example
 On next step the program must get the name of md5sum file, ensure this
 md5sum file includes the record for info file itself and check all
 md5sums. Implies the other types of hash algorithms can be supported
-in future versions of Depsolver but are not considered right now. The
+in future versions of Deepsolver but are not considered right now. The
 md5sum file can contain the GPG signature and if it is present it must
 be checked with known keys.
 

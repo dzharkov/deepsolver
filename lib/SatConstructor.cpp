@@ -1,5 +1,5 @@
 
-#include"depsolver.h"
+#include"deepsolver.h"
 #include"SatConstructor.h"
 
 void SatConstructor::construct(const VarIdVector& strongToInstall,

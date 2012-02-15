@@ -1,5 +1,5 @@
 
-#include"depsolver.h"
+#include"deepsolver.h"
 #include"RepoIndexTextFormatReader.h"
 #include"TaskPreprocessor.h"
 #include"IndexCore.h"
@@ -246,7 +246,7 @@ int main(int argc, char* argv[])
   try {
     run();
   }
-  catch (const DepsolverException& e)
+  catch (const DeepsolverException& e)
     {
       std::cerr << e.getType() << " error:" << e.getMessage() << std::endl;
       return 1;

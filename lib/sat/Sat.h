@@ -1,6 +1,6 @@
 
-#ifndef DEPSOLVER_SAT_H
-#define DEPSOLVER_SAT_H
+#ifndef DEEPSOLVER_SAT_H
+#define DEEPSOLVER_SAT_H
 
 class Sat
 {
@@ -22,4 +22,4 @@ public:
   virtual void removeLiteral(size_t clauseIndex, size_t literalIndex) = 0;
 }; //class Sat;
 
-#endif //DEPSOLVER_SAT_H;
+#endif //DEEPSOLVER_SAT_H;

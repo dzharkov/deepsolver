@@ -1,6 +1,6 @@
 
-#ifndef DEPSOLVER_SAT2_H
-#define DEPSOLVER_SAT2_H
+#ifndef DEEPSOLVER_SAT2_H
+#define DEEPSOLVER_SAT2_H
 
 #include"Sat.h"
 
@@ -183,4 +183,4 @@ public:
   }
 }; //class Sat2;
 
-#endif //DEPSOLVER_SAT_H;
+#endif //DEEPSOLVER_SAT_H;

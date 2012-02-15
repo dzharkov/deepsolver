@@ -1,5 +1,5 @@
 
-#include"depsolver.h"
+#include"deepsolver.h"
 #include"Pkg.h"
 
 std::ostream& operator <<(std::ostream& s, const NamedPkgRel& r)

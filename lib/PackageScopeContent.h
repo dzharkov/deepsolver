@@ -1,6 +1,6 @@
 
-#ifndef DEPSOLVER_PACKAGE_SCOPE_CONTENT_H
-#define DEPSOLVER_PACKAGE_SCOPE_CONTENT_H
+#ifndef DEEPSOLVER_PACKAGE_SCOPE_CONTENT_H
+#define DEEPSOLVER_PACKAGE_SCOPE_CONTENT_H
 
 #include"Pkg.h"
 
@@ -112,4 +112,4 @@ private:
   ProvideMapItemVector m_provideMap;
 }; //class PackageScopeContent;
 
-#endif //DEPSOLVER_PACKAGE_SCOPE_CONTENT_H;
+#endif //DEEPSOLVER_PACKAGE_SCOPE_CONTENT_H;

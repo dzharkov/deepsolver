@@ -1,6 +1,6 @@
 
-#ifndef DEPSOLVER_SYSTEM_EXCEPTION_H
-#define DEPSOLVER_SYSTEM_EXCEPTION_H
+#ifndef DEEPSOLVER_SYSTEM_EXCEPTION_H
+#define DEEPSOLVER_SYSTEM_EXCEPTION_H
 
 /**\brief The exception for system call errors
  *
@@ -15,7 +15,7 @@
  *
  * \sa Exception
  */
-class SystemException: public DepsolverException
+class SystemException: public DeepsolverException
 {
 public:
   /**\brief The default constructor
@@ -134,4 +134,4 @@ private:
 #define TRY_SYS_CALL(expr, msg) if (!(expr)) throw SystemException(msg)
 #define SYS_STOP(msg) throw SystemException(msg)
 
-#endif //DEPSOLVER_SYSTEM_EXCEPTION_H
+#endif //DEEPSOLVER_SYSTEM_EXCEPTION_H

@@ -1,8 +1,8 @@
 
-#ifndef DEPSOLVER_RPM_EXCEPTION_H
-#define DEPSOLVER_RPM_EXCEPTION_H
+#ifndef DEEPSOLVER_RPM_EXCEPTION_H
+#define DEEPSOLVER_RPM_EXCEPTION_H
 
-class RpmException: public DepsolverException
+class RpmException: public DeepsolverException
 {
 public:
   RpmException() {}
@@ -29,4 +29,4 @@ private:
 
 #define RPM_STOP(x) throw RpmException(x)
 
-#endif //DEPSOLVER_RPM_EXCEPTION_H;
+#endif //DEEPSOLVER_RPM_EXCEPTION_H;

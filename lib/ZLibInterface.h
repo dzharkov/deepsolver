@@ -5,10 +5,10 @@
 
 // See http://www.boost.org/libs/iostreams for documentation.
 
-#ifndef DEPSOLVER_ZLIB_INTERFACE_H
-#define DEPSOLVER_ZLIB_INTERFACE_H
+#ifndef DEEPSOLVER_ZLIB_INTERFACE_H
+#define DEEPSOLVER_ZLIB_INTERFACE_H
 
-#include"DepsolverException.h"
+#include"DeepsolverException.h"
 
 typedef uint32_t ZLibUInt;
 typedef uint8_t ZLibByte;
@@ -44,7 +44,7 @@ enum {
   ZLibDefaultNoHeader  = 0
 };
 
-class ZLibException: public DepsolverException
+class ZLibException: public DeepsolverException
 {
 public:
   ZLibException(int code)
@@ -312,4 +312,4 @@ private:
   size_t m_srcProcessed, m_destProcessed;
 }; //class ZLibDecompressor;
 
-#endif //DEPSOLVER_COMPRESSION_STREAMS_H;
+#endif //DEEPSOLVER_COMPRESSION_STREAMS_H;

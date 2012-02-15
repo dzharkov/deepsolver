@@ -1,6 +1,6 @@
 
-#ifndef DEPSOLVER_FILE_H
-#define DEPSOLVER_FILE_H
+#ifndef DEEPSOLVER_FILE_H
+#define DEEPSOLVER_FILE_H
 
 /**\brief The wrapper for file operations
  *
@@ -134,4 +134,4 @@ protected:
   int m_fd;
 }; //class File;
 
-#endif //DEPSOLVER_FILE_H;
+#endif //DEEPSOLVER_FILE_H;

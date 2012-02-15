@@ -1,7 +1,7 @@
 
 
-#ifndef DEPSOLVER_ABSTRACT_CONSOLE_MESSAGES_H
-#define DEPSOLVER_ABSTRACT_CONSOLE_MESSAGES_H
+#ifndef DEEPSOLVER_ABSTRACT_CONSOLE_MESSAGES_H
+#define DEEPSOLVER_ABSTRACT_CONSOLE_MESSAGES_H
 
 class AbstractConsoleMessages
 {
@@ -13,4 +13,4 @@ public:
   virtual std::ostream& verboseMsg() = 0;
 }; //class AbstractConsoleMessages;
 
-#endif //DEPSOLVER_ABSTRACT_CONSOLE_MESSAGES_H;
+#endif //DEEPSOLVER_ABSTRACT_CONSOLE_MESSAGES_H;

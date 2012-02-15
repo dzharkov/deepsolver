@@ -1,6 +1,6 @@
 
-#ifndef DEPSOLVER_PACKAGE_SCOPE_H
-#define DEPSOLVER_PACKAGE_SCOPE_H
+#ifndef DEEPSOLVER_PACKAGE_SCOPE_H
+#define DEEPSOLVER_PACKAGE_SCOPE_H
 
 #include"Pkg.h"
 #include"PackageScopeContent.h"
@@ -86,4 +86,4 @@ private:
   const PackageScopeContent& m_content;
 }; //class PackageScope; 
 
-#endif //DEPSOLVER_PACKAGE_SCOPE_H;
+#endif //DEEPSOLVER_PACKAGE_SCOPE_H;

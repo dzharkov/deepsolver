@@ -1,6 +1,6 @@
 
-#ifndef DEPSOLVER_LOGGING_H
-#define DEPSOLVER_LOGGING_H
+#ifndef DEEPSOLVER_LOGGING_H
+#define DEEPSOLVER_LOGGING_H
 
 /**\brief Prepares log output
  *
@@ -27,4 +27,4 @@ void initLogging(const std::string& logFileName, int logLevel);
  */
 void logMsg(int level, const char* format,... );
 
-#endif //DEPSOLVER_LOGGING_H;
+#endif //DEEPSOLVER_LOGGING_H;

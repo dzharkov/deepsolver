@@ -7,7 +7,7 @@
  * comments.
  */
 
-#include"depsolver.h"
+#include"deepsolver.h"
 #include"RepoIndexTextFormatReader.h"
 #include"IndexCore.h"
 

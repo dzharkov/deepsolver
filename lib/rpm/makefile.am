@@ -1,14 +1,14 @@
 
-AM_CXXFLAGS = $(DEPSOLVER_CXXFLAGS) $(DEPSOLVER_INCLUDES)
+AM_CXXFLAGS = $(DEEPSOLVER_CXXFLAGS) $(DEEPSOLVER_INCLUDES)
 
 noinst_HEADERS = \
 RpmException.h \
 RpmFile.h \
 RpmFileHeaderReader.h
 
-noinst_LIBRARIES = libdepsolverrpm.a
+noinst_LIBRARIES = libdeepsolverrpm.a
 
-libdepsolverrpm_a_SOURCES = \
+libdeepsolverrpm_a_SOURCES = \
 RpmException.h \
 RpmFile.h \
 RpmFileHeaderReader.cpp \

@@ -1,5 +1,5 @@
 
-#include"depsolver.h"
+#include"deepsolver.h"
 #include"version.h"
 #include"rpm/vercmp.h"
 

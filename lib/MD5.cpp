@@ -20,7 +20,7 @@
  * Still in the public domain.
  */
 
-#include"depsolver.h"
+#include"deepsolver.h"
 #include"MD5.h"
 
 void MD5::init()

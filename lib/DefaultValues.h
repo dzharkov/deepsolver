@@ -1,10 +1,10 @@
 
-#ifndef DEPSOLVER_DEFAULT_VALUES_H
-#define DEPSOLVER_DEFAULT_VALUES_H
+#ifndef DEEPSOLVER_DEFAULT_VALUES_H
+#define DEEPSOLVER_DEFAULT_VALUES_H
 
 //Configuration parameters;
-#define DEFAULT_CONFIG_DIR "/etc/depsolver"
-#define DEFAULT_CONFIG_FILE_NAME "depsolver.conf"
+#define DEFAULT_CONFIG_DIR "/etc/deepsolver"
+#define DEFAULT_CONFIG_FILE_NAME "deepsolver.conf"
 
 //Repo structure;
 #define REPO_RPMS_DIR_NAME "RPMS"
@@ -20,4 +20,4 @@
 #define DEFAULT_REPO_INDEX_COMPRESSION_TYPE CompressionTypeGzip
 #define DEFAULT_REPO_INDEX_FORMAT_TYPE FormatTypeText
 
-#endif //DEPSOLVER_DEFAULT_VALUES_H;
+#endif //DEEPSOLVER_DEFAULT_VALUES_H;

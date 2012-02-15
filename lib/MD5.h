@@ -1,6 +1,6 @@
 
-#ifndef DEPSOLVER_MD5_H
-#define DEPSOLVER_MD5_H
+#ifndef DEEPSOLVER_MD5_H
+#define DEEPSOLVER_MD5_H
 
 class MD5
 {
@@ -35,4 +35,4 @@ private:
   Context m_ctx;
 };
 
-#endif //DEPSOLVER_MD5_H;
+#endif //DEEPSOLVER_MD5_H;

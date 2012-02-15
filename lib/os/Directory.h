@@ -1,6 +1,6 @@
 
-#ifndef DEPSOLVER_DIRECTORY_H
-#define DEPSOLVER_DIRECTORY_H
+#ifndef DEEPSOLVER_DIRECTORY_H
+#define DEEPSOLVER_DIRECTORY_H
 
 /**\brief The wrapper for directory operations
  *
@@ -122,4 +122,4 @@ public:
   static std::auto_ptr<Iterator> enumerate(const std::string& path);
 }; //class Directory;
 
-#endif //DEPSOLVER_DIRECTORY_H;
+#endif //DEEPSOLVER_DIRECTORY_H;

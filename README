@@ -1,4 +1,4 @@
-DepSolver is a package manipulation tool for GNU/Linux system. It
+Deepsolver is a package manipulation tool for GNU/Linux system. It
 basically designed for ALT Linux RPM environment but in hope it can be
 useful for other distributions or even for other package managers.
 
