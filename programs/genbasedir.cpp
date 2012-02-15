@@ -1,5 +1,5 @@
 
-#include"depsolver.h"
+#include"deepsolver.h"
 #include"IndexCore.h"
 #include"rpm/RpmException.h"
 
