@@ -138,14 +138,16 @@ void TaskPreprocessor::processConflicts(VarId varId, VarIdVector& res)
       VarIdVector vars;
       m_scope.selectMatchingVarsWithProvides(withoutVersion[i], vars);
       for(VarIdVector::size_type i = 0;i < vars.size();i++)
-	res.push_back(vars[i]);
+	if (vars[i] != varId)//Package cannot conflict with itself;
+	  res.push_back(vars[i]);
     }
   for(PackageIdVector::size_type i = 0;i < withVersion.size();i++)
     {
       VarIdVector vars;
       m_scope.selectMatchingWithVersionVarsWithProvides(withVersion[i], versions[i], vars);
       for(VarIdVector::size_type i = 0;i < vars.size();i++)
-	res.push_back(vars[i]);
+	if (vars[i] != varId)//Package cannot conflict with itself;
+	  res.push_back(vars[i]);
     }
 }
 
