@@ -2,7 +2,7 @@
 #ifndef DEEPSOLVER_TEXT_FILES_H
 #define DEEPSOLVER_TEXT_FILES_H
 
-#include"DsepsolverException.h"
+#include"DeepsolverException.h"
 
 enum {
   TextFileStd = 0,
