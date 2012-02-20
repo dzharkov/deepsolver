@@ -113,9 +113,6 @@ void handleRequest(PackageScope& scope, const std::string& line)
     }
   if (task.itemsToInstall.empty())
     return;
-  std::cout << "# You have asked:" << std::endl;
-  for(UserTaskItemToInstallVector::size_type i = 0;i < task.itemsToInstall.size();i++)
-    std::cout << "# " << task.itemsToInstall[i].makeStr() << std::endl;
   ProvidePriorityList priorityList;
   priorityList.load("pkgpriorities");
   TaskPreprocessor taskPreprocessor(scope, priorityList);
