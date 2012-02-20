@@ -7,15 +7,6 @@
 
 //FIXME:requires flags for package install and removing;
 
-static bool isRpmLibRequire(const std::string& s)
-{
-  if (s.find("rpmlib(") != 0)
-    return 0;
-  if (s.empty() || s[s.length() - 1] != ')')
-    return 0;
-  return 1;
-}
-
 static char translateRelFlags(int_32 flags)
 {
   char value = 0;
@@ -243,10 +234,7 @@ void RpmFileHeaderReader::fillRequires(NamedPkgRelVector& v)
     RPM_STOP("Header of rpm file \'" + m_fileName + "\' contains different number of items in require name list, require version list and require flags list");
     }
   for(int_32 i = 0;i < count1;i++)
-    {
-      if (!isRpmLibRequire(names[i]))
-	v.push_back (NamedPkgRel(names[i], translateRelFlags(flags[i]), versions[i]));
-    }
+    v.push_back (NamedPkgRel(names[i], translateRelFlags(flags[i]), versions[i]));
   headerFreeData(names, RPM_STRING_ARRAY_TYPE);
   headerFreeData(versions, RPM_STRING_ARRAY_TYPE);
 }
