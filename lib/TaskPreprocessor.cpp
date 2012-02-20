@@ -156,8 +156,6 @@ void TaskPreprocessor::processConflicts(VarId varId, VarIdVector& res)
 
 VarId TaskPreprocessor::processUserTaskItemToInstall(const UserTaskItemToInstall& item)
 {
-  std::cout << std::endl;
-  std::cout << "# Additional information about selecting installation alternative for " << item.makeStr() << std::endl;
   assert(!item.pkgName.empty());
   const bool hasVersion = !item.version.empty();
   assert(!hasVersion || !item.less || !item.greater);
@@ -178,9 +176,6 @@ VarId TaskPreprocessor::processUserTaskItemToInstall(const UserTaskItemToInstall
     }
   if (!vars.empty())
     {
-      std::cout << "# The alternatives were found without provides processing, selecting the newest from:" << std::endl;
-      for(size_t i = 0;i < vars.size();i++)
-	std::cout << "#" << m_scope.constructPackageName(vars[i]) << std::endl;
       m_scope.selectTheNewest(vars);
       assert(!vars.empty());
       //We can get here more than one the newest packages, assuming no difference what exact one to take;
@@ -197,22 +192,23 @@ VarId TaskPreprocessor::processUserTaskItemToInstall(const UserTaskItemToInstall
       m_scope.selectMatchingWithVersionVarsAmongProvides(pkgId, ver, vars);
     } else
     m_scope.selectMatchingVarsAmongProvides(pkgId, vars);
-  std::cout << "# Found " << vars.size() << " alternatives by provides processing since there are no packages with requested real name:" << std::endl;
-  for(size_t i = 0;i < vars.size();i++)
-    std::cout << "# " << m_scope.constructPackageName(vars[i]) << std::endl;
   if (vars.empty())//No appropriate packages at all;
     TASK_STOP("\'" + item.makeStr() + "\' has no installation candidat");
   if (hasVersion || m_scope.allProvidesHaveTheVersion(vars, pkgId))
     {
-      std::cout << "# Selecting exact alternative by version processing and priority list processing" << std::endl;
+      const VarId res = processPriorityList(vars, pkgId);
+      if (res != BAD_VAR_ID)
+	return res;
       m_scope.selectTheNewestByProvide(vars, pkgId);
       assert(!vars.empty());
       if (vars.size() == 1)
 	return vars.front();
-      return processPriority(vars, pkgId);
+      return processPriorityBySorting(vars);
     }
-      std::cout << "# Selecting exact alternative by priority list processing only" << std::endl;
-      return processPriority(vars, pkgId);
+  const VarId res = processPriorityList(vars, pkgId);
+  if (res != BAD_VAR_ID)
+    return res;
+  return processPriorityBySorting(vars);
 }
 
 VarId TaskPreprocessor::processRequireWithoutVersion(PackageId pkgId)
@@ -237,13 +233,19 @@ VarId TaskPreprocessor::processRequireWithoutVersion(PackageId pkgId)
     TASK_STOP("Require entry \'" + m_scope.packageIdToStr(pkgId) + "\' has no installation candidat");
   if (m_scope.allProvidesHaveTheVersion(vars, pkgId))
     {
+      const VarId res = processPriorityList(vars, pkgId);
+      if (res != BAD_VAR_ID)
+	return res;
       m_scope.selectTheNewestByProvide(vars, pkgId);
       assert(!vars.empty());
       if (vars.size() == 1)
 	return vars.front();
-      return processPriority(vars, pkgId);
+      return processPriorityBySorting(vars);
     }
-      return processPriority(vars, pkgId);
+  const VarId res = processPriorityList(vars, pkgId);
+  if (res != BAD_VAR_ID)
+    return res;
+  return processPriorityBySorting(vars);
 }
 
 VarId TaskPreprocessor::processRequireWithVersion(PackageId pkgId, const VersionCond& cond)
@@ -266,14 +268,17 @@ VarId TaskPreprocessor::processRequireWithVersion(PackageId pkgId, const Version
   m_scope.selectMatchingWithVersionVarsAmongProvides(pkgId, cond, vars);
   if (vars.empty())//No appropriate packages at all;
     TASK_STOP("Require entry \'" + m_scope.packageIdToStr(pkgId) + "\' with version has no installation candidat");
+  const VarId res = processPriorityList(vars, pkgId);
+  if (res != BAD_VAR_ID)
+    return res;
   m_scope.selectTheNewestByProvide(vars, pkgId);
   assert(!vars.empty());
   if (vars.size() == 1)
     return vars.front();
-  return processPriority(vars, pkgId);
+  return processPriorityBySorting(vars);
 }
 
-VarId TaskPreprocessor::processPriority(const VarIdVector& vars, PackageId provideEntry) const
+VarId TaskPreprocessor::processPriorityList(const VarIdVector& vars, PackageId provideEntry) const
 {
   assert(!vars.empty());
   //Process the system provide priority list using provideEntry;
@@ -289,7 +294,14 @@ VarId TaskPreprocessor::processPriority(const VarIdVector& vars, PackageId provi
 	if (providerId == m_scope.packageIdOfVarId(vars[k]))
 	  return vars[k];
     }
-  //Perform sorting by real package names and take last;
+  //No matching entry in priority list;
+  return BAD_VAR_ID;
+}
+
+VarId TaskPreprocessor::processPriorityBySorting(const VarIdVector& vars) const
+{
+  assert(!vars.empty());
+  //Perform sorting by real package names and take last one;
   PrioritySortItemVector items;
   for(VarIdVector::size_type i = 0;i < vars.size();i++)
     items.push_back(PrioritySortItem(vars[i], m_scope.packageIdToStr(m_scope.packageIdOfVarId(vars[i]))));

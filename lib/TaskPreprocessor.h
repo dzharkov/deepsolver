@@ -29,8 +29,9 @@ private:
   VarId processRequireWithoutVersion(PackageId pkgId);
   //Never returns BAD_PACKAGE_ID, must throw an exception;
   VarId processUserTaskItemToInstall(const UserTaskItemToInstall& item);
+  VarId processPriorityList(const VarIdVector& vars, PackageId provideEntry) const;
   //Never returns BAD_PACKAGE_ID, must throw an exception;
-  VarId processPriority(const VarIdVector& vars, PackageId provideEntry) const;
+  VarId processPriorityBySorting(const VarIdVector& vars) const;
 
 private:
   PackageScope& m_scope;
