@@ -5,6 +5,7 @@
 
 #include"Pkg.h"
 
+int versionCompare(const std::string& ver1, const std::string& ver2);
 bool versionOverlap(const VersionCond& ver1, const VersionCond& ver2);
 bool versionSatisfies(const VersionCond& cond, Epoch epoch, const std::string& ver, const std::string& release);
 bool versionSatisfies(const VersionCond& cond, const std::string& ver);

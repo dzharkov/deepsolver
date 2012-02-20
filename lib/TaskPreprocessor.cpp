@@ -3,6 +3,7 @@
 #include"deepsolver.h"
 #include"TaskPreprocessor.h"
 #include"TaskException.h"
+#include"version.h"
 
 #define TASK_STOP(x) throw TaskException(x)
 
@@ -13,12 +14,12 @@ struct PrioritySortItem
 
   bool operator <(const PrioritySortItem& item) const
   {
-    return name < item.name;
+    return versionCompare(name, item.name) < 0;
   }
 
   bool operator >(const PrioritySortItem& item) const
   {
-    return name > item.name;
+    return versionCompare(name, item.name) > 0;
   }
 
   VarId varId;
@@ -116,12 +117,14 @@ void TaskPreprocessor::processRequires(VarId varId, VarIdVector& dependent)
   for(PackageIdVector::size_type i = 0;i < depWithoutVersion.size();i++)
     {
       const VarId res = processRequireWithoutVersion(depWithoutVersion[i]);
+      //std::cout << "Selecting " << m_scope.constructPackageName(res) << "to satisfy " << m_scope.packageIdToStr(depWithoutVersion[i]) << std::endl;
       assert(res != BAD_VAR_ID);
       dependent.push_back(res);
     }
   for(PackageIdVector::size_type i = 0;i < depWithVersion.size();i++)
     {
       const VarId res = processRequireWithVersion(depWithVersion[i], versions[i]);
+      //      std::cout << "Selecting " << m_scope.constructPackageName(res) << "to satisfy " << m_scope.packageIdToStr(depWithVersion[i]) << std::endl;
       assert(res != BAD_VAR_ID);
       dependent.push_back(res);
     }

@@ -3,6 +3,11 @@
 #include"version.h"
 #include"rpm/vercmp.h"
 
+int versionCompare(const std::string& ver1, const std::string& ver2)
+{
+  return rpmVerCmp(ver1, ver2);
+}
+
 bool versionOverlap(const VersionCond& ver1, const VersionCond& ver2)
 {
   return rpmVerOverlap(ver1, ver2);

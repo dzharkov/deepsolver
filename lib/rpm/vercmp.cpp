@@ -2,6 +2,11 @@
 #include"deepsolver.h"
 #include<rpm/rpmlib.h>
 
+int rpmVerCmp(const std::string& ver1, const std::string& ver2)
+{
+  return rpmvercmp(ver1.c_str(), ver2.c_str());
+}
+
 static int buildSenseFlags(const VersionCond& c)
 {
   int value = 0;
