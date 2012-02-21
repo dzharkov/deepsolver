@@ -126,9 +126,13 @@ void handleRequest(PackageScope& scope, const std::string& line)
       std::cout << e.getMessage() << std::endl;
       return;
     }
+  std::ofstream tmpRes("/tmp/deepsolver.result.txt");
   std::cout << std::endl;
   for(VarIdVector::size_type i = 0;i < toInstall.size();i++)
-    std::cout << scope.constructPackageName(toInstall[i]) << std::endl;
+    {
+      std::cout << scope.constructPackageName(toInstall[i]) << std::endl;
+      tmpRes << scope.constructPackageName(toInstall[i]) << std::endl;
+    }
   std::cout << std::endl;
   VarIdSet closure, conflicts;
   try {
@@ -149,7 +153,10 @@ void handleRequest(PackageScope& scope, const std::string& line)
 	answer.push_back(scope.constructPackageName(*it));
       std::sort(answer.begin(), answer.end());
       for(StringVector::size_type i = 0;i < answer.size();i++)
-	std::cout << answer[i] << std::endl;
+	{
+	  std::cout << answer[i] << std::endl;
+	  tmpRes << answer[i] << std::endl;
+	}
       std::cout << std::endl;
     } else 
     std::cout << "# No dependent packages" << std::endl << std::endl;
