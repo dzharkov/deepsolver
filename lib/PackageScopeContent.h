@@ -4,6 +4,19 @@
 
 #include"Pkg.h"
 
+/**\brief The information about packages from available repositories
+ *
+ * This class contains information about available package list with
+ * their attributes required for dependent package set calculation. It
+ * has several methods for stored data access but it is not able to load
+ * or fill by the other way stored information. This class is not
+ * abstract, however every user has to use one of the child classes. One
+ * of them is prepared for loading content from the binary file on disk
+ * and the another one is purposed for converting data from the
+ * repository index and saving it to binary file.
+ *
+ * \sa PackageScopeContentBuilder PackageScopeContentLoader
+ */
 class PackageScopeContent
 {
 private:
@@ -86,13 +99,13 @@ public:
   typedef std::list<ProvideMapItem> ProvideMapItemList;
 
 public:
+  /**\brief The default constructor*/
   PackageScopeContent() {}
-  ~PackageScopeContent() {}
+
+  /**\brief The destructor*/
+  virtual ~PackageScopeContent() {}
 
 public:
-  void addPkg(const PkgFile& pkgFile);
-  void addProvideMapItem(const std::string& provideName, const std::string& packageName);
-  void commit();
   void getProviders(PackageId provideId, PackageIdVector& providers) const;
   bool checkName(const std::string& name) const;
   PackageId strToPackageId(const std::string& name) const;
@@ -100,11 +113,7 @@ public:
   const PkgInfoVector& getPkgs() const;
   const RelInfoVector& getRels() const;
 
-private:
-  void processRels(const NamedPkgRelVector& rels, size_t& pos, size_t& count);
-  PackageId registerName(const std::string& name);
-
-private:
+protected:
   NameToPackageIdMap m_namesToId;
   StringVector m_names;
   PkgInfoVector m_pkgInfoVector;
