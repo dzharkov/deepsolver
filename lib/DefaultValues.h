@@ -20,4 +20,7 @@
 #define DEFAULT_REPO_INDEX_COMPRESSION_TYPE CompressionTypeGzip
 #define DEFAULT_REPO_INDEX_FORMAT_TYPE FormatTypeText
 
+//Binary file with attached repositories content;
+#define PACKAGE_LIST_FILE_NAME "deepsolver-pkgs.bin"
+
 #endif //DEEPSOLVER_DEFAULT_VALUES_H;

@@ -26,6 +26,10 @@ MD5.cpp \
 MD5.h \
 PackageScopeContent.cpp \
 PackageScopeContent.h \
+PackageScopeContentBuilder.cpp \
+PackageScopeContentBuilder.h \
+PackageScopeContentLoader.cpp \
+PackageScopeContentLoader.h \
 PackageScope.cpp \
 PackageScope.h \
 Pkg.cpp \
