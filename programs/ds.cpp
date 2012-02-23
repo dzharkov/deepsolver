@@ -221,17 +221,33 @@ void addProvides(const std::string& dirName, PackageScopeContent& content)
     }
 }
 
-void run()
+void buildBinaryData()
 {
-  PackageScopeContent content;
+  PackageScopeContentBuilder content;
   beginClock();
   addPackageList("i586/base", content);
   addPackageList("noarch/base", content);
   addProvides("i586/base", content);
   addProvides("noarch/base", content);
   content.commit();
+  std::cout << "Repo index was read in " << endClock() << " sec" << std::endl;
+  beginClock();
+  content.saveToFile(PACKAGE_LIST_FILE_NAME);
+  std::cout << "Binary data saved in " << endClock() << " sec" << std::endl;
+}
+
+void run(int argc, char* argv[])
+{
+  if (argc == 2 && std::string(argv[1]) == "update")
+    {
+      buildBinaryData();
+      return;
+    }
+  PackageScopeContentLoader content;
+  beginClock();
+  content.loadFromFile(PACKAGE_LIST_FILE_NAME);
+  std::cout << "Binary package list read in " << endClock() << " seconds" << std::endl;
   PackageScope scope(content);
-  std::cout << "Package data loaded in " << endClock() << " seconds" << std::endl;
   std::string line;
   while(1)
     {
@@ -248,7 +264,7 @@ void run()
 int main(int argc, char* argv[])
 {
   try {
-    run();
+    run(argc, argv);
   }
   catch (const DeepsolverException& e)
     {
