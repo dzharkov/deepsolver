@@ -7,6 +7,22 @@ inline void writeSizeValue(std::ofstream& s, size_t value)
   s.write((char*)&value, sizeof(size_t));
 }
 
+inline void writeUnsignedShortValue(std::ofstream& s, unsigned short value)
+{
+  s.write((char*)&value, sizeof(unsigned short));
+}
+
+inline void writeCharValue(std::ofstream& s, char value)
+{
+  s.write(&value, sizeof(char));
+}
+
+inline void writeStringValue(std::ofstream& s, const char* value)
+{
+  assert(value != NULL);
+  s.write(value, strlen(value) + 1);
+}
+
 void PackageScopeContentBuilder::saveToFile(const std::string& fileName) const
 {
   SizeVector stringOffsets;
@@ -16,16 +32,61 @@ void PackageScopeContentBuilder::saveToFile(const std::string& fileName) const
     {
       stringOffsets[i] = k;
       assert(m_stringValues[i] != NULL);
-      k += strlen(m_stringValues[i]);
+      k += (strlen(m_stringValues[i]) + 1);
     }
   std::ofstream s(PACKAGE_LIST_FILE_NAME);
   assert(s.is_open());//FIXME:error checking;
   //Saving numbers of records;
+  assert(m_stringValues.size() == stringOffsets.size());
   writeSizeValue(s, m_stringValues.size());
+  writeSizeValue(s, k);//we must have the total length of all strings;
   writeSizeValue(s, m_names.size());
   writeSizeValue(s, m_pkgInfoVector.size());
   writeSizeValue(s, m_relInfoVector.size());
   writeSizeValue(s, m_provideMap.size());
+  //Saving strings bounds;
+  for(SizeVector::size_type i = 0;i < stringOffsets.size();i++)
+    writeSizeValue(s, stringOffsets[i]);
+  //Saving all version and release strings;
+  for(StringValueVector::size_type i = 0;i < m_stringValues.size();i++)
+    writeStringValue(s, m_stringValues[i]);
+  //Saving names of packages and provides;
+  for(StringVector::size_type i = 0;i < m_names.size();i++)
+    writeStringValue(s, m_names[i].c_str());
+  //Saving package list;
+  for(PkgInfoVector::size_type i = 0;i < m_pkgInfoVector.size();i++)
+    {
+      const PkgInfo& info = m_pkgInfoVector[i];
+      size_t verId = 0, releaseId = 0;
+      //FIXME:set proper values to verId and releaseId;
+      writeSizeValue(s, info.pkgId);
+      writeUnsignedShortValue(s, info.epoch);
+      writeSizeValue(s, verId);
+      writeSizeValue(s, releaseId);
+      writeSizeValue(s, info.buildTime);
+      writeSizeValue(s, info.requiresPos);
+      writeSizeValue(s, info.requiresCount);
+      writeSizeValue(s, info.providesPos);
+      writeSizeValue(s, info.providesCount);
+      writeSizeValue(s, info.conflictsPos);
+      writeSizeValue(s, info.conflictsCount);
+      writeSizeValue(s, info.obsoletesPos);
+      writeSizeValue(s, info.obsoletesCount);
+    }
+  for(RelInfoVector::size_type i = 0;i < m_relInfoVector.size();i++)
+    {
+      const RelInfo& info = m_relInfoVector[i];
+      size_t verId = 0;
+      //FIXME:set proper value to verId;
+      writeSizeValue(s, info.pkgId);
+      writeCharValue(s, info.type);
+      writeSizeValue(s, verId);
+    }
+  for(ProvideMapItemVector::size_type i = 0;i < m_provideMap.size();i++)
+    {
+      writeSizeValue(s, m_provideMap[i].provideId);
+      writeSizeValue(s, m_provideMap[i].pkgId);
+    }
 }
 
 void PackageScopeContentBuilder::addPkg(const PkgFile& pkgFile)
