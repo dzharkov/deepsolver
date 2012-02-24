@@ -4,7 +4,7 @@
 
 inline void writeSizeValue(std::ofstream& s, size_t value)
 {
-  s.write(&value, sizeof(size_t));
+  s.write((char*)&value, sizeof(size_t));
 }
 
 void PackageScopeContentBuilder::saveToFile(const std::string& fileName) const
@@ -19,13 +19,13 @@ void PackageScopeContentBuilder::saveToFile(const std::string& fileName) const
       k += strlen(m_stringValues[i]);
     }
   std::ofstream s(PACKAGE_LIST_FILE_NAME);
-  assert(f.is_open());//FIXME:error checking;
+  assert(s.is_open());//FIXME:error checking;
   //Saving numbers of records;
   writeSizeValue(s, m_stringValues.size());
   writeSizeValue(s, m_names.size());
   writeSizeValue(s, m_pkgInfoVector.size());
-  writeSizeValue(s, m_pkgRelVector.size());
-  writeSizeValue(s, m_provides.size());
+  writeSizeValue(s, m_relInfoVector.size());
+  writeSizeValue(s, m_provideMap.size());
 }
 
 void PackageScopeContentBuilder::addPkg(const PkgFile& pkgFile)
@@ -49,7 +49,7 @@ void PackageScopeContentBuilder::addPkg(const PkgFile& pkgFile)
     m_pkgInfoVector.push_back(pkg);
 }
 
-void PackageScopeContent::addProvideMapItem(const std::string& provideName, const std::string& packageName)
+void PackageScopeContentBuilder::addProvideMapItem(const std::string& provideName, const std::string& packageName)
 {
   //  std::cout << provideName << "->" << packageName << std::endl;
   NameToPackageIdMap::const_iterator it = m_namesToId.find(provideName);
@@ -107,10 +107,10 @@ PackageId PackageScopeContentBuilder::registerName(const std::string& name)
   return packageId;
 }
 
-void PackageScopeContentBuilder::freestringValues()
+void PackageScopeContentBuilder::freeStringValues()
 {
-  for(stringValueVector::size_type i = 0;i < m_stringValues.size();i++)
+  for(StringValueVector::size_type i = 0;i < m_stringValues.size();i++)
     delete[] m_stringValues[i];
-  m_string values.clear();
+  m_stringValues.clear();
 }
 

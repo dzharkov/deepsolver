@@ -19,7 +19,7 @@
  */
 class PackageScopeContent
 {
-private:
+protected:
   typedef std::map<std::string, PackageId> NameToPackageIdMap;
   typedef std::map<PackageId, std::string> PackageIdToNameMap;
 

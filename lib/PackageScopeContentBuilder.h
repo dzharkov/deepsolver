@@ -8,7 +8,10 @@ class PackageScopeContentBuilder: public PackageScopeContent
 {
 public:
   PackageScopeContentBuilder() {}
-  virtual ~PackageScopeContentBuilder() {}
+  virtual ~PackageScopeContentBuilder() 
+  {
+    freeStringValues();
+  }
 
 public:
   /**\brief Saves prepared package scope content to binary file on disk
@@ -30,7 +33,7 @@ public:
 private:
   void processRels(const NamedPkgRelVector& rels, size_t& pos, size_t& count);
   PackageId registerName(const std::string& name);
-void freestringValues()
+  void freeStringValues();
 
 private:
   typedef std::vector<char*> StringValueVector;

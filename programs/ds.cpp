@@ -4,6 +4,8 @@
 #include"TaskPreprocessor.h"
 #include"IndexCore.h"
 #include"TaskException.h"
+#include"PackageScopeContentBuilder.h"
+#include"PackageScopeContentLoader.h"
 
 static clock_t clockStarted;
 
@@ -198,7 +200,7 @@ void handleRequest(PackageScope& scope, const std::string& line)
   std::cout << "# Calculated in " << endClock() << " sec" << std::endl;
 }
 
-void addPackageList(const std::string& dirName, PackageScopeContent& content)
+void addPackageList(const std::string& dirName, PackageScopeContentBuilder& content)
 {
   RepoIndexTextFormatReader reader(dirName, RepoIndexParams::CompressionTypeNone);
   PkgFile pkgFile;
@@ -207,7 +209,7 @@ void addPackageList(const std::string& dirName, PackageScopeContent& content)
       content.addPkg(pkgFile);
 }
 
-void addProvides(const std::string& dirName, PackageScopeContent& content)
+void addProvides(const std::string& dirName, PackageScopeContentBuilder& content)
 {
   RepoIndexTextFormatReader reader(dirName, RepoIndexParams::CompressionTypeNone);
   std::string provideName;
