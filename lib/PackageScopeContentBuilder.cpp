@@ -25,6 +25,7 @@ inline void writeStringValue(std::ofstream& s, const char* value)
 
 void PackageScopeContentBuilder::saveToFile(const std::string& fileName) const
 {
+  assert(!fileName.c_str());
   SizeVector stringOffsets;
   stringOffsets.resize(m_stringValues.size());
   size_t k = 0;
@@ -34,13 +35,17 @@ void PackageScopeContentBuilder::saveToFile(const std::string& fileName) const
       assert(m_stringValues[i] != NULL);
       k += (strlen(m_stringValues[i]) + 1);
     }
-  std::ofstream s(PACKAGE_LIST_FILE_NAME);
+  std::ofstream s(fileName.c_str());
   assert(s.is_open());//FIXME:error checking;
   //Saving numbers of records;
   assert(m_stringValues.size() == stringOffsets.size());
   writeSizeValue(s, m_stringValues.size());
   writeSizeValue(s, k);//we must have the total length of all strings;
   writeSizeValue(s, m_names.size());
+  size_t totalNamesLen = 0;
+  for(stringVector::size_type i = 0;i < m_names.size();i++)
+    totalNamesLen += (m_names[i].length() + 1);
+  writeSizeValue(s, totalNamesLen);
   writeSizeValue(s, m_pkgInfoVector.size());
   writeSizeValue(s, m_relInfoVector.size());
   writeSizeValue(s, m_provideMap.size());
@@ -57,8 +62,9 @@ void PackageScopeContentBuilder::saveToFile(const std::string& fileName) const
   for(PkgInfoVector::size_type i = 0;i < m_pkgInfoVector.size();i++)
     {
       const PkgInfo& info = m_pkgInfoVector[i];
-      size_t verId = 0, releaseId = 0;
-      //FIXME:set proper values to verId and releaseId;
+      assert(i < m_pkgVerIndices.size());
+      const size_t verId = m_pkgVerIndices[i];
+      const size_t releaseId = verId + 1;
       writeSizeValue(s, info.pkgId);
       writeUnsignedShortValue(s, info.epoch);
       writeSizeValue(s, verId);
@@ -73,20 +79,23 @@ void PackageScopeContentBuilder::saveToFile(const std::string& fileName) const
       writeSizeValue(s, info.obsoletesPos);
       writeSizeValue(s, info.obsoletesCount);
     }
+  //Saving package relations;
   for(RelInfoVector::size_type i = 0;i < m_relInfoVector.size();i++)
     {
       const RelInfo& info = m_relInfoVector[i];
-      size_t verId = 0;
-      //FIXME:set proper value to verId;
+      assert(i < m_relVerIndices.size());
+      const size_t verId = m_relVerIndices[i];
       writeSizeValue(s, info.pkgId);
       writeCharValue(s, info.type);
       writeSizeValue(s, verId);
     }
+  //Saving provide map;
   for(ProvideMapItemVector::size_type i = 0;i < m_provideMap.size();i++)
     {
       writeSizeValue(s, m_provideMap[i].provideId);
       writeSizeValue(s, m_provideMap[i].pkgId);
     }
+  s.flush();
 }
 
 void PackageScopeContentBuilder::addPkg(const PkgFile& pkgFile)
@@ -99,9 +108,11 @@ void PackageScopeContentBuilder::addPkg(const PkgFile& pkgFile)
   pkg.ver = new char[pkgFile.version.length() + 1];
   strcpy(pkg.ver, pkgFile.version.c_str());
   m_stringValues.push_back(pkg.ver);
+  m_pkgVerIndices.push_back(m_stringValues.size() - 1);
   pkg.release = new char[pkgFile.release.length() + 1];
   strcpy(pkg.release, pkgFile.release.c_str());
   m_stringValues.push_back(pkg.release);
+  //No need to save index of release string in m_stringValues vector since it always has the value of version string index +1;
   pkg.buildTime = pkgFile.buildTime;
   processRels(pkgFile.requires, pkg.requiresPos, pkg.requiresCount);
   processRels(pkgFile.conflicts, pkg.conflictsPos, pkg.conflictsCount);
@@ -151,7 +162,9 @@ void PackageScopeContentBuilder::processRels(const NamedPkgRelVector& rels, size
 	  info.ver = new char[rel.ver.length() + 1];
 	  strcpy(info.ver, rel.ver.c_str());
 	  m_stringValues.push_back(info.ver);
-	}
+	  m_relVerIndices.push_back(m_stringValues.size() - 1);
+	} else 
+	m_relVerIndices.push_back((size_t)-1);
             m_relInfoVector.push_back(info);
     }
 }

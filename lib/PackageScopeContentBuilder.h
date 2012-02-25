@@ -40,6 +40,7 @@ private:
 
 private:
   StringValueVector m_stringValues;
+  SizeVector m_pkgVerIndices, m_relVerIndices;
 }; //class PackageScopeContentBuilder;
 
 #endif //DEEPSOLVER_PACKAGE_SCOPE_CONTENT_BUILDER_H;
