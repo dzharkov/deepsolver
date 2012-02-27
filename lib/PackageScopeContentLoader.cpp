@@ -147,8 +147,8 @@ void PackageScopeContentLoader::readNames(std::ifstream& s, size_t namesBufSize)
       m_names.push_back(prev);
 	      prev.erase();
 	      //OK, incomplete string was successfully processed;
+	      i++;
     } //If we have incomplete string chunk;
-  i++;
   size_t fromPos = i;
       for(;i < toRead;i++)
 	{
