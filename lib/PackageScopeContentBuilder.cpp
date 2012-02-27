@@ -25,7 +25,7 @@ inline void writeStringValue(std::ofstream& s, const char* value)
 
 void PackageScopeContentBuilder::saveToFile(const std::string& fileName) const
 {
-  assert(!fileName.c_str());
+  assert(!fileName.empty());
   SizeVector stringOffsets;
   stringOffsets.resize(m_stringValues.size());
   size_t k = 0;
@@ -43,7 +43,7 @@ void PackageScopeContentBuilder::saveToFile(const std::string& fileName) const
   writeSizeValue(s, k);//we must have the total length of all strings;
   writeSizeValue(s, m_names.size());
   size_t totalNamesLen = 0;
-  for(stringVector::size_type i = 0;i < m_names.size();i++)
+  for(StringVector::size_type i = 0;i < m_names.size();i++)
     totalNamesLen += (m_names[i].length() + 1);
   writeSizeValue(s, totalNamesLen);
   writeSizeValue(s, m_pkgInfoVector.size());
