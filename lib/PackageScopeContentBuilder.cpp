@@ -143,6 +143,8 @@ void PackageScopeContentBuilder::addProvideMapItem(const std::string& provideNam
 
 void PackageScopeContentBuilder::commit()
 {
+  assert(m_pkgVerIndices.size() == m_pkgInfoVector.size());
+  assert(m_relVerIndices.size() == m_relInfoVector.size());
   std::sort(m_pkgInfoVector.begin(), m_pkgInfoVector.end());
   std::sort(m_provideMap.begin(), m_provideMap.end());
 }
