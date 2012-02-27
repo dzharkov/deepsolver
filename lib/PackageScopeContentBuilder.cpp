@@ -25,6 +25,7 @@ inline void writeStringValue(std::ofstream& s, const char* value)
 
 void PackageScopeContentBuilder::saveToFile(const std::string& fileName) const
 {
+  logMsg(LOG_DEBUG, "Starting saving to binary file \'%s\'", fileName.c_str());
   assert(!fileName.empty());
   SizeVector stringOffsets;
   stringOffsets.resize(m_stringValues.size());
@@ -40,15 +41,22 @@ void PackageScopeContentBuilder::saveToFile(const std::string& fileName) const
   //Saving numbers of records;
   assert(m_stringValues.size() == stringOffsets.size());
   writeSizeValue(s, m_stringValues.size());
+  logMsg(LOG_DEBUG, "%zu string table entries", m_stringValues.size());
   writeSizeValue(s, k);//we must have the total length of all strings;
+  logMsg(LOG_DEBUG, "%zu bytes in all string constants with trailing zeroes", k);
   writeSizeValue(s, m_names.size());
+  logMsg(LOG_DEBUG, "%zu package names", m_names.size());
   size_t totalNamesLen = 0;
   for(StringVector::size_type i = 0;i < m_names.size();i++)
     totalNamesLen += (m_names[i].length() + 1);
   writeSizeValue(s, totalNamesLen);
+  logMsg(LOG_DEBUG, "%zu bytes in all package names with trailing zeroes", totalNamesLen);
   writeSizeValue(s, m_pkgInfoVector.size());
+  logMsg(LOG_DEBUG, "%zu packages", m_pkgInfoVector.size());
   writeSizeValue(s, m_relInfoVector.size());
+  logMsg(LOG_DEBUG, "%zu package relations", m_relInfoVector.size());
   writeSizeValue(s, m_provideMap.size());
+  logMsg(LOG_DEBUG, "%zu provide map items", m_provideMap.size());
   //Saving strings bounds;
   for(SizeVector::size_type i = 0;i < stringOffsets.size();i++)
     writeSizeValue(s, stringOffsets[i]);

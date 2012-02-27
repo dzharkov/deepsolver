@@ -265,6 +265,7 @@ void run(int argc, char* argv[])
 
 int main(int argc, char* argv[])
 {
+  initLogging("/tmp/deepsolver.log", LOG_DEBUG);//FIXME:
   try {
     run(argc, argv);
   }

@@ -44,6 +44,7 @@ static void   readBuf(std::ifstream& s, char* buf, size_t bufSize)
 
 void PackageScopeContentLoader::loadFromFile(const std::string& fileName)
 {
+  logMsg(LOG_DEBUG, "Starting reading from binary file \'%s\'", fileName.c_str());
   assert(!fileName.empty());
   assert(m_names.empty());
   assert(m_pkgInfoVector.empty());
@@ -54,12 +55,19 @@ void PackageScopeContentLoader::loadFromFile(const std::string& fileName)
   assert(s.is_open());//FIXME:error checking;
   //Reading numbers of records;
   const size_t numStringValues = readSizeValue(s);
+  logMsg(LOG_DEBUG, "%zu string table entries", numStringValues);
   const size_t stringBufSize = readSizeValue(s);
+  logMsg(LOG_DEBUG, "%zu bytes in all string constants with trailing zeroes", stringBufSize);
   const size_t nameCount = readSizeValue(s);
+  logMsg(LOG_DEBUG, "%zu package names", nameCount);
   const size_t namesBufSize = readSizeValue(s);
+  logMsg(LOG_DEBUG, "%zu bytes in all package names with trailing zeroes", namesBufSize);
   m_pkgInfoVector.resize(readSizeValue(s));
+  logMsg(LOG_DEBUG, "%zu packages", m_pkgInfoVector.size());
   m_relInfoVector.resize(readSizeValue(s));
+  logMsg(LOG_DEBUG, "%zu package relations", m_relInfoVector.size());
   m_provideMap.resize(readSizeValue(s));
+  logMsg(LOG_DEBUG, "%zu provide map items", m_provideMap.size());
   //Reading strings bounds;
   SizeVector stringBounds;
   stringBounds.resize(numStringValues);
