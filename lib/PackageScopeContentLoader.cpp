@@ -54,8 +54,6 @@ void PackageScopeContentLoader::loadFromFile(const std::string& fileName)
   std::ifstream s(fileName.c_str());
   assert(s.is_open());//FIXME:error checking;
   //Reading numbers of records;
-  const size_t numStringValues = readSizeValue(s);
-  logMsg(LOG_DEBUG, "%zu string table entries", numStringValues);
   const size_t stringBufSize = readSizeValue(s);
   logMsg(LOG_DEBUG, "%zu bytes in all string constants with trailing zeroes", stringBufSize);
   const size_t nameCount = readSizeValue(s);
@@ -68,15 +66,6 @@ void PackageScopeContentLoader::loadFromFile(const std::string& fileName)
   logMsg(LOG_DEBUG, "%zu package relations", m_relInfoVector.size());
   m_provideMap.resize(readSizeValue(s));
   logMsg(LOG_DEBUG, "%zu provide map items", m_provideMap.size());
-  //Reading strings bounds;
-  SizeVector stringBounds;
-  stringBounds.resize(numStringValues);
-  for(size_t i = 0;i < numStringValues;i++)
-    {
-      stringBounds[i] = readSizeValue(s);
-      assert(stringBounds[i] < stringBufSize);
-    }
-  assert(stringBounds.empty() || stringBounds[0] == 0);
   //Reading all version and release strings;
   m_stringBuf = new char[stringBufSize];
   readBuf(s, m_stringBuf, stringBufSize );
@@ -92,12 +81,12 @@ void PackageScopeContentLoader::loadFromFile(const std::string& fileName)
       PkgInfo& info = m_pkgInfoVector[i];
       info.pkgId = readSizeValue(s);
       info.epoch = readUnsignedShortValue(s);
-      const size_t verId = readSizeValue(s);
-      assert(verId < stringBounds.size());//FIXME:must be an exception;
-      info.ver = m_stringBuf + stringBounds[verId];
-      const size_t releaseId = readSizeValue(s);
-      assert(releaseId < stringBounds.size());//FIXME:must be an exception;
-      info.release = m_stringBuf + stringBounds[releaseId];
+      const size_t verOffset = readSizeValue(s);
+      assert(verOffset < stringBufSize);//FIXME:must be an exception;
+      info.ver = m_stringBuf + verOffset;
+      const size_t releaseOffset = readSizeValue(s);
+      assert(releaseOffset < stringBufSize);//FIXME:must be an exception;
+      info.release = m_stringBuf + releaseOffset;
       info.buildTime = readSizeValue(s);
       info.requiresPos = readSizeValue(s);
       info.requiresCount = readSizeValue(s);
@@ -114,12 +103,13 @@ void PackageScopeContentLoader::loadFromFile(const std::string& fileName)
       RelInfo& info = m_relInfoVector[i];
       info.pkgId = readSizeValue(s);
       info.type = readCharValue(s);
-      const size_t verId = readSizeValue(s);
-      if (verId != (size_t)-1)
+      const size_t verOffset = readSizeValue(s);
+      if (verOffset != (size_t)-1)
 	{
-	  assert(verId < stringBounds.size());//FIXME:must be an exception;
-	  info.ver = m_stringBuf + stringBounds[verId];
-	}
+	  assert(verOffset < stringBufSize);//FIXME:must be an exception;
+	  info.ver = m_stringBuf + verOffset;
+	} else
+	info.ver = NULL;
     }
   //Reading provide map;
   for(ProvideMapItemVector::size_type i = 0;i < m_provideMap.size();i++)

@@ -69,6 +69,7 @@ public:
     size_t providesPos, providesCount;
     size_t conflictsPos, conflictsCount;
     size_t obsoletesPos, obsoletesCount;
+    size_t aux;
   }; //struct PkgInfo;
 
   typedef std::list<PkgInfo> PkgInfoList;

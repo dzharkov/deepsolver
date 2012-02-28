@@ -225,6 +225,7 @@ void addProvides(const std::string& dirName, PackageScopeContentBuilder& content
 
 void buildBinaryData()
 {
+  std::cout << "Creating binary index... ";
   PackageScopeContentBuilder content;
   beginClock();
   addPackageList("i586/base", content);
@@ -232,10 +233,8 @@ void buildBinaryData()
   addProvides("i586/base", content);
   addProvides("noarch/base", content);
   content.commit();
-  std::cout << "Repo index was read in " << endClock() << " sec" << std::endl;
-  beginClock();
   content.saveToFile(PACKAGE_LIST_FILE_NAME);
-  std::cout << "Binary data saved in " << endClock() << " sec" << std::endl;
+  std::cout << "done in " << endClock() << " sec" << std::endl;
 }
 
 void run(int argc, char* argv[])
