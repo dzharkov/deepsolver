@@ -73,8 +73,6 @@ void PackageScopeContentLoader::loadFromFile(const std::string& fileName)
   m_names.reserve(nameCount);
     readNames(s, namesBufSize);
   assert(m_names.size() == nameCount);
-  for(StringVector::size_type i = 0;i < m_names.size();i++)
-    m_namesToId.insert(NameToPackageIdMap::value_type(m_names[i], i));
   //Reading package list;
   for(PkgInfoVector::size_type i = 0;i < m_pkgInfoVector.size();i++)
     {

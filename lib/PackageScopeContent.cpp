@@ -62,15 +62,20 @@ void PackageScopeContent::getProviders(PackageId provideId, PackageIdVector& pro
 bool PackageScopeContent::checkName(const std::string& name) const
 {
   assert(!name.empty());
-  return m_namesToId.find(name) != m_namesToId.end();
+  for(StringVector::size_type i = 0;i < m_names.size();i++)
+    if (m_names[i] == name)
+      return 1;
+  return 0;
 }
 
 PackageId PackageScopeContent::strToPackageId(const std::string& name) const
 {
   assert(!name.empty());
-  NameToPackageIdMap::const_iterator it = m_namesToId.find(name);
-  assert(it != m_namesToId.end());
-  return it->second;
+  for(StringVector::size_type i = 0;i < m_names.size();i++)
+    if (m_names[i] == name)
+      return i;
+  assert(0);
+  return BAD_PACKAGE_ID;
 }
 
 std::string PackageScopeContent::packageIdToStr(PackageId packageId) const

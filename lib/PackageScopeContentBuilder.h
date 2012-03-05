@@ -39,8 +39,12 @@ private:
   typedef std::vector<char*> StringValueVector;
 
 private:
+  typedef std::map<std::string, PackageId> NameToPackageIdMap;
+
+private:
   StringValueVector m_stringValues;
   SizeVector m_relVerIndices;
+  NameToPackageIdMap m_namesToId;
 }; //class PackageScopeContentBuilder;
 
 #endif //DEEPSOLVER_PACKAGE_SCOPE_CONTENT_BUILDER_H;

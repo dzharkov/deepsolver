@@ -19,10 +19,6 @@
  */
 class PackageScopeContent
 {
-protected:
-  typedef std::map<std::string, PackageId> NameToPackageIdMap;
-  typedef std::map<PackageId, std::string> PackageIdToNameMap;
-
 public:
   struct RelInfo
   {
@@ -115,7 +111,6 @@ public:
   const RelInfoVector& getRels() const;
 
 protected:
-  NameToPackageIdMap m_namesToId;
   StringVector m_names;
   PkgInfoVector m_pkgInfoVector;
   RelInfoVector m_relInfoVector;

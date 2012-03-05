@@ -127,7 +127,6 @@ void PackageScopeContentBuilder::addPkg(const PkgFile& pkgFile)
 
 void PackageScopeContentBuilder::addProvideMapItem(const std::string& provideName, const std::string& packageName)
 {
-  //  std::cout << provideName << "->" << packageName << std::endl;
   NameToPackageIdMap::const_iterator it = m_namesToId.find(provideName);
   assert(it != m_namesToId.end());//FIXME:must be an exception;
   const PackageId provideId = it->second;
