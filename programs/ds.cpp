@@ -94,17 +94,6 @@ bool parseUserTask(const std::string& line, UserTask& task)
   return 1;
 }
 
-void beginClock()
-{
-  clockStarted = clock();
-}
-
-double endClock()
-{
-  const clock_t val = clock() - clockStarted;
-  return (double)val / CLOCKS_PER_SEC;
-}
-
 void handleRequest(PackageScope& scope, const std::string& line)
 {
   UserTask task;
@@ -119,7 +108,6 @@ void handleRequest(PackageScope& scope, const std::string& line)
   priorityList.load("pkgpriorities");
   TaskPreprocessor taskPreprocessor(scope, priorityList);
   VarIdVector toInstall, toRemove;
-  beginClock();
   try {
     taskPreprocessor.preprocess(task, toInstall, toRemove);
   }
@@ -197,7 +185,6 @@ void handleRequest(PackageScope& scope, const std::string& line)
     std::cout << "# No conflicted packages" << std::endl << std::endl;
   //Answer footer;
   std::cout << "# Answer contains " << closure.size() << " entries to install and " << conflicts.size() << " conflicted entries" << std::endl;
-  std::cout << "# Calculated in " << endClock() << " sec" << std::endl;
 }
 
 void addPackageList(const std::string& dirName, PackageScopeContentBuilder& content)
@@ -227,14 +214,13 @@ void buildBinaryData()
 {
   std::cout << "Creating binary index... ";
   PackageScopeContentBuilder content;
-  beginClock();
   addPackageList("i586/base", content);
   addPackageList("noarch/base", content);
   addProvides("i586/base", content);
   addProvides("noarch/base", content);
   content.commit();
   content.saveToFile(PACKAGE_LIST_FILE_NAME);
-  std::cout << "done in " << endClock() << " sec" << std::endl;
+  std::cout << "done." << std::endl;
 }
 
 void run(int argc, char* argv[])
@@ -245,9 +231,7 @@ void run(int argc, char* argv[])
       return;
     }
   PackageScopeContentLoader content;
-  beginClock();
   content.loadFromFile(PACKAGE_LIST_FILE_NAME);
-  std::cout << "Binary package list read in " << endClock() << " seconds" << std::endl;
   PackageScope scope(content);
   std::string line;
   while(1)
