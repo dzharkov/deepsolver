@@ -5,6 +5,15 @@ COMPRESSION=none
 VENDOR='ALt Linux'
 NAME=Sisyphus
 
+[ -z "$1" ] && echo "${0##*/}:you should give path to ALT Linux repo" >&2 && exit 1
+ALT="$1"
+
+for i in noarch i586 x86_64; do
+    /bin/mkdir "$i"
+    /bin/ln -s "$ALT/files/$i/RPMS" "$i/RPMS"
+    /bin/ln -s "$ALT/files/SRPMS" "$i/SRPMS"
+done
+
 genbasedir -c "$COMPRESSION" -r -d i586/RPMS:x86_64/RPMS -p "$PATH" -u "name=$NAME" -u "vendor=$VENDOR" -l noarch
 genbasedir -c "$COMPRESSION" -r -d noarch/RPMS -p "$PATH" -u "name=$NAME" -u "vendor=$VENDOR" -l i586
 genbasedir -c "$COMPRESSION" -r -d noarch/RPMS -p "$PATH" -u "name=$NAME" -u "vendor=$VENDOR" -l x86_64
