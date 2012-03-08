@@ -38,6 +38,7 @@ public:
   bool provideFilteringByRefs;
   StringList takeRefsFromPackageDirs;
   bool changeLogBinary;
+  std::string excludeRequiresFile;
   bool changeLogSources;
 }; //class RepoIndexParams;
 

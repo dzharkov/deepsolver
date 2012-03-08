@@ -157,11 +157,13 @@ static bool fileFromDirs(const std::string& fileName, const StringList& dirs)
   return 0;
 }
 
-RepoIndexTextFormatWriter::RepoIndexTextFormatWriter(const RepoIndexParams& params,
+RepoIndexTextFormatWriter::RepoIndexTextFormatWriter(const AbstractRequireFilter& requireFilter,
+						     const RepoIndexParams& params,
 						     AbstractConsoleMessages& console,
 						     const std::string& dir,
 						     const StringSet& additionalRefs)
-  : m_params(params),
+  : m_requireFilter(requireFilter),
+    m_params(params),
     m_console(console),
     m_dir(dir),
     m_rpmsFileName(addCompressionExtension(concatUnixPath(dir, REPO_INDEX_RPMS_DATA_FILE), params)),
@@ -234,6 +236,8 @@ void RepoIndexTextFormatWriter::addBinary(const PkgFile& pkgFile, const StringLi
       }
   for(NamedPkgRelVector::const_iterator it = pkgFile.requires.begin();it != pkgFile.requires.end();it++)
     {
+      if (m_requireFilter.excludeRequire(it->pkgName))
+	continue;
       m_tmpFile->writeLine(REQUIRES_STR + saveNamedPkgRel(*it));
       if (m_filterProvidesByRefs)
 	m_refsSet.insert(it->pkgName);

@@ -86,6 +86,7 @@ static void printHelp()
 	 "Valid command line options are:\n"
 	 "\t-h - print this help screen;\n"
 	 "\t-c TYPE - choose compression type: none or gzip (default is gzip);\n"
+	 "\t-e FILENAME - ignore require entries mentioned in FILENAME;\n"
 	 "\t-d DIRLIST - add colon-delimited list of directories to take references from for provides filtering (in addition to \'-r\' if it is used);\n"
 	 "\t-l - include change log into binary and source indices;\n"
 	 //TODO:	 "\t-f FORMAT - choose data format: binary or text (default is text);\n"
@@ -132,7 +133,7 @@ static bool parseCmdLine(int argc, char* argv[])
   params.topDir = ".";
   while(1)
     {
-      const int p = getopt(argc, argv, "c:d:hu:rp:l");
+      const int p = getopt(argc, argv, "c:d:e:hu:rp:l");
       if (p == -1)
 	break;
       if (p == '?')
@@ -152,6 +153,9 @@ static bool parseCmdLine(int argc, char* argv[])
 	  break;
 	case 'd':
 	  splitColonDelimitedList(optarg, params.takeRefsFromPackageDirs);
+	  break;
+	case 'e':
+	  params.excludeRequiresFile = optarg;
 	  break;
 	case 'p':
 	  splitColonDelimitedList(optarg, params.provideFilterDirs);

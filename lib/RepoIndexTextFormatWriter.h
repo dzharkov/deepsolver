@@ -7,6 +7,16 @@
 #include"AbstractConsoleMessages.h"
 #include"TextFiles.h"
 
+class AbstractRequireFilter
+{
+public:
+  AbstractRequireFilter() {}
+  virtual ~AbstractRequireFilter() {}
+
+public:
+  virtual bool excludeRequire(const std::string& requireEntry) const = 0;
+}; //class abstractRequireFilter;
+
 /**\brief The class to write repo index data in text format
  *
  * This is the main class for writing repository index data in text
@@ -42,7 +52,8 @@
 class RepoIndexTextFormatWriter
 {
 public:
-  RepoIndexTextFormatWriter(const RepoIndexParams& params,
+  RepoIndexTextFormatWriter(const AbstractRequireFilter& requireFilter,
+			    const RepoIndexParams& params,
 			    AbstractConsoleMessages& console,
 			    const std::string& dir,
 			    const StringSet& additionalRefs);
@@ -115,6 +126,7 @@ private://Fields for provides resolving;
   SizeVector m_resolvingData;
 
 private:
+  const AbstractRequireFilter& m_requireFilter;
   const RepoIndexParams& m_params;
   AbstractConsoleMessages& m_console;
   const std::string m_dir;

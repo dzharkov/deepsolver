@@ -7,8 +7,6 @@
 #include"PackageScopeContentBuilder.h"
 #include"PackageScopeContentLoader.h"
 
-static clock_t clockStarted;
-
 bool       translateDirection(UserTaskItemToInstall& item, const std::string& str)
 {
   item.less = 0;

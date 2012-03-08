@@ -25,7 +25,6 @@ static void splitBySpaces(const std::string& str, StringList& items)
 
 void ProvidePriorityList::load(const std::string& fileName)
 {
-
   std::auto_ptr<AbstractTextFileReader> reader = createTextFileReader(TextFileStd, fileName);
   std::string line;
   while(reader->readLine(line))

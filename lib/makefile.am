@@ -42,6 +42,8 @@ RepoIndexTextFormatReader.cpp \
 RepoIndexTextFormatReader.h \
 RepoIndexTextFormatWriter.cpp \
 RepoIndexTextFormatWriter.h \
+RequireFilter.cpp \
+RequireFilter.h \
 string-utils.cpp \
 string-utils.h \
 TaskException.h \

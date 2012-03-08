@@ -6,6 +6,7 @@
 #include"rpm/RpmFile.h"
 #include"rpm/RpmFileHeaderReader.h"
 #include"MD5.h"
+#include"RequireFilter.h"
 
 void IndexCore::collectRefs(const std::string& dirName, StringSet& res) 
 {
@@ -60,7 +61,10 @@ void IndexCore::processPackages(const std::string& indexDir, const std::string& 
       logMsg(LOG_DEBUG, "Provide filtering by used references is enabled, checking additional directories with packages to collect references entries");
       collectRefsFromDirs(params.takeRefsFromPackageDirs, additionalRefs);
     }
-  RepoIndexTextFormatWriter handler(params, m_console, indexDir, additionalRefs);
+  RequireFilter requireFilter;
+  if (!params.excludeRequiresFile.empty())
+    requireFilter.load(params.excludeRequiresFile);
+  RepoIndexTextFormatWriter handler(requireFilter, params, m_console, indexDir, additionalRefs);
   //Binary packages;
   handler.initBinary();
   logMsg(LOG_DEBUG, "RepoIndexTextFormatWriter created and initialized for binary packages");

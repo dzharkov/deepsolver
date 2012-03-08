@@ -46,3 +46,16 @@ bool checkExtension(const std::string& fileName, const std::string& extension)
       return 0;
   return 1;
 }
+
+std::string trim(const std::string& str)
+{
+  std::string::size_type l1=0, l2 = str.length();
+  while(l1 < str.length() && BLANK_CHAR(str[l1]))
+    l1++;
+  while(l2 > l1 && BLANK_CHAR(str[l2-1]))
+    l2--;
+  std::string newStr;
+  for(std::string::size_type i = l1;i < l2;i++)
+    newStr += str[i];
+  return newStr;
+}
