@@ -1,0 +1,13 @@
+# This file contains list of Requires entries to be skipped while
+# preparing a repository index. Basically it is purposed for rpmlib-type
+# requires since there are no packages containing corresponding
+# provides. In future this file will be able to contain regexp entries
+# to allow more flexible specification.
+
+rpmlib(SetVersions)
+rpmlib(PayloadIsLzma)
+rpmlib(PosttransFiletriggers)
+rpmlib(VersionedDependencies)
+rpmlib(PayloadFilesHavePrefix)
+rpmlib(CompressedFileNames)
+rpmlib(ScriptletInterpreterArgs)
