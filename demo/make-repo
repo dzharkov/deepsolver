@@ -19,3 +19,5 @@ done
 ../programs/genbasedir -e "$IGNORE_FILE" -c "$COMPRESSION" -r -d i586/RPMS:x86_64/RPMS -p "$PATH" -u "name=$NAME" -u "vendor=$VENDOR" -l noarch
 ../programs/genbasedir -e "$IGNORE_FILE" -c "$COMPRESSION" -r -d noarch/RPMS -p "$PATH" -u "name=$NAME" -u "vendor=$VENDOR" -l i586
 ../programs/genbasedir -e "$IGNORE_FILE" -c "$COMPRESSION" -r -d noarch/RPMS -p "$PATH" -u "name=$NAME" -u "vendor=$VENDOR" -l x86_64
+
+../programs/ds update

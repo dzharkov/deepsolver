@@ -1,0 +1,8 @@
+# This file contains list of the most preferable providers for any
+# provide entry. Each line has to contain several package names
+# delimited by spaces where the first package name is the provide name
+# to set priority for and all following names are the names of
+# preferable packages in the descending order of priority.
+
+kernel-headers glibc-kernheaders
+altlinux-release altlinux-release-sisyphus
