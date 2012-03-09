@@ -11,17 +11,13 @@ static void locateRange(const PackageScopeContent::PkgInfoVector& pkgs, PackageI
       toPos = 0;
       return;
     }
-  //  std::cout << "called for " << packageId << std::endl;
   VarId l = 0, r = pkgs.size();
   while(l + 1 < r)
     {
       const VarId center = (l + r) / 2;
       assert(center < pkgs.size());
-      //      std::cout << l << " " << center << " " << r << std::endl;
-      //      std::cout << "+" << pkgs[l].pkgId << " " << pkgs[center].pkgId << " " << pkgs[r].pkgId << std::endl;
       if (pkgs[center].pkgId == packageId)
 	{
-	  //	  std::cout << "found" << std::endl;
 	  fromPos = center;
 	  toPos = center;
 	  while(fromPos > 0 && pkgs[fromPos].pkgId == packageId)//VarId is unsigned, so all known overflow troubles is possible here, be careful!
@@ -44,7 +40,6 @@ static void locateRange(const PackageScopeContent::PkgInfoVector& pkgs, PackageI
   assert(center < pkgs.size());
   if (pkgs[center].pkgId == packageId)
     {
-      //	  std::cout << "found after" << std::endl;
       fromPos = center;
       toPos = center;
       while(fromPos > 0 && pkgs[fromPos].pkgId == packageId)//VarId is unsigned, so all known overflow troubles is possible here, be careful!
@@ -61,12 +56,10 @@ static void locateRange(const PackageScopeContent::PkgInfoVector& pkgs, PackageI
   //We cannot find anything here;
   fromPos = 0;
   toPos = 0;
-  //	  std::cout << "not found" << std::endl;
 }
 
 static void selectVarsToTry(const PackageScopeContent& content, PackageId packageId, VarIdVector& toTry, bool includeItself)
 {
-  //  std::cout << "selectVarsToTry()" << std::endl;
   PackageIdVector providers;
   content.getProviders(packageId, providers);
   if (includeItself)
@@ -80,7 +73,6 @@ static void selectVarsToTry(const PackageScopeContent& content, PackageId packag
       for(VarId k = fromPos;k < toPos;k++)
 	toTry.push_back(k);
     }
-  //  std::cout << "return" << std::endl;
 }
 
 PackageId PackageScope::packageIdOfVarId(VarId varId) const

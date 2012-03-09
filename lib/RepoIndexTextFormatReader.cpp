@@ -13,7 +13,6 @@
 
 static   void translateRelType(const std::string& str, NamedPkgRel& rel)
 {
-  //  std::cout << str << std::endl;
   assert(str == "<" || str == ">" || str == "=" || str == "<=" || str == ">=");
   rel.type = 0;
   if (str == "<" || str == "<=")
@@ -28,7 +27,6 @@ static   void translateRelType(const std::string& str, NamedPkgRel& rel)
 
 static void parsePkgRel(const std::string& str, NamedPkgRel& rel)
 {
-  //  std::cout << str << std::endl;
   std::string::size_type i = 0;
   //Extracting package name;
   while(i < str.length() && str[i] != ' ')
@@ -47,7 +45,6 @@ static void parsePkgRel(const std::string& str, NamedPkgRel& rel)
 	} //backslash;
       rel.pkgName += str[i++];
     }
-  //  std::cout << rel.pkgName << std::endl;
   if (i >= str.length())
     return;
   i++;
@@ -60,7 +57,6 @@ static void parsePkgRel(const std::string& str, NamedPkgRel& rel)
       r += str[i + 1];
       i++;
     }
-  //  std::cout << r << std::endl;
   i++;
   translateRelType(r, rel);
   assert(i < str.length() && str[i] == ' ');//FIXME:must be an exception;
@@ -73,7 +69,6 @@ static void parsePkgRel(const std::string& str, NamedPkgRel& rel)
 
 static void parsePkgFileSection(const StringList& sect, PkgFile& pkgFile)
 {
-  //  std::cout << "parsing section " << sect.size() << std::endl;
   pkgFile.source = 0;
   assert(!sect.empty());
   StringList::const_iterator it = sect.begin();
@@ -82,7 +77,6 @@ static void parsePkgFileSection(const StringList& sect, PkgFile& pkgFile)
   for(std::string::size_type i = 1;i < pkgFile.fileName.length();i++)
     pkgFile.fileName[i - 1] = pkgFile.fileName[i];
   pkgFile.fileName.resize(pkgFile.fileName.size() - 2);
-  //  std::cout << pkgFile.fileName << std::endl;
   it++;
   assert(it != sect.end());//FIXME:must be exception;
   for(;it != sect.end();it++)
@@ -190,7 +184,6 @@ bool RepoIndexTextFormatReader::readPackage(PkgFile& pkgFile)
   pkgFile.conflicts.clear();
   pkgFile.obsoletes.clear();
   pkgFile.changeLog.clear();
-  //  std::cout << "entered reading package " << m_noMoreData << std::endl;
   if (m_noMoreData || m_reader.get() == NULL)
     return 0;
   std::string line;
@@ -206,7 +199,6 @@ bool RepoIndexTextFormatReader::readPackage(PkgFile& pkgFile)
 	  m_noMoreData = 1;
 	  return 0;
 	}
-      //      std::cout << line << std::endl;
       assert(line.length() > 2 && line[0] == '[' && line[line.length() - 1] == ']');//FIXME:must be an exception;
       section.push_back(line);
       //OK, we have found section header and can process it content;
@@ -217,7 +209,6 @@ bool RepoIndexTextFormatReader::readPackage(PkgFile& pkgFile)
     {
       if (line.length() > 2 && line[0] == '[' && line[line.length() - 1] == ']')
 	{
-	  //	  std::cout << line << std::endl;
 	  m_lastSectionHeader = line;
 	  m_noMoreData = 0;
 	  break;

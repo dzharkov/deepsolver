@@ -111,20 +111,16 @@ void TaskPreprocessor::processRequires(VarId varId, VarIdVector& dependent)
   PackageIdVector depWithoutVersion, depWithVersion;
   VersionCondVector versions;
   m_scope.getRequires(varId, depWithoutVersion, depWithVersion, versions);
-  //  std::cout << depWithVersion.size() << " deps with version" << std::endl;
-  //  std::cout << depWithoutVersion.size() << " deps without version" << std::endl;
   assert(depWithVersion.size() == versions.size());
   for(PackageIdVector::size_type i = 0;i < depWithoutVersion.size();i++)
     {
       const VarId res = processRequireWithoutVersion(depWithoutVersion[i]);
-      //std::cout << "Selecting " << m_scope.constructPackageName(res) << "to satisfy " << m_scope.packageIdToStr(depWithoutVersion[i]) << std::endl;
       assert(res != BAD_VAR_ID);
       dependent.push_back(res);
     }
   for(PackageIdVector::size_type i = 0;i < depWithVersion.size();i++)
     {
       const VarId res = processRequireWithVersion(depWithVersion[i], versions[i]);
-      //      std::cout << "Selecting " << m_scope.constructPackageName(res) << "to satisfy " << m_scope.packageIdToStr(depWithVersion[i]) << std::endl;
       assert(res != BAD_VAR_ID);
       dependent.push_back(res);
     }
