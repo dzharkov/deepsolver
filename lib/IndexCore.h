@@ -1,6 +1,5 @@
 /*
    Copyright 2011-2012 ALT Linux
-   Copyright 2011-2012 Dmitry V. Levin
    Copyright 2011-2012 Michael Pozhidaev
 
    This file is part of the Deepsolver.
