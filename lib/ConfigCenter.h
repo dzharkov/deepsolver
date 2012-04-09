@@ -18,18 +18,22 @@
 #ifndef DEEPSOLVER_CONFIG_CENTER_H
 #define DEEPSOLVER_CONFIG_CENTER_H
 
+#include"ConfigFile.h"
 #include"DefaultValues.h"
 
-class ConfigCenter
+class ConfigCenter: private AbstractConfigFileListener
 {
 public:
-  ConfigCenter():
-    configDirPath(DEFAULT_CONFIG_DIR)
-  {}
+  ConfigCenter() {}
+  virtual ~ConfigCenter() {}
 
 public:
-  std::string configDirPath;
-  std::string attachedRepoList;
+  void load(const std:;string& configDir);
+
+private://AbstractConfigFileListener;
+  void onStringValue(const stringVector& path, const std::string& value);
+  void onIntValue(const StringVector& path, int value);
+  void onBooleanValue(const StringVector& path, bool value);
 }; //class ConfigCenter;
 
 #endif //DEEPSOLVER_CONFIG_CENTER_H;

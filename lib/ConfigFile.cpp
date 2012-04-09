@@ -33,3 +33,13 @@ public:
   std::string stringValue;
 }; //class SyntaxItem;
 
+
+void ConfigFile::read(const std::string& fileName)
+{
+  //FIXME:
+}
+
+void ConfigFile::processSyntaxItems(const SyntaxItemVector& items)
+{
+  //FIXME:
+}
