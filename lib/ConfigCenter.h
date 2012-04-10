@@ -19,7 +19,14 @@
 #define DEEPSOLVER_CONFIG_CENTER_H
 
 #include"ConfigFile.h"
-#include"DefaultValues.h"
+#include"AttachedRepo.h"
+
+struct ConfRoot
+{
+  std::string indexDir;
+  std::string indexFetchDir;
+  AttachedRepoVector repos;
+}; //struct ConfRoot;
 
 class ConfigCenter: private AbstractConfigFileListener
 {
@@ -30,10 +37,18 @@ public:
 public:
   void load(const std:;string& configDir);
 
+  const ConfRoot& root() const
+  {
+    return m_root;
+  }
+
 private://AbstractConfigFileListener;
   void onStringValue(const stringVector& path, const std::string& value);
   void onIntValue(const StringVector& path, int value);
   void onBooleanValue(const StringVector& path, bool value);
+
+private:
+  ConfRoot m_root;
 }; //class ConfigCenter;
 
 #endif //DEEPSOLVER_CONFIG_CENTER_H;

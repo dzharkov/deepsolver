@@ -18,25 +18,31 @@
 #ifndef DEEPSOLVER_ATTACHED_REPO_H
 #define DEEPSOLVER_ATTACHED_REPO_H
 
-typedef size_t AttachedRepoId;
-#define ATTACHED_REPO_BAD_ID (AttachedRepoId)-1
-
 class AttachedRepo
 {
 public:
- AttachedRepo():
-    m_id(ATTACHED_REPO_BAD_ID), m_flags(0) {}
+  AttachedRepo() {}
+  virtual ~AttachedRepo() {}
 
 public:
-  void init(const std::string initString);
-  void assignId(AttachedRepoId newValue);
-  attachedRepoId getId() const;
+  void makeId();
 
-private:
-  AttachedRepoId m_id;
-  int m_flags;
-  std::string m_url;
-  std::string m_signId;
+public:
+  bool operator ==(const AttachedRepo& r) const
+  {
+    return id == r.id;
+  }
+
+  bool operator !=(const AttachedRepo& r) const
+  {
+    return id != r.id;
+  }
+
+public:
+  std::string id;
+  std::string url;
+  std::string component;
+  std::string vendorId;
 }; //class AttachedRepo;
 
 typedef std::list<AttachedRepo*> AttachedRepoList;

@@ -15,22 +15,23 @@
    General Public License for more details.
 */
 
+#include"deepsolver.h"
 #include"AttachedRepo.h"
 
-void AttachedRepo::init(const std::string initString)
+void AttachedRepo::makeId()
 {
-  //FIXME:
-}
-
-void AttachedRepo::assignId(AttachedRepoId newValue)
-{
-  assert(newValue != ATTACHED_REPO_BAD_ID);
-  assert(m_id == ATTACHED_REPO_BAD_ID);//This operation must be performed only once;
-  m_id = newValue;
-}
-
-attachedRepoId AttachedRepo::getId() const
-{
-  assert(m_id != ATTACHED_REPO_BAD_ID);
-  return m_id;
+  assert(!url.empty());
+  assert(!component.empty());
+  id = url;
+  for(std::string::size_type i = 0;i < id.length();i++)
+    {
+      const char c = id[i];
+      if (c >= 'a' && c <= 'z')
+	continue;
+      if (c >= 'A' && c <= 'Z')
+	continue;
+      if (c >= '0' && c <= '9')
+	continue;
+      id[i] = '_';
+    }
 }

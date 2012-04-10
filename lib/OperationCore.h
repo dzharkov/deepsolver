@@ -19,25 +19,29 @@
 #define DEEPSOLVER_OPERATION_CORE_H
 
 #include"ConfigCenter.h"
-#include"AttachedRepo.h"
+
+class AbstractIndexFetchListener
+{
+public:
+  virtual ~AbstractIndexFetchListener() {}
+
+public:
+  virtual void onIndexFetchStatus(const std::string& repoId, size_t percentValue) = 0;
+}; //class AbstractIndexFetchListener;
 
 class OperationCore
 {
 public:
   OperationCore(const ConfigCenter& conf): 
     m_conf(conf)  {}
-  virtual ~OperationCore(); 
+
+    virtual ~OperationCore(); {}
 
 public:
-  void load();
-
-private:
-  void destroyRepos();
-  void fillRepos();
+  void fetchIndices(AbstractIndexFetchListener& listener);
 
 private:
   const ConfigCenter& m_conf;
-  AttachedRepoVector m_repos;
 }; //class OperationCore;
 
 #endif //DEEPSOLVER_OPERATION_CORE_H;
