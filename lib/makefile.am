@@ -1,58 +1,9 @@
 
-SUBDIRS=os rpm
-
+ACLOCAL_AMFLAGS = -I m4
 AM_CXXFLAGS = $(DEEPSOLVER_CXXFLAGS) $(DEEPSOLVER_INCLUDES)
+LIBS += -lrpm 
 
-noinst_HEADERS = \
-IndexCore.h
+LIB_LTLIBRARIES = libdeepsolver.la
 
-noinst_LIBRARIES = libdeepsolver.a
-
-libdeepsolver_a_SOURCES = \
-AbstractConsoleMessages.h \
-AbstractWarningHandler.h \
-DefaultValues.h \
-DeepsolverException.h \
-deepsolver.h \
-DeepsolverTypes.h \
-GZipInterface.cpp \
-GZipInterface.h \
-IndexCore.cpp \
-IndexCoreException.h \
-IndexCore.h \
-logging.cpp \
-logging.h \
-MD5.cpp \
-MD5.h \
-PackageScopeContent.cpp \
-PackageScopeContent.h \
-PackageScopeContentBuilder.cpp \
-PackageScopeContentBuilder.h \
-PackageScopeContentLoader.cpp \
-PackageScopeContentLoader.h \
-PackageScope.cpp \
-PackageScope.h \
-Pkg.cpp \
-Pkg.h \
-ProvidePriorityList.cpp \
-ProvidePriorityList.h \
-RepoIndexInfoFile.cpp \
-RepoIndexInfoFile.h \
-RepoIndexTextFormatReader.cpp \
-RepoIndexTextFormatReader.h \
-RepoIndexTextFormatWriter.cpp \
-RepoIndexTextFormatWriter.h \
-RequireFilter.cpp \
-RequireFilter.h \
-string-utils.cpp \
-string-utils.h \
-TaskException.h \
-TaskPreprocessor.cpp \
-TaskPreprocessor.h \
-TextFiles.cpp \
-TextFiles.h \
-UserTask.h \
-version.cpp \
-version.h \
-ZLibInterface.cpp \
-ZLibInterface.h
+libdeepsolver_la_SOURCES = \
+ConfigFile.cpp

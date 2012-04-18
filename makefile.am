@@ -1,3 +1,4 @@
+
 SUBDIRS =  \
 lib \
 programs \
@@ -9,3 +10,4 @@ tests
 #distclean-local:
 #	/bin/rm -rf autom4te.cache
 
+ACLOCAL_AMFLAGS = -I m4
