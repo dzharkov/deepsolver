@@ -2,14 +2,20 @@
 #ifndef DEEPSOLVER_CONFIG_FILE_H
 #define DEEPSOLVER_CONFIG_FILE_H
 
+enum {
+  ConfigErrorInvalidSectionType = 0
+};
+
 class AbstractConfigFileHandler
 {
 public:
   virtual ~AbstractConfigFileHandler() {}
 
 public:
-  virtual void onConfigFileValue(const StringVector& path, const std::string& value) = 0;
-  virtual void onConfigFileValue(const std::string& sectName, const std::string& sectArg, const StringVector& path, const std::string& value) = 0;
+  virtual void onConfigFileValue(const StringVector& path, 
+				 const std::string& sectArg,
+				 const std::string& value,
+				 bool adding) = 0;
 }; //class AbstractConfigHandler;
 
 class ConfigFile

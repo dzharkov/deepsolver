@@ -6,9 +6,11 @@
 #include<vector>
 #include<assert.h>
 
-typedef std::vector<std::string> stringVector;
+typedef std::vector<std::string> StringVector;
 
 #include"ConfigFile.h"
+
+#define BLANK_CHAR(c) (c == ' ')
 
 //Section header parsing states;
 #define SECT_INITIAL 0
@@ -26,7 +28,7 @@ typedef std::vector<std::string> stringVector;
 #define PARAM_VALUE 4
 
 static void stop(int code,
-		 size_t lineNUmber,
+		 size_t lineNumber,
 		 std::string::size_type pos,
 		 const std::string& line)
 {
@@ -55,7 +57,7 @@ void ConfigFile::processLine(const std::string& line)
   std::string::size_type firstChar = 0;
   while(firstChar < line.length() && BLANK_CHAR(line[firstChar]))
     firstChar++;
-  if (firstChar >= )
+  if (firstChar >= line.length())
     {
       m_linesProcessed++;
       return;
@@ -65,13 +67,27 @@ void ConfigFile::processLine(const std::string& line)
       processSection(line); 
       assert(!m_path.empty());
       if (!m_sectArg.empty() && m_path.size() > 1)
-	stop(ConfigErrorInvalidSectionType, m_linesProcessed + 1, m_sectArgPos, line);
+	{
+	  stop(ConfigErrorInvalidSectionType, m_linesProcessed + 1, m_sectArgPos, line);
+	  assert(0);
+	}
       m_sectLevel = m_path.size();
+      //KILLME:
+      for(size_t i = 0;i < m_path.size();i++)
+	std::cout << "item " << m_path[i] << std::endl;
+      if (!m_sectArg.empty())
+	std::cout << "value " << m_sectArg << std::endl;
     } else
     {
       processValue(line);
-      assert(m_path.size() > m_sectLevel);
-      //FIXME:handling;
+      assert(m_path.size() >= m_sectLevel);
+      if (m_path.size() > m_sectLevel)//It is not an empty line or there is anything than comments;
+	{
+	  assert(!m_path.empty());
+	  assert(m_path.size() == 1 || m_sectArg.empty());
+	  assert(m_assignMode == ModeAssign || m_assignMode == ModeAdding);
+	  m_handler.onConfigFileValue(m_path, m_sectArg, m_paramValue, m_assignMode == ModeAdding);
+	}
       m_path.resize(m_sectLevel);
     }
   m_linesProcessed++;
@@ -151,10 +167,16 @@ void ConfigFile::processSection(const std::string& line)
 	    continue;
 	  if (c == ']')
 	    return;
+	  if (c == '.')
+	    {
+	      state = SECT_BEFORE_NAME;
+	      continue;
+	    }
 	  if (c == '\"')
 	    {
 	      state = SECT_ARG;
 	      m_sectArg.erase();
+	      m_sectArgPos = i;
 	      continue;
 	    }
 	  stopSection(state, i, c, line);
@@ -270,7 +292,7 @@ void ConfigFile::processValue(const std::string& line)
 	  if (c == '=')
 	    {
 	      state = PARAM_VALUE;
-	      m_mode = ModeEquals;
+	      m_assignMode = ModeAssign;
 	      continue;
 	    }
 	  if (c == '+')
@@ -280,7 +302,7 @@ void ConfigFile::processValue(const std::string& line)
 	      i++;
 	      if (line[i] != '=')
 		stopParam(state, i, line[i], line);
-	      m_mode = ModeAdding;
+	      m_assignMode = ModeAdding;
 	      continue;
 	    }
 	  stopParam(state, i, c, line);
@@ -311,7 +333,7 @@ void ConfigFile::stopSection(int state,
 			     char ch,
 			     const std::string& line)
 {
-  std::cout << "Section error " << state << " at line " << m_linesProcessed << std::endl;
+  std::cout << "Section error " << state << " at line " << m_linesProcessed + 1 << std::endl;
   std::cout << line << std::endl;
   for(size_t i = 0;i < pos;i++)
     std::cout << " ";
@@ -323,9 +345,46 @@ void ConfigFile::stopParam(int state,
 			   char ch,
 			   const std::string& line)
 {
-  std::cout << "Parameter error " << state << " at line " << m_linesProcessed << std::endl;
+  std::cout << "Parameter error " << state << " at line " << m_linesProcessed + 1 << std::endl;
   std::cout << line << std::endl;
   for(size_t i = 0;i < pos;i++)
     std::cout << " ";
   std::cout << "^" << std::endl;
+}
+
+class ConfigFileHandler: public AbstractConfigFileHandler
+{
+public:
+  void onConfigFileValue(const StringVector& path, 
+			 const std::string& sectArg,
+			 const std::string& value,
+			 bool adding)
+  {
+    assert(!path.empty());
+    std::cout << path[0];
+    if (!sectArg.empty())
+      std::cout << " \"" << sectArg << "\"";
+    for(size_t i = 1;i < path.size();i++)
+      std::cout << "." << path[i];
+    if (adding)
+      std::cout << " += "; else 
+      std::cout << " = ";
+    std::cout << value << std::endl;
+  }
+};
+
+int main()
+{
+  ConfigFileHandler handler;
+  ConfigFile configFile(handler);
+  std::ifstream f("/tmp/proba.ini");
+  std::string line;
+  while(1)
+    {
+  std::getline(f, line);
+  if (!f)
+    break;
+  configFile.processLine(line);
+    }
+  return 0;
 }
