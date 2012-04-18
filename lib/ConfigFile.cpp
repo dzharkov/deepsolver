@@ -1,16 +1,7 @@
 
 
-#include<iostream>
-#include<fstream>
-#include<string>
-#include<vector>
-#include<assert.h>
-
-typedef std::vector<std::string> StringVector;
-
+#include"deepsolver.h"
 #include"ConfigFile.h"
-
-#define BLANK_CHAR(c) (c == ' ')
 
 //Section header parsing states;
 #define SECT_INITIAL 0
@@ -32,6 +23,7 @@ static void stop(int code,
 		 std::string::size_type pos,
 		 const std::string& line)
 {
+  //FIXME:
   std::cout << "Error " << code << " at line " << lineNumber << std::endl;
   std::cout << line << std::endl;
   for(size_t i = 0;i < pos;i++)
@@ -72,11 +64,6 @@ void ConfigFile::processLine(const std::string& line)
 	  assert(0);
 	}
       m_sectLevel = m_path.size();
-      //KILLME:
-      for(size_t i = 0;i < m_path.size();i++)
-	std::cout << "item " << m_path[i] << std::endl;
-      if (!m_sectArg.empty())
-	std::cout << "value " << m_sectArg << std::endl;
     } else
     {
       processValue(line);
@@ -84,7 +71,6 @@ void ConfigFile::processLine(const std::string& line)
       if (m_path.size() > m_sectLevel)//It is not an empty line or there is anything than comments;
 	{
 	  assert(!m_path.empty());
-	  assert(m_path.size() == 1 || m_sectArg.empty());
 	  assert(m_assignMode == ModeAssign || m_assignMode == ModeAdding);
 	  m_handler.onConfigFileValue(m_path, m_sectArg, m_paramValue, m_assignMode == ModeAdding);
 	}
@@ -301,7 +287,11 @@ void ConfigFile::processValue(const std::string& line)
 		break;
 	      i++;
 	      if (line[i] != '=')
-		stopParam(state, i, line[i], line);
+		{
+		  stopParam(state, i, line[i], line);
+		  assert(0);
+		}
+	      state = PARAM_VALUE;
 	      m_assignMode = ModeAdding;
 	      continue;
 	    }
@@ -333,6 +323,7 @@ void ConfigFile::stopSection(int state,
 			     char ch,
 			     const std::string& line)
 {
+  //FIXME:
   std::cout << "Section error " << state << " at line " << m_linesProcessed + 1 << std::endl;
   std::cout << line << std::endl;
   for(size_t i = 0;i < pos;i++)
@@ -345,6 +336,7 @@ void ConfigFile::stopParam(int state,
 			   char ch,
 			   const std::string& line)
 {
+  //FIXME:
   std::cout << "Parameter error " << state << " at line " << m_linesProcessed + 1 << std::endl;
   std::cout << line << std::endl;
   for(size_t i = 0;i < pos;i++)
@@ -352,39 +344,3 @@ void ConfigFile::stopParam(int state,
   std::cout << "^" << std::endl;
 }
 
-class ConfigFileHandler: public AbstractConfigFileHandler
-{
-public:
-  void onConfigFileValue(const StringVector& path, 
-			 const std::string& sectArg,
-			 const std::string& value,
-			 bool adding)
-  {
-    assert(!path.empty());
-    std::cout << path[0];
-    if (!sectArg.empty())
-      std::cout << " \"" << sectArg << "\"";
-    for(size_t i = 1;i < path.size();i++)
-      std::cout << "." << path[i];
-    if (adding)
-      std::cout << " += "; else 
-      std::cout << " = ";
-    std::cout << value << std::endl;
-  }
-};
-
-int main()
-{
-  ConfigFileHandler handler;
-  ConfigFile configFile(handler);
-  std::ifstream f("/tmp/proba.ini");
-  std::string line;
-  while(1)
-    {
-  std::getline(f, line);
-  if (!f)
-    break;
-  configFile.processLine(line);
-    }
-  return 0;
-}

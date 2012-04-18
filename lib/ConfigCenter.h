@@ -28,24 +28,25 @@ struct ConfRoot
   AttachedRepoVector repos;
 }; //struct ConfRoot;
 
-class ConfigCenter: private AbstractConfigFileListener
+class ConfigCenter: private AbstractConfigFileHandler
 {
 public:
   ConfigCenter() {}
   virtual ~ConfigCenter() {}
 
 public:
-  void load(const std:;string& configDir);
+  void load(const std::string& configDir);
 
   const ConfRoot& root() const
   {
     return m_root;
   }
 
-private://AbstractConfigFileListener;
-  void onStringValue(const stringVector& path, const std::string& value);
-  void onIntValue(const StringVector& path, int value);
-  void onBooleanValue(const StringVector& path, bool value);
+private://AbstractConfigFileHandler;
+  void onConfigFileValue(const StringVector& path, 
+			 const std::string& sectArg,
+			 const std::string& value,
+			 bool adding);
 
 private:
   ConfRoot m_root;
