@@ -1,8 +1,8 @@
 
 AM_CXXFLAGS = $(DEEPSOLVER_CXXFLAGS) $(DEEPSOLVER_INCLUDES)
 LIBS += -lrpm 
+LIBdir=${libdir}
 
-LIBdir=.
 LIB_LTLIBRARIES = libdeepsolver.la
 
 libdeepsolver_la_SOURCES = \

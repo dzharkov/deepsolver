@@ -15,6 +15,7 @@
 /bin/rm -f install-sh missing depcomp config.guess config.sub
 find ./ -name Makefile.in -exec /bin/rm '{}' \;
 
+#Note that clean mode leaves the code tree at its origin state only after 'make distclean';
 [ "$1" == 'clean' ] && exit 0
 
 IPATHS="-I lib"
