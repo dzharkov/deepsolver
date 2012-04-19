@@ -8,4 +8,5 @@ $(top_srcdir)/lib/libdeepsolver.la
 ds_DEPENDENCIES = $(ds_LDADD)
 
 ds_SOURCES=\
+Messages.cpp \
 ds.cpp

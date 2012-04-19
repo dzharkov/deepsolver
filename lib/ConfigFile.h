@@ -12,10 +12,12 @@ public:
   ConfigFileException(int code,
 		      const std::string& fileName,
 		      size_t lineNumber,
+		      std::string::size_type pos,
 		      const std::string& line)
     : m_code(code),
       m_fileName(fileName),
       m_lineNumber(lineNumber),
+      m_pos(pos),
       m_line(line) {}
 
   virtual ~ConfigFileException() {}
@@ -34,6 +36,11 @@ public:
   size_t getLineNumber() const
   {
     return m_lineNumber;
+  }
+
+  std::string:;size_type getPos() const
+  {
+    return m_pos;
   }
 
   const std::string& getLine() const
@@ -55,6 +62,7 @@ private:
   const int m_code;
   const std::string m_fileName;
   const size_t m_lineNumber;
+  const std::string::size_type m_pos;
   const std::string m_line;
 }; //class ConfigFileException;
 
