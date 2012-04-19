@@ -19,8 +19,8 @@ AC_SUBST(DEEPSOLVER_CXXFLAGS, '-Wall -pedantic -fpic -fno-rtti -DFIXME_DATADIR=\
 AC_SUBST(DEEPSOLVER_INCLUDES, '-I$(top_srcdir)/lib')
 
 AC_CONFIG_FILES([
-  makefile
-  lib/makefile
+  Makefile
+  lib/Makefile
 ])
 
 AC_OUTPUT
