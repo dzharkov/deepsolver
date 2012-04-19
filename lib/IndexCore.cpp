@@ -17,11 +17,11 @@
 
 #include"deepsolver.h"
 #include"IndexCore.h"
-#include"RepoIndexInfoFile.h"
-#include"RepoIndexTextFormatWriter.h"
+#include"repo/RepoIndexInfoFile.h"
+#include"repo/RepoIndexTextFormatWriter.h"
 #include"rpm/RpmFile.h"
 #include"rpm/RpmFileHeaderReader.h"
-#include"MD5.h"
+#include"utils/MD5.h"
 #include"RequireFilter.h"
 
 void IndexCore::collectRefs(const std::string& dirName, StringSet& res) 

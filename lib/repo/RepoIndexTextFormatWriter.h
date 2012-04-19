@@ -21,7 +21,7 @@
 #include"Pkg.h"
 #include"IndexCore.h"
 #include"AbstractConsoleMessages.h"
-#include"TextFiles.h"
+#include"utils/TextFiles.h"
 
 class AbstractRequireFilter
 {

@@ -15,6 +15,7 @@
    General Public License for more details.
 */
 
+#include"deepsolver.h"
 #include"ConfigCenter.h"
 
 void onConfigFileValue(const StringVector& path, 

@@ -15,6 +15,7 @@
    General Public License for more details.
 */
 
+#include"deepsolver.h"
 #include"OperationCore.h"
 
 void OperationCore::fetchIndices(AbstractIndexFetchListener& listener)

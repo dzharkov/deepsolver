@@ -19,7 +19,7 @@
 #define DEEPSOLVER_REPO_INDEX_TEXT_FORMAT_READER_H
 
 #include"Pkg.h"
-#include"TextFiles.h"
+#include"utils/TextFiles.h"
 
 class RepoIndexTextFormatReader
 {

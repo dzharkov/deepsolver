@@ -35,7 +35,7 @@ public:
   OperationCore(const ConfigCenter& conf): 
     m_conf(conf)  {}
 
-    virtual ~OperationCore(); {}
+    virtual ~OperationCore() {}
 
 public:
   void fetchIndices(AbstractIndexFetchListener& listener);

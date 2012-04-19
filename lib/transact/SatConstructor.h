@@ -19,7 +19,7 @@
 #define DEEPSOLVER_SAT_CONSTRUCTOR_H
 
 #include"PackageScope.h"
-#include"sat/Sat.h"
+#include"Sat.h"
 
 class SatConstructor
 {

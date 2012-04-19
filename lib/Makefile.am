@@ -5,6 +5,8 @@ LIBdir=${libdir}
 
 LIB_LTLIBRARIES = libdeepsolver.la
 
+libdeepsolver_ladir = $(includedir)
+
 libdeepsolver_la_SOURCES = \
 AttachedRepo.cpp \
 ConfigCenter.cpp \
@@ -25,7 +27,6 @@ RequireFilter.cpp \
 rpm/RpmFileHeaderReader.cpp \
 rpm/vercmp.cpp \
 transact/PackageScope.cpp \
-transact/SatConstructor.cpp \
 transact/TaskPreprocessor.cpp \
 utils/GZipInterface.cpp \
 utils/logging.cpp \
@@ -34,8 +35,6 @@ utils/string-utils.cpp \
 utils/TextFiles.cpp \
 utils/ZLibInterface.cpp \
 version.cpp 
-
-ConfigFile.cpp
 
 libdeepsolver_la_HEADERS = \
 AbstractConsoleMessages.h \
@@ -69,9 +68,6 @@ rpm/RpmFileHeaderReader.h \
 rpm/vercmp.h \
 TaskException.h \
 transact/PackageScope.h \
-transact/Sat2.h \
-transact/SatConstructor.h \
-transact/Sat.h \
 transact/TaskPreprocessor.h \
 UserTask.h \
 utils/DateTime.h \

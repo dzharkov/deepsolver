@@ -17,7 +17,7 @@
 
 #include"deepsolver.h"
 #include"RequireFilter.h"
-#include"TextFiles.h"
+#include"utils/TextFiles.h"
 
 void RequireFilter::load(const std::string& fileName)
 {

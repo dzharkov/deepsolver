@@ -17,7 +17,7 @@
 
 #include"deepsolver.h"
 #include"ProvidePriorityList.h"
-#include"TextFiles.h"
+#include"utils/TextFiles.h"
 
 static void splitBySpaces(const std::string& str, StringList& items)
 {
