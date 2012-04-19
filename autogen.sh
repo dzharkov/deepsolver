@@ -12,7 +12,8 @@
 /bin/rm -f configure
 
 #created by automake;
-/bin/rm -f install-sh missing depcomp Makefile.in config.guess config.sub
+/bin/rm -f install-sh missing depcomp config.guess config.sub
+find ./ -name Makefile.in -exec /bin/rm '{}' \;
 
 [ "$1" == 'clean' ] && exit 0
 

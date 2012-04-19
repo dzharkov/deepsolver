@@ -1,13 +1,5 @@
 
 SUBDIRS =  \
-lib \
-programs \
-tests
-
-#sysconf_DATA = 
-#dist_pkgdata_DATA = 
-
-#distclean-local:
-#	/bin/rm -rf autom4te.cache
+lib 
 
 ACLOCAL_AMFLAGS = -I m4
