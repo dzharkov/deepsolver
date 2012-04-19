@@ -6,8 +6,79 @@ LIBdir=${libdir}
 LIB_LTLIBRARIES = libdeepsolver.la
 
 libdeepsolver_la_SOURCES = \
+AttachedRepo.cpp \
+ConfigCenter.cpp \
+ConfigFile.cpp \
+IndexCore.cpp \
+OperationCore.cpp \
+os/Directory.cpp \
+os/File.cpp \
+PackageScopeContentBuilder.cpp \
+PackageScopeContent.cpp \
+PackageScopeContentLoader.cpp \
+Pkg.cpp \
+ProvidePriorityList.cpp \
+repo/RepoIndexInfoFile.cpp \
+repo/RepoIndexTextFormatReader.cpp \
+repo/RepoIndexTextFormatWriter.cpp \
+RequireFilter.cpp \
+rpm/RpmFileHeaderReader.cpp \
+rpm/vercmp.cpp \
+transact/PackageScope.cpp \
+transact/SatConstructor.cpp \
+transact/TaskPreprocessor.cpp \
+utils/GZipInterface.cpp \
+utils/logging.cpp \
+utils/MD5.cpp \
+utils/string-utils.cpp \
+utils/TextFiles.cpp \
+utils/ZLibInterface.cpp \
+version.cpp 
+
 ConfigFile.cpp
 
-libdeepsolver_ladir = $(includedir)
 libdeepsolver_la_HEADERS = \
-ConfigFile.h
+AbstractConsoleMessages.h \
+AbstractWarningHandler.h \
+AttachedRepo.h \
+ConfigCenter.h \
+ConfigFile.h \
+DeepsolverException.h \
+deepsolver.h \
+DeepsolverTypes.h \
+DefaultValues.h \
+IndexCoreException.h \
+IndexCore.h \
+OperationCore.h \
+os/Directory.h \
+os/File.h \
+os/SystemException.h \
+os/system.h \
+PackageScopeContentBuilder.h \
+PackageScopeContent.h \
+PackageScopeContentLoader.h \
+Pkg.h \
+ProvidePriorityList.h \
+repo/RepoIndexInfoFile.h \
+repo/RepoIndexTextFormatReader.h \
+repo/RepoIndexTextFormatWriter.h \
+RequireFilter.h \
+rpm/RpmException.h \
+rpm/RpmFile.h \
+rpm/RpmFileHeaderReader.h \
+rpm/vercmp.h \
+TaskException.h \
+transact/PackageScope.h \
+transact/Sat2.h \
+transact/SatConstructor.h \
+transact/Sat.h \
+transact/TaskPreprocessor.h \
+UserTask.h \
+utils/DateTime.h \
+utils/GZipInterface.h \
+utils/logging.h \
+utils/MD5.h \
+utils/string-utils.h \
+utils/TextFiles.h \
+utils/ZLibInterface.h \
+version.h 
