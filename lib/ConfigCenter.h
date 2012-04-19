@@ -35,7 +35,7 @@ public:
   virtual ~ConfigCenter() {}
 
 public:
-  void load(const std::string& configDir);
+  void loadFromFile(const std::string& fileName);
 
   const ConfRoot& root() const
   {

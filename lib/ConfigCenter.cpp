@@ -17,21 +17,23 @@
 
 #include"deepsolver.h"
 #include"ConfigCenter.h"
+#include"utils/TextFiles.h"
 
-void onConfigFileValue(const StringVector& path, 
+void ConfigCenter::loadFromFile(const std::string& fileName)
+{
+  assert(!fileName.empty());
+  std::auto_ptr<AbstractTextFileReader> file = createTextFileReader(TextFileStd, fileName);
+  ConfigFile parser(*this);
+  std::string line;
+  while(file->readLine(line))
+    parser.processLine(line);
+}
+
+void ConfigCenter::onConfigFileValue(const StringVector& path, 
 		       const std::string& sectArg,
 		       const std::string& value,
 		       bool adding)
 {
-    assert(!path.empty());
-    std::cout << path[0];
-    if (!sectArg.empty())
-      std::cout << " \"" << sectArg << "\"";
-    for(size_t i = 1;i < path.size();i++)
-      std::cout << "." << path[i];
-    if (adding)
-      std::cout << " += "; else 
-      std::cout << " = ";
-    std::cout << value << std::endl;
-  }
+  //FIXME:
+}
 

@@ -6,6 +6,58 @@ enum {
   ConfigErrorInvalidSectionType = 0
 };
 
+class ConfigFileException
+{
+public:
+  ConfigFileException(int code,
+		      const std::string& fileName,
+		      size_t lineNumber,
+		      const std::string& line)
+    : m_code(code),
+      m_fileName(fileName),
+      m_lineNumber(lineNumber),
+      m_line(line) {}
+
+  virtual ~ConfigFileException() {}
+
+public:
+  int getCode() const
+  {
+    return m_code;
+  }
+
+  const std::string& getFileName() const
+  {
+    return m_fileName;
+  }
+
+  size_t getLineNumber() const
+  {
+    return m_lineNumber;
+  }
+
+  const std::string& getLine() const
+  {
+    return m_line;
+  }
+
+  std::string getType() const
+  {
+    return "FIXME";
+  }
+
+  std::string getMessage() const
+  {
+    return "FIXME";
+  }
+
+private:
+  const int m_code;
+  const std::string m_fileName;
+  const size_t m_lineNumber;
+  const std::string m_line;
+}; //class ConfigFileException;
+
 class AbstractConfigFileHandler
 {
 public:
