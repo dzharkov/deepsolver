@@ -1,0 +1,5 @@
+2012-04
+	- New source code layout.
+	- Added config files implementation.
+	- Added libtool support. 
+	
