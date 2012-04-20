@@ -98,8 +98,9 @@ private:
   };
 
 public:
-  ConfigFile(AbstractConfigFileHandler& handler) 
+  ConfigFile(AbstractConfigFileHandler& handler, const std::string fileName)
     : m_handler(handler),
+      m_fileName(fileName),
       m_linesProcessed(0),
       m_sectLevel(0),
       m_sectArgPos(0),
@@ -118,6 +119,7 @@ public:
 
 private:
   AbstractConfigFileHandler& m_handler;
+  const std::string m_fileName;
   size_t m_linesProcessed;
   StringVector m_path;
   StringVector::size_type m_sectLevel;

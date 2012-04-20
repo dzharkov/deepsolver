@@ -47,7 +47,7 @@ void ConfigFile::processLine(const std::string& line)
       assert(!m_path.empty());
       if (!m_sectArg.empty() && m_path.size() > 1)
 	{
-	  throw ConfigFileException(ConfigErrorSectionInvalidType, "FIXME:file name", m_linesProcessed + 1, m_sectArgPos, line);
+	  throw ConfigFileException(ConfigErrorSectionInvalidType, m_fileName, m_linesProcessed + 1, m_sectArgPos, line);
 	  assert(0);
 	}
       m_sectLevel = m_path.size();
@@ -336,7 +336,7 @@ void ConfigFile::stopSection(int state,
       assert(0);
       return;
     } //switch(state);
-  throw ConfigFileException(code, "FIXME:file name", lineNumber, pos, line);
+  throw ConfigFileException(code, m_fileName, lineNumber, pos, line);
 }
 
 void ConfigFile::stopParam(int state,
@@ -367,6 +367,6 @@ void ConfigFile::stopParam(int state,
       assert(0);
       return;
     } //switch(state);
-  throw ConfigFileException(code, "FIXME:file name", lineNumber, pos, line);
+  throw ConfigFileException(code, m_fileName, lineNumber, pos, line);
 }
 

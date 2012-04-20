@@ -23,7 +23,7 @@ void ConfigCenter::loadFromFile(const std::string& fileName)
 {
   assert(!fileName.empty());
   std::auto_ptr<AbstractTextFileReader> file = createTextFileReader(TextFileStd, fileName);
-  ConfigFile parser(*this);
+  ConfigFile parser(*this, fileName);
   std::string line;
   while(file->readLine(line))
     parser.processLine(line);
