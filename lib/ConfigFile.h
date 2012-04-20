@@ -8,13 +8,13 @@ enum {
   ConfigErrorSectionWaitingName = 2,
   ConfigErrorSectionInvalidNameChar = 3,
   ConfigErrorSectionWaitingCloseBracketOrArg = 4,
-  ConfigErrorSectionInvalidArgChar = 5,
+  ConfigErrorSectionUnexpectedArgEnd = 5,
   ConfigErrorSectionWaitingCloseBracket = 6,
   ConfigErrorValueWaitingName = 7,
   ConfigErrorValueInvalidNameChar = 8,
   ConfigErrorValueWaitingAssignOrNewName = 9,
   ConfigErrorValueWaitingNewName = 10,
-  ConfigErrorValueInvalidValueChar = 11
+  ConfigErrorValueUnexpectedValueEnd = 11
 };
 
 class ConfigFileException
