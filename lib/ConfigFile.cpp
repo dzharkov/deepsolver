@@ -18,19 +18,6 @@
 #define PARAM_NEXT_NAME 3
 #define PARAM_VALUE 4
 
-static void stop(int code,
-		 size_t lineNumber,
-		 std::string::size_type pos,
-		 const std::string& line)
-{
-  //FIXME:
-  std::cout << "Error " << code << " at line " << lineNumber << std::endl;
-  std::cout << line << std::endl;
-  for(size_t i = 0;i < pos;i++)
-    std::cout << " ";
-  std::cout << "^" << std::endl;
-}
-
 inline bool validIdentChar(char c)
 {
   if (c >= 'a' && c <= 'z')
@@ -323,12 +310,33 @@ void ConfigFile::stopSection(int state,
 			     char ch,
 			     const std::string& line)
 {
-  //FIXME:
-  std::cout << "Section error " << state << " at line " << m_linesProcessed + 1 << std::endl;
-  std::cout << line << std::endl;
-  for(size_t i = 0;i < pos;i++)
-    std::cout << " ";
-  std::cout << "^" << std::endl;
+  int code;
+  const size_t lineNumber = m_linesProcessed + 1;
+  switch(state)
+    {
+    case SECT_INITIAL:
+      code = ConfigErrorSectionWaitingOpenBracket;
+      break;
+    case SECT_BEFORE_NAME:
+      code = ConfigErrorSectionWaitingName;
+      break;
+    case SECT_NAME:
+      code = ConfigErrorSectionInvalidNameChar;
+      break;
+    case SECT_AFTER_NAME:
+      code = ConfigErrorSectionWaitingCloseBracketOrArg;
+      break;
+    case SECT_ARG:
+      code = ConfigErrorSectionInvalidArgChar;
+      break;
+    case SECT_AFTER_ARG:
+      code = ConfigErrorSectionWaitingCloseBracket;
+      break;
+    default:
+      assert(0);
+      return;
+    } //switch(state);
+    throw ConfigFileException(code, "FIXME:file name", lineNumber, pos, line)
 }
 
 void ConfigFile::stopParam(int state,
@@ -336,11 +344,29 @@ void ConfigFile::stopParam(int state,
 			   char ch,
 			   const std::string& line)
 {
-  //FIXME:
-  std::cout << "Parameter error " << state << " at line " << m_linesProcessed + 1 << std::endl;
-  std::cout << line << std::endl;
-  for(size_t i = 0;i < pos;i++)
-    std::cout << " ";
-  std::cout << "^" << std::endl;
+  int code;
+  const size_t lineNumber = m_linesProcessed + 1;
+  switch(state)
+    {
+    case PARAM_INITIAL:
+      code = ConfigErrorValueWaitingName;
+      break;
+    case PARAM_NAME:
+      code = ConfigErrorValueInvalidNameChar;
+      break;
+    case PARAM_AFTER_NAME:
+      code = ConfigErrorValueWaitingAssignOrNewName;
+      break;
+    case PARAM_NEXT_NAME:
+      code = ConfigErrorValueWaitingNewName;
+      break;
+    case PARAM_VALUE:
+      code = ConfigErrorValueInvalidValueChar;
+      break;
+    default:
+      assert(0);
+      return;
+    } //switch(state);
+    throw ConfigFileException(code, "FIXME:file name", lineNumber, pos, line)
 }
 

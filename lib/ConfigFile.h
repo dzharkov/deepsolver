@@ -3,7 +3,18 @@
 #define DEEPSOLVER_CONFIG_FILE_H
 
 enum {
-  ConfigErrorInvalidSectionType = 0
+  ConfigErrorSectionInvalidType = 0,
+  ConfigErrorSectionWaitingOpenBracket = 1,
+  ConfigErrorSectionWaitingName = 2,
+  ConfigErrorSectionInvalidNameChar = 3,
+  ConfigErrorSectionWaitingCloseBracketOrArg = 4,
+  ConfigErrorSectionInvalidArgChar = 5,
+  ConfigErrorSectionWaitingCloseBracket = 6,
+  ConfigErrorValueWaitingName = 7,
+  ConfigErrorValueInvalidNameChar = 8,
+  ConfigErrorValueWaitingAssignOrNewName = 9,
+  ConfigErrorValueWaitingNewName = 10,
+  ConfigErrorValueInvalidValueChar = 11
 };
 
 class ConfigFileException
@@ -38,7 +49,7 @@ public:
     return m_lineNumber;
   }
 
-  std::string:;size_type getPos() const
+  std::string::size_type getPos() const
   {
     return m_pos;
   }
