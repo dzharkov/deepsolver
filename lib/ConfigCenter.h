@@ -21,13 +21,6 @@
 #include"ConfigFile.h"
 #include"AttachedRepo.h"
 
-struct ConfRoot
-{
-  std::string indexDir;
-  std::string indexFetchDir;
-  AttachedRepoVector repos;
-}; //struct ConfRoot;
-
 class ConfigCenter: private AbstractConfigFileHandler
 {
 public:
