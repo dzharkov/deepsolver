@@ -48,7 +48,40 @@ void ConfigCenter::onConfigFileValue(const StringVector& path,
 {
   assert(!path.empty());
   if (path[0] == "repo")
-    onRepoConfigValue(path, sectArg, value,adding, pos);
+    onRepoConfigValue(path, sectArg, value,adding, pos); else
+    throw ConfigException(ConfigErrorUnknownParam, buildConfigParamTitle(path, sectArg), pos);
+}
+
+void ConfigCenter::onRepoConfigValue(const StringVector&path,
+				     const std::string& sectArg,
+				     const std::string& value,
+				     bool adding, 
+				     const ConfigFilePosInfo& pos)
+{
+  if (path.size() < 2)
+    throw ConfigException(ConfigErrorIncompletePath, buildConfigParamTitle(path, sectArg), pos);
+  if (path[1] == "url")
+    {
+      //FIXME:no adding;
+      if (sectArg.empty())
+	{
+	  for(ConfRepoVector::size_type i = 0;i < m_root.repo.size();i++)
+	    m_root.repo[i].url = trim(value);
+	} else
+	findRepo(sectArg).url = trim(value);
+      return;
+    }
+  //FIXME:enabled;
+  //FIXME:components;
+  //FIXME:vendor;
   throw ConfigException(ConfigErrorUnknownParam, buildConfigParamTitle(path, sectArg), pos);
 }
 
+ConfRepo& ConfigCenter::findRepo(const std::string& name)
+{
+  for(ConfRepoVector::size_type i = 0;i < m_root.repo.size();i++)
+    if (m_root.repo[i].name == name)
+      return m_root.repo[i];
+  m_root.repo.push_back(ConfRepo(name));
+  return m_root.repo.back();
+}

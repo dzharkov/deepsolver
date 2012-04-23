@@ -3,7 +3,7 @@
 #define DEEPSOLVER_MESSAGES_H
 
 #include"os/SystemException.h"
-#include"ConfigFile.h"
+#include"ConfigCenter.h"
 
 class Messages
 {
@@ -16,6 +16,7 @@ public:
 public:
   void onSystemError(const SystemException& e);
   void onConfigSyntaxError(const ConfigFileException& e);
+  void onConfigError(const ConfigException& e);
 
 private:
   std::ostream& m_stream;

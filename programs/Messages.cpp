@@ -55,3 +55,21 @@ void Messages::onConfigSyntaxError(const ConfigFileException& e)
     m_stream << " ";
   m_stream << "^" << std::endl;
 }
+
+void Messages::onConfigError(const ConfigException& e)
+{
+  m_stream << PREFIX << "configuration file error:";
+  switch(e.getCode())
+    {
+    case ConfigErrorUnknownParam:
+      m_stream << "unknown parameter: " << e.getArg() << std::endl;
+  break;
+    case ConfigErrorIncompletePath:
+      m_stream << "incomplete path: " << e.getArg() << std::endl;
+  break;
+    default:
+      assert(0);
+      return;
+    } //switch(e.getCode());
+  m_stream << e.getFileName() << "(" << e.getLineNumber() << "):" << e.getLine() << std::endl;
+}

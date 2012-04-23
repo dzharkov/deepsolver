@@ -7,11 +7,14 @@ struct ConfRepo
   ConfRepo()
     : enabled(1) {}
 
+  ConfRepo(const std::string& n)
+    : name(n), enabled(1) {}
+
   std::string name;
   bool enabled;
   std::string url;
   StringVector components; 
-  std::string vendorId;
+  std::string vendor;
 }; //struct ConfRepo;
 
 typedef std::vector<ConfRepo> ConfRepoVector;

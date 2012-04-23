@@ -23,7 +23,8 @@
 #include"ConfigData.h"
 
 enum {
-  ConfigErrorUnknownParam = 0
+  ConfigErrorUnknownParam = 0,
+  ConfigErrorIncompletePath = 1
 };
 
 class ConfigException: public DeepsolverException
@@ -102,6 +103,8 @@ private:
 			   const std::string& value,
 			   bool adding, 
 			   const ConfigFilePosInfo& pos);
+
+  ConfRepo& findRepo(const std::string& name);
 
 private://AbstractConfigFileHandler;
   void onConfigFileValue(const StringVector& path, 

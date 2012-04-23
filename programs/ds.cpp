@@ -15,6 +15,11 @@ bool loadConfiguration()
       Messages(std::cerr).onConfigSyntaxError(e);
       return 0;
     }
+  catch (const ConfigException& e)
+    {
+      Messages(std::cerr).onConfigError(e);
+      return 0;
+    }
   catch(const SystemException& e)
     {
       Messages(std::cerr).onSystemError(e);
