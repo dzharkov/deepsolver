@@ -2,6 +2,8 @@
 #ifndef DEEPSOLVER_CONFIG_FILE_H
 #define DEEPSOLVER_CONFIG_FILE_H
 
+#include"DeepsolverException.h"
+
 enum {
   ConfigErrorSectionInvalidType = 0,
   ConfigErrorSectionWaitingOpenBracket = 1,
@@ -17,7 +19,7 @@ enum {
   ConfigErrorValueUnexpectedValueEnd = 11
 };
 
-class ConfigFileException
+class ConfigFileException: public DeepsolverException
 {
 public:
   ConfigFileException(int code,
@@ -77,6 +79,16 @@ private:
   const std::string m_line;
 }; //class ConfigFileException;
 
+struct ConfigFilePosInfo
+{
+ConfigFilePosInfo(const std::string& f, size_t ln, const std::string& l)
+    : fileName(f), lineNumber(ln), line(l) {}
+
+  const std::string& fileName;
+  size_t lineNumber;
+  const std::string& line;
+}; //struct ConfigFilePosInfo;
+
 class AbstractConfigFileHandler
 {
 public:
@@ -86,7 +98,8 @@ public:
   virtual void onConfigFileValue(const StringVector& path, 
 				 const std::string& sectArg,
 				 const std::string& value,
-				 bool adding) = 0;
+				 bool adding,
+				 const ConfigFilePosInfo& pos) = 0;
 }; //class AbstractConfigHandler;
 
 class ConfigFile

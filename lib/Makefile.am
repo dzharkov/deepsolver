@@ -8,7 +8,6 @@ LIB_LTLIBRARIES = libdeepsolver.la
 libdeepsolver_ladir = $(includedir)
 
 libdeepsolver_la_SOURCES = \
-AttachedRepo.cpp \
 ConfigCenter.cpp \
 ConfigFile.cpp \
 IndexCore.cpp \
@@ -39,7 +38,7 @@ version.cpp
 libdeepsolver_la_HEADERS = \
 AbstractConsoleMessages.h \
 AbstractWarningHandler.h \
-AttachedRepo.h \
+ConfigData.h \
 ConfigCenter.h \
 ConfigFile.h \
 DeepsolverException.h \

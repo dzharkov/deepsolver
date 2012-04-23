@@ -19,6 +19,17 @@
 #include"ConfigCenter.h"
 #include"utils/TextFiles.h"
 
+static std::string buildConfigParamTitle(const StringVector& path, const std::string& sectArg)
+{
+  assert(!path.empty());
+  std::string value = path[0];
+  if (!sectArg.empty())
+    value += " \"" + sectArg + "\"";
+  for(StringVector::size_type i = 1;i < path.size();i++)
+    value += "." + path[i];
+  return value;
+}
+
 void ConfigCenter::loadFromFile(const std::string& fileName)
 {
   assert(!fileName.empty());
@@ -32,8 +43,12 @@ void ConfigCenter::loadFromFile(const std::string& fileName)
 void ConfigCenter::onConfigFileValue(const StringVector& path, 
 		       const std::string& sectArg,
 		       const std::string& value,
-		       bool adding)
+				     bool adding,
+				     const ConfigFilePosInfo& pos)
 {
-  //FIXME:
+  assert(!path.empty());
+  if (path[0] == "repo")
+    onRepoConfigValue(path, sectArg, value,adding, pos);
+  throw ConfigException(ConfigErrorUnknownParam, buildConfigParamTitle(path, sectArg), pos);
 }
 

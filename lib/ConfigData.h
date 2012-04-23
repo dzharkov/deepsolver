@@ -1,35 +1,26 @@
 
-class AttachedRepo
+#ifndef DEEPSOLVER_CONFIG_DATA_H
+#define DEEPSOLVER_CONFIG_DATA_H
+
+struct ConfRepo
 {
-public:
-  AttachedRepo() {}
-  virtual ~AttachedRepo() {}
+  ConfRepo()
+    : enabled(1) {}
 
-public:
-  void makeId();
-
-public:
-  bool operator ==(const AttachedRepo& r) const
-  {
-    return id == r.id;
-  }
-
-  bool operator !=(const AttachedRepo& r) const
-  {
-    return id != r.id;
-  }
-
-public:
-  std::string id;
+  std::string name;
+  bool enabled;
   std::string url;
-  std::string component;
+  StringVector components; 
   std::string vendorId;
-}; //class AttachedRepo;
+}; //struct ConfRepo;
+
+typedef std::vector<ConfRepo> ConfRepoVector;
 
 struct ConfRoot
 {
   std::string indexDir;
   std::string indexFetchDir;
-  AttachedRepoVector repos;
+  ConfRepoVector repo;
 }; //struct ConfRoot;
 
+#endif //DEEPSOLVER_CONFIG_DATA_H;

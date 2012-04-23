@@ -59,7 +59,7 @@ void ConfigFile::processLine(const std::string& line)
 	{
 	  assert(!m_path.empty());
 	  assert(m_assignMode == ModeAssign || m_assignMode == ModeAdding);
-	  m_handler.onConfigFileValue(m_path, m_sectArg, m_paramValue, m_assignMode == ModeAdding);
+	  m_handler.onConfigFileValue(m_path, m_sectArg, m_paramValue, m_assignMode == ModeAdding, ConfigFilePosInfo(m_fileName, m_linesProcessed + 1, line));
 	}
       m_path.resize(m_sectLevel);
     }
