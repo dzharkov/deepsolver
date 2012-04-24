@@ -26,7 +26,11 @@ public:
   virtual ~AbstractIndexFetchListener() {}
 
 public:
-  virtual void onIndexFetchStatus(const std::string& repoId, size_t percentValue) = 0;
+  virtual void onIndexFetchStatus(unsigned char currentPhasePercents,
+				  unsigned char totalPercents,
+				  size_t phaseNumber,
+				  size_t phaseCount,
+				  const std::string& currentPhaseName) = 0;
 }; //class AbstractIndexFetchListener;
 
 class OperationCore
