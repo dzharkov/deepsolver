@@ -20,6 +20,6 @@
 
 void OperationCore::fetchIndices(AbstractIndexFetchListener& listener)
 {
-  curlInit();//Don't worry about multiple calls of this, there is the check inside;
+  //  curlInit();//Don't worry about multiple calls of this, there is the check inside;
 }
 

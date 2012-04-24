@@ -1,13 +1,8 @@
 
 
-#include<assert.h>
-#include<iostream>
-#include<sys/types.h>
-#include<unistd.h>
-#include"sys/stat.h"
-#include<fcntl.h>
-#include <curl/curl.h>
+#include"deepsolver.h"
 #include"Curl.h"
+#include<curl/curl.h>
 
 static bool curlWasInitialized = 0;
 

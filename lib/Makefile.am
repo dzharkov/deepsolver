@@ -1,6 +1,6 @@
 
 AM_CXXFLAGS = $(DEEPSOLVER_CXXFLAGS) $(DEEPSOLVER_INCLUDES)
-LIBS += -lrpm 
+LIBS += -lrpm -lcurl
 LIBdir=${libdir}
 
 LIB_LTLIBRARIES = libdeepsolver.la
@@ -27,12 +27,12 @@ rpm/RpmFileHeaderReader.cpp \
 rpm/vercmp.cpp \
 transact/PackageScope.cpp \
 transact/TaskPreprocessor.cpp \
+utils/Curl.cpp \
 utils/GZipInterface.cpp \
 utils/logging.cpp \
 utils/MD5.cpp \
 utils/string-utils.cpp \
 utils/TextFiles.cpp \
-utils/ZLibInterface.cpp \
 version.cpp 
 
 libdeepsolver_la_HEADERS = \
@@ -69,11 +69,11 @@ TaskException.h \
 transact/PackageScope.h \
 transact/TaskPreprocessor.h \
 UserTask.h \
+utils/Curl.h \
 utils/DateTime.h \
 utils/GZipInterface.h \
 utils/logging.h \
 utils/MD5.h \
 utils/string-utils.h \
 utils/TextFiles.h \
-utils/ZLibInterface.h \
 version.h 
