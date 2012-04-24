@@ -11,6 +11,18 @@
 
 static bool curlWasInitialized = 0;
 
+static int curlProgress(void* p,
+			double dlTotal,
+			double dlNow,
+			double ulTotal,
+			double ulNow)
+{
+  const size_t now = (size_t)dlNow;
+  const size_t total = (size_t)dlTotal;
+  std::cout << now << "/" << total << std::endl;
+  return 0;
+}
+
 static size_t acceptCurlData(void* buf,
 			     size_t size,
 			     size_t nMemB,
@@ -53,11 +65,19 @@ void CurlInterface::fetch(const std::string& url, AbstractCurlDataRecipient& rec
   CURL* handle = (CURL*)m_handle;
   assert(handle != NULL);
   curl_easy_setopt(handle, CURLOPT_URL, url.c_str());
-  curl_easy_setopt(handle, CURLOPT_VERBOSE, 1L);
-  curl_easy_setopt(handle, CURLOPT_NOPROGRESS, 1L);
+  //Uncomment the following line if you want to see debug messages from libcurl on your console;
+  //curl_easy_setopt(handle, CURLOPT_VERBOSE, 1L);
+  curl_easy_setopt(handle, CURLOPT_NOPROGRESS, 0L);
+
+  curl_easy_setopt(handle, CURLOPT_PROGRESSFUNCTION, curlProgress);
+  curl_easy_setopt(handle, CURLOPT_PROGRESSDATA, &recipient);//FIXME:
+
+
   curl_easy_setopt(handle, CURLOPT_WRITEFUNCTION, acceptCurlData);
   curl_easy_setopt(handle, CURLOPT_FILE, &recipient);
-  curl_easy_perform(handle);
+  const CURLcode res = curl_easy_perform(handle);
+  if (res)
+    throw CurlException(res, curl_easy_strerror(res));
 }
 
 class DataRecipient: public AbstractCurlDataRecipient
@@ -87,7 +107,14 @@ int main()
   curlInitialize();
   CurlInterface curl;
   curl.init();
-  curl.fetch("http://deepsolver.altlinux.org/tech-assignment.pdf", recipient);
+  try {
+    //    curl.fetch("http://deepsolver.altlinux.org/tech-assignment.iso", recipient);
+
+  }
+  catch(const CurlException& e)
+    {
+      std::cerr << "curl:" << e.getMessage() << std::endl;
+    }
   curl.close();
   close(fd);
   return 0;
