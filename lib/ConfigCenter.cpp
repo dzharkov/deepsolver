@@ -58,6 +58,7 @@ void ConfigCenter::onRepoConfigValue(const StringVector&path,
 				     bool adding, 
 				     const ConfigFilePosInfo& pos)
 {
+  //FIXME:no empty URL;
   if (path.size() < 2)
     throw ConfigException(ConfigErrorIncompletePath, buildConfigParamTitle(path, sectArg), pos);
   if (path[1] == "url")
