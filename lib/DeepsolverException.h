@@ -26,7 +26,7 @@
  * make it unified. The main information this class must provide is the
  * error type and single line error description.
  *
- * \sa SystemException RpmException IndexCoreException
+ * \sa SystemException RpmException IndexCoreException ConfigException ConfigFileException CurlException
  */
 class DeepsolverException
 {
