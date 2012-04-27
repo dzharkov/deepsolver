@@ -1,4 +1,19 @@
+/*
+   Copyright 2011-2012 ALT Linux
+   Copyright 2011-2012 Michael Pozhidaev
 
+   This file is part of the Deepsolver.
+
+   Deepsolver is free software; you can redistribute it and/or
+   modify it under the terms of the GNU General Public
+   License as published by the Free Software Foundation; either
+   version 2 of the License, or (at your option) any later version.
+
+   Deepsolver is distributed in the hope that it will be useful,
+   but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+   General Public License for more details.
+*/
 
 #include"deepsolver.h"
 #include"Curl.h"
@@ -16,9 +31,11 @@ static int curlProgress(void* p,
   assert(progressListener != NULL);
   const size_t now = (size_t)dlNow;
   const size_t total = (size_t)dlTotal;
-  if (total > 0)
-    progressListener->onCurlProgress(now, total);
-  return 0;
+  if (total == 0)
+    return 0;
+  if (progressListener->onCurlProgress(now, total))
+    return 0;
+  return 1;
 }
 
 static size_t acceptCurlData(void* buf,

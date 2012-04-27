@@ -20,6 +20,15 @@
 
 #include"ConfigCenter.h"
 
+class AbstractOperationContinueRequest
+{
+public:
+  virtual ~AbstractOperationContinueRequest() {}
+
+public:
+  virtual bool onContinueOperationRequest() const = 0;
+}; //class AbstractOperationContinueRequest; 
+
 class AbstractIndexFetchListener
 {
 public:
@@ -42,7 +51,8 @@ public:
     virtual ~OperationCore() {}
 
 public:
-  void fetchIndices(AbstractIndexFetchListener& listener);
+  void fetchIndices(AbstractIndexFetchListener& listener,
+		    const AbstractOperationContinueRequest& continueRequest);
 
 private:
   const ConfigCenter& m_conf;

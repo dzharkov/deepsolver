@@ -17,9 +17,16 @@
 
 #include"deepsolver.h"
 #include"OperationCore.h"
+#include"IndexFetch.h"
 
-void OperationCore::fetchIndices(AbstractIndexFetchListener& listener)
+void OperationCore::fetchIndices(AbstractIndexFetchListener& listener,
+				 const AbstractOperationContinueRequest& continueRequest)
 {
-  //  curlInit();//Don't worry about multiple calls of this, there is the check inside;
+  //FIXME:file lock;
+  StringToStringMap files;
+
+  IndexFetch indexFetch(listener, continueRequest);
+  indexFetch.fetch(files);
+  //FIXME:remove file lock;
 }
 
