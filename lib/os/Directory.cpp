@@ -51,6 +51,36 @@ void Directory::ensureExists(const std::string& path)
 	    TRY_SYS_CALL(mkdir(s.c_str(), NEW_FILE_MODE) == 0, "mkdir(" + s + ")");
 }
 
+bool Directory::ensureExistsAndEmpty(const std::string& name, bool eraseContent)
+{
+  assert(!name.empty());
+  ensureExists(name);
+  if (!eraseContent)
+    {
+      std::auto_ptr<Iterator> it = enumerate(name);
+      return !it->moveNext();
+    }
+  eraseContent(name);
+  return 1;
+}
+
+void Directory::eraseContent(const std::string& name)
+{
+  std::auto_ptr<Iterator> it = enumerate(name);
+  while(it->moveNext())
+    {
+      const std::string& path = it->getFullPath();
+      //FIXME:proper symlink processing;
+      if (File::isDir(path))
+	{
+	  eraseContent(path);
+	  remove(path);
+	  continue;
+	}
+      File::remove(path);
+    }
+}
+
 bool Directory::Iterator::moveNext()
 {
   struct dirent* ent = readdir(m_dir);;

@@ -124,6 +124,14 @@ public:
    */
   static void ensureExists(const std::string& path);
 
+  /**\brief Creates directory and/or makes it empty
+   *
+   * \return Non-zero if directory is empty, with eraseContent set to 1 always returns non-zero
+*/
+  static bool ensureExistsAndEmpty(const std::string& name, bool eraseContent = 0);
+
+  static void eraseContent(const std::string& name);
+
   /**\brief Creates the iterator over the files in the directory
    *
    * This method creates the iterator prepared for enumeration of all files
