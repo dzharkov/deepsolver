@@ -51,11 +51,11 @@ void Directory::ensureExists(const std::string& path)
 	    TRY_SYS_CALL(mkdir(s.c_str(), NEW_FILE_MODE) == 0, "mkdir(" + s + ")");
 }
 
-bool Directory::ensureExistsAndEmpty(const std::string& name, bool eraseContent)
+bool Directory::ensureExistsAndEmpty(const std::string& name, bool needEraseContent)
 {
   assert(!name.empty());
   ensureExists(name);
-  if (!eraseContent)
+  if (!needEraseContent)
     {
       std::auto_ptr<Iterator> it = enumerate(name);
       return !it->moveNext();
@@ -70,15 +70,20 @@ void Directory::eraseContent(const std::string& name)
   while(it->moveNext())
     {
       const std::string& path = it->getFullPath();
-      //FIXME:proper symlink processing;
       if (File::isDir(path))
 	{
 	  eraseContent(path);
 	  remove(path);
 	  continue;
 	}
-      File::remove(path);
+      File::unlink(path);
     }
+}
+
+void Directory::remove(const std::string& name)
+{
+  assert(!name.empty());
+  TRY_SYS_CALL(rmdir(name.c_str()) == 0, "rmdir(" + name + ")");
 }
 
 bool Directory::Iterator::moveNext()
@@ -103,7 +108,7 @@ std::string Directory::Iterator::getName() const
 std::string Directory::Iterator::getFullPath() const
 {
   assert(m_dir);//m_currentName has a valid value;
-  return concatUnixPath(m_path, m_currentName);
+  return concatUnixPath(m_path, m_currentName);//FIXME:
 }
 
 std::auto_ptr<Directory::Iterator> Directory::enumerate(const std::string& path)

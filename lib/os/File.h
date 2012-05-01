@@ -146,6 +146,24 @@ public:
    */
   static void unlink(const std::string& fileName);
 
+  /**\brief Checks if file is a regular file
+   *
+   * FIXME
+   */
+  static bool isRegFile(const std::string& fileName);
+
+  /**\brief Checks if file is a directory
+   *
+   * FIXME
+   */
+    static bool isDir(const std::string& fileName);
+
+  /**\brief Checks if file is a symlink
+   *
+   * FIXME
+   */
+  static bool isSymLink(const std::string& fileName);
+
 protected:
   int m_fd;
 }; //class File;

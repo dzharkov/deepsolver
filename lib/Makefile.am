@@ -11,6 +11,8 @@ libdeepsolver_la_SOURCES = \
 ConfigCenter.cpp \
 ConfigFile.cpp \
 IndexCore.cpp \
+IndexFetch.cpp \
+logging.cpp \
 OperationCore.cpp \
 os/Directory.cpp \
 os/File.cpp \
@@ -22,24 +24,25 @@ ProvidePriorityList.cpp \
 repo/RepoIndexInfoFile.cpp \
 repo/RepoIndexTextFormatReader.cpp \
 repo/RepoIndexTextFormatWriter.cpp \
+Repository.cpp \
 RequireFilter.cpp \
 rpm/RpmFileHeaderReader.cpp \
 rpm/vercmp.cpp \
 transact/PackageScope.cpp \
 transact/TaskPreprocessor.cpp \
-utils/Curl.cpp \
+utils/CurlInterface.cpp \
 utils/GZipInterface.cpp \
-utils/logging.cpp \
 utils/MD5.cpp \
 utils/string-utils.cpp \
 utils/TextFiles.cpp \
+utils/TinyFileDownload.cpp \
 version.cpp 
 
 libdeepsolver_la_HEADERS = \
 AbstractConsoleMessages.h \
 AbstractWarningHandler.h \
-ConfigData.h \
 ConfigCenter.h \
+ConfigData.h \
 ConfigFile.h \
 DeepsolverException.h \
 deepsolver.h \
@@ -47,6 +50,8 @@ DeepsolverTypes.h \
 DefaultValues.h \
 IndexCoreException.h \
 IndexCore.h \
+IndexFetch.h \
+logging.h \
 OperationCore.h \
 os/Directory.h \
 os/File.h \
@@ -60,6 +65,7 @@ ProvidePriorityList.h \
 repo/RepoIndexInfoFile.h \
 repo/RepoIndexTextFormatReader.h \
 repo/RepoIndexTextFormatWriter.h \
+Repository.h \
 RequireFilter.h \
 rpm/RpmException.h \
 rpm/RpmFile.h \
@@ -69,11 +75,11 @@ TaskException.h \
 transact/PackageScope.h \
 transact/TaskPreprocessor.h \
 UserTask.h \
-utils/Curl.h \
+utils/CurlInterface.h \
 utils/DateTime.h \
 utils/GZipInterface.h \
-utils/logging.h \
 utils/MD5.h \
 utils/string-utils.h \
 utils/TextFiles.h \
+utils/TinyFileDownload.h \
 version.h 

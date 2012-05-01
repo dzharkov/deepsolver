@@ -175,3 +175,28 @@ void File::unlink(const std::string& fileName)
 {
   TRY_SYS_CALL(::unlink(fileName.c_str()) == 0, "unlink(" + fileName + ")");
 }
+
+
+bool File::isRegFile(const std::string& fileName)
+{
+  assert(!fileName.empty());
+  struct stat s;
+  TRY_SYS_CALL(stat(fileName.c_str(), &s) == 0, "stat(" + fileName + ")");
+  return S_ISREG(s.st_mode);
+}
+
+bool isDir(const std::string& fileName)
+{
+  assert(!fileName.empty());
+  struct stat s;
+  TRY_SYS_CALL(stat(fileName.c_str(), &s) == 0, "stat(" + fileName + ")");
+  return S_ISDIR(s.st_mode);
+}
+
+bool isSymLink(const std::string& fileName)
+{
+  assert(!fileName.empty());
+  struct stat s;
+  TRY_SYS_CALL(stat(fileName.c_str(), &s) == 0, "stat(" + fileName + ")");
+  return S_ISLNK(s.st_mode);
+}

@@ -128,9 +128,15 @@ public:
    *
    * \return Non-zero if directory is empty, with eraseContent set to 1 always returns non-zero
 */
-  static bool ensureExistsAndEmpty(const std::string& name, bool eraseContent = 0);
+  static bool ensureExistsAndEmpty(const std::string& name, bool needEraseContent = 0);
 
   static void eraseContent(const std::string& name);
+
+  /**\brief Removes an empty directory
+   *
+   * FIXME
+   */
+  static void remove(const std::string& name);
 
   /**\brief Creates the iterator over the files in the directory
    *
