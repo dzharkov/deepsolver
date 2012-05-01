@@ -21,7 +21,7 @@
 void TinyFileDownload::fetch(const std::string& url)
 {
   assert(!url.empty());
-  curlInit();//Don't worry about multiple calls of this, there is the check inside;
+  curlInitialize();//Don't worry about multiple calls of this, there is the check inside;
   CurlInterface curl;
   curl.fetch(url, *this, *this);
 }

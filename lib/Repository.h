@@ -52,7 +52,7 @@ private:
   std::string m_checksum;
 }; //class Repository;
 
-typedef std::vector<Repository> RepositoryVector
+typedef std::vector<Repository> RepositoryVector;
 typedef std::list<Repository> RepositoryList;
 
 #endif //DEEPSOLVER_REPOSITORY_H;

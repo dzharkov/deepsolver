@@ -22,7 +22,7 @@ void IndexFetch::processFile(const std::string& url, const std::string localFile
 {
   assert(!url.empty());
   assert(!localFile.empty());
-  curlInit();//Don't worry about multiple calls of this, there is the check inside;
+  curlInitialize();//Don't worry about multiple calls of this, there is the check inside;
   m_file.create(localFile);
   CurlInterface curl;
   curl.fetch(url, *this, *this);

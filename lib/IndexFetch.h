@@ -19,18 +19,18 @@
 #define DEEPSOLVER_INDEX_FETCH_H
 
 #include"OperationCore.h"
-#include"utils/Curl.h"
+#include"utils/CurlInterface.h"
 
 class IndexFetch: private AbstractCurlDataRecipient, private AbstractCurlProgressListener
 {
 public:
- IndexFetch(AbstractIndexFetchListener& listener,   const AbstractOperationContinueRequest& continueRequest;)
+  IndexFetch(AbstractIndexFetchListener& listener,   const AbstractOperationContinueRequest& continueRequest)
    : m_listener(listener), m_continueRequest(continueRequest) {}
 
   virtual ~IndexFetch() {}
 
  public:
-  void fetch(const StringToStringMap& files)
+  void fetch(const StringToStringMap& files);
 
 private:
   void processFile(const std::string& url, const std::string localFile);

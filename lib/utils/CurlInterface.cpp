@@ -16,7 +16,7 @@
 */
 
 #include"deepsolver.h"
-#include"Curl.h"
+#include"utils/CurlInterface.h"
 #include<curl/curl.h>
 
 static bool curlWasInitialized = 0;

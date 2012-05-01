@@ -100,4 +100,6 @@ private:
 
 }; //class CurlInterface;
 
+void curlInitialize();
+
 #endif //DEEPSOLVER_CURL_H;

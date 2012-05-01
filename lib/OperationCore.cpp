@@ -17,6 +17,7 @@
 
 #include"deepsolver.h"
 #include"OperationCore.h"
+#include"Repository.h"
 #include"IndexFetch.h"
 
 static void buildTemporaryIndexFileNames(StringToStringMap& files, const std::string& tmpDirName)

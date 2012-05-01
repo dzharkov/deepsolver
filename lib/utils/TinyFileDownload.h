@@ -18,7 +18,7 @@
 #ifndef DEEPSOLVER_TINY_FILE_DOWNLOAD_H
 #define DEEPSOLVER_TINY_FILE_DOWNLOAD_H
 
-#include"utils/Curl.h"
+#include"utils/CurlInterface.h"
 
 class TinyFileDownload: private AbstractCurlDataRecipient, private AbstractCurlProgressListener
 {
@@ -27,7 +27,7 @@ public:
   virtual ~TinyFileDownload() {}
 
 public:
-  void fetch(const std:;string& url);
+  void fetch(const std::string& url);
 
   const std::string& getContent() const
   {

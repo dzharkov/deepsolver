@@ -20,7 +20,7 @@
 
 #include"os/system.h"
 #include"DefaultValues.h"
-#include"utils/logging.h"
+#include"logging.h"
 #include"DeepsolverException.h"
 #include"os/SystemException.h"
 #include"os/File.h"

@@ -17,6 +17,7 @@
 
 #include"deepsolver.h"
 #include"Repository.h"
+#include"utils/TinyFileDownload.h"
 
 void Repository::fetchInfoAndChecksum()
 {
