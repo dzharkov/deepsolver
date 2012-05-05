@@ -18,11 +18,13 @@
 #include"deepsolver.h"
 #include"IndexFetchProgress.h"
 
-void IndexFetchProgress::onIndexFetchStatus(unsigned char currentPhasePercents,
+void IndexFetchProgress::onIndexFetchStatus(unsigned char currentPartPercents,
 					    unsigned char totalPercents,
-					    size_t phaseNumber,
-					    size_t phaseCount,
-					    const std::string& currentPhaseName) = 0
+					    size_t partNumber,
+					    size_t partCount,
+					    size_t currentPartSize,
+					    const std::string& currentPartName)
 {
-  //FIXME:
+  assert(totalPercents <= 100);
+  m_stream << totalPercents << "% (file " << currentPartNumber << " of " << partCount << ", " << currentPartSize / 1024 "k, " << currentPartName << ")" << std::endl;
 }

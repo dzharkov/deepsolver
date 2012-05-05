@@ -23,15 +23,21 @@
 class IndexFetchProgress: public AbstractIndexFetchListener
 {
 public:
-  IndexFetchProgress() {}
+  IndexFetchProgress(std::ostream& stream)
+    : m_stream(stream) {}
+
   virtual ~IndexFetchProgress() {}
 
 public:
-  void onIndexFetchStatus(unsigned char currentPhasePercents,
+  void onIndexFetchStatus(unsigned char currentPartPercents,
 			  unsigned char totalPercents,
-			  size_t phaseNumber,
-			  size_t phaseCount,
-			  const std::string& currentPhaseName);
+			  size_t partNumber,
+			  size_t partCount,
+			  size_t currentPartSize,
+			  const std::string& currentPartName);
+
+private:
+  std::ostream& m_stream;
 }; //class IndexFetchProgress;
 
 #endif //DEEPSOLVER_INDEX_FETCH_PROGRESS_H;

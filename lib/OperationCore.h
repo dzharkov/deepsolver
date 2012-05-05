@@ -35,11 +35,12 @@ public:
   virtual ~AbstractIndexFetchListener() {}
 
 public:
-  virtual void onIndexFetchStatus(unsigned char currentPhasePercents,
+  virtual void onIndexFetchStatus(unsigned char currentPartPercents,
 				  unsigned char totalPercents,
-				  size_t phaseNumber,
-				  size_t phaseCount,
-				  const std::string& currentPhaseName) = 0;
+				  size_t partNumber,
+				  size_t partCount,
+				  size_t currentPartSize,
+				  const std::string& currentPartName) = 0;
 }; //class AbstractIndexFetchListener;
 
 class OperationCore

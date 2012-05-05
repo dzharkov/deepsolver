@@ -9,4 +9,5 @@ ds_DEPENDENCIES = $(ds_LDADD)
 
 ds_SOURCES=\
 Messages.cpp \
+IndexFetchProgress.cpp \
 ds.cpp
