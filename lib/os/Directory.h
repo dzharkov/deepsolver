@@ -138,6 +138,12 @@ public:
    */
   static void remove(const std::string& name);
 
+  /**\brief Combines two parts of UNIX path
+   *
+   * FIXME 
+   */
+  static std::string mixNameComponents(const std::string& part1, const std::string& part2);
+
   /**\brief Creates the iterator over the files in the directory
    *
    * This method creates the iterator prepared for enumeration of all files

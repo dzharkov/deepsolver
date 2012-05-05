@@ -20,7 +20,11 @@
 
 //Configuration parameters;
 #define DEFAULT_CONFIG_DIR "/etc/deepsolver"
-#define DEFAULT_CONFIG_FILE_NAME "deepsolver.conf"
+#define DEFAULT_CONFIG_FILE_NAME "ds.ini"
+
+//Data files and directories;
+#define PKG_DATA_FILE_NAME "deepsolver-pkgs.bin"
+#define PKG_DATA_FETCH_DIR "__tmp_pkg_data"
 
 //Repo structure;
 #define REPO_RPMS_DIR_NAME "RPMS"
@@ -36,7 +40,5 @@
 #define DEFAULT_REPO_INDEX_COMPRESSION_TYPE CompressionTypeGzip
 #define DEFAULT_REPO_INDEX_FORMAT_TYPE FormatTypeText
 
-//Binary file with attached repositories content;
-#define PACKAGE_LIST_FILE_NAME "deepsolver-pkgs.bin"
 
 #endif //DEEPSOLVER_DEFAULT_VALUES_H;

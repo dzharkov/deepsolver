@@ -18,6 +18,15 @@
 #ifndef DEEPSOLVER_CONFIG_DATA_H
 #define DEEPSOLVER_CONFIG_DATA_H
 
+struct ConfDir
+{
+  ConfDir() {}
+  //FIXME:default values;
+
+    std::string pkgData;
+  std::string tmpPkgDataFetch;
+}; //struct ConfDir;
+
 struct ConfRepo
 {
   ConfRepo()
@@ -34,11 +43,11 @@ struct ConfRepo
 }; //struct ConfRepo;
 
 typedef std::vector<ConfRepo> ConfRepoVector;
+typedef std::list<ConfRepo> ConfRepoList;
 
 struct ConfRoot
 {
-  std::string indexDir;
-  std::string indexFetchDir;
+  ConfDir dir;
   ConfRepoVector repo;
 }; //struct ConfRoot;
 

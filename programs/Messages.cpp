@@ -67,9 +67,16 @@ void Messages::onConfigError(const ConfigException& e)
     case ConfigErrorIncompletePath:
       m_stream << "incomplete path: " << e.getArg() << std::endl;
   break;
+    case ConfigErrorValueCannotBeEmpty:
+      m_stream << "value of parameter \'" << e.getArg() << "\' cannot be empty" << std::endl;
+  break;
+    case ConfigErrorAddingNotPermitted:
+      m_stream << "adding not permitted" << std::endl;
+  break;
     default:
       assert(0);
       return;
     } //switch(e.getCode());
-  m_stream << e.getFileName() << "(" << e.getLineNumber() << "):" << e.getLine() << std::endl;
+  if (e.getLineNumber() > 0)
+    m_stream << e.getFileName() << "(" << e.getLineNumber() << "):" << e.getLine() << std::endl;
 }

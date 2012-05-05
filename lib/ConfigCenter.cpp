@@ -40,6 +40,13 @@ void ConfigCenter::loadFromFile(const std::string& fileName)
     parser.processLine(line);
 }
 
+void ConfigCenter.commit()
+{
+  if (m_root.dir.pkgData.empty())
+    throw ConfigException(ConfigErrorValueCannotBeEmpty, "core.dir.pkgdata");
+  m_root.dir.tmpPkgDataFetch = Directory::mixNameComponents(m_root.dir.pkgdata, PKG_DATA_FETCH_DIR);
+}
+
 void ConfigCenter::onConfigFileValue(const StringVector& path, 
 		       const std::string& sectArg,
 		       const std::string& value,
@@ -47,9 +54,48 @@ void ConfigCenter::onConfigFileValue(const StringVector& path,
 				     const ConfigFilePosInfo& pos)
 {
   assert(!path.empty());
+  if (path[0] == "core")
+    onCoreConfigValue(path, sectArg, value,adding, pos); else
   if (path[0] == "repo")
     onRepoConfigValue(path, sectArg, value,adding, pos); else
     throw ConfigException(ConfigErrorUnknownParam, buildConfigParamTitle(path, sectArg), pos);
+}
+
+void ConfigCenter::onCoreConfigValue(const StringVector&path,
+				     const std::string& sectArg,
+				     const std::string& value,
+				     bool adding, 
+				     const ConfigFilePosInfo& pos)
+{
+  //FIXME:sectArg must be empty;
+  assert(sectArg.empty());
+  if (path.size() < 2)
+    throw ConfigException(ConfigErrorIncompletePath, buildConfigParamTitle(path, sectArg), pos);
+  if (path[1] == "dir")
+    onCoreDirConfigValue(path, sectArg, value,adding, pos); else
+  throw ConfigException(ConfigErrorUnknownParam, buildConfigParamTitle(path, sectArg), pos);
+}
+
+void ConfigCenter::onCoreDirConfigValue(const StringVector&path,
+				     const std::string& sectArg,
+				     const std::string& value,
+				     bool adding, 
+				     const ConfigFilePosInfo& pos)
+{
+  //FIXME:sectArg must be empty;
+  assert(sectArg.empty());
+  if (path.size() < 3)
+    throw ConfigException(ConfigErrorIncompletePath, buildConfigParamTitle(path, sectArg), pos);
+  if (path[2] == "pkgdata")
+    {
+      if (adding)
+    throw ConfigException(ConfigErrorAddingNotPermitted, buildConfigParamTitle(path, sectArg), pos);
+      m_root.dir.pkgData = trim(value);
+      if (m_root.dir.pkgData.empty())
+    throw ConfigException(ConfigErrorValueCannotBeEmpty, "core.dir.pkgdata", pos);
+      return;
+    }
+  throw ConfigException(ConfigErrorUnknownParam, buildConfigParamTitle(path, sectArg), pos);
 }
 
 void ConfigCenter::onRepoConfigValue(const StringVector&path,
