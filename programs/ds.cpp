@@ -41,6 +41,7 @@ bool loadConfiguration()
 {
   try{
   conf.loadFromFile("/tmp/ds.ini");
+  conf.commit();
   }
   catch (const ConfigFileException& e)
     {
@@ -62,6 +63,7 @@ bool loadConfiguration()
 
 int fetchIndices()
 {
+  logMsg(LOG_DEBUG, "recognized user request to update package indices");
   OperationCore core(conf);
   try {
     IndexFetchProgress progress(std::cout);
@@ -77,6 +79,7 @@ int fetchIndices()
 
 int main(int argc, char* argv[])
 {
+  initLogging("/tmp/ds.log", LOG_DEBUG);//FIXME:
   if (!loadConfiguration())
     return 1;
   if (argc < 2)

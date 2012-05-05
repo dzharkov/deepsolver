@@ -32,6 +32,7 @@ static std::string buildConfigParamTitle(const StringVector& path, const std::st
 
 void ConfigCenter::loadFromFile(const std::string& fileName)
 {
+  logMsg(LOG_DEBUG, "Reading configuration data from \'%s\'", fileName.c_str());
   assert(!fileName.empty());
   std::auto_ptr<AbstractTextFileReader> file = createTextFileReader(TextFileStd, fileName);
   ConfigFile parser(*this, fileName);
@@ -42,6 +43,7 @@ void ConfigCenter::loadFromFile(const std::string& fileName)
 
 void ConfigCenter::commit()
 {
+  logMsg(LOG_DEBUG, "Committing loaded configuration data");
   if (m_root.dir.pkgData.empty())
     throw ConfigException(ConfigErrorValueCannotBeEmpty, "core.dir.pkgdata");
   m_root.dir.tmpPkgDataFetch = Directory::mixNameComponents(m_root.dir.pkgData, PKG_DATA_FETCH_DIR);//Real constant can be found in DefaultValues.h;

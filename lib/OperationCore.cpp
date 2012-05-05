@@ -29,16 +29,21 @@ void OperationCore::fetchIndices(AbstractIndexFetchListener& listener,
 				 const AbstractOperationContinueRequest& continueRequest)
 {
   const ConfRoot& root = m_conf.root();
+  logMsg(LOG_DEBUG, "PkgData updating begin: pkgdatadir=\'%s\', tmpdir=\'%s\'", root.dir.pkgData.c_str(), root.dir.tmpPkgDataFetch.c_str());
   //FIXME:file lock;
   RepositoryVector repo;
   for(ConfRepoVector::size_type i = 0;i < root.repo.size();i++)
+    {
+      logMsg(LOG_DEBUG, "Registering repo \'%s\' for index update", root.repo[i].name.c_str());
     repo.push_back(Repository(root.repo[i]));
+    }
   StringToStringMap files;
   for(RepositoryVector::size_type i = 0;i < repo.size();i++)
     {
       repo[i].fetchInfoAndChecksum();
       repo[i].addIndexFilesForFetch(files);
     }
+  logMsg(LOG_DEBUG, "List of index files to download consists of %zu entries", files.size());
   buildTemporaryIndexFileNames(files, "/tmp");//FIXME:directory name from ConfigCenter;
   IndexFetch indexFetch(listener, continueRequest);
   indexFetch.fetch(files);

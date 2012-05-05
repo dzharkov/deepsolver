@@ -245,7 +245,7 @@ int main(int argc, char* argv[])
 {
   if (!parseCmdLine(argc, argv))
     return 1;
-  initLogging("/tmp/deepsolver.log", LOG_DEBUG);//FIXME:
+  initLogging("/tmp/genbasedir.log", LOG_DEBUG);//FIXME:
   try {
     run();
   }

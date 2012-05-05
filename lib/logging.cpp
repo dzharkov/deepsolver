@@ -27,6 +27,7 @@ static int configLogLevel=LOG_WARNING;
 /**\brief Generates string representation of current system time*/
 static std::string getCurrentTime()
 {
+  return "";//KILLME:
   std::string s;
   time_t t;
   time(&t);
