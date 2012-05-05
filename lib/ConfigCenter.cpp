@@ -40,11 +40,11 @@ void ConfigCenter::loadFromFile(const std::string& fileName)
     parser.processLine(line);
 }
 
-void ConfigCenter.commit()
+void ConfigCenter::commit()
 {
   if (m_root.dir.pkgData.empty())
     throw ConfigException(ConfigErrorValueCannotBeEmpty, "core.dir.pkgdata");
-  m_root.dir.tmpPkgDataFetch = Directory::mixNameComponents(m_root.dir.pkgdata, PKG_DATA_FETCH_DIR);
+  m_root.dir.tmpPkgDataFetch = Directory::mixNameComponents(m_root.dir.pkgData, PKG_DATA_FETCH_DIR);//Real constant can be found in DefaultValues.h;
 }
 
 void ConfigCenter::onConfigFileValue(const StringVector& path, 

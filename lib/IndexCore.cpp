@@ -56,14 +56,14 @@ void IndexCore::collectRefsFromDirs(const StringList& dirs, StringSet& res)
 
 void IndexCore::build(const RepoIndexParams& params)
 {
-  const std::string archDir = concatUnixPath(params.topDir, params.arch);
-  const std::string indexDir = concatUnixPath(archDir, REPO_INDEX_DIR);
-  const std::string infoFile = concatUnixPath(indexDir, REPO_INDEX_INFO_FILE);
+  const std::string archDir = Directory::mixNameComponents(params.topDir, params.arch);
+  const std::string indexDir = Directory::mixNameComponents(archDir, REPO_INDEX_DIR);
+  const std::string infoFile = Directory::mixNameComponents(indexDir, REPO_INDEX_INFO_FILE);
   Directory::ensureExists(indexDir);
   writeInfoFile(infoFile, params);
   processPackages(indexDir,
-		  concatUnixPath(archDir, REPO_RPMS_DIR_NAME),
-		  concatUnixPath(archDir, REPO_SRPMS_DIR_NAME),
+		  Directory::mixNameComponents(archDir, REPO_RPMS_DIR_NAME),
+		  Directory::mixNameComponents(archDir, REPO_SRPMS_DIR_NAME),
 		  params);
 }
 
@@ -128,10 +128,10 @@ void IndexCore::processPackages(const std::string& indexDir, const std::string& 
   handler.commitSource();
   //Saving md5sum;
   m_console.msg() << "Creating " << REPO_INDEX_MD5SUM_FILE << "...";
-  std::auto_ptr<AbstractTextFileWriter> md5sum = createTextFileWriter(TextFileStd, concatUnixPath(indexDir, REPO_INDEX_MD5SUM_FILE));
+  std::auto_ptr<AbstractTextFileWriter> md5sum = createTextFileWriter(TextFileStd, Directory::mixNameComponents(indexDir, REPO_INDEX_MD5SUM_FILE));
   MD5 md5;
   md5.init();
-  md5.updateFromFile(concatUnixPath(indexDir, REPO_INDEX_INFO_FILE));
+  md5.updateFromFile(Directory::mixNameComponents(indexDir, REPO_INDEX_INFO_FILE));
   md5sum->writeLine(md5.commit(REPO_INDEX_INFO_FILE));
   md5.init();
   md5.updateFromFile(handler.getRpmsFileName());

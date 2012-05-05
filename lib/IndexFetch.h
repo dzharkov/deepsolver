@@ -29,7 +29,7 @@ public:
 
   virtual ~IndexFetch() {}
 
- public:
+public:
   void fetch(const StringToStringMap& files);
 
 private:

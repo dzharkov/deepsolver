@@ -108,7 +108,7 @@ std::string Directory::Iterator::getName() const
 std::string Directory::Iterator::getFullPath() const
 {
   assert(m_dir);//m_currentName has a valid value;
-  return concatUnixPath(m_path, m_currentName);//FIXME:
+  return Directory::mixNameComponents(m_path, m_currentName);//FIXME:
 }
 
 std::auto_ptr<Directory::Iterator> Directory::enumerate(const std::string& path)

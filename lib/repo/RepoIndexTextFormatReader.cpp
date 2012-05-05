@@ -162,9 +162,9 @@ void RepoIndexTextFormatReader::openPackagesFile()
   assert(m_reader.get() == NULL);
   m_noMoreData = 0;
   if (m_compressionType == RepoIndexParams::CompressionTypeNone)
-    m_reader = createTextFileReader(TextFileStd, concatUnixPath(m_dir, REPO_INDEX_RPMS_DATA_FILE)); else
+    m_reader = createTextFileReader(TextFileStd, Directory::mixNameComponents(m_dir, REPO_INDEX_RPMS_DATA_FILE)); else
   if (m_compressionType == RepoIndexParams::CompressionTypeGzip)
-    m_reader = createTextFileReader(TextFileGZip, concatUnixPath(m_dir, std::string(REPO_INDEX_RPMS_DATA_FILE) + ".gz")); else 
+    m_reader = createTextFileReader(TextFileGZip, Directory::mixNameComponents(m_dir, std::string(REPO_INDEX_RPMS_DATA_FILE) + ".gz")); else 
     {
       assert(0);
     }
@@ -180,9 +180,9 @@ void RepoIndexTextFormatReader::openProvidesFile()
 {
   m_noMoreData = 0;
   if (m_compressionType == RepoIndexParams::CompressionTypeNone)
-    m_reader = createTextFileReader(TextFileStd, concatUnixPath(m_dir, REPO_INDEX_PROVIDES_DATA_FILE)); else
+    m_reader = createTextFileReader(TextFileStd, Directory::mixNameComponents(m_dir, REPO_INDEX_PROVIDES_DATA_FILE)); else
   if (m_compressionType == RepoIndexParams::CompressionTypeGzip)
-    m_reader = createTextFileReader(TextFileGZip, concatUnixPath(m_dir, std::string(REPO_INDEX_PROVIDES_DATA_FILE) + ".gz")); else 
+    m_reader = createTextFileReader(TextFileGZip, Directory::mixNameComponents(m_dir, std::string(REPO_INDEX_PROVIDES_DATA_FILE) + ".gz")); else 
     {
       assert(0);
     }

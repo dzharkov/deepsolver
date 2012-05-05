@@ -185,7 +185,7 @@ bool File::isRegFile(const std::string& fileName)
   return S_ISREG(s.st_mode);
 }
 
-bool isDir(const std::string& fileName)
+bool File::isDir(const std::string& fileName)
 {
   assert(!fileName.empty());
   struct stat s;
@@ -193,7 +193,7 @@ bool isDir(const std::string& fileName)
   return S_ISDIR(s.st_mode);
 }
 
-bool isSymLink(const std::string& fileName)
+bool File::isSymLink(const std::string& fileName)
 {
   assert(!fileName.empty());
   struct stat s;

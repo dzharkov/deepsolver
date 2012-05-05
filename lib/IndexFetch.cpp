@@ -18,6 +18,11 @@
 #include"deepsolver.h"
 #include"IndexFetch.h"
 
+void IndexFetch::fetch(const StringToStringMap& files)
+{
+  //FIXME:
+}
+
 void IndexFetch::processFile(const std::string& url, const std::string localFile)
 {
   assert(!url.empty());

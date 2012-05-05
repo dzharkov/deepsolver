@@ -26,5 +26,5 @@ void IndexFetchProgress::onIndexFetchStatus(unsigned char currentPartPercents,
 					    const std::string& currentPartName)
 {
   assert(totalPercents <= 100);
-  m_stream << totalPercents << "% (file " << currentPartNumber << " of " << partCount << ", " << currentPartSize / 1024 "k, " << currentPartName << ")" << std::endl;
+  m_stream << totalPercents << "% (file " << partNumber << " of " << partCount << ", " << currentPartSize / 1024 << "k, " << currentPartName << ")" << std::endl;
 }

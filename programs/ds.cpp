@@ -18,8 +18,24 @@
 #include"deepsolver.h"
 #include"OperationCore.h"
 #include"Messages.h"
+#include"IndexFetchProgress.h"
 
-ConfigCenter conf;
+class AlwaysTrueContinueRequest: public AbstractOperationContinueRequest
+{
+public:
+  AlwaysTrueContinueRequest() {}
+  virtual ~AlwaysTrueContinueRequest() {}
+
+public:
+  bool onContinueOperationRequest() const
+  {
+    return 1;
+  }
+}; //class AlwaysTrueContinueRequest; 
+
+static AlwaysTrueContinueRequest alwaysTrueContinueRequest;
+
+static ConfigCenter conf;
 
 bool loadConfiguration()
 {
@@ -48,7 +64,8 @@ int fetchIndices()
 {
   OperationCore core(conf);
   try {
-    core.fetchIndices();
+    IndexFetchProgress progress(std::cout);
+    core.fetchIndices(progress, alwaysTrueContinueRequest);
   }
   catch(const SystemException& e)
     {
@@ -58,13 +75,13 @@ int fetchIndices()
   return 0;
 }
 
-int main()
+int main(int argc, char* argv[])
 {
   if (!loadConfiguration())
     return 1;
   if (argc < 2)
     return 0;
-  if (std::string(argv[1]) == 'update')
+  if (std::string(argv[1]) == "update")
     return fetchIndices();
 
 }

@@ -332,7 +332,7 @@ void RpmFileHeaderReader::fillFileList(StringList& v)
   for(int_32 i = 0;i < count2;i++)
     {
       assert(dirIndexes[i] < (int_32)dirNames.size());
-	  v.push_back(concatUnixPath(dirNames[dirIndexes[i]], names[i]));
+      v.push_back(Directory::mixNameComponents(dirNames[dirIndexes[i]], names[i]));
     }
       headerFreeData(names, RPM_STRING_ARRAY_TYPE);
 }

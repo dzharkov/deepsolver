@@ -183,10 +183,10 @@ RepoIndexTextFormatWriter::RepoIndexTextFormatWriter(const AbstractRequireFilter
     m_params(params),
     m_console(console),
     m_dir(dir),
-    m_rpmsFileName(addCompressionExtension(concatUnixPath(dir, REPO_INDEX_RPMS_DATA_FILE), params)),
-    m_srpmsFileName(addCompressionExtension(concatUnixPath(dir, REPO_INDEX_SRPMS_DATA_FILE), params)),
-    m_providesFileName(addCompressionExtension(concatUnixPath(dir, REPO_INDEX_PROVIDES_DATA_FILE), params)),
-    m_tmpFileName(concatUnixPath(dir, TMP_FILE)),
+    m_rpmsFileName(addCompressionExtension(Directory::mixNameComponents(dir, REPO_INDEX_RPMS_DATA_FILE), params)),
+    m_srpmsFileName(addCompressionExtension(Directory::mixNameComponents(dir, REPO_INDEX_SRPMS_DATA_FILE), params)),
+    m_providesFileName(addCompressionExtension(Directory::mixNameComponents(dir, REPO_INDEX_PROVIDES_DATA_FILE), params)),
+    m_tmpFileName(Directory::mixNameComponents(dir, TMP_FILE)),
     m_filterProvidesByRefs(params.provideFilteringByRefs),
     m_additionalRefs(additionalRefs),
     m_filterProvidesByDirs(params.provideFilterDirs)
@@ -298,7 +298,6 @@ void RepoIndexTextFormatWriter::addSource(const PkgFile& pkgFile)
 void RepoIndexTextFormatWriter::commitBinary()
 {
   m_tmpFile->close();
-  assert(m_tmpFileName == concatUnixPath(m_dir, TMP_FILE));//KILLME:
   if (m_filterProvidesByRefs)
     {
       m_console.msg() << "Collected " << m_refsSet.size() << " references among picked packages for provides filtering" << std::endl; 
@@ -328,7 +327,7 @@ void RepoIndexTextFormatWriter::additionalPhase()
   assert(m_resolvingItems.empty());
   assert(m_resolvingData.empty());
   assert(m_filterProvidesByRefs);
-  const std::string inputFileName = m_tmpFileName, outputFileName = concatUnixPath(m_dir, TMP_FILE_ADDITIONAL);
+  const std::string inputFileName = m_tmpFileName, outputFileName = Directory::mixNameComponents(m_dir, TMP_FILE_ADDITIONAL);
   m_tmpFileName = outputFileName;//Changing name of a file to be processed on the second phase;
   std::auto_ptr<AbstractTextFileReader> inputFile = createTextFileReader(TextFileStd, inputFileName);
   std::auto_ptr<AbstractTextFileWriter> outputFile = createTextFileWriter(TextFileStd, outputFileName);
