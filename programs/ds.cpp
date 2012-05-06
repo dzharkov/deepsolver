@@ -74,6 +74,11 @@ int fetchIndices()
       Messages(std::cerr).onSystemError(e);
       return 1;
     }
+  catch(const CurlException& e)
+    {
+      Messages(std::cerr).onCurlError(e);
+      return 1;
+    }
   return 0;
 }
 

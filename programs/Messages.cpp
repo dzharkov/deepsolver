@@ -80,3 +80,8 @@ void Messages::onConfigError(const ConfigException& e)
   if (e.getLineNumber() > 0)
     m_stream << e.getFileName() << "(" << e.getLineNumber() << "):" << e.getLine() << std::endl;
 }
+
+void Messages::onCurlError(const CurlException& e)
+{
+  m_stream << PREFIX << e.getUrl() << ":curl error " << e.getCode() << ":" << e.getText() << std::endl;
+}

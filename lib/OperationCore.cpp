@@ -34,7 +34,7 @@ void OperationCore::fetchIndices(AbstractIndexFetchListener& listener,
   RepositoryVector repo;
   for(ConfRepoVector::size_type i = 0;i < root.repo.size();i++)
     {
-      logMsg(LOG_DEBUG, "Registering repo \'%s\' for index update", root.repo[i].name.c_str());
+      logMsg(LOG_DEBUG, "Registering repo \'%s\' for index update (%s)", root.repo[i].name.c_str(), root.repo[i].url.c_str());
     repo.push_back(Repository(root.repo[i]));
     }
   StringToStringMap files;

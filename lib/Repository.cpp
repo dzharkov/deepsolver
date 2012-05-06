@@ -21,8 +21,10 @@
 
 void Repository::fetchInfoAndChecksum()
 {
-  TinyFileDownload download;
-  download.fetch(buildInfoFileUrl());
+  const std::string infoFileUrl = buildInfoFileUrl();
+  logMsg(LOG_DEBUG, "Fetching tiny file \'%s\'", infoFileUrl.c_str());
+  TinyFileDownload download;//FIXME:max file size limit;
+  download.fetch(infoFileUrl);
   m_info = download.getContent();
 }
 

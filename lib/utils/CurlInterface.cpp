@@ -52,9 +52,13 @@ static size_t acceptCurlData(void* buf,
 void curlInitialize()
 {
   if (curlWasInitialized)
-    return;
+    {
+      logMsg(LOG_DEBUG, "Curl is already initialized");
+      return;
+    }
   curl_global_init(CURL_GLOBAL_ALL);
   curlWasInitialized = 1;
+  logMsg(LOG_DEBUG, "Curl was initialized");
 }
 
 void CurlInterface::init()
@@ -62,6 +66,7 @@ void CurlInterface::init()
   CURL* handle = curl_easy_init();
   assert(handle != NULL);
   m_handle = handle;
+  logMsg(LOG_DEBUG, "Created new curl object");
 }
 
 void CurlInterface::close()

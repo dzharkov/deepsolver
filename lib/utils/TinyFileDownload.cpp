@@ -23,7 +23,9 @@ void TinyFileDownload::fetch(const std::string& url)
   assert(!url.empty());
   curlInitialize();//Don't worry about multiple calls of this, there is the check inside;
   CurlInterface curl;
+  curl.init();
   curl.fetch(url, *this, *this);
+  curl.close();
 }
 
 size_t TinyFileDownload::onNewDataBlock(const void* buf, size_t bufSize)
