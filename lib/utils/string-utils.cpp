@@ -56,3 +56,21 @@ std::string trim(const std::string& str)
     newStr += str[i];
   return newStr;
 }
+
+void splitBySpaces(const std::string& str, StringVector& res)
+{
+  res.clear();
+  std::string s;
+  for(std::string::size_type i = 0;i < str.length();i++)
+    {
+      if (BLANK_CHAR(str[i]))
+	{
+	  if (s.empty())
+	    continue;
+	  res.push_back(s);
+	  s.erase();
+	  continue;
+	}
+      s += str[i];
+    }
+}

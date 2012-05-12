@@ -39,8 +39,32 @@ inline bool validIdentChar(char c)
 void InfoFileReader::read(const std::string& text, StringToStringMap& res)
 {
   res.clear();
-  m_currentLine = 0;
-  //FIXME:
+  m_currentLine = 1;
+  std::string line;
+  for(std::string::size_type i = 0;i < text.length();i++)
+    {
+      if (c == '\r')
+	continue;
+      if (text[i] != '\n')
+	{
+	  line += text[i];
+	  continue;
+	}
+      std::string name, value;
+      parseLine(line, name, value);
+      m_currentLine++;
+      line.erase();
+      if (name.empty())
+	continue;
+      res.insert(StringToStringMap::value_type(name.value));
+    }
+  if (line.empty())
+    return;
+  std::string name, value;
+  parseLine(line, name, value);
+  if (name.empty())
+    return;
+      res.insert(StringToStringMap::value_type(name.value));
 }
 
 void InfoFileReader::parseLine(const std::string& line, std::string& name, std::string& value)

@@ -47,6 +47,26 @@ void ConfigCenter::commit()
   if (m_root.dir.pkgData.empty())
     throw ConfigException(ConfigErrorValueCannotBeEmpty, "core.dir.pkgdata");
   m_root.dir.tmpPkgDataFetch = Directory::mixNameComponents(m_root.dir.pkgData, PKG_DATA_FETCH_DIR);//Real constant can be found in DefaultValues.h;
+  //Repositories;
+  for(ConfRepoVector::size_type i = 0;i < m_root.repo.size();i++)
+    {
+      const ConfRepo& repo = m_root.repo[i];
+      assert(!repo.name.empty());
+      if (repo.url.empty())
+	throw ConfigException(ConfigErrorValueCannotBeEmpty, "repo \"" + repo.name + "\".url");
+      if (repo.archs.empty())
+	throw ConfigException(ConfigErrorValueCannotBeEmpty, "repo \"" + repo.name + "\".arch");
+      if (repo.components.empty())
+	throw ConfigException(ConfigErrorValueCannotBeEmpty, "repo \"" + repo.name + "\".components");
+      for(StringVector::size_type k = 0;k < repo.archs.size();k++)
+	{
+	  assert(!trim(repo.archs[k]).empty());
+	}
+      for(StringVector::size_type k = 0;k < repo.components.size();k++)
+	{
+	  assert(!trim(repo.componentss[k]).empty());
+	}
+    }
 }
 
 void ConfigCenter::onConfigFileValue(const StringVector& path, 
@@ -106,12 +126,15 @@ void ConfigCenter::onRepoConfigValue(const StringVector&path,
 				     bool adding, 
 				     const ConfigFilePosInfo& pos)
 {
-  //FIXME:no empty URL;
   if (path.size() < 2)
     throw ConfigException(ConfigErrorIncompletePath, buildConfigParamTitle(path, sectArg), pos);
+  //URL;
   if (path[1] == "url")
     {
-      //FIXME:no adding;
+      if (adding)
+    throw ConfigException(ConfigErrorAddingNotPermitted, buildConfigParamTitle(path, sectArg), pos);
+      if (trim(value).empty())
+	throw ConfigException(ConfigErrorValueCannotBeEmpty, buildConfigParamTitle(path, sectArg), pos);
       if (sectArg.empty())
 	{
 	  for(ConfRepoVector::size_type i = 0;i < m_root.repo.size();i++)
@@ -119,9 +142,58 @@ void ConfigCenter::onRepoConfigValue(const StringVector&path,
 	} else
 	findRepo(sectArg).url = trim(value);
       return;
-    }
+    } //URL;
+  //Arch;
+  if (path[1] == "arch")
+    {
+      StringVector values;
+      splitBySpaces(value, values);
+      if (sectArg.empty())
+	{
+	  for(ConfRepoVector::size_type i = 0;i < m_root.repo.size();i++)
+	    {
+	      if (!adding)
+		m_root.repo[i].archs = values; else 
+		for(StringVector::size_type k = 0;k < values.size();k++)
+		  m_root.repo[i].archs.push_back(values[k]);
+	    } //for(repos);
+	} else
+	{
+	  ConfRepo& repo = findRepo(sectArg);
+	  if (!adding)
+	    repo.arch = values; else
+	    for(StringVector::size_type k = 0;k < values.size();k++)
+	      repo.archs.push_back(values[k]);
+	}
+      return;
+    } //arch;
+
+
+  //Components;
+  if (path[1] == "components")
+    {
+      StringVector values;
+      splitBySpaces(value, values);
+      if (sectArg.empty())
+	{
+	  for(ConfRepoVector::size_type i = 0;i < m_root.repo.size();i++)
+	    {
+	      if (!adding)
+		m_root.repo[i].components = values; else 
+		for(StringVector::size_type k = 0;k < values.size();k++)
+		  m_root.repo[i].components.push_back(values[k]);
+	    } //for(repos);
+	} else
+	{
+	  ConfRepo& repo = findRepo(sectArg);
+	  if (!adding)
+	    repo.components = values; else
+	    for(StringVector::size_type k = 0;k < values.size();k++)
+	      repo.components.push_back(values[k]);
+	}
+      return;
+    } //Components;
   //FIXME:enabled;
-  //FIXME:components;
   //FIXME:vendor;
   throw ConfigException(ConfigErrorUnknownParam, buildConfigParamTitle(path, sectArg), pos);
 }

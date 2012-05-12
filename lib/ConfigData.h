@@ -38,6 +38,7 @@ struct ConfRepo
   std::string name;
   bool enabled;
   std::string url;
+  StringVector archs;
   StringVector components; 
   std::string vendor;
 }; //struct ConfRepo;

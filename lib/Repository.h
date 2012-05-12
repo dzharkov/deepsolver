@@ -24,10 +24,16 @@
 class Repository
 {
 public:
-  Repository(const ConfRepo& confRepo)
-    : m_url(confRepo.url) 
+  Repository(const ConfRepo& confRepo,
+	     const std:;string& arch,
+	     const std::string& component)
+    : m_url(confRepo.url), 
+      m_arch(arch),
+      m_component(component)
   {
     assert(!m_url.empty());
+    assert(!m_arch.empty());
+    assert(!m_component.empty());
   }
 
   virtual ~Repository() {}
@@ -47,7 +53,8 @@ private:
   std::string buildInfoFileUrl() const;
 
 private:
-  std::string m_url;
+  std::string m_url, m_arch, m_component;
+
   std::string m_info;
   std::string m_checksum;
 }; //class Repository;

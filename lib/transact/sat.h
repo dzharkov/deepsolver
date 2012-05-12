@@ -15,15 +15,36 @@
    General Public License for more details.
 */
 
-#ifndef DEEPSOLVER_STRING_UTILS_H
-#define DEEPSOLVER_STRING_UTILS_H
+#ifndef DEEPSOLVER_SAT_H
+#define DEEPSOLVER_SAT_H
 
-#define BLANK_CHAR(x) ((x)==10 || (x)==13 || (x)==9 || (x)==32)
+struct Clause
+{
+  Clause()
+    : var1(BAD_VAR_ID),
+      var2(BAD_VAR_ID),
+      neg1(0),
+      neg2(0) {}
 
-bool hasNonSpaces(const std::string& s);
-bool stringBegins(const std::string& str, const std::string& headToCheck, std::string& tail);
-bool checkExtension(const std::string& fileName, const std::string& extension);
-std::string trim(const std::string& str);
-void splitBySpaces(const std::string& str, StringVector& res);
+  Clause(bool n1, VarId v1, bool n2, VarId v2)
+    : var1(v1),
+      var2(v2),
+      neg1(n1),
+      neg2(n2)  {}
 
-#endif //DEEPSOLVER_STRING_UTILS_H
+  Clause(VarId v1, VarId v2)
+    : var1(v1),
+      var2(v2),
+      neg1(0),
+      neg2(0) {}
+
+  VarId var1, var2;
+  bool neg1, neg2;
+}; //struct Clause;
+
+typedef std::vector <Clause> ClauseVector;
+typedef std::list<Clause> ClauseList;
+
+void solve2Sat(const ClauseVector& clauses, BoolVector& res);
+
+#endif //DEEPSOLVER_SAT_H;
