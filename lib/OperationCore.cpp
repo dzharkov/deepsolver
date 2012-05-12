@@ -33,10 +33,14 @@ void OperationCore::fetchIndices(AbstractIndexFetchListener& listener,
   //FIXME:file lock;
   RepositoryVector repo;
   for(ConfRepoVector::size_type i = 0;i < root.repo.size();i++)
-    {
-      logMsg(LOG_DEBUG, "Registering repo \'%s\' for index update (%s)", root.repo[i].name.c_str(), root.repo[i].url.c_str());
-    repo.push_back(Repository(root.repo[i]));
-    }
+    for(StringVector::size_type k = 0;k < root.repo[i].arch.size();k++)
+      for(StringVector::size_type j = 0;j < root.repo[i].components.size();j++)
+	{
+	  const std::string& arch = root.repo[i].arch[k];
+	  const std::string& component = root.repo[i].components[j];
+	  logMsg(LOG_DEBUG, "Registering repo \'%s, %s, %s\' for index update (%s)", root.repo[i].name.c_str(), root.repo[i].url.c_str(), arch.c_str(), component.c_str());
+	  repo.push_back(Repository(root.repo[i], arch/, component));
+	}
   StringToStringMap files;
   for(RepositoryVector::size_type i = 0;i < repo.size();i++)
     {

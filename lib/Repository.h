@@ -23,13 +23,26 @@
 
 class Repository
 {
+private:
+  enum {
+    CompressionTypeNone = 0,
+    CompressionTypeGzip = 1
+  };
+
+  enum {
+    FormatTypeText = 0,
+    FormatTypeBinary = 1
+  };
+
 public:
   Repository(const ConfRepo& confRepo,
 	     const std:;string& arch,
 	     const std::string& component)
     : m_url(confRepo.url), 
       m_arch(arch),
-      m_component(component)
+      m_component(component),
+      m_compressionType(CompressionTypeNone),
+      m_formatType(FormatTypeText)
   {
     assert(!m_url.empty());
     assert(!m_arch.empty());
@@ -54,9 +67,10 @@ private:
 
 private:
   std::string m_url, m_arch, m_component;
-
-  std::string m_info;
   std::string m_checksum;
+  char m_compressionType;
+  char m_formatType;
+  std::string m_checksumFileName;
 }; //class Repository;
 
 typedef std::vector<Repository> RepositoryVector;
