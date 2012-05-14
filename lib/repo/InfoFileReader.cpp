@@ -39,11 +39,11 @@ inline bool validIdentChar(char c)
 void InfoFileReader::read(const std::string& text, StringToStringMap& res)
 {
   res.clear();
-  m_currentLine = 1;
+  m_currentLineNumber = 1;
   std::string line;
   for(std::string::size_type i = 0;i < text.length();i++)
     {
-      if (c == '\r')
+      if (text[i] == '\r')
 	continue;
       if (text[i] != '\n')
 	{
@@ -52,11 +52,11 @@ void InfoFileReader::read(const std::string& text, StringToStringMap& res)
 	}
       std::string name, value;
       parseLine(line, name, value);
-      m_currentLine++;
+      m_currentLineNumber++;
       line.erase();
       if (name.empty())
 	continue;
-      res.insert(StringToStringMap::value_type(name.value));
+      res.insert(StringToStringMap::value_type(name, value));
     }
   if (line.empty())
     return;
@@ -64,7 +64,7 @@ void InfoFileReader::read(const std::string& text, StringToStringMap& res)
   parseLine(line, name, value);
   if (name.empty())
     return;
-      res.insert(StringToStringMap::value_type(name.value));
+  res.insert(StringToStringMap::value_type(name, value));
 }
 
 void InfoFileReader::parseLine(const std::string& line, std::string& name, std::string& value)
@@ -109,7 +109,7 @@ void InfoFileReader::parseLine(const std::string& line, std::string& name, std::
 	      continue;
 	    }
 	  if (c == '#')
-	    throw InfoFileException(InfoFileErrorIncompleteLine, m_currentLineNUmber);
+	    throw InfoFileException(InfoFileErrorIncompleteLine, m_currentLineNumber, line);
 	  throw InfoFileException(InfoFileErrorUnexpectedCharacter, m_currentLineNumber, line);
 	}//Name;
       if (state == STATE_BEFORE_EQUALS)
@@ -122,7 +122,7 @@ void InfoFileReader::parseLine(const std::string& line, std::string& name, std::
 	      continue;
 	    }
 	  if (c == '#')
-	    throw InfoFileException(InfoFileErrorIncompleteLine, m_currentLineNumber);
+	    throw InfoFileException(InfoFileErrorIncompleteLine, m_currentLineNumber, line);
 	  throw InfoFileException(InfoFileErrorUnexpectedCharacter, m_currentLineNumber, line);
 	} //Before equals;
       if (state == STATE_VALUE)
@@ -136,14 +136,14 @@ void InfoFileReader::parseLine(const std::string& line, std::string& name, std::
 	    return;
 	  assert(c == '\\');
 	  if (i + 1>= line.length())
-	    throw InfoFileException(InfoFileErrorIncompleteLine, m_currentLineNumber);
+	    throw InfoFileException(InfoFileErrorIncompleteLine, m_currentLineNumber, line);
 	  i++;
 	  if (line[i] != '#')
-	    throw InfoFileException(InfoFileErrorUnexpectedCharacter, m_currentLineNumber);
+	    throw InfoFileException(InfoFileErrorUnexpectedCharacter, m_currentLineNumber, line);
 	  value += '#';
 	  continue;
 	}//Value;
     }
   if (state != STATE_VALUE)
-    throw InfoFileException(InfoFileErrorIncompleteLine, m_currentLineNUmber);
+    throw InfoFileException(InfoFileErrorIncompleteLine, m_currentLineNumber, line);
 }

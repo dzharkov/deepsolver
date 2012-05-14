@@ -108,8 +108,8 @@ public:
     switch(m_code)
       {
       case InfoFileErrorUnexpectedCharacter:
-	ss << "unexpected character at line "
-	  break:
+	ss << "unexpected character at line ";
+	  break;
       case InfoFileErrorIncompleteLine:
 	ss << "incomplete line ";
 	break;
@@ -132,18 +132,18 @@ class InfoFileReader
 {
 public:
   InfoFileReader():
-    m_currentLine(0) {}
+    m_currentLineNumber(0) {}
 
   virtual ~InfoFileReader() {}
 
 public:
-  void read(const std::string& text, StringToStringMap& res) const;
+  void read(const std::string& text, StringToStringMap& res);
 
 private:
   void parseLine(const std::string& line, std::string& name, std::string& value);
 
 private:
-  size_t m_currentLine;
+  size_t m_currentLineNumber;
 }; //class InfoFileReader;
 
 #endif //DEEPSOLVER_INFO_FILE_READER_H;

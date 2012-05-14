@@ -36,7 +36,7 @@ private:
 
 public:
   Repository(const ConfRepo& confRepo,
-	     const std:;string& arch,
+	     const std::string& arch,
 	     const std::string& component)
     : m_url(confRepo.url), 
       m_arch(arch),

@@ -16,7 +16,9 @@
 */
 
 #include"deepsolver.h"
+#include"OperationCore.h"
 #include"Repository.h"
+#include"repo/InfoFileReader.h"
 #include"utils/TinyFileDownload.h"
 
 void Repository::fetchInfoAndChecksum()
@@ -26,51 +28,51 @@ void Repository::fetchInfoAndChecksum()
   TinyFileDownload download;//FIXME:max file size limit;
   download.fetch(infoFileUrl);
   const std::string info = download.getContent();
-  INfoFileReader reader;
+  InfoFileReader reader;
   StringToStringMap infoValues;
   try {
     reader.read(info, infoValues);
   }
   catch(const InfoFileException& e)
     {
-      logMsg(LOG_ERROR, "info file parsing problem:%s", e.getMessage().c_str());
-      throw OperationExceptionErrorInvalidInfoFile();
+      logMsg(LOG_ERR, "info file parsing problem:%s", e.getMessage().c_str());
+      throw OperationException(OperationErrorInvalidInfoFile);
     }
   logMsg(LOG_DEBUG, "Info file downloaded and parsed, list of values:");
   for(StringToStringMap::const_iterator it = infoValues.begin();it != infoValues.end();it++)
     logMsg(LOG_DEBUG, "info file value: %s = %s", it->first.c_str(), it->second.c_str());
-  if (infoValues.find(INFO_FILE_FORMAT_TYPE) == infoFile.end())
+  if (infoValues.find(INFO_FILE_FORMAT_TYPE) == infoValues.end())
     {
-      logMsg(LOG_ERROR, "Info file does not contain the \'%s\' key", INFO_FILE_FORMAT_TYPE);
+      logMsg(LOG_ERR, "Info file does not contain the \'%s\' key", INFO_FILE_FORMAT_TYPE);
       throw OperationException(OperationErrorInvalidInfoFile);
     }
-  if (infoValues.find(INFO_FILE_COMPRESSION_TYPE) == infoFile.end())
+  if (infoValues.find(INFO_FILE_COMPRESSION_TYPE) == infoValues.end())
     {
-      logMsg(LOG_ERROR, "Info file does not contain the \'%s\' key", INFO_FILE_COMPRESSION_TYPE);
+      logMsg(LOG_ERR, "Info file does not contain the \'%s\' key", INFO_FILE_COMPRESSION_TYPE);
       throw OperationException(OperationErrorInvalidInfoFile);
     }
-  if (infoValues.find(INFO_FILE_MD5SUM) == infoFile.end())
+  if (infoValues.find(INFO_FILE_MD5SUM) == infoValues.end())
     {
-      logMsg(LOG_ERROR, "Info file does not contain the \'%s\' key", INFO_FILE_MD5SUM);
+      logMsg(LOG_ERR, "Info file does not contain the \'%s\' key", INFO_FILE_MD5SUM);
       throw OperationException(OperationErrorInvalidInfoFile);
     }
   const std::string formatType = trim(infoValues.find(INFO_FILE_FORMAT_TYPE)->second);
   const std::string compressionType = trim(infoValues.find(INFO_FILE_COMPRESSION_TYPE)->second);
-  m_checksumFile = trim(infoValues.find(INFO_FILE_MD5SUM)->second);
-  if (formatType == INFO_FILE_FORMAT_TYPETEXT)
+  m_checksumFileName = trim(infoValues.find(INFO_FILE_MD5SUM)->second);
+  if (formatType == INFO_FILE_FORMAT_TYPE_TEXT)
     m_formatType = FormatTypeText; else
     if (formatType == INFO_FILE_FORMAT_TYPE_BINARY)
-      m__formatType = FormatTypeBinary; else
+      m_formatType = FormatTypeBinary; else
       {
-	logMsg(LOG_ERROR, "Unsupported format type in info file: \'%s\'", formatType.c_str());
-	throw OperationExceptionI(OperationErrorInvalidInfoFile);
+	logMsg(LOG_ERR, "Unsupported format type in info file: \'%s\'", formatType.c_str());
+	throw OperationException(OperationErrorInvalidInfoFile);
       }
   if (compressionType == INFO_FILE_COMPRESSION_TYPE_NONE)
     m_compressionType = CompressionTypeNone; else
     if (compressionType == INFO_FILE_COMPRESSION_TYPE_GZIP)
       m_compressionType = CompressionTypeGzip; else
       {
-	logMsg(LOG_ERROR, "Unsupported compression type in info file: \'%s\'", compressionType.c_str());
+	logMsg(LOG_ERR, "Unsupported compression type in info file: \'%s\'", compressionType.c_str());
 	throw OperationException(OperationErrorInvalidInfoFile);
       }
 }
@@ -86,9 +88,9 @@ void Repository::addIndexFilesForFetch(StringToStringMap& files)
   if (dir[dir.size() - 1] != '/')
     dir += '/';
   dir += m_arch + "/";
-  value += REPO_INDEX_DIR_PREFIX + m_component + "/";
-  files.insert(StringToStringMap::value_type(dir + REPO_INDEX_PACKAGES_DATA_FILE));
-  files.insert(StringToStringMap::value_type(dir + REPO_INDEX_PROVIDES_DATA_FILE));
+  dir += REPO_INDEX_DIR_PREFIX + m_component + "/";
+  files.insert(StringToStringMap::value_type(dir + REPO_INDEX_PACKAGES_DATA_FILE, ""));
+  files.insert(StringToStringMap::value_type(dir + REPO_INDEX_PROVIDES_DATA_FILE, ""));
   //Here may be also sources index file but question about it must be considered later;
 }
 
@@ -104,7 +106,7 @@ std::string Repository::buildInfoFileUrl() const
   assert(!m_arch.empty());
   assert(!m_component.empty());
   std::string value = m_url;
-  if (values[values.size() - 1] != '/')
+  if (value[value.size() - 1] != '/')
     value += '/';
   value += m_arch + "/";
   value += REPO_INDEX_DIR_PREFIX + m_component + "/";

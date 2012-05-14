@@ -21,6 +21,7 @@ PackageScopeContent.cpp \
 PackageScopeContentLoader.cpp \
 Pkg.cpp \
 ProvidePriorityList.cpp \
+repo/InfoFileReader.cpp \
 repo/RepoIndexInfoFile.cpp \
 repo/RepoIndexTextFormatReader.cpp \
 repo/RepoIndexTextFormatWriter.cpp \
@@ -62,6 +63,7 @@ PackageScopeContent.h \
 PackageScopeContentLoader.h \
 Pkg.h \
 ProvidePriorityList.h \
+repo/InfoFileReader.h \
 repo/RepoIndexInfoFile.h \
 repo/RepoIndexTextFormatReader.h \
 repo/RepoIndexTextFormatWriter.h \

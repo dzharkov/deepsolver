@@ -54,17 +54,17 @@ void ConfigCenter::commit()
       assert(!repo.name.empty());
       if (repo.url.empty())
 	throw ConfigException(ConfigErrorValueCannotBeEmpty, "repo \"" + repo.name + "\".url");
-      if (repo.archs.empty())
+      if (repo.arch.empty())
 	throw ConfigException(ConfigErrorValueCannotBeEmpty, "repo \"" + repo.name + "\".arch");
       if (repo.components.empty())
 	throw ConfigException(ConfigErrorValueCannotBeEmpty, "repo \"" + repo.name + "\".components");
-      for(StringVector::size_type k = 0;k < repo.archs.size();k++)
+      for(StringVector::size_type k = 0;k < repo.arch.size();k++)
 	{
-	  assert(!trim(repo.archs[k]).empty());
+	  assert(!trim(repo.arch[k]).empty());
 	}
       for(StringVector::size_type k = 0;k < repo.components.size();k++)
 	{
-	  assert(!trim(repo.componentss[k]).empty());
+	  assert(!trim(repo.components[k]).empty());
 	}
     }
 }
@@ -153,9 +153,9 @@ void ConfigCenter::onRepoConfigValue(const StringVector&path,
 	  for(ConfRepoVector::size_type i = 0;i < m_root.repo.size();i++)
 	    {
 	      if (!adding)
-		m_root.repo[i].archs = values; else 
+		m_root.repo[i].arch = values; else 
 		for(StringVector::size_type k = 0;k < values.size();k++)
-		  m_root.repo[i].archs.push_back(values[k]);
+		  m_root.repo[i].arch.push_back(values[k]);
 	    } //for(repos);
 	} else
 	{
@@ -163,7 +163,7 @@ void ConfigCenter::onRepoConfigValue(const StringVector&path,
 	  if (!adding)
 	    repo.arch = values; else
 	    for(StringVector::size_type k = 0;k < values.size();k++)
-	      repo.archs.push_back(values[k]);
+	      repo.arch.push_back(values[k]);
 	}
       return;
     } //arch;

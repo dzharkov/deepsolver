@@ -67,7 +67,7 @@ public:
    *
    * \return The type of exception (always "operation")
    */
-  std::string getType() cost
+  std::string getType() const
   {
     return "operation";
   }
