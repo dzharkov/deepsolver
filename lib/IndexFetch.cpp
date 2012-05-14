@@ -36,9 +36,11 @@ void IndexFetch::processFile(const std::string& url, const std::string localFile
 size_t IndexFetch::onNewDataBlock(const void* buf, size_t bufSize)
 {
   //FIXME:
+  return 0;
 }
 
 bool IndexFetch::onCurlProgress(size_t now, size_t total)
 {
   //FIXME:
+  return 0;
 }
