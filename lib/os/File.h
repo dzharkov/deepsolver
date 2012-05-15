@@ -164,6 +164,9 @@ public:
    */
   static bool isSymLink(const std::string& fileName);
 
+  /**\brief FIXME*/
+  void readAhead(const std::string& fileName);
+
 protected:
   int m_fd;
 }; //class File;

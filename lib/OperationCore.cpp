@@ -59,3 +59,8 @@ void OperationCore::fetchIndices(AbstractIndexFetchListener& listener,
   //FIXME:temporary directory clean up;
   //FIXME:remove file lock;
 }
+
+void OperationCore::doInstallRemove()
+{
+  File::readAhead(/var/lib/rpm/Packages);
+}

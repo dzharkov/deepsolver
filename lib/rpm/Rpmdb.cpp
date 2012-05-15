@@ -1,41 +1,60 @@
+/*
+   Copyright 2011-2012 ALT Linux
+   Copyright 2011-2012 Michael Pozhidaev
 
-#include<iostream>
-#include<assert.h>
-#include <stdio.h>                                                                                                                                             
-#include <stdlib.h>                                                                                                                                            
-#include <string.h>                                                                                                                                            
-#include <fcntl.h>                                                                                                                                             
-#include <unistd.h>                                                                                                                                            
+   This file is part of the Deepsolver.
+
+   Deepsolver is free software; you can redistribute it and/or
+   modify it under the terms of the GNU General Public
+   License as published by the Free Software Foundation; either
+   version 2 of the License, or (at your option) any later version.
+
+   Deepsolver is distributed in the hope that it will be useful,
+   but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+   General Public License for more details.
+*/
+
+#include"deepsolver.h"
 #include <rpm/rpmlib.h>                                                                                                                                        
 #include <rpm/header.h>                                                                                                                                        
 #include <rpm/rpmdb.h>                                                                                                                                         
 
-int                                                                                                                                                            main(int argc, char *argv[])                                                                                                                                   
+static bool alreadyReadConfigFiles = 0;
+
+void Rpmdb::openEnum()
+{
+  if (!alreadyReadConfigFiles)
+    {
+      rpmReadConfigFiles( NULL, NULL );                                                                                                                          
+      alreadyReadConfigFiles = 1;
+    }
+  if (rpmdbOpen( "", &m_db, O_RDONLY, 0644 ) != 0)
+    RPM_STOP("Could not open rpmdb");
+  m_it = rpmdbInitIterator(m_db, RPMDBI_PACKAGES, NULL, 0);                                                                                                      
+}
+
+void Rpmdb::moveNext(Pkg& pkg)
 {                                                                                                                                                              
-  const int rpmdbFd = open("/var/lib/rpm/Packages", O_RDONLY);
-  assert(rpmdbFd > 0);
-  struct stat st;
-  fstat(rpmdbFd, &st);
-  readahead(rpmdbFd, 0, st.st_size);
-  close(rpmdbFd);
-  rpmdbMatchIterator mi;                                                                                                                                     
-  int type, count;                                                                                                                                           
-  char *name;                                                                                                                                                
-  rpmdb db;                                                                                                                                                  
-  Header h;                                                                                                                                                  
-  rpmReadConfigFiles( NULL, NULL );                                                                                                                          
-  assert(rpmdbOpen( "", &db, O_RDONLY, 0644 ) == 0);
-  mi = rpmdbInitIterator(db, RPMDBI_PACKAGES, NULL, 0);                                                                                                      
-  while ((h = rpmdbNextIterator(mi)))
-    {                                                                                                                      
-      headerGetEntry(h, RPMTAG_NAME, &type, (void **) &name, &count);                                                                                        
-      printf("%s-", name);                                                                                                                                  
-      headerGetEntry(h, RPMTAG_VERSION, &type, (void **) &name, &count);                                                                                        
-      printf("%s-", name);                                                                                                                                  
-      headerGetEntry(h, RPMTAG_RELEASE, &type, (void **) &name, &count);                                                                                        
-      printf("%s\n", name);                                                                                                                                  
-    }                                                                                                                                                          
-  rpmdbFreeIterator(mi);                                                                                                                                     
-  rpmdbClose(db);                                                                                                                                            
-                                                                                  exit(0);                                                                                                                                                   
+  int type, count;
+  char *str;
+  Header h = rpmdbNextIterator(m_it);
+  if (!h)
+    return 0;
+      headerGetEntry(h, RPMTAG_NAME, &type, (void **) &str, &count);                                                                                        
+      assert(str != NULL);
+      pkg.name = str;
+      headerGetEntry(h, RPMTAG_VERSION, &type, (void **) &str, &count);                                                                                        
+      assert(str != NULL);
+      pkg.version = str;
+      headerGetEntry(h, RPMTAG_RELEASE, &type, (void **) &str, &count);                                                                                        
+      assert(str != NULL);
+      pkg.release = str;
+      return 1;
 }                                                                                                                                                              
+
+void Rpmdb::close()
+{
+  rpmdbFreeIterator(m_it);                                                                                                                                     
+  rpmdbClose(m_db);                                                                                                                                            
+}
