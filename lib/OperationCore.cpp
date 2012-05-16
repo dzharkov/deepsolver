@@ -19,6 +19,19 @@
 #include"OperationCore.h"
 #include"Repository.h"
 #include"IndexFetch.h"
+#include"AbstractPackageBackEnd.h"
+#include"PackageScopeContentLoader.h"
+#include"transact/PackageScope.h"
+
+static void fillWithhInstalledPackages(AbstractPackageBackEnd& backEnd, PackageScope& scope, PackageScopeContent& content)
+{
+  std::auto_ptr<AbstractInstalledPackagesIterator> it = backEnd.enumInstalledPackages();
+  Pkg p;
+  while(it->moveNext(p))
+    {
+      //FIXME:
+    }
+}
 
 static void buildTemporaryIndexFileNames(StringToStringMap& files, const std::string& tmpDirName)
 {
@@ -60,7 +73,12 @@ void OperationCore::fetchIndices(AbstractIndexFetchListener& listener,
   //FIXME:remove file lock;
 }
 
-void OperationCore::doInstallRemove()
+void OperationCore::doInstallRemove(const UserTask& userTask)
 {
-  File::readAhead(/var/lib/rpm/Packages);
+  File::readAhead("/var/lib/rpm/Packages");//FIXME:take the value from configuration;
+  std::auto_ptr<AbstractPackageBackEnd> backEnd = createRpmBackEnd();
+  PackageScopeContentLoader content;
+  content.loadFromFile(Directory::mixNameComponents(m_conf.root().dir.pkgData, PKG_DATA_FILE_NAME));
+  PackageScope scope(scope);
+  fillWithhInstalledPackages(*backEnd.get(), scope, content);
 }

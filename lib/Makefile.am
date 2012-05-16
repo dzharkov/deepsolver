@@ -27,6 +27,8 @@ repo/RepoIndexTextFormatReader.cpp \
 repo/RepoIndexTextFormatWriter.cpp \
 Repository.cpp \
 RequireFilter.cpp \
+RpmBackEnd.cpp \
+rpm/Rpmdb.cpp \
 rpm/RpmFileHeaderReader.cpp \
 rpm/vercmp.cpp \
 transact/PackageScope.cpp \
@@ -41,6 +43,7 @@ version.cpp
 
 libdeepsolver_la_HEADERS = \
 AbstractConsoleMessages.h \
+AbstractPackageBackEnd.h \
 AbstractWarningHandler.h \
 ConfigCenter.h \
 ConfigData.h \
@@ -70,6 +73,7 @@ repo/RepoIndexTextFormatWriter.h \
 Repository.h \
 RequireFilter.h \
 rpm/RpmException.h \
+rpm/Rpmdb.h \
 rpm/RpmFile.h \
 rpm/RpmFileHeaderReader.h \
 rpm/vercmp.h \

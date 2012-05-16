@@ -204,11 +204,11 @@ bool File::isSymLink(const std::string& fileName)
 void File::readAhead(const std::string& fileName)
 {
   assert(!fileName.empty());
-  const int fd = open(fileName.c_str(), O_RDONLY);
+  const int fd = ::open(fileName.c_str(), O_RDONLY);
   TRY_SYS_CALL(fd >= 0, "open(" + fileName + ", O_RDONLY)");
   struct stat st;
   TRY_SYS_CALL(fstat(fd, &st) == 0, "stat(" + fileName + ")");
   TRY_SYS_CALL(readahead(fd, 0, st.st_size) == 0, "readahead(" + fileName + ")");
-  close(fd);
+  ::close(fd);
 
 }

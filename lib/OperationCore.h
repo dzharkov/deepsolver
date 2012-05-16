@@ -20,6 +20,7 @@
 
 #include"DeepsolverException.h"
 #include"ConfigCenter.h"
+#include"UserTask.h"
 
 enum {
   OperationErrorInvalidInfoFile = 0,
@@ -126,6 +127,8 @@ public:
 public:
   void fetchIndices(AbstractIndexFetchListener& listener,
 		    const AbstractOperationContinueRequest& continueRequest);
+
+  void doInstallRemove(const UserTask& task);
 
 private:
   const ConfigCenter& m_conf;

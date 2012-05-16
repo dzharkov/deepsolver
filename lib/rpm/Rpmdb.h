@@ -24,11 +24,8 @@
 class Rpmdb
 {
 public:
-  Rpmdb():
-    m_handle(NULL),
-    m_it(NULL) {}
-
-  virtual Rpmdb() {}
+  Rpmdb() {}
+  virtual ~Rpmdb() {}
 
 public:
   void openEnum();

@@ -20,7 +20,7 @@
 
 #include"Pkg.h"
 
-class abstractInstalledPackagesIterator
+class AbstractInstalledPackagesIterator
 {
 public:
   AbstractInstalledPackagesIterator() {}

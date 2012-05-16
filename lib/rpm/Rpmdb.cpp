@@ -19,6 +19,8 @@
 #include <rpm/rpmlib.h>                                                                                                                                        
 #include <rpm/header.h>                                                                                                                                        
 #include <rpm/rpmdb.h>                                                                                                                                         
+#include"Rpmdb.h"
+#include"RpmException.h"
 
 static bool alreadyReadConfigFiles = 0;
 
@@ -31,10 +33,10 @@ void Rpmdb::openEnum()
     }
   if (rpmdbOpen( "", &m_db, O_RDONLY, 0644 ) != 0)
     RPM_STOP("Could not open rpmdb");
-  m_it = rpmdbInitIterator(m_db, RPMDBI_PACKAGES, NULL, 0);                                                                                                      
+  m_it = rpmdbInitIterator(m_db, RPMDBI_PACKAGES, NULL, 0);
 }
 
-void Rpmdb::moveNext(Pkg& pkg)
+bool Rpmdb::moveNext(Pkg& pkg)
 {                                                                                                                                                              
   int type, count;
   char *str;
