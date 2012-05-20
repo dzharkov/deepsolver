@@ -144,6 +144,6 @@ void InfoFileReader::parseLine(const std::string& line, std::string& name, std::
 	  continue;
 	}//Value;
     }
-  if (state != STATE_VALUE)
+  if (state != STATE_INIT && state != STATE_VALUE)
     throw InfoFileException(InfoFileErrorIncompleteLine, m_currentLineNumber, line);
 }

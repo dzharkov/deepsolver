@@ -73,4 +73,6 @@ void splitBySpaces(const std::string& str, StringVector& res)
 	}
       s += str[i];
     }
+  if (!s.empty())
+    res.push_back(s);
 }

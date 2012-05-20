@@ -51,7 +51,7 @@ void OperationCore::fetchIndices(AbstractIndexFetchListener& listener,
 	{
 	  const std::string& arch = root.repo[i].arch[k];
 	  const std::string& component = root.repo[i].components[j];
-	  logMsg(LOG_DEBUG, "Registering repo \'%s, %s, %s\' for index update (%s)", root.repo[i].name.c_str(), root.repo[i].url.c_str(), arch.c_str(), component.c_str());
+	  logMsg(LOG_DEBUG, "Registering repo \'%s\' for index update (\'%s\', %s, %s)", root.repo[i].name.c_str(), root.repo[i].url.c_str(), arch.c_str(), component.c_str());
 	  repo.push_back(Repository(root.repo[i], arch, component));
 	}
   StringToStringMap files;
