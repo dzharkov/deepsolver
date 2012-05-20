@@ -40,7 +40,7 @@ void Repository::fetchInfoAndChecksum()
     }
   logMsg(LOG_DEBUG, "Info file downloaded and parsed, list of values:");
   for(StringToStringMap::const_iterator it = infoValues.begin();it != infoValues.end();it++)
-    logMsg(LOG_DEBUG, "info file value: %s = %s", it->first.c_str(), it->second.c_str());
+    logMsg(LOG_DEBUG, "info file value: \'%s\' = \'%s\'", it->first.c_str(), it->second.c_str());
   if (infoValues.find(INFO_FILE_FORMAT_TYPE) == infoValues.end())
     {
       logMsg(LOG_ERR, "Info file does not contain the \'%s\' key", INFO_FILE_FORMAT_TYPE);
@@ -89,8 +89,15 @@ void Repository::addIndexFilesForFetch(StringToStringMap& files)
     dir += '/';
   dir += m_arch + "/";
   dir += REPO_INDEX_DIR_PREFIX + m_component + "/";
-  files.insert(StringToStringMap::value_type(dir + REPO_INDEX_PACKAGES_DATA_FILE, ""));
-  files.insert(StringToStringMap::value_type(dir + REPO_INDEX_PROVIDES_DATA_FILE, ""));
+  m_mainPkgFileUrl = dir + REPO_INDEX_PACKAGES_DATA_FILE;
+  m_providesFileUrl = dir + REPO_INDEX_PROVIDES_DATA_FILE;
+  if (m_compressionType == CompressionTypeGzip)
+    {
+      m_mainPkgFileUrl += COMPRESSION_SUFFIX_GZIP;
+      m_providesFileUrl += COMPRESSION_SUFFIX_GZIP;
+    }
+  files.insert(StringToStringMap::value_type(m_mainPkgFileUrl, ""));
+  files.insert(StringToStringMap::value_type(m_providesFileUrl, ""));
   //Here may be also sources index file but question about it must be considered later;
 }
 

@@ -23,6 +23,7 @@
 #define DEFAULT_CONFIG_FILE_NAME "ds.ini"
 
 //Data files and directories;
+#define COMPRESSION_SUFFIX_GZIP ".gz"
 #define PKG_DATA_FILE_NAME "deepsolver-pkgs.bin"
 #define PKG_DATA_FETCH_DIR "__tmp_pkg_data"
 

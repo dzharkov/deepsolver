@@ -67,9 +67,10 @@ private:
 
 private:
   std::string m_url, m_arch, m_component;
-  std::string m_checksum;
+  //  std::string m_checksum;
   char m_compressionType;
   char m_formatType;
+  std::string m_mainPkgFileUrl, m_providesFileUrl;
   std::string m_checksumFileName;
 }; //class Repository;
 

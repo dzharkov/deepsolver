@@ -15,6 +15,8 @@
    General Public License for more details.
 */
 
+//FIXME:40x error processing for HTTP;
+
 #ifndef DEEPSOLVER_CURL_H
 #define DEEPSOLVER_CURL_H
 

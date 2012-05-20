@@ -60,7 +60,10 @@ void OperationCore::fetchIndices(AbstractIndexFetchListener& listener,
       repo[i].fetchInfoAndChecksum();
       repo[i].addIndexFilesForFetch(files);
     }
-  logMsg(LOG_DEBUG, "List of index files to download consists of %zu entries", files.size());
+  logMsg(LOG_DEBUG, "List of index files to download consists of %zu entries:", files.size());
+  for(StringToStringMap::const_iterator it = files.begin();it != files.end();it++)
+    logMsg(LOG_DEBUG, "Download entry: \'%s\' -> \'%s\'", it->first.c_str(), it->second.c_str());
+  return;
   buildTemporaryIndexFileNames(files, "/tmp");//FIXME:directory name from ConfigCenter;
   IndexFetch indexFetch(listener, continueRequest);
   indexFetch.fetch(files);
