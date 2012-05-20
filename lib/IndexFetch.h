@@ -45,6 +45,11 @@ private:
   AbstractIndexFetchListener& m_listener;
   const AbstractOperationContinueRequest& m_continueRequest;
   File m_file;
+  std::string m_currentFileName;
+  size_t m_currentPartNumber;
+  size_t m_partCount;
+  unsigned char m_lastPartPercents, m_lastTotalPercents;
 }; //class IndexFetch;
+
 
 #endif //__DEEPSOLVER_INDEX_FETCH_H;

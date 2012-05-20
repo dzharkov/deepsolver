@@ -73,6 +73,10 @@ public:
   virtual ~AbstractCurlProgressListener() {}
 
 public:
+  /**\brief FIXME
+   *
+   * \return Non-zero means to continue downloading
+   */
   virtual bool onCurlProgress(size_t now, size_t total) = 0;
 }; //class AbstractCurlDataRecipient;
 

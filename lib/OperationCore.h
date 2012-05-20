@@ -99,6 +99,10 @@ public:
   virtual ~AbstractOperationContinueRequest() {}
 
 public:
+  /**\brief FIXME
+   *
+   * \return Non-zero means to continue operation
+   */
   virtual bool onContinueOperationRequest() const = 0;
 }; //class AbstractOperationContinueRequest; 
 

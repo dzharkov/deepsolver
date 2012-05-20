@@ -40,6 +40,7 @@ public:
     close();
   }
 
+public:
   /**\brief Opens existing file in read/write mode
    *
    * This method opens an existing file and associates the current object
@@ -81,6 +82,12 @@ public:
    * destruction.
    */
   void close();
+
+  /**\brief FIXME*/
+  bool opened() const
+  {
+    return m_fd != -1;
+  }
 
   /**\brief Reads data from an opened file
    *
