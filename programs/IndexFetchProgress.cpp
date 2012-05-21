@@ -30,6 +30,7 @@ void IndexFetchProgress::onIndexFetchBegin()
 
 void IndexFetchProgress::onIndexFilesReading()
 {
+  std::cout << std::endl;
   std::cout << "Reading downloaded data" << std::endl;
 }
 
@@ -46,5 +47,10 @@ void IndexFetchProgress::onIndexFetchStatus(unsigned char currentPartPercents,
 					    const std::string& currentPartName)
 {
   assert(totalPercents <= 100);
-  m_stream << totalPercents << "% (file " << partNumber << " of " << partCount << ", " << currentPartSize / 1024 << "k, " << currentPartName << ")" << std::endl;
+  std::ostringstream ss;
+  ss << (size_t)totalPercents << "% (file " << (partNumber + 1) << " of " << partCount << ", " << currentPartSize / 1024 << "k, " << currentPartName << ")";
+  for(std::string::size_type i = 0;i < m_prevStrLen;i++)
+    m_stream << "\b";
+  m_stream << ss.str();
+  m_prevStrLen = ss.str().length();
 }

@@ -86,19 +86,22 @@ void OperationCore::fetchIndices(AbstractIndexFetchListener& listener,
     logMsg(LOG_DEBUG, "Download entry: \'%s\' -> \'%s\'", it->first.c_str(), it->second.c_str());
   listener.onIndexFetchBegin();
   if (Directory::isExist(root.dir.tmpPkgDataFetch))
-    logMsg(LOG_WARNING, "Directory \'%s\' already exists, possible unfinished previous transaction", root.dir.tmpPkgDataFetch.c_str());
+    logMsg(LOG_WARNING, "Directory \'%s\' already exists, probably unfinished previous transaction", root.dir.tmpPkgDataFetch.c_str());
   logMsg(LOG_DEBUG, "Preparing directory \'%s\', it must exist and be empty", root.dir.tmpPkgDataFetch.c_str());
   Directory::ensureExistsAndEmpty(root.dir.tmpPkgDataFetch, 1);//1 means erase any content;
-  return;
   IndexFetch indexFetch(listener, continueRequest);
   indexFetch.fetch(files);
+  listener.onIndexFilesReading();
+  /*
   PackageScopeContentBuilder scope;
   for(RepositoryVector::size_type i = 0; i < repo.size();i++)
     repo[i].addPackagesToScope(files, scope);
+  */
   //FIXME:saving;
   //FIXME:removing old and renaming;
   //FIXME:temporary directory clean up;
   //FIXME:remove file lock;
+  listener.onIndexFetchComplete();
 }
 
 void OperationCore::doInstallRemove(const UserTask& userTask)
