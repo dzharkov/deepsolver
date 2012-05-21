@@ -62,6 +62,7 @@ void OperationCore::fetchIndices(AbstractIndexFetchListener& listener,
 {
   const ConfRoot& root = m_conf.root();
   logMsg(LOG_DEBUG, "PkgData updating begin: pkgdatadir=\'%s\', tmpdir=\'%s\'", root.dir.pkgData.c_str(), root.dir.tmpPkgDataFetch.c_str());
+  listener.onInfoFilesFetch();
   //FIXME:file lock;
   RepositoryVector repo;
   for(ConfRepoVector::size_type i = 0;i < root.repo.size();i++)
@@ -83,6 +84,7 @@ void OperationCore::fetchIndices(AbstractIndexFetchListener& listener,
   logMsg(LOG_DEBUG, "List of index files to download consists of %zu entries:", files.size());
   for(StringToStringMap::const_iterator it = files.begin();it != files.end();it++)
     logMsg(LOG_DEBUG, "Download entry: \'%s\' -> \'%s\'", it->first.c_str(), it->second.c_str());
+  listener.onIndexFetchBegin();
   return;
   IndexFetch indexFetch(listener, continueRequest);
   indexFetch.fetch(files);

@@ -5,6 +5,7 @@
 #include"os/SystemException.h"
 #include"ConfigCenter.h"
 #include"utils/CurlInterface.h"
+#include"OperationCore.h"
 
 class Messages
 {
@@ -19,6 +20,7 @@ public:
   void onConfigSyntaxError(const ConfigFileException& e);
   void onConfigError(const ConfigException& e);
   void onCurlError(const CurlException& e);
+  void onOperationError(const OperationException& e);
 
 private:
   std::ostream& m_stream;

@@ -18,6 +18,26 @@
 #include"deepsolver.h"
 #include"IndexFetchProgress.h"
 
+void IndexFetchProgress::onInfoFilesFetch()
+{
+  std::cout << "Downloading primary repository data" << std::endl;
+}
+
+void IndexFetchProgress::onIndexFetchBegin()
+{
+  std::cout << "Downloading package lists" << std::endl;
+}
+
+void IndexFetchProgress::onIndexFilesReading()
+{
+  std::cout << "Reading downloaded data" << std::endl;
+}
+
+void IndexFetchProgress::onIndexFetchComplete()
+{
+  std::cout << "Your indices were successfully updated!" << std::endl;
+}
+
 void IndexFetchProgress::onIndexFetchStatus(unsigned char currentPartPercents,
 					    unsigned char totalPercents,
 					    size_t partNumber,

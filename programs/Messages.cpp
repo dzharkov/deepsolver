@@ -85,3 +85,22 @@ void Messages::onCurlError(const CurlException& e)
 {
   m_stream << PREFIX << e.getUrl() << ":curl error " << e.getCode() << ":" << e.getText() << std::endl;
 }
+
+void Messages::onOperationError(const OperationException& e)
+{
+  std::cout << std::endl;
+  std::cout << "Some errors were occurred during the last operation:" << std::endl;
+  switch(e.getCode())
+    {
+    case OperationErrorInvalidInfoFile:
+      //Maybe it is good idea to write also the name of repository caused the problem; 
+      std::cout << "the information file for one or more repositories contains incorrect" << std::endl;
+      std::cout << "data. Usually it means the invalid URL of remote repository was used" << std::endl;
+      std::cout << "or repository provider is experiencing technical problems. Please, be" << std::endl;
+      std::cout << "sure your configuration data is correct and try again later!" << std::endl;
+      break;
+      //FIXME:OperationErrorInvalidChecksum;
+    default:
+      assert(0);
+    } //switch(e.getCode());
+}

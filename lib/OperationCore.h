@@ -112,6 +112,10 @@ public:
   virtual ~AbstractIndexFetchListener() {}
 
 public:
+  virtual void onInfoFilesFetch() = 0;
+  virtual void onIndexFetchBegin() = 0;
+  virtual void onIndexFilesReading() = 0;
+  virtual void onIndexFetchComplete() = 0;
   virtual void onIndexFetchStatus(unsigned char currentPartPercents,
 				  unsigned char totalPercents,
 				  size_t partNumber,

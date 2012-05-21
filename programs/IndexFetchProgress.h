@@ -29,6 +29,10 @@ public:
   virtual ~IndexFetchProgress() {}
 
 public:
+  void onInfoFilesFetch();
+  void onIndexFetchBegin();
+  void onIndexFilesReading();
+  void onIndexFetchComplete();
   void onIndexFetchStatus(unsigned char currentPartPercents,
 			  unsigned char totalPercents,
 			  size_t partNumber,

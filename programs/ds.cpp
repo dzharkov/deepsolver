@@ -69,6 +69,11 @@ int fetchIndices()
     IndexFetchProgress progress(std::cout);
     core.fetchIndices(progress, alwaysTrueContinueRequest);
   }
+  catch (const OperationException& e)
+    {
+      Messages(std::cerr).onOperationError(e);
+      return 1;
+    }
   catch(const SystemException& e)
     {
       Messages(std::cerr).onSystemError(e);
