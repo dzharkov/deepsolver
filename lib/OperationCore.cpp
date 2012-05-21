@@ -33,9 +33,28 @@ static void fillWithhInstalledPackages(AbstractPackageBackEnd& backEnd, PackageS
     }
 }
 
+static std::string urlToFileName(const std::string& url)
+{
+  std::string s;
+  for(std::string::size_type i = 0;i < url.length();i++)
+    {
+      const char c = url[i];
+      if ((c >= 'a' && c <= 'z') ||
+	  (c >= 'A' && c <= 'Z') ||
+	  (c >= '0' && c<= '9') ||
+	  c == '-' ||
+	  c == '_')
+	s += c; else 
+	if (s.empty() || s[s.length() - 1] != '-')
+	  s += '-';
+    } //for();
+  return s;
+}
+
 static void buildTemporaryIndexFileNames(StringToStringMap& files, const std::string& tmpDirName)
 {
-  //FIXME:
+  for(StringToStringMap::iterator it = files.begin();it != files.end();it++)
+    it->second = Directory::mixNameComponents(tmpDirName, urlToFileName(it->first));
 }
 
 void OperationCore::fetchIndices(AbstractIndexFetchListener& listener,
@@ -60,11 +79,11 @@ void OperationCore::fetchIndices(AbstractIndexFetchListener& listener,
       repo[i].fetchInfoAndChecksum();
       repo[i].addIndexFilesForFetch(files);
     }
+  buildTemporaryIndexFileNames(files, root.dir.tmpPkgDataFetch);
   logMsg(LOG_DEBUG, "List of index files to download consists of %zu entries:", files.size());
   for(StringToStringMap::const_iterator it = files.begin();it != files.end();it++)
     logMsg(LOG_DEBUG, "Download entry: \'%s\' -> \'%s\'", it->first.c_str(), it->second.c_str());
   return;
-  buildTemporaryIndexFileNames(files, "/tmp");//FIXME:directory name from ConfigCenter;
   IndexFetch indexFetch(listener, continueRequest);
   indexFetch.fetch(files);
   PackageScopeContentBuilder scope;
