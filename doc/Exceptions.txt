@@ -1,0 +1,11 @@
+
+Configuration loading:
+SystemException
+ConfigFileException
+ConfigException
+
+Operations:
+SystemException
+OperationException
+RpmException
+CurlException
