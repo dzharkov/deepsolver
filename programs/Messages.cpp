@@ -41,7 +41,11 @@ static std::string getConfigSyntaxErrorText(int code)
 
 void Messages::onSystemError(const SystemException& e)
 {
-  //FIXME:
+  m_stream << std::endl;
+  m_stream << "Some errors were occurred during the last operation:" << std::endl;
+  m_stream << "system call failed, probably the utility was not properly installed." << std::endl;
+    m_stream << std::endl;
+    m_stream << e.getMessage() << std::endl;
 }
 
 void Messages::onConfigSyntaxError(const ConfigFileException& e)
@@ -88,16 +92,16 @@ void Messages::onCurlError(const CurlException& e)
 
 void Messages::onOperationError(const OperationException& e)
 {
-  std::cout << std::endl;
-  std::cout << "Some errors were occurred during the last operation:" << std::endl;
+  m_stream << std::endl;
+  m_stream << "Some errors were occurred during the last operation:" << std::endl;
   switch(e.getCode())
     {
     case OperationErrorInvalidInfoFile:
       //Maybe it is good idea to write also the name of repository caused the problem; 
-      std::cout << "the information file for one or more repositories contains incorrect" << std::endl;
-      std::cout << "data. Usually it means the invalid URL of remote repository was used" << std::endl;
-      std::cout << "or repository provider is experiencing technical problems. Please, be" << std::endl;
-      std::cout << "sure your configuration data is correct and try again later!" << std::endl;
+      m_stream << "the information file for one or more repositories contains incorrect" << std::endl;
+      m_stream << "data. Usually it means the invalid URL of remote repository was used" << std::endl;
+      m_stream << "or repository provider is experiencing technical problems. Please, be" << std::endl;
+      m_stream << "sure your configuration data is correct and try again later!" << std::endl;
       break;
       //FIXME:OperationErrorInvalidChecksum;
     default:

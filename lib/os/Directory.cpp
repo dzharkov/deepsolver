@@ -69,6 +69,8 @@ void Directory::eraseContent(const std::string& name)
   std::auto_ptr<Iterator> it = enumerate(name);
   while(it->moveNext())
     {
+      if (it->getName() == "." || it->getName() == "..")
+	continue;
       const std::string& path = it->getFullPath();
       if (File::isDir(path))
 	{

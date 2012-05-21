@@ -85,6 +85,10 @@ void OperationCore::fetchIndices(AbstractIndexFetchListener& listener,
   for(StringToStringMap::const_iterator it = files.begin();it != files.end();it++)
     logMsg(LOG_DEBUG, "Download entry: \'%s\' -> \'%s\'", it->first.c_str(), it->second.c_str());
   listener.onIndexFetchBegin();
+  if (Directory::isExist(root.dir.tmpPkgDataFetch))
+    logMsg(LOG_WARNING, "Directory \'%s\' already exists, possible unfinished previous transaction", root.dir.tmpPkgDataFetch.c_str());
+  logMsg(LOG_DEBUG, "Preparing directory \'%s\', it must exist and be empty", root.dir.tmpPkgDataFetch.c_str());
+  Directory::ensureExistsAndEmpty(root.dir.tmpPkgDataFetch, 1);//1 means erase any content;
   return;
   IndexFetch indexFetch(listener, continueRequest);
   indexFetch.fetch(files);
