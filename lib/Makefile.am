@@ -23,7 +23,7 @@ Pkg.cpp \
 ProvidePriorityList.cpp \
 repo/InfoFileReader.cpp \
 repo/RepoIndexInfoFile.cpp \
-repo/RepoIndexTextFormatReader.cpp \
+repo/TextFormatReader.cpp \
 repo/RepoIndexTextFormatWriter.cpp \
 Repository.cpp \
 RequireFilter.cpp \
@@ -68,7 +68,7 @@ Pkg.h \
 ProvidePriorityList.h \
 repo/InfoFileReader.h \
 repo/RepoIndexInfoFile.h \
-repo/RepoIndexTextFormatReader.h \
+repo/TextFormatReader.h \
 repo/RepoIndexTextFormatWriter.h \
 Repository.h \
 RequireFilter.h \
