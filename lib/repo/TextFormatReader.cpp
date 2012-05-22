@@ -25,7 +25,7 @@
  */
 
 #include"deepsolver.h"
-#include"RepoIndexTextFormatReader.h"
+#include"TextFormatReader.h"
 #include"IndexCore.h"
 
 static   void translateRelType(const std::string& str, NamedPkgRel& rel)

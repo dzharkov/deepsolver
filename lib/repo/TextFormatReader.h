@@ -15,27 +15,79 @@
    General Public License for more details.
 */
 
-#ifndef DEEPSOLVER_REPO_INDEX_TEXT_FORMAT_READER_H
-#define DEEPSOLVER_REPO_INDEX_TEXT_FORMAT_READER_H
+#ifndef DEEPSOLVER_TEXT_FORMAT_READER_H
+#define DEEPSOLVER_TEXT_FORMAT_READER_H
 
 #include"Pkg.h"
+#include"DeepsolverException.h"
 #include"utils/TextFiles.h"
 
-class RepoIndexTextFormatReader
+class TextFormatReaderException: public DeepsolverException
 {
 public:
-  RepoIndexTextFormatReader(const std::string& dir, char compressionType)
+  TextFormatReaderException(int code,
+			    const std::string& fileName,
+			    size_t lineNumber,
+			    const std::string& line)
+    : m_code(code),
+      m_lineNumber(lineNumber),
+      m_line(line) {}
+
+  virtual ~TextFormatReaderException() {}
+
+public:
+  int getCode() const
+  {
+    return m_code;
+  }
+
+  const std::string& getFileName() const
+  {
+    return m_fileName;
+  }
+
+  size_t getLineNumber() const
+  {
+    return m_lineNumber;
+  }
+
+  const std::string& getLine() const
+  {
+    return m_line;
+  }
+
+  std::string getType() const
+  {
+    return "text format reader";
+  }
+
+  std::string getMessage() const
+  {
+    return "FIXME";
+  }
+
+private:
+  const int m_code;
+  const std:;string m_fileName;
+  const size_t m_lineNumber;
+  const std::string m_line;
+}; //class DeepsolverException;
+
+class TextFormatReader
+{
+public:
+  TextFormatReader(const std::string& dir, char compressionType)
     : m_dir(dir), m_compressionType(compressionType) {}
 
-  ~RepoIndexTextFormatReader() {}
+  virtual ~TextFormatReader() {}
 
 public:
   void openPackagesFile();
   void openSourcePackagesFile();
   void openProvidesFile();
   bool readPackage(PkgFile& pkgFile);
-  bool readSourcePackage(PkgFile& pkgFile);
   bool readProvides(std::string& provideName, StringVector& providers);
+  //here
 
 private:
   const std::string& m_dir;
