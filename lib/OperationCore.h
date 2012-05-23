@@ -24,7 +24,8 @@
 
 enum {
   OperationErrorInvalidInfoFile = 0,
-  OperationErrorInvalidChecksum = 1
+  OperationErrorInvalidChecksum = 1,
+  OperationErrorBrokenIndexFile = 2
 };
 
 /**\brief The exception class for general operation problem reporting

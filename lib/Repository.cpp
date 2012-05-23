@@ -18,8 +18,9 @@
 #include"deepsolver.h"
 #include"OperationCore.h"
 #include"Repository.h"
-#include"repo/InfoFileReader.h"
 #include"utils/TinyFileDownload.h"
+#include"repo/InfoFileReader.h"
+#include"repo/TextFormatReader.h"
 
 void Repository::fetchInfoAndChecksum()
 {
@@ -103,8 +104,54 @@ void Repository::addIndexFilesForFetch(StringToStringMap& files)
 
 void Repository::addPackagesToScope(const StringToStringMap& files, PackageScopeContentBuilder& content)
 {
+  int textFileType;
+  if (m_compressionType == CompressionTypeNone)
+    textFileType = TextFileStd; else 
+    if (m_compressionType == CompressionTypeGzip)
+      textFileType = TextFileGZip; else
+      {
+	assert(0);
+      }
+  StringToStringMap::const_iterator it = files.find(m_mainPkgFileUrl);
+  assert(it != files.end());
+  const std::string pkgFileName = it->second;
+  it = files.find(m_providesFileUrl);
+  assert (it != files.end());
+  const std::string providesFileName = it->second;
   //FIXME:checksum processing;
-  //FIXME:adding;
+  TextFormatReader reader;
+  logMsg(LOG_DEBUG, "Reading packages information from \'%s\' for repository \'%s\'", pkgFileName.c_str(), m_name.c_str());
+  try {
+    reader.openFile(pkgFileName, textFileType);
+    PkgFile pkgFile;
+    while(reader.readPackage(pkgFile))
+      content.addPkg(pkgFile);
+  }
+  catch(const TextFormatReaderException& e)
+    {
+      logMsg(LOG_ERR, "Repo \'%s\':package data in text format error:%s", m_name.c_str(), e.getMessage().c_str());
+      throw OperationException(OperationErrorBrokenIndexFile);
+    }
+  reader.close();
+  logMsg(LOG_DEBUG, "Package data from \'%s\' was loaded successfully", pkgFileName.c_str());
+  logMsg(LOG_DEBUG, "Reading provides information from \'%s\' for repository \'%s\'", providesFileName.c_str(), m_name.c_str());
+  try {
+    reader.openFile(providesFileName, textFileType);
+    std::string provideName;
+    StringVector providers;
+    while(reader.readProvides(provideName, providers))
+      {
+	assert(!provideName.empty());
+	for(StringVector::size_type i = 0;i < providers.size();i++ )
+	  content.addProvideMapItem(provideName, providers[i]);
+      }
+  }
+  catch (const TextFormatReaderException& e)
+    {
+      logMsg(LOG_ERR, "Repo \'%s\':provides data in text format error:%s", m_name.c_str(), e.getMessage().c_str());
+      throw OperationException(OperationErrorBrokenIndexFile);
+    }
+  reader.close();
 }
 
 std::string Repository::buildInfoFileUrl() const

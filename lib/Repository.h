@@ -38,7 +38,8 @@ public:
   Repository(const ConfRepo& confRepo,
 	     const std::string& arch,
 	     const std::string& component)
-    : m_url(confRepo.url), 
+    : m_name(confRepo.name),
+      m_url(confRepo.url), 
       m_arch(arch),
       m_component(component),
       m_compressionType(CompressionTypeNone),
@@ -66,7 +67,7 @@ private:
   std::string buildInfoFileUrl() const;
 
 private:
-  std::string m_url, m_arch, m_component;
+  std::string m_name, m_url, m_arch, m_component;
   //  std::string m_checksum;
   char m_compressionType;
   char m_formatType;

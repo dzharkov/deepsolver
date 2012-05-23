@@ -104,6 +104,11 @@ void Messages::onOperationError(const OperationException& e)
       m_stream << "sure your configuration data is correct and try again later!" << std::endl;
       break;
       //FIXME:OperationErrorInvalidChecksum;
+    case OperationErrorBrokenIndexFile:
+      m_stream << "one or more files in repository index is broken. Since checksum is" << std::endl;
+      m_stream << "correct it means the repository provider is experiencing technical" << std::endl;
+      m_stream << "problems." << std::endl;
+      break;
     default:
       assert(0);
     } //switch(e.getCode());
