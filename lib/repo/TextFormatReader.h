@@ -22,6 +22,10 @@
 #include"DeepsolverException.h"
 #include"utils/TextFiles.h"
 
+enum {
+  TextFormatReaderErrorInvalidSectionHeader = 0
+};
+
 class TextFormatReaderException: public DeepsolverException
 {
 public:
@@ -63,12 +67,22 @@ public:
 
   std::string getMessage() const
   {
-    return "FIXME";
+    std::ostringstream ss;
+    switch (m_code)
+      {
+      case TextFormatReaderErrorInvalidSectionHeader:
+	ss << "Invalid section header";
+	break;
+      default:
+	assert(0);
+      }
+    ss << ":" << m_fileName << "(" << m_lineNumber << "):" << m_line;
+    return ss.str();
   }
 
 private:
   const int m_code;
-  const std:;string m_fileName;
+  const std::string m_fileName;
   const size_t m_lineNumber;
   const std::string m_line;
 }; //class DeepsolverException;
@@ -76,25 +90,31 @@ private:
 class TextFormatReader
 {
 public:
-  TextFormatReader(const std::string& dir, char compressionType)
-    : m_dir(dir), m_compressionType(compressionType) {}
+  TextFormatReader() 
+    : m_noMoreData(0), m_lineNumber(0) {}
 
   virtual ~TextFormatReader() {}
 
 public:
-  void openPackagesFile();
-  void openSourcePackagesFile();
-  void openProvidesFile();
+  void openFile(const std::string& fileName, int textFileType);
+  void close();
   bool readPackage(PkgFile& pkgFile);
   bool readProvides(std::string& provideName, StringVector& providers);
-  //here
 
 private:
-  const std::string& m_dir;
-  const char m_compressionType;
+  void translateRelType(const std::string& str, NamedPkgRel& rel);
+  void parsePkgRel(const std::string& str, NamedPkgRel& rel);
+  void parsePkgFileSection(const StringList& sect, PkgFile& pkgFile);
+  bool readLine(std::string& line);
+
+private:
   std::auto_ptr<AbstractTextFileReader> m_reader;
   std::string m_lastSectionHeader;
   bool m_noMoreData;
+  //The following fields are used for informative exception throwing;
+  std::string m_fileName;
+  size_t m_lineNumber;
+  std::string m_line;
 }; //class RepoIndexTextFormatReader;
 
 #endif //DEEPSOLVER_REPO_INDEX_TEXT_FORMAT_READER_H;

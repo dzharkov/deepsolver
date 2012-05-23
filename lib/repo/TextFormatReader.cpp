@@ -15,20 +15,101 @@
    General Public License for more details.
 */
 
-/*
- * This file contains first preliminary implementation of reading class
- * for repository index data in text format. Due to reasons of debugging
- * simplicity all errors caused by invalid input data are handled as
- * asserts but in future all of them must be exceptions. Most of asserts
- * to be replaced by exceptions are marked by the corresponding "FIXME"
- * comments.
- */
+//FIXME:This file needs more work on proper exception throwing instead of currently used asserts;
 
 #include"deepsolver.h"
 #include"TextFormatReader.h"
-#include"IndexCore.h"
 
-static   void translateRelType(const std::string& str, NamedPkgRel& rel)
+void TextFormatReader::openFile(const std::string& fileName, int textFileType)
+{
+  assert(m_reader.get() == NULL);
+  m_noMoreData = 0;
+  m_reader = createTextFileReader(textFileType, fileName);
+  m_fileName = fileName;
+  m_lineNumber = 0;
+}
+
+void TextFormatReader::close()
+{
+  assert(m_reader.get() != NULL);
+  delete m_reader.release();
+  m_fileName.erase();
+}
+
+bool TextFormatReader::readPackage(PkgFile& pkgFile)
+{
+  pkgFile = PkgFile();
+  if (m_noMoreData || m_reader.get() == NULL)
+    return 0;
+  std::string line;
+  StringList section;
+  if (m_lastSectionHeader.empty())
+    {
+      //There is no previously recognized section header, so we must find it;
+      while(readLine(line))
+	if (!line.empty())
+	  break;
+      if (line.empty())//It is just empty file;
+	{
+	  m_noMoreData = 1;
+	  return 0;
+	}
+      if(line.length() <= 2 || line[0] != '[' || line[line.length() - 1] != ']');
+      throw TextFormatReaderException(TextFormatReaderErrorInvalidSectionHeader, m_fileName, m_lineNumber, m_line);
+      section.push_back(line);
+      //OK, we have found section header and can process it content;
+    } else
+    section.push_back(m_lastSectionHeader);//Adding section header from previous reading attempt;
+  m_noMoreData = 1;
+  while(readLine(line))
+    {
+      if (line.length() > 2 && line[0] == '[' && line[line.length() - 1] == ']')
+	{
+	  m_lastSectionHeader = line;
+	  m_noMoreData = 0;
+	  break;
+	}
+      if (!line.empty())
+	section.push_back(line);
+    }
+  parsePkgFileSection(section, pkgFile);
+  return 1;
+}
+
+bool TextFormatReader::readProvides(std::string& provideName, StringVector& providers)
+{
+  provideName.erase();
+  providers.clear();
+  if (m_reader.get() == NULL || m_noMoreData)
+    return 0;
+  std::string line;
+  //Sections are delimited by an empty line, searching first non-empty line;
+      while(readLine(line))
+	if (!line.empty())
+	  break;
+      if (line.empty())//No more data;
+	{
+	  m_noMoreData = 1;
+	  return 0;
+	}
+      if (line.length() <= 2 || line[0] != '[' || line[line.length() - 1] != ']')
+	throw TextFormatReaderException(TextFormatReaderErrorInvalidSectionHeader, m_fileName, m_lineNumber, m_line);
+  for(std::string::size_type i = 1;i < line.length();i++)
+    line[i - 1] = line[i];
+  line.resize(line.size() - 2);
+  provideName = line;
+      //OK, we have found section header and can process it content;
+  while(readLine(line))
+    {
+      if (line.empty())
+	return 1;
+      providers.push_back(line);
+    }
+  m_noMoreData = 1;
+  return 1;
+}
+
+void TextFormatReader::translateRelType(const std::string& str, NamedPkgRel& rel)
 {
   assert(str == "<" || str == ">" || str == "=" || str == "<=" || str == ">=");
   rel.type = 0;
@@ -42,7 +123,7 @@ static   void translateRelType(const std::string& str, NamedPkgRel& rel)
     rel.type |= VerGreater;
 }
 
-static void parsePkgRel(const std::string& str, NamedPkgRel& rel)
+void TextFormatReader::parsePkgRel(const std::string& str, NamedPkgRel& rel)
 {
   std::string::size_type i = 0;
   //Extracting package name;
@@ -84,7 +165,7 @@ static void parsePkgRel(const std::string& str, NamedPkgRel& rel)
     rel.ver += str[i++];
 }
 
-static void parsePkgFileSection(const StringList& sect, PkgFile& pkgFile)
+void TextFormatReader::parsePkgFileSection(const StringList& sect, PkgFile& pkgFile)
 {
   pkgFile.source = 0;
   assert(!sect.empty());
@@ -157,114 +238,11 @@ static void parsePkgFileSection(const StringList& sect, PkgFile& pkgFile)
     }
 }
 
-void RepoIndexTextFormatReader::openPackagesFile()
+bool TextFormatReader::readLine(std::string& line)
 {
-  assert(m_reader.get() == NULL);
-  m_noMoreData = 0;
-  if (m_compressionType == RepoIndexParams::CompressionTypeNone)
-    m_reader = createTextFileReader(TextFileStd, Directory::mixNameComponents(m_dir, REPO_INDEX_PACKAGES_DATA_FILE)); else
-  if (m_compressionType == RepoIndexParams::CompressionTypeGzip)
-    m_reader = createTextFileReader(TextFileGZip, Directory::mixNameComponents(m_dir, std::string(REPO_INDEX_PACKAGES_DATA_FILE) + ".gz")); else 
-    {
-      assert(0);
-    }
-}
-
-void RepoIndexTextFormatReader::openSourcePackagesFile()
-{
-  assert(0);
-  //FIXME:
-}
-
-void RepoIndexTextFormatReader::openProvidesFile()
-{
-  m_noMoreData = 0;
-  if (m_compressionType == RepoIndexParams::CompressionTypeNone)
-    m_reader = createTextFileReader(TextFileStd, Directory::mixNameComponents(m_dir, REPO_INDEX_PROVIDES_DATA_FILE)); else
-  if (m_compressionType == RepoIndexParams::CompressionTypeGzip)
-    m_reader = createTextFileReader(TextFileGZip, Directory::mixNameComponents(m_dir, std::string(REPO_INDEX_PROVIDES_DATA_FILE) + ".gz")); else 
-    {
-      assert(0);
-    }
-}
-
-bool RepoIndexTextFormatReader::readPackage(PkgFile& pkgFile)
-{
-  pkgFile.fileName.erase();
-  pkgFile.name.erase();
-  pkgFile.epoch = 0;
-  pkgFile.version.erase();
-  pkgFile.release.erase();
-  //FIXME:other string fields;
-  pkgFile.requires.clear();
-  pkgFile.provides.clear();
-  pkgFile.conflicts.clear();
-  pkgFile.obsoletes.clear();
-  pkgFile.changeLog.clear();
-  if (m_noMoreData || m_reader.get() == NULL)
+  assert(m_reader.get() != NULL);
+  if (!m_reader->readLine(line))
     return 0;
-  std::string line;
-  StringList section;
-  if (m_lastSectionHeader.empty())
-    {
-      //There is no previously recognized section header, so we must find it;
-      while(m_reader->readLine(line))
-	if (!line.empty())
-	  break;
-      if (line.empty())//It is just empty file;
-	{
-	  m_noMoreData = 1;
-	  return 0;
-	}
-      assert(line.length() > 2 && line[0] == '[' && line[line.length() - 1] == ']');//FIXME:must be an exception;
-      section.push_back(line);
-      //OK, we have found section header and can process it content;
-    } else
-    section.push_back(m_lastSectionHeader);//Adding section header from previous reading attempt;
-  m_noMoreData = 1;
-  while(m_reader->readLine(line))
-    {
-      if (line.length() > 2 && line[0] == '[' && line[line.length() - 1] == ']')
-	{
-	  m_lastSectionHeader = line;
-	  m_noMoreData = 0;
-	  break;
-	}
-      if (!line.empty())
-	section.push_back(line);
-    }
-  parsePkgFileSection(section, pkgFile);
-  return 1;
-}
-
-bool RepoIndexTextFormatReader::readProvides(std::string& provideName, StringVector& providers)
-{
-  provideName.erase();
-  providers.clear();
-  if (m_reader.get() == NULL || m_noMoreData)
-    return 0;
-  std::string line;
-  //Sections are delimited by an empty line, searching first non-empty line;
-      while(m_reader->readLine(line))
-	if (!line.empty())
-	  break;
-      if (line.empty())//No more data;
-	{
-	  m_noMoreData = 1;
-	  return 0;
-	}
-      assert(line.length() > 2 && line[0] == '[' && line[line.length() - 1] == ']');//FIXME:must be an exception;
-  for(std::string::size_type i = 1;i < line.length();i++)
-    line[i - 1] = line[i];
-  line.resize(line.size() - 2);
-  provideName = line;
-      //OK, we have found section header and can process it content;
-  while(m_reader->readLine(line))
-    {
-      if (line.empty())
-	return 1;
-      providers.push_back(line);
-    }
-  m_noMoreData = 1;
-  return 1;
+  m_lineNumber++;
+  m_line = line;
 }
