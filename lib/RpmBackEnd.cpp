@@ -17,6 +17,7 @@
 
 #include"deepsolver.h"
 #include"AbstractPackageBackEnd.h"
+#include"rpm/Rpmdb.h"
 
 class RpmInstalledPackagesIterator: public AbstractInstalledPackagesIterator
 {
@@ -25,15 +26,26 @@ public:
   virtual ~RpmInstalledPackagesIterator() {}
 
 public:
+  void init()
+  {
+    m_rpmdb.openEnum();
+  }
+
   bool moveNext(Pkg& pkg)
   {
-    //FIXME:
+    if (m_rpmdb.moveNext(pkg))
+      return 1;
+    m_rpmdb.close();
+    return 0;
   }
 
   void fillFullInfo(Pkg& pkg)
   {
     //FIXME:
   }
+
+private:
+  Rpmdb m_rpmdb;
 }; //class RpmInstalledPackagesIterator;
 
 class RpmBackEnd: public AbstractPackageBackEnd
@@ -45,6 +57,12 @@ public:
 public:
   std::auto_ptr<AbstractInstalledPackagesIterator> enumInstalledPackages()
   {
+
+    std::auto_ptr<RpmInstalledPackagesIterator> rpmIterator(new RpmInstalledPackagesIterator());
+    rpmIterator->init();
+    std::auto_ptr<AbstractInstalledPackagesIterator> it(rpmIterator.get());
+    rpmIterator.release();
+    return it;
   }
 }; //class RpmBackEnd;
 

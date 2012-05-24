@@ -23,13 +23,23 @@
 #include"PackageScopeContentLoader.h"
 #include"transact/PackageScope.h"
 
+static void addINstalledPackageToScope(PackageScope& scope, AbstractInstalledPackagesIterator& it, Pkg& pkg)
+{
+  //FIXME:
+}
+
 static void fillWithhInstalledPackages(AbstractPackageBackEnd& backEnd, PackageScope& scope, PackageScopeContent& content)
 {
   std::auto_ptr<AbstractInstalledPackagesIterator> it = backEnd.enumInstalledPackages();
-  Pkg p;
-  while(it->moveNext(p))
+  Pkg pkg;
+  while(it->moveNext(pkg))
     {
-      //FIXME:
+      if (!content.checkName(pkg.name))
+	{
+	  addINstalledPackageToScope(scope, *it.get(), pkg);
+	  continue;
+	}
+      const PackageId pkgId = content.strToPackageId(pkg.name);
     }
 }
 

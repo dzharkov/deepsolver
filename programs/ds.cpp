@@ -87,6 +87,31 @@ int fetchIndices()
   return 0;
 }
 
+int install(const UserTask& userTask)
+{
+  logMsg(LOG_DEBUG, "recognized user request to install packages");
+  OperationCore core(conf);
+  try {
+    core.doInstallRemove(userTask);
+  }
+  catch (const OperationException& e)
+    {
+      Messages(std::cerr).onOperationError(e);
+      return 1;
+    }
+  catch(const SystemException& e)
+    {
+      Messages(std::cerr).onSystemError(e);
+      return 1;
+    }
+  catch(const CurlException& e)
+    {
+      Messages(std::cerr).onCurlError(e);
+      return 1;
+    }
+  return 0;
+}
+
 int main(int argc, char* argv[])
 {
   initLogging("/tmp/ds.log", LOG_DEBUG);//FIXME:
@@ -96,6 +121,8 @@ int main(int argc, char* argv[])
     return 0;
   if (std::string(argv[1]) == "update")
     return fetchIndices();
-
+  if (std::string(argv[1]) == "install")
+    return install(UserTask());
+  return 1;
 }
 
