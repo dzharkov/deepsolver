@@ -16,6 +16,7 @@
 */
 
 //FIXME:40x error processing for HTTP;
+//FIXME:indication the fetching was interrupted by client side;
 
 #ifndef DEEPSOLVER_CURL_H
 #define DEEPSOLVER_CURL_H

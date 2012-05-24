@@ -92,14 +92,19 @@ void OperationCore::fetchIndices(AbstractIndexFetchListener& listener,
   IndexFetch indexFetch(listener, continueRequest);
   indexFetch.fetch(files);
   listener.onIndexFilesReading();
-  /*
   PackageScopeContentBuilder scope;
   for(RepositoryVector::size_type i = 0; i < repo.size();i++)
     repo[i].addPackagesToScope(files, scope);
-  */
-  //FIXME:saving;
-  //FIXME:removing old and renaming;
-  //FIXME:temporary directory clean up;
+  logMsg(LOG_DEBUG, "Committing loaded packages data");
+  scope.commit();
+  const std::string outputFileName = Directory::mixNameComponents(root.dir.pkgData, PKG_DATA_FILE_NAME);
+  logMsg(LOG_DEBUG, "Saving constructed package data to \'%s\'", outputFileName.c_str());
+  scope.saveToFile(outputFileName);
+  //FIXME:The current code is working but it should create temporary file elsewhere and then replace with it already existing outputFileName;
+  logMsg(LOG_DEBUG, "Clearing and removing \'%s\'", root.dir.tmpPkgDataFetch.c_str());
+  Directory::eraseContent(root.dir.tmpPkgDataFetch);
+  Directory::remove(root.dir.tmpPkgDataFetch);
+  logMsg(LOG_INFO, "Repository index updating finished!");
   //FIXME:remove file lock;
   listener.onIndexFetchComplete();
 }

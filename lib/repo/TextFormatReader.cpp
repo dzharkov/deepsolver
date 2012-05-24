@@ -54,8 +54,8 @@ bool TextFormatReader::readPackage(PkgFile& pkgFile)
 	  m_noMoreData = 1;
 	  return 0;
 	}
-      if(line.length() <= 2 || line[0] != '[' || line[line.length() - 1] != ']');
-      throw TextFormatReaderException(TextFormatReaderErrorInvalidSectionHeader, m_fileName, m_lineNumber, m_line);
+      if(line.length() <= 2 || line[0] != '[' || line[line.length() - 1] != ']')
+	throw TextFormatReaderException(TextFormatReaderErrorInvalidSectionHeader, m_fileName, m_lineNumber, m_line);
       section.push_back(line);
       //OK, we have found section header and can process it content;
     } else
