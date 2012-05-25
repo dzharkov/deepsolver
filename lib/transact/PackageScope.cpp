@@ -19,60 +19,6 @@
 #include"PackageScope.h"
 #include"version.h"
 
-static void locateRange(const PackageScopeContent::PkgInfoVector& pkgs, PackageId packageId, VarId& fromPos, VarId& toPos )
-{
-  if (pkgs.empty())
-    {
-      fromPos = 0;
-      toPos = 0;
-      return;
-    }
-  VarId l = 0, r = pkgs.size();
-  while(l + 1 < r)
-    {
-      const VarId center = (l + r) / 2;
-      assert(center < pkgs.size());
-      if (pkgs[center].pkgId == packageId)
-	{
-	  fromPos = center;
-	  toPos = center;
-	  while(fromPos > 0 && pkgs[fromPos].pkgId == packageId)//VarId is unsigned, so all known overflow troubles is possible here, be careful!
-	    fromPos--;
-	  assert(fromPos < pkgs.size());
-	  if (pkgs[fromPos].pkgId != packageId)
-	    fromPos++;
-	  assert(pkgs[fromPos].pkgId == packageId);
-	  while(toPos < pkgs.size() && pkgs[toPos].pkgId == packageId)
-	    toPos++;
-	  assert(fromPos < toPos);
-	  return;
-	}
-      if (pkgs[center].pkgId > packageId)
-	r = center; else
-	l = center;
-    }
-  assert(l <= r);
-  const VarId center = (l + r) / 2;
-  assert(center < pkgs.size());
-  if (pkgs[center].pkgId == packageId)
-    {
-      fromPos = center;
-      toPos = center;
-      while(fromPos > 0 && pkgs[fromPos].pkgId == packageId)//VarId is unsigned, so all known overflow troubles is possible here, be careful!
-	fromPos--;
-      assert(fromPos < pkgs.size());
-      if (pkgs[fromPos].pkgId != packageId)
-	fromPos++;
-      assert(pkgs[fromPos].pkgId == packageId);
-      while(toPos < pkgs.size() && pkgs[toPos].pkgId == packageId)
-	toPos++;
-      assert(fromPos < toPos);
-      return;
-    }
-  //We cannot find anything here;
-  fromPos = 0;
-  toPos = 0;
-}
 
 static void selectVarsToTry(const PackageScopeContent& content, PackageId packageId, VarIdVector& toTry, bool includeItself)
 {
@@ -83,7 +29,7 @@ static void selectVarsToTry(const PackageScopeContent& content, PackageId packag
   for(PackageIdVector::size_type i = 0;i < providers.size();i++)
     {
       VarId fromPos, toPos;
-      locateRange(content.getPkgs(), providers[i], fromPos, toPos);
+      PackageScopeContent::locateRange(content.getPkgs(), providers[i], fromPos, toPos);
       if (fromPos == toPos)
 	continue;
       for(VarId k = fromPos;k < toPos;k++)
@@ -141,7 +87,7 @@ void PackageScope::selectMatchingVars(PackageId packageId, VarIdVector& vars)
   vars.clear();
   const PackageScopeContent::PkgInfoVector& pkgs = m_content.getPkgs();
   VarId fromPos, toPos;
-  locateRange(pkgs, packageId, fromPos, toPos);
+  PackageScopeContent::locateRange(pkgs, packageId, fromPos, toPos);
   assert(fromPos <= toPos);
   if (fromPos == toPos)
     return;
@@ -160,7 +106,7 @@ void PackageScope::selectMatchingWithVersionVars(PackageId packageId, const Vers
   vars.clear();
   const PackageScopeContent::PkgInfoVector& pkgs = m_content.getPkgs();
   VarId fromPos, toPos;
-  locateRange(pkgs, packageId, fromPos, toPos);
+  PackageScopeContent::locateRange(pkgs, packageId, fromPos, toPos);
   assert(fromPos <= toPos);
   if (fromPos == toPos)
     return;

@@ -18,6 +18,61 @@
 #include"deepsolver.h"
 #include"PackageScopeContent.h"
 
+void PackageScopeContent::locateRange(const PackageScopeContent::PkgInfoVector& pkgs, PackageId packageId, VarId& fromPos, VarId& toPos )
+{
+  if (pkgs.empty())
+    {
+      fromPos = 0;
+      toPos = 0;
+      return;
+    }
+  VarId l = 0, r = pkgs.size();
+  while(l + 1 < r)
+    {
+      const VarId center = (l + r) / 2;
+      assert(center < pkgs.size());
+      if (pkgs[center].pkgId == packageId)
+	{
+	  fromPos = center;
+	  toPos = center;
+	  while(fromPos > 0 && pkgs[fromPos].pkgId == packageId)//VarId is unsigned, so all known overflow troubles is possible here, be careful!
+	    fromPos--;
+	  assert(fromPos < pkgs.size());
+	  if (pkgs[fromPos].pkgId != packageId)
+	    fromPos++;
+	  assert(pkgs[fromPos].pkgId == packageId);
+	  while(toPos < pkgs.size() && pkgs[toPos].pkgId == packageId)
+	    toPos++;
+	  assert(fromPos < toPos);
+	  return;
+	}
+      if (pkgs[center].pkgId > packageId)
+	r = center; else
+	l = center;
+    }
+  assert(l <= r);
+  const VarId center = (l + r) / 2;
+  assert(center < pkgs.size());
+  if (pkgs[center].pkgId == packageId)
+    {
+      fromPos = center;
+      toPos = center;
+      while(fromPos > 0 && pkgs[fromPos].pkgId == packageId)//VarId is unsigned, so all known overflow troubles is possible here, be careful!
+	fromPos--;
+      assert(fromPos < pkgs.size());
+      if (pkgs[fromPos].pkgId != packageId)
+	fromPos++;
+      assert(pkgs[fromPos].pkgId == packageId);
+      while(toPos < pkgs.size() && pkgs[toPos].pkgId == packageId)
+	toPos++;
+      assert(fromPos < toPos);
+      return;
+    }
+  //We cannot find anything here;
+  fromPos = 0;
+  toPos = 0;
+}
+
 void PackageScopeContent::getProviders(PackageId provideId, PackageIdVector& providers) const
 {
   providers.clear();

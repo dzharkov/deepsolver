@@ -154,6 +154,7 @@ void PackageScopeContentBuilder::addProvideMapItem(const std::string& provideNam
 
 void PackageScopeContentBuilder::commit()
 {
+  //FIXME:Additional testing with small amount of data or without data at all;
   assert(m_relVerIndices.size() == m_relInfoVector.size());
   StringVector names(m_names);
   std::sort(names.begin(), names.end());

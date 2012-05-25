@@ -119,6 +119,9 @@ public:
   virtual ~PackageScopeContent() {}
 
 public:
+  static void locateRange(const PkgInfoVector& pkgs, PackageId packageId, VarId& fromPos, VarId& toPos );
+
+public:
   void getProviders(PackageId provideId, PackageIdVector& providers) const;
   bool checkName(const std::string& name) const;
   PackageId strToPackageId(const std::string& name) const;

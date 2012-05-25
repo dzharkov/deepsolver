@@ -25,11 +25,13 @@
 
 static void addINstalledPackageToScope(PackageScope& scope, AbstractInstalledPackagesIterator& it, Pkg& pkg)
 {
+  //  std::cout << pkg.name << std::endl;
   //FIXME:
 }
 
 static void fillWithhInstalledPackages(AbstractPackageBackEnd& backEnd, PackageScope& scope, PackageScopeContent& content)
 {
+  const PackageScopeContent::PkgInfoVector& pkgs = content.getPkgs();
   std::auto_ptr<AbstractInstalledPackagesIterator> it = backEnd.enumInstalledPackages();
   Pkg pkg;
   while(it->moveNext(pkg))
@@ -39,8 +41,39 @@ static void fillWithhInstalledPackages(AbstractPackageBackEnd& backEnd, PackageS
 	  addINstalledPackageToScope(scope, *it.get(), pkg);
 	  continue;
 	}
-      const PackageId pkgId = content.strToPackageId(pkg.name);
-    }
+      const PackageId pkgId = content.strToPackageId(pkg.name);//FIXME:must be got with checkName();
+      VarId fromVarId, toVarId;
+      PackageScopeContent::locateRange(pkgs, pkgId, fromVarId, toVarId);
+      if (fromVarId == toVarId)
+	{
+	  //We have pkgId but have no corresponding varId, it is slightly strange but actually not a problem;
+	  logMsg(LOG_WARNING, "Package \'%s\' with corresponding pkgId=%zu has no any varId", pkg.name.c_str(), pkgId);
+	}
+
+      VarId matchingVarId = BAD_VAR_ID;
+      for(VarId varId = fromVarId;varId < toVarId;varId++)
+	{
+	  assert(varId < pkgs.size());
+	  const PackageScopeContent::PkgInfo& info = pkgs[varId];
+	  if (pkg.version == info.ver && pkg.release == info.release)
+	    {
+	      matchingVarId = varId;
+	      break;
+	    }
+	}
+      if (matchingVarId != BAD_VAR_ID)
+	continue;
+
+      std::cout << pkg.name << "-" << pkg.version << "-" << pkg.release << std::endl;
+      for(VarId varId = fromVarId;varId < toVarId;varId++)
+	{
+	  assert(varId < pkgs.size());
+	  const PackageScopeContent::PkgInfo& info = pkgs[varId];
+	  std::cout << info.ver << "-" << info.release << std::endl;
+	}
+      std::cout << std::endl;
+
+    } //while();
 }
 
 static std::string urlToFileName(const std::string& url)
