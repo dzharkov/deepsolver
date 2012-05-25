@@ -78,20 +78,41 @@ void PackageScopeContent::getProviders(PackageId provideId, PackageIdVector& pro
 bool PackageScopeContent::checkName(const std::string& name) const
 {
   assert(!name.empty());
-  for(StringVector::size_type i = 0;i < m_names.size();i++)
-    if (m_names[i] == name)
-      return 1;
-  return 0;
+  if (m_names.empty())
+    return 0;
+  StringVector::size_type l = 0, r = m_names.size();
+  while(l + 1 < r)
+    {
+      const StringVector::size_type c = (l + r) / 2;
+      assert(c < m_names.size());
+      if (m_names[c] == name)
+	return 1;
+      if (m_names[c] > name)
+	r = c; else 
+	l = c;
+    }
+  assert(l < m_names.size());
+  return m_names[l] == name;
 }
 
 PackageId PackageScopeContent::strToPackageId(const std::string& name) const
 {
   assert(!name.empty());
-  for(StringVector::size_type i = 0;i < m_names.size();i++)
-    if (m_names[i] == name)
-      return i;
-  assert(0);
-  return BAD_PACKAGE_ID;
+  assert(!m_names.empty());
+  StringVector::size_type l = 0, r = m_names.size();
+  while(l + 1 < r)
+    {
+      const StringVector::size_type c = (l + r) / 2;
+      assert(c < m_names.size());
+      if (m_names[c] == name)
+	return c;
+      if (m_names[c] > name)
+	r = c; else 
+	l = c;
+    }
+  assert(l < m_names.size());
+  assert(m_names[l] == name);
+  return l;
 }
 
 std::string PackageScopeContent::packageIdToStr(PackageId packageId) const
