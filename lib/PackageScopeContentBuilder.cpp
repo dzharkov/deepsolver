@@ -155,6 +155,48 @@ void PackageScopeContentBuilder::addProvideMapItem(const std::string& provideNam
 void PackageScopeContentBuilder::commit()
 {
   assert(m_relVerIndices.size() == m_relInfoVector.size());
+  StringVector names(m_names);
+  std::sort(names.begin(), names.end());
+  SizeVector newPlaces;
+  newPlaces.resize(m_names.size());
+  for(StringVector::size_type i = 0;i < m_names.size();i++)
+    {
+      StringVector::size_type res = 0;
+      StringVector::size_type l = 0, r = names.size();
+      while(1)
+	{
+	  assert(l <= r);
+	  const StringVector::size_type c = (l + r) / 2;
+	  assert(c < names.size());
+	  if (names[c] == m_names [i])
+	    {
+	      res = c;
+	      break;
+	    }
+	  if (names[c] > m_names[i])
+	    r = c; else
+	    l = c;
+	} //while(1);
+      newPlaces[i] = res;
+    }
+  for(PkgInfoVector::size_type i = 0;i < m_pkgInfoVector.size();i++)
+    {
+      assert(m_pkgInfoVector[i].pkgId < newPlaces.size());
+      m_pkgInfoVector[i].pkgId = newPlaces[m_pkgInfoVector[i].pkgId];
+    }
+  for(RelInfoVector::size_type i = 0;i < m_relInfoVector.size();i++)
+    {
+      assert(m_relInfoVector[i].pkgId < newPlaces.size());
+      m_relInfoVector[i].pkgId = newPlaces[m_relInfoVector[i].pkgId];
+    }
+  for(ProvideMapItemVector::size_type i = 0;i < m_provideMap.size();i++)
+    {
+      assert(m_provideMap[i].provideId < newPlaces.size());
+      assert(m_provideMap[i].pkgId < newPlaces.size());
+      m_provideMap[i].provideId = newPlaces[m_provideMap[i].provideId];
+      m_provideMap[i].pkgId = newPlaces[m_provideMap[i].pkgId];
+    }
+  m_names = names;
   std::sort(m_pkgInfoVector.begin(), m_pkgInfoVector.end());
   std::sort(m_provideMap.begin(), m_provideMap.end());
 }
