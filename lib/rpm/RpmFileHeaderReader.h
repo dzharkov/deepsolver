@@ -45,14 +45,6 @@ public:
   void fillFileList(StringList& v);
 
 private:
-  //Throws RpmException if required tag does not exist;
-  void getStringTagValue(int_32 tag, std::string& value);
-  //Does nothing if required tag does not exist; 
-  void getStringTagValueRelaxed(int_32 tag, std::string& value);
-  //Does nothing if required tag does not exist; 
-  void getInt32TagValueRelaxed(int_32 tag, int_32& value);
-
-private:
   FD_t m_fd;
   Header m_header;
   std::string m_fileName;

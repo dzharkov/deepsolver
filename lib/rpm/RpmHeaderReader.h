@@ -15,47 +15,25 @@
    General Public License for more details.
 */
 
-#ifndef DEEPSOLVER_RPM_FILE_HEADER_READER_H
-#define DEEPSOLVEr_RPM_FILE_HEADER_READER_H
+#ifndef DEEPSOLVER_RPM_HEADER_READING_H
+#define DEEPSOLVEr_RPM_HEADER_READING_H
 
 #include"Pkg.h"
 #include"RpmException.h"
 #include<rpm/rpmlib.h>
 
-class RpmFileHeaderReader
-{
-public:
-  RpmFileHeaderReader()
-    : m_fd(NULL), m_header(NULL) {}
+void rpmFillMainData(Header& header, PkgFileBase& pkg);
+void rpmFillProvides(Header& header, NamedPkgRelVector& v);
+void rpmFillConflicts(Header& header, NamedPkgRelVector& v);
+void rpmFillObsoletes(Header& header, NamedPkgRelVector& v);
+void rpmFillRequires(Header& header, NamedPkgRelVector& v);
+void rpmFillChangeLog(Header& header, ChangeLog& changeLog);
+void rpmFillFileList(Header& header, StringList& v);
+//Throws RpmException if required tag does not exist;
+void rpmGetStringTagValue(Header& header, int_32 tag, std::string& value);
+//Does nothing if required tag does not exist; 
+void rpmGetStringTagValueRelaxed(Header& header, int_32 tag, std::string& value);
+//Does nothing if required tag does not exist; 
+void rpmGetInt32TagValueRelaxed(Header& header, int_32 tag, int_32& value);
 
-  ~RpmFileHeaderReader()
-  {
-    close();
-  }
-
-public:
-  void load(const std::string& fileName);
-  void close();
-  void fillMainData(PkgFileBase& pkg);
-  void fillProvides(NamedPkgRelVector& v);
-  void fillConflicts(NamedPkgRelVector& v);
-  void fillObsoletes(NamedPkgRelVector& v);
-  void fillRequires(NamedPkgRelVector& v);
-  void fillChangeLog(ChangeLog& changeLog);
-  void fillFileList(StringList& v);
-
-private:
-  //Throws RpmException if required tag does not exist;
-  void getStringTagValue(int_32 tag, std::string& value);
-  //Does nothing if required tag does not exist; 
-  void getStringTagValueRelaxed(int_32 tag, std::string& value);
-  //Does nothing if required tag does not exist; 
-  void getInt32TagValueRelaxed(int_32 tag, int_32& value);
-
-private:
-  FD_t m_fd;
-  Header m_header;
-  std::string m_fileName;
-}; //class RpmFileHeaderReader;
-
-#endif //DEEPSOLVER_RPM_FILE_HEADER_READER_H;
+#endif //DEEPSOLVER_RPM_HEADER_READING_H;

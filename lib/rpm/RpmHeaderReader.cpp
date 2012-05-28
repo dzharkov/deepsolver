@@ -22,8 +22,6 @@
 #include"deepsolver.h"
 #include"RpmFileHeaderReader.h"
 
-//FIXME:requires flags for package install and removing;
-
 static char translateRelFlags(int_32 flags)
 {
   char value = 0;
@@ -34,36 +32,6 @@ static char translateRelFlags(int_32 flags)
   if (flags & RPMSENSE_GREATER)
     value |= VerGreater;
   return value;
-}
-
-void RpmFileHeaderReader::load(const std::string& fileName)
-{
-  assert(m_fd == NULL);
-  assert(m_header == NULL);
-  m_fd = Fopen(fileName.c_str(), "r");
-  if (m_fd == NULL)
-    RPM_STOP("Could not open rpm file \'" + fileName + "\' for header reading");
-  const rpmRC rc = rpmReadPackageHeader(m_fd, &m_header, 0, NULL, NULL);
-  if (rc != RPMRC_OK || m_header == NULL)
-    {
-      if (m_header)
-	headerFree(m_header);
-      Fclose(m_fd);
-      m_fd = NULL;
-      m_header = NULL;
-      RPM_STOP("Could not read header from rpm file \'" + fileName + "\'");
-    }
-  m_fileName = fileName;
-}
-
-void RpmFileHeaderReader::close()
-{
-  if (m_header != NULL)
-    headerFree(m_header);
-  if (m_fd != NULL)
-    Fclose(m_fd);
-  m_header = NULL;
-  m_fd = NULL;
 }
 
 void RpmFileHeaderReader::fillMainData(PkgFileBase& pkg)
@@ -411,20 +379,5 @@ void RpmFileHeaderReader::getInt32TagValueRelaxed(int_32 tag, int_32& value)
   assert(num);
   value = *num;
   return;
-}
-
-void readRpmPkgFile(const std::string& fileName, PkgFile& pkgFile, StringList& fileList)
-{
-  RpmFileHeaderReader reader;
-  reader.load(fileName);
-  reader.fillMainData(pkgFile);
-  reader.fillProvides(pkgFile.provides);
-  reader.fillConflicts(pkgFile.conflicts);
-  reader.fillObsoletes(pkgFile.obsoletes);
-  reader.fillRequires(pkgFile.requires);
-  reader.fillChangeLog(pkgFile.changeLog);
-  reader.fillFileList(fileList);
-  reader.close();
-  pkgFile.fileName = fileName;
 }
 
