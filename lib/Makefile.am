@@ -12,6 +12,7 @@ ConfigCenter.cpp \
 ConfigFile.cpp \
 IndexCore.cpp \
 IndexFetch.cpp \
+InfoCore.cpp \
 logging.cpp \
 OperationCore.cpp \
 os/Directory.cpp \
@@ -55,6 +56,7 @@ DefaultValues.h \
 IndexCoreException.h \
 IndexCore.h \
 IndexFetch.h \
+InfoCore.h \
 logging.h \
 OperationCore.h \
 os/Directory.h \

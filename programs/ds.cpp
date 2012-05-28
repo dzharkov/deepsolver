@@ -17,6 +17,7 @@
 
 #include"deepsolver.h"
 #include"OperationCore.h"
+#include"InfoCore.h"
 #include"Messages.h"
 #include"IndexFetchProgress.h"
 
@@ -60,6 +61,7 @@ bool loadConfiguration()
     }
   return 1;
 }
+
 
 int fetchIndices()
 {
@@ -112,6 +114,28 @@ int install(const UserTask& userTask)
   return 0;
 }
 
+int listAvailablePackages()
+{
+  logMsg(LOG_DEBUG, "Recognized request to list all available packages");
+  InfoCore core(conf);
+  PkgVector pkgs;
+  core.availablePackages(pkgs);
+  StringVector s;
+  s.resize(pkgs.size());
+  for(PkgVector::size_type i = 0;i < pkgs.size();i++)
+    {
+      std::ostringstream ss;
+      ss << pkgs[i].name << "-";
+      //      if (pkgs[i].epoch > 0)
+      //	ss << pkgs[i].epoch << ":";
+      ss << pkgs[i].version << "-" << pkgs[i].release;
+      s[i] = ss.str();
+    }
+  std::sort(s.begin(), s.end());
+  for(StringVector::size_type i = 0;i < s.size();i++)
+    std::cout << s[i] << std::endl;
+}
+
 int main(int argc, char* argv[])
 {
   initLogging("/tmp/ds.log", LOG_DEBUG);//FIXME:
@@ -123,6 +147,8 @@ int main(int argc, char* argv[])
     return fetchIndices();
   if (std::string(argv[1]) == "install")
     return install(UserTask());
+  if (std::string(argv[1]) == "list")
+    return listAvailablePackages();
   return 1;
 }
 

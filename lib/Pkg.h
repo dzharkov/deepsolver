@@ -123,6 +123,9 @@ public:
   ChangeLog changeLog;
 };
 
+typedef std::vector<Pkg> PkgVector;
+typedef std::list<Pkg> PkgList;
+
 class PkgFile: public PkgFileBase, public PkgRelations 
 {
 public:
