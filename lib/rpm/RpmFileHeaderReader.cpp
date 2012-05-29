@@ -16,12 +16,14 @@
 */
 
 //Written with librpm-4.0.4-alt100.29;
+
 //FIXME:requires just for install/removing
 //FIXME:package size and required disk space;
 //FIXME:requires flags for package install and removing;
 
 #include"deepsolver.h"
 #include"RpmFileHeaderReader.h"
+#include"RpmHeaderReading.h"
 
 void RpmFileHeaderReader::load(const std::string& fileName)
 {
@@ -55,37 +57,37 @@ void RpmFileHeaderReader::close()
 
 void RpmFileHeaderReader::fillMainData(PkgFileBase& pkg)
 {
-  //FIXME:
+  rpmFillMainData(m_header, pkg);
 }
 
 void RpmFileHeaderReader::fillProvides(NamedPkgRelVector& v)
 {
-  //FIXME:
+  rpmFillProvides(m_header, v);
 }
 
 void RpmFileHeaderReader::fillConflicts(NamedPkgRelVector& v)
 {
-  //FIXME:
+  rpmFillConflicts(m_header, v);
 }
 
 void RpmFileHeaderReader::fillObsoletes(NamedPkgRelVector& v)
 {
-  //FIXME:
+  rpmFillObsoletes(m_header, v);
 }
 
 void RpmFileHeaderReader::fillRequires(NamedPkgRelVector& v)
 {
-  //FIXME:
+  rpmFillRequires(m_header, v);
 }
 
 void RpmFileHeaderReader::fillChangeLog(ChangeLog& changeLog)
 {
-  //FIXME:
+  rpmFillChangeLog(m_header, changeLog);
 }
 
 void RpmFileHeaderReader::fillFileList(StringList& v)
 {
-  //FIXME:
+  rpmFillFileList(m_header, v);
 }
 
 void readRpmPkgFile(const std::string& fileName, PkgFile& pkgFile, StringList& fileList)

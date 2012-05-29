@@ -21,6 +21,7 @@
 #include <rpm/rpmdb.h>                                                                                                                                         
 #include"Rpmdb.h"
 #include"RpmException.h"
+#include"RpmHeaderReading.h"
 
 static bool alreadyReadConfigFiles = 0;
 
@@ -38,20 +39,22 @@ void Rpmdb::openEnum()
 
 bool Rpmdb::moveNext(Pkg& pkg)
 {                                                                                                                                                              
-  int type, count;
-  char *str;
   Header h = rpmdbNextIterator(m_it);
   if (!h)
     return 0;
-      headerGetEntry(h, RPMTAG_NAME, &type, (void **) &str, &count);                                                                                        
-      assert(str != NULL);
-      pkg.name = str;
-      headerGetEntry(h, RPMTAG_VERSION, &type, (void **) &str, &count);                                                                                        
-      assert(str != NULL);
-      pkg.version = str;
-      headerGetEntry(h, RPMTAG_RELEASE, &type, (void **) &str, &count);                                                                                        
-      assert(str != NULL);
-      pkg.release = str;
+  rpmFillMainData(h, pkg);
+  rpmFillProvides(h, pkg.provides);
+  rpmFillRequires(h, pkg.requires);
+  rpmFillObsoletes(h, pkg.obsoletes);
+  rpmFillConflicts(h, pkg.conflicts);
+
+  /*
+  std::cout << pkg.name << std::endl;
+  for(size_t i = 0;i < pkg.requires.size();i++)
+    std::cout << pkg.requires[i] << std::endl;
+  std::cout << std::endl;
+  */
+
       return 1;
 }                                                                                                                                                              
 

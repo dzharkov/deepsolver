@@ -33,7 +33,7 @@ static VerDirection translateRelFlags(int_32 flags)
   return value;
 }
 
-void rpmFillMainData(Header& header, PkgFileBase& pkg)
+void rpmFillMainData(Header& header, PkgBase& pkg)
 {
   rpmGetStringTagValue(header, RPMTAG_NAME, pkg.name);
   int32_t epoch = 0;

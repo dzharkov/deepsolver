@@ -22,7 +22,7 @@
 #include"RpmException.h"
 #include<rpm/rpmlib.h>
 
-void rpmFillMainData(Header& header, PkgFileBase& pkg);
+void rpmFillMainData(Header& header, PkgBase& pkg);
 void rpmFillProvides(Header& header, NamedPkgRelVector& v);
 void rpmFillConflicts(Header& header, NamedPkgRelVector& v);
 void rpmFillObsoletes(Header& header, NamedPkgRelVector& v);

@@ -64,7 +64,8 @@ static void fillWithhInstalledPackages(AbstractPackageBackEnd& backEnd, PackageS
       if (matchingVarId != BAD_VAR_ID)
 	continue;
 
-      std::cout << pkg.name << "-" << pkg.version << "-" << pkg.release << std::endl;
+      /*
+            std::cout << pkg.name << "-" << pkg.version << "-" << pkg.release << std::endl;
       for(VarId varId = fromVarId;varId < toVarId;varId++)
 	{
 	  assert(varId < pkgs.size());
@@ -72,6 +73,7 @@ static void fillWithhInstalledPackages(AbstractPackageBackEnd& backEnd, PackageS
 	  std::cout << info.ver << "-" << info.release << std::endl;
 	}
       std::cout << std::endl;
+      */
 
     } //while();
 }
