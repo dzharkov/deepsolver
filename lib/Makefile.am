@@ -31,6 +31,7 @@ RequireFilter.cpp \
 RpmBackEnd.cpp \
 rpm/Rpmdb.cpp \
 rpm/RpmFileHeaderReader.cpp \
+rpm/RpmHeaderReading.cpp \
 rpm/vercmp.cpp \
 transact/PackageScope.cpp \
 transact/TaskPreprocessor.cpp \
@@ -78,6 +79,7 @@ rpm/RpmException.h \
 rpm/Rpmdb.h \
 rpm/RpmFile.h \
 rpm/RpmFileHeaderReader.h \
+rpm/RpmHeaderReading.h \
 rpm/vercmp.h \
 TaskException.h \
 transact/PackageScope.h \
