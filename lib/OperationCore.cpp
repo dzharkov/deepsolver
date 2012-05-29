@@ -25,7 +25,6 @@
 
 static void addINstalledPackageToScope(PackageScope& scope, AbstractInstalledPackagesIterator& it, Pkg& pkg)
 {
-  //  std::cout << pkg.name << std::endl;
   //FIXME:
 }
 
@@ -63,18 +62,7 @@ static void fillWithhInstalledPackages(AbstractPackageBackEnd& backEnd, PackageS
 	}
       if (matchingVarId != BAD_VAR_ID)
 	continue;
-
-      /*
-            std::cout << pkg.name << "-" << pkg.version << "-" << pkg.release << std::endl;
-      for(VarId varId = fromVarId;varId < toVarId;varId++)
-	{
-	  assert(varId < pkgs.size());
-	  const PackageScopeContent::PkgInfo& info = pkgs[varId];
-	  std::cout << info.ver << "-" << info.release << std::endl;
-	}
-      std::cout << std::endl;
-      */
-
+      //FIXME:
     } //while();
 }
 

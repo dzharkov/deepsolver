@@ -37,6 +37,12 @@ void Rpmdb::openEnum()
   m_it = rpmdbInitIterator(m_db, RPMDBI_PACKAGES, NULL, 0);
 }
 
+void Rpmdb::close()
+{
+  rpmdbFreeIterator(m_it);                                                                                                                                     
+  rpmdbClose(m_db);                                                                                                                                            
+}
+
 bool Rpmdb::moveNext(Pkg& pkg)
 {                                                                                                                                                              
   Header h = rpmdbNextIterator(m_it);
@@ -47,19 +53,5 @@ bool Rpmdb::moveNext(Pkg& pkg)
   rpmFillRequires(h, pkg.requires);
   rpmFillObsoletes(h, pkg.obsoletes);
   rpmFillConflicts(h, pkg.conflicts);
-
-  /*
-  std::cout << pkg.name << std::endl;
-  for(size_t i = 0;i < pkg.requires.size();i++)
-    std::cout << pkg.requires[i] << std::endl;
-  std::cout << std::endl;
-  */
-
       return 1;
 }                                                                                                                                                              
-
-void Rpmdb::close()
-{
-  rpmdbFreeIterator(m_it);                                                                                                                                     
-  rpmdbClose(m_db);                                                                                                                                            
-}

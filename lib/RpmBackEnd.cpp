@@ -39,11 +39,6 @@ public:
     return 0;
   }
 
-  void fillFullInfo(Pkg& pkg)
-  {
-    //FIXME:
-  }
-
 private:
   Rpmdb m_rpmdb;
 }; //class RpmInstalledPackagesIterator;
