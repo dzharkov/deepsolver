@@ -52,8 +52,6 @@ public:
   std::string ver;
 }; //class NamedPkgRel;
 
-std::ostream& operator <<(std::ostream& s, const NamedPkgRel& r);
-
 typedef std::list<NamedPkgRel> NamedPkgRelList;
 typedef std::vector<NamedPkgRel> NamedPkgRelVector;
 
@@ -131,5 +129,8 @@ class PkgFile: public PkgFileBase, public PkgRelations
 public:
   ChangeLog changeLog;
 };
+
+std::ostream& operator <<(std::ostream& s, const PkgBase& );
+std::ostream& operator <<(std::ostream& s, const NamedPkgRel& r);
 
 #endif //DEEPSOLVER_PKG_H;

@@ -23,11 +23,6 @@
 #include"PackageScopeContentLoader.h"
 #include"transact/PackageScope.h"
 
-static void addINstalledPackageToScope(PackageScope& scope, AbstractInstalledPackagesIterator& it, Pkg& pkg)
-{
-  //FIXME:
-}
-
 static void fillWithhInstalledPackages(AbstractPackageBackEnd& backEnd, PackageScope& scope, PackageScopeContent& content)
 {
   const PackageScopeContent::PkgInfoVector& pkgs = content.getPkgs();
@@ -37,7 +32,7 @@ static void fillWithhInstalledPackages(AbstractPackageBackEnd& backEnd, PackageS
     {
       if (!content.checkName(pkg.name))
 	{
-	  addINstalledPackageToScope(scope, *it.get(), pkg);
+	  scope.registerInstalledPackage(pkg, BAD_PACKAGE_ID);
 	  continue;
 	}
       const PackageId pkgId = content.strToPackageId(pkg.name);//FIXME:must be got with checkName();
@@ -48,13 +43,14 @@ static void fillWithhInstalledPackages(AbstractPackageBackEnd& backEnd, PackageS
 	  //We have pkgId but have no corresponding varId, it is slightly strange but actually not a problem;
 	  logMsg(LOG_WARNING, "Package \'%s\' with corresponding pkgId=%zu has no any varId", pkg.name.c_str(), pkgId);
 	}
-
       VarId matchingVarId = BAD_VAR_ID;
       for(VarId varId = fromVarId;varId < toVarId;varId++)
 	{
 	  assert(varId < pkgs.size());
 	  const PackageScopeContent::PkgInfo& info = pkgs[varId];
-	  if (pkg.version == info.ver && pkg.release == info.release)
+	  assert(info.pkgId == pkgId);
+	  //Extremely important place: the following line determines is installed package the same as one available from repository index;
+	  if (pkg.version == info.ver && pkg.release == info.release && pkg.buildTime == info.buildTime)
 	    {
 	      matchingVarId = varId;
 	      break;
@@ -62,8 +58,8 @@ static void fillWithhInstalledPackages(AbstractPackageBackEnd& backEnd, PackageS
 	}
       if (matchingVarId != BAD_VAR_ID)
 	continue;
-      //FIXME:
-    } //while();
+      scope.registerInstalledPackage(pkg, pkgId);
+    } //while(installed packages);
 }
 
 static std::string urlToFileName(const std::string& url)

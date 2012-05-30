@@ -245,4 +245,5 @@ bool TextFormatReader::readLine(std::string& line)
     return 0;
   m_lineNumber++;
   m_line = line;
+  return 1;
 }

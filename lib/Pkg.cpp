@@ -18,6 +18,14 @@
 #include"deepsolver.h"
 #include"Pkg.h"
 
+std::ostream& operator <<(std::ostream& s, const PkgBase& p)
+{
+  s << p.name << "-";
+  if (p.epoch > 0)
+    s << p.epoch << ":";
+  s << p.version << "-" << p.release;
+}
+
 std::ostream& operator <<(std::ostream& s, const NamedPkgRel& r)
 {
   s << r.pkgName;

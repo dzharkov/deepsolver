@@ -28,7 +28,6 @@ public:
 
 public:
   virtual bool moveNext(Pkg& pkg) = 0; 
-  virtual void fillFullInfo(Pkg& pkg) = 0;
 }; //class AbstractInstalledPackagesIterator;
 
 class AbstractPackageBackEnd

@@ -96,6 +96,9 @@ public:
   void getRequires(VarId varId, PackageIdVector& depWithoutVersion, PackageIdVector& depWithVersion, VersionCondVector& versions) const;
   void getConflicts(VarId varId, PackageIdVector& withoutVersion, PackageIdVector& withVersion, VersionCondVector& versions) const;
 
+  //if pkgId is not BAD_PACKAGE_ID, new package must be registered with the specified value;
+  void registerInstalledPackage(const Pkg& pkg, PackageId pkgId);
+
   //  void whatRequiresAmongInstalled();
 
 private:

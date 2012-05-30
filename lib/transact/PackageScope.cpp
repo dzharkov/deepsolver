@@ -350,3 +350,8 @@ void PackageScope::getConflicts(VarId varId, PackageIdVector& withoutVersion, Pa
 	}
     }
 }
+
+void PackageScope::registerInstalledPackage(const Pkg& pkg, PackageId pkgId)
+{
+  std::cout << pkg << std::endl;
+}
