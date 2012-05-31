@@ -138,6 +138,7 @@ public:
   const PkgInfoVector& getPkgs() const;
   const RelInfoVector& getRels() const;
   void addStringToAutoRelease(char* str);
+  void rearrangeNames();
 
 public:
   StringVector names;

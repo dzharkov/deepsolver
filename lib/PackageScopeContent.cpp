@@ -185,3 +185,53 @@ const PackageScopeContent::RelInfoVector& PackageScopeContent::getRels() const
 {
   return relInfoVector;
 }
+
+
+void PackageScopeContent::rearrangeNames()
+{
+  //FIXME:Additional testing with small amount of data or without data at all;
+  StringVector newNames(names);
+  std::sort(newNames.begin(), newNames.end());
+  SizeVector newPlaces;
+  newPlaces.resize(names.size());
+  for(StringVector::size_type i = 0;i < names.size();i++)
+    {
+      StringVector::size_type res = 0;
+      StringVector::size_type l = 0, r = newNames.size();
+      while(1)
+	{
+	  assert(l <= r);
+	  const StringVector::size_type c = (l + r) / 2;
+	  assert(c < newNames.size());
+	  if (newNames[c] == names [i])
+	    {
+	      res = c;
+	      break;
+	    }
+	  if (newNames[c] > names[i])
+	    r = c; else
+	    l = c;
+	} //while(1);
+      newPlaces[i] = res;
+    }
+  for(PkgInfoVector::size_type i = 0;i < pkgInfoVector.size();i++)
+    {
+      assert(pkgInfoVector[i].pkgId < newPlaces.size());
+      pkgInfoVector[i].pkgId = newPlaces[pkgInfoVector[i].pkgId];
+    }
+  for(RelInfoVector::size_type i = 0;i < relInfoVector.size();i++)
+    {
+      assert(relInfoVector[i].pkgId < newPlaces.size());
+      relInfoVector[i].pkgId = newPlaces[relInfoVector[i].pkgId];
+    }
+  for(ProvideMapItemVector::size_type i = 0;i < provideMap.size();i++)
+    {
+      assert(provideMap[i].provideId < newPlaces.size());
+      assert(provideMap[i].pkgId < newPlaces.size());
+      provideMap[i].provideId = newPlaces[provideMap[i].provideId];
+      provideMap[i].pkgId = newPlaces[provideMap[i].pkgId];
+    }
+  names = newNames;
+  std::sort(pkgInfoVector.begin(), pkgInfoVector.end());
+  std::sort(provideMap.begin(), provideMap.end());
+}
