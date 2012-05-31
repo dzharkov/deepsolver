@@ -20,18 +20,27 @@
 
 #include"Pkg.h"
 
-/**\brief The information about packages from available repositories
+/**\brief The information about all known packages
  *
- * This class contains information about available package list with
- * their attributes required for dependent package set calculation. It
- * has several methods for stored data access but it is not able to load
- * or fill by the other way stored information. This class is not
- * abstract, however every user has to use one of the child classes. One
- * of them is prepared for loading content from the binary file on disk
- * and the another one is purposed for converting data from the
- * repository index and saving it to binary file.
+ * This class is the central place for storing all required information
+ * used in transaction processing. It contains list of all packages
+ * available in remote repositories as well as installed packages and
+ * packages listed as local files.
  *
- * \sa PackageScopeContentBuilder PackageScopeContentLoader
+ * Data includes package name, epoch, version, release and lists of
+ * requires, obsoletes, provides and conflicts. Complete list of packages
+ * is saved in pkgInfoVector. The index of corresponding entry in
+ * pkgInfoVector is called VarId of the package. Name of package is
+ * replaced by unsigned integer number called package ID (PackageId
+ * typedef).
+ *
+ * The data structure in this class is organized to be optimized for
+ * search. Names vector and pkgInfoVector (by pkgId field) are sorted to
+ * allow search with logarithmic time. One more field contains provide ->
+ * providers mapping with names replaced by their package IDs. It is also
+ * sorted by provide entry field.
+ *
+ * \sa PackageScopeContentBuilder PackageScopeContentLoade PackageScope OperationCorer
  */
 class PackageScopeContent
 {
