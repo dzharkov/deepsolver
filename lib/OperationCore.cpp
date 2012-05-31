@@ -142,8 +142,9 @@ void OperationCore::doInstallRemove(const UserTask& userTask)
 {
   File::readAhead("/var/lib/rpm/Packages");//FIXME:take the value from configuration;
   std::auto_ptr<AbstractPackageBackEnd> backEnd = createRpmBackEnd();
-  PackageScopeContentLoader content;
-  content.loadFromFile(Directory::mixNameComponents(m_conf.root().dir.pkgData, PKG_DATA_FILE_NAME));
+  PackageScopeContent content;
+  PackageScopeContentLoader loader(content);
+  loader.loadFromFile(Directory::mixNameComponents(m_conf.root().dir.pkgData, PKG_DATA_FILE_NAME));
   PackageScope scope(scope);
   fillWithhInstalledPackages(*backEnd.get(), scope, content);
 }

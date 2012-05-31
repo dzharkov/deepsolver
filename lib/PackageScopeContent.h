@@ -128,12 +128,13 @@ public:
   std::string packageIdToStr(PackageId packageId) const;
   const PkgInfoVector& getPkgs() const;
   const RelInfoVector& getRels() const;
+  void addStringToAutoRelease(char* str);
 
-protected:
-  StringVector m_names;
-  PkgInfoVector m_pkgInfoVector;
-  RelInfoVector m_relInfoVector;
-  ProvideMapItemVector m_provideMap;
+public:
+  StringVector names;
+  PkgInfoVector pkgInfoVector;
+  RelInfoVector relInfoVector;
+  ProvideMapItemVector provideMap;
 }; //class PackageScopeContent;
 
 #endif //DEEPSOLVER_PACKAGE_SCOPE_CONTENT_H;

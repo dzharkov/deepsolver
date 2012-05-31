@@ -21,8 +21,9 @@
 
 void InfoCore::availablePackages(PkgVector& pkgs)
 {
-  PackageScopeContentLoader content;
-  content.loadFromFile(Directory::mixNameComponents(m_conf.root().dir.pkgData, PKG_DATA_FILE_NAME));
+  PackageScopeContent content;
+  PackageScopeContentLoader loader(content);
+  loader.loadFromFile(Directory::mixNameComponents(m_conf.root().dir.pkgData, PKG_DATA_FILE_NAME));
   const PackageScopeContent::PkgInfoVector& p = content.getPkgs();
   pkgs.resize(p.size());
   for(PackageScopeContent::PkgInfoVector::size_type i = 0;i < p.size();i++)

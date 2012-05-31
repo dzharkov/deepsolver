@@ -20,19 +20,15 @@
 
 #include"PackageScopeContent.h"
 
-class PackageScopeContentLoader: public PackageScopeContent
+class PackageScopeContentLoader
 {
 public:
-  /**\brief The default constructor*/
-  PackageScopeContentLoader() 
-    : m_stringBuf(NULL) {}
+  /**\brief The constructor*/
+  PackageScopeContentLoader(PackageScopeContent& content) 
+    : m_c(content) {}
 
   /**\brief The destructor*/
-  virtual ~PackageScopeContentLoader() 
-  {
-    if (m_stringBuf != NULL)
-      delete[] m_stringBuf;
-  }
+  virtual ~PackageScopeContentLoader() {}
 
 public:
   void loadFromFile(const std::string& fileName);
@@ -41,7 +37,7 @@ private:
   void readNames(std::ifstream& s, size_t namesBufSize);
 
 private:
-  char* m_stringBuf;
+  PackageScopeContent& m_c;
 }; //class PackageScopeContentLoader;
 
 #endif //DEEPSOLVER_PACKAGE_SCOPE_CONTENT_LOADER_H;

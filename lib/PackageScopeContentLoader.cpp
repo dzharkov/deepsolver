@@ -62,11 +62,11 @@ void PackageScopeContentLoader::loadFromFile(const std::string& fileName)
 {
   logMsg(LOG_DEBUG, "Starting reading from binary file \'%s\'", fileName.c_str());
   assert(!fileName.empty());
-  assert(m_names.empty());
-  assert(m_pkgInfoVector.empty());
-  assert(m_relInfoVector.empty());
-  assert(m_provideMap.empty());
-  assert(m_stringBuf == NULL);
+  assert(m_c.names.empty());
+  assert(m_c.pkgInfoVector.empty());
+  assert(m_c.relInfoVector.empty());
+  assert(m_c.provideMap.empty());
+  //FIXME:  assert(m_stringBuf == NULL);
   std::ifstream s(fileName.c_str());
   assert(s.is_open());//FIXME:error checking;
   //Reading numbers of records;
@@ -76,31 +76,32 @@ void PackageScopeContentLoader::loadFromFile(const std::string& fileName)
   logMsg(LOG_DEBUG, "%zu package names", nameCount);
   const size_t namesBufSize = readSizeValue(s);
   logMsg(LOG_DEBUG, "%zu bytes in all package names with trailing zeroes", namesBufSize);
-  m_pkgInfoVector.resize(readSizeValue(s));
-  logMsg(LOG_DEBUG, "%zu packages", m_pkgInfoVector.size());
-  m_relInfoVector.resize(readSizeValue(s));
-  logMsg(LOG_DEBUG, "%zu package relations", m_relInfoVector.size());
-  m_provideMap.resize(readSizeValue(s));
-  logMsg(LOG_DEBUG, "%zu provide map items", m_provideMap.size());
+  m_c.pkgInfoVector.resize(readSizeValue(s));
+  logMsg(LOG_DEBUG, "%zu packages", m_c.pkgInfoVector.size());
+  m_c.relInfoVector.resize(readSizeValue(s));
+  logMsg(LOG_DEBUG, "%zu package relations", m_c.relInfoVector.size());
+  m_c.provideMap.resize(readSizeValue(s));
+  logMsg(LOG_DEBUG, "%zu provide map items", m_c.provideMap.size());
   //Reading all version and release strings;
-  m_stringBuf = new char[stringBufSize];
-  readBuf(s, m_stringBuf, stringBufSize );
+  char* stringBuf = new char[stringBufSize];
+  m_c.addStringToAutoRelease(stringBuf);
+  readBuf(s, stringBuf, stringBufSize );
   //Reading names of packages and provides;
-  m_names.reserve(nameCount);
+  m_c.names.reserve(nameCount);
     readNames(s, namesBufSize);
-  assert(m_names.size() == nameCount);
+  assert(m_c.names.size() == nameCount);
   //Reading package list;
-  for(PkgInfoVector::size_type i = 0;i < m_pkgInfoVector.size();i++)
+  for(PackageScopeContent::PkgInfoVector::size_type i = 0;i < m_c.pkgInfoVector.size();i++)
     {
-      PkgInfo& info = m_pkgInfoVector[i];
+      PackageScopeContent::PkgInfo& info = m_c.pkgInfoVector[i];
       info.pkgId = readSizeValue(s);
       info.epoch = readUnsignedShortValue(s);
       const size_t verOffset = readSizeValue(s);
       assert(verOffset < stringBufSize);//FIXME:must be an exception;
-      info.ver = m_stringBuf + verOffset;
+      info.ver = stringBuf + verOffset;
       const size_t releaseOffset = readSizeValue(s);
       assert(releaseOffset < stringBufSize);//FIXME:must be an exception;
-      info.release = m_stringBuf + releaseOffset;
+      info.release = stringBuf + releaseOffset;
       info.buildTime = readSizeValue(s);
       info.requiresPos = readSizeValue(s);
       info.requiresCount = readSizeValue(s);
@@ -112,24 +113,24 @@ void PackageScopeContentLoader::loadFromFile(const std::string& fileName)
       info.obsoletesCount = readSizeValue(s);
     }
   //Reading package relations;
-  for(RelInfoVector::size_type i = 0;i < m_relInfoVector.size();i++)
+  for(PackageScopeContent::RelInfoVector::size_type i = 0;i < m_c.relInfoVector.size();i++)
     {
-      RelInfo& info = m_relInfoVector[i];
+      PackageScopeContent::RelInfo& info = m_c.relInfoVector[i];
       info.pkgId = readSizeValue(s);
       info.type = readCharValue(s);
       const size_t verOffset = readSizeValue(s);
       if (verOffset != (size_t)-1)
 	{
 	  assert(verOffset < stringBufSize);//FIXME:must be an exception;
-	  info.ver = m_stringBuf + verOffset;
+	  info.ver = stringBuf + verOffset;
 	} else
 	info.ver = NULL;
     }
   //Reading provide map;
-  for(ProvideMapItemVector::size_type i = 0;i < m_provideMap.size();i++)
+  for(PackageScopeContent::ProvideMapItemVector::size_type i = 0;i < m_c.provideMap.size();i++)
     {
-      m_provideMap[i].provideId = readSizeValue(s);
-      m_provideMap[i].pkgId = readSizeValue(s);
+      m_c.provideMap[i].provideId = readSizeValue(s);
+      m_c.provideMap[i].pkgId = readSizeValue(s);
     }
 }
 
@@ -156,7 +157,7 @@ void PackageScopeContentLoader::readNames(std::ifstream& s, size_t namesBufSize)
 	}
       //OK, we have at least one '\0' in buf, so can safely add the string until '\0' to 'prev' variable;
       prev += buf;
-      m_names.push_back(prev);
+      m_c.names.push_back(prev);
 	      prev.erase();
 	      //OK, incomplete string was successfully processed;
 	      i++;
@@ -167,7 +168,7 @@ void PackageScopeContentLoader::readNames(std::ifstream& s, size_t namesBufSize)
 	  assert(fromPos < toRead && i < toRead);
 	  if (buf[i] != '\0')
 	    continue;
-	      m_names.push_back(buf + fromPos);
+	      m_c.names.push_back(buf + fromPos);
 	      fromPos = i + 1;
 	} //for(buf);
       assert(fromPos <= i);
