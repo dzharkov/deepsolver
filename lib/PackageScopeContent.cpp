@@ -18,7 +18,7 @@
 #include"deepsolver.h"
 #include"PackageScopeContent.h"
 
-void PackageScopeContent::locateRange(PackageId packageId, VarId& fromPos, VarId& toPos )
+void PackageScopeContent::locateRange(PackageId packageId, VarId& fromPos, VarId& toPos ) const
 {
   if (pkgInfoVector.empty())
     {

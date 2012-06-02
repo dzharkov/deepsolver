@@ -102,6 +102,9 @@ public:
   //  void whatRequiresAmongInstalled();
 
 private:
+  typedef PackageScopeContent::PkgInfoVector PkgInfoVector;
+  typedef PackageScopeContent::RelInfoVector RelInfoVector;
+
   const PackageScopeContent& m_content;
 }; //class PackageScope; 
 
