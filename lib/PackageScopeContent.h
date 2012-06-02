@@ -128,15 +128,11 @@ public:
   virtual ~PackageScopeContent() {}
 
 public:
-  static void locateRange(const PkgInfoVector& pkgs, PackageId packageId, VarId& fromPos, VarId& toPos );
-
-public:
+  void locateRange(PackageId packageId, VarId& fromPos, VarId& toPos );
   void getProviders(PackageId provideId, PackageIdVector& providers) const;
   bool checkName(const std::string& name) const;
   PackageId strToPackageId(const std::string& name) const;
   std::string packageIdToStr(PackageId packageId) const;
-  const PkgInfoVector& getPkgs() const;
-  const RelInfoVector& getRels() const;
   void addStringToAutoRelease(char* str);
   void rearrangeNames();
 
