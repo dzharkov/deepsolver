@@ -56,6 +56,7 @@
 #include<time.h>
 
 typedef std::vector<size_t> SizeVector;
+typedef std::vector<const char*> ConstCharStarVector;
 typedef std::vector<std::string> StringVector;
 typedef std::list<std::string> StringList;
 typedef std::set<std::string> StringSet;

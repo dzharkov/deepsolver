@@ -135,6 +135,7 @@ public:
   std::string packageIdToStr(PackageId packageId) const;
   void addStringToAutoRelease(char* str);
   void rearrangeNames();
+  void enhance(const PkgVector& pkgs);
 
 public:
   StringVector names;

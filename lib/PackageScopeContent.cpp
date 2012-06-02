@@ -73,6 +73,46 @@ void PackageScopeContent::locateRange(PackageId packageId, VarId& fromPos, VarId
   toPos = 0;
 }
 
+void PackageScopeContent::enhance(const PkgVector& pkgs)
+{
+  logMsg(LOG_DEBUG, "Trying to enhance package scope content with %zu new packages", pkgs.size());
+  if (pkgs.empty())
+    return;
+  //First of all we should collect new package names;
+  StringSet newNames;
+  for(PkgVector::size_type )
+    {
+      const Pkg& pkg = pkgs[i];
+      if (!checkName(pkg.name))
+	newNames.insert(pkg.name);
+      for(NamedPkgRel::size_type k = 0;k < pkg.requires.size();k++)
+	if (!checkName(pkg.requires[k].pkgName))
+	  newNames.insert(pkg.requires[k].pkgName);
+      for(NamedPkgRel::size_type k = 0;k < pkg.provides.size();k++)
+	if (!checkName(pkg.provides[k].pkgName))
+	  newNames.insert(pkg.provides[k].pkgName);
+      for(NamedPkgRel::size_type k = 0;k < pkg.obsoletes.size();k++)
+	if (!checkName(pkg.obsoletes[k].pkgName))
+	  newNames.insert(pkg.obsoletes[k].pkgName);
+      for(NamedPkgRel::size_type k = 0;k < pkg.conflicts.size();k++)
+	if (!checkName(pkg.conflicts[k].pkgName))
+	  newNames.insert(pkg.conflicts[k].pkgName);
+    } //for(pkgs);
+  logMsg(LOG_DEBUG, "%zu new package names were found among the packages to enhance package scope content", newNames.size());
+  //OK, we have new package names and can now add them and perform rearranging;
+  for(StringSet::const_iterator it = newNames.begin();it != newNames.end();it++)
+    names.push_back(*it);
+  rearrangeNames();
+  //Creating vector of new package info;
+  PkgInfoVector newPkgInfo;
+  newPkgInfo.resize(pkgs.size());
+  for(PkgVector::size_type i = 0;i < pkgs.size();i++)
+    {
+      assert(checkName(pkgs[i].name));
+      newPkgInfo[i].pkgId = strToPackageId(pkgs[i].name);
+    }
+}
+
 void PackageScopeContent::getProviders(PackageId provideId, PackageIdVector& providers) const
 {
   providers.clear();
@@ -178,7 +218,9 @@ std::string PackageScopeContent::packageIdToStr(PackageId packageId) const
 
 void PackageScopeContent::rearrangeNames()
 {
-  //FIXME:Additional testing with small amount of data or without data at all;
+  logMsg(LOG_DEBUG, "Performing names rearranging in package scope content, name count = %zu", names.size());
+  if (names.size() < 2)
+    return;
   StringVector newNames(names);
   std::sort(newNames.begin(), newNames.end());
   SizeVector newPlaces;
