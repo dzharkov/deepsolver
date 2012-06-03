@@ -137,6 +137,10 @@ public:
   void rearrangeNames();
   void enhance(const PkgVector& pkgs);
 
+private:
+  void addRelsForEnhancing(const NamedPkgRelVector& rels, size_t& pos, size_t& count, char* stringBuf, size_t& stringBufOffset);
+char* placeStringInBuffer(char* buf, size_t& offset, const std::string& value)
+
 public:
   StringVector names;
   PkgInfoVector pkgInfoVector;

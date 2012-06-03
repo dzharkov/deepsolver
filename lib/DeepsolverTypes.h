@@ -57,6 +57,7 @@ typedef std::set<VarId> VarIdSet;
 typedef char VerDirection;
 
 enum {
+  VerNone = 0,
   VerLess = 1,
   VerEquals = 2,
   VerGreater = 4

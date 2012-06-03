@@ -103,15 +103,77 @@ void PackageScopeContent::enhance(const PkgVector& pkgs)
   for(StringSet::const_iterator it = newNames.begin();it != newNames.end();it++)
     names.push_back(*it);
   rearrangeNames();
-  //Creating vector of new package info;
-  PkgInfoVector newPkgInfo;
-  newPkgInfo.resize(pkgs.size());
+  //What is the size of buffer we need for strings storing;
+  size_t stringBufSize = 0;
   for(PkgVector::size_type i = 0;i < pkgs.size();i++)
     {
-      assert(checkName(pkgs[i].name));
-      newPkgInfo[i].pkgId = strToPackageId(pkgs[i].name);
+      const Pkg& pkg = pkgs[i];
+      stringBufSize += pkg.version.length() + 1;
+      stringBufSize += pkg.release.length() + 1;
+      for(NamedPkgRelVector::size_type k = 0;k < pkg.requires.size();k++)
+	stringBufSize += (pkg.requires[k].type == VerNone?0:pkg.requires[k].ver.size()) + 1;
+      for(NamedPkgRelVector::size_type k = 0;k < pkg.provides.size();k++)
+	stringBufSize += (pkg.provides[k].type == VerNone?0:pkg.provides[k].ver.size()) + 1;
+      for(NamedPkgRelVector::size_type k = 0;k < pkg.conflicts.size();k++)
+	stringBufSize += (pkg.conflicts[k].type == VerNone?0:pkg.conflicts[k].ver.size()) + 1;
+      for(NamedPkgRelVector::size_type k = 0;k < pkg.obsoletes.size();k++)
+	stringBufSize += (pkg.obsoletes[k].type == VerNone?0:pkg.obsoletes[k].ver.size()) + 1;
+    }
+  logMsg(LOG_DEBUG, "String buffer for new versions and releases must have length %zu bytes", stringBufSize);
+  assert(stringBufSzie > 0);
+  std::auto_Ptr<char> stringBuf(new char[stringBufSize]);
+  size_t offset = 0;
+  //We have done all strings preparing, adding new entries;
+  for(PkgVector::size_type i = 0;i < pkgs.size();i++)
+    {
+      const Pkg& pkg = pkgs[i];
+      PkgInfo info;
+      assert(checkName(pkg.name));
+      info.pkgId = strToPackageId(pkg.name);
+      info.epoch = pkg.epoch;
+      info.ver = placeStringInBuffer(stringBuf.get(), offset, pkg.version);
+      info.release = placeStringInBuffer(stringBuf.get(), offset, pkg.release);
+      info.buildTime = pkg.buildTime;
+      addRelsForEnhancing(pkg.requires, info.requiresPos, info.requiresCount, stringBuf.get(), offset);
+      addRelsForEnhancing(pkg.provides, info.providesPos, info.providesCount, stringBuf.get(), offset);
+      addRelsForEnhancing(pkg.conflicts, info.conflictsPos, info.conflictsCount, stringBuf.get(), offset);
+      addRelsForEnhancing(pkg.obsoletes, info.obsoletesPos, info.obsoletesCount, stringBuf.get(), offset);
+      pkgInfoVector.push_back(info);
+      //FIXME:provides map updating;
+    }
+  assert(offset == stringBufSize);
+  addStringToAutoRelease(stringBuf.get());
+  stringBuf.release();
+  std::sort(pkgInfoVector.begin(), pkgInfoVector.end());
+  std::sort(provideMap.begin(), provideMap.end());
+}
+
+void PackageScopeContent::addRelsForEnhancing(const NamedPkgRelVector& rels, size_t& pos, size_t& count, char* stringBuf, size_t& stringBufOffset)
+{
+  assert(stringBuf != NULL);
+  if (rels.empty())
+    {
+      pos = 0;
+      count = 0;
+      return;
+    }
+  pos = m_relInfoVector.size();
+  count = rels.size();
+  for(NamedPkgRelVector::size_type i = 0;i < count;i++)
+    {
+      const NamedPkgRel& rel = rels[i];
+      RelInfo info;
+      assert(!rel.pkgName.empty());
+      assert(checkName(rel.pkgName));
+      info.pkgId = strToPackageId(rel.pkgName);
+      assert(rel.type != VerNone);
+      info.type = rel.type;
+      info.ver = placeStringInBuffer(stringBuf, stringBufSize, rel.version);
+      relInfoVector.push_back(info);
     }
 }
+
+
 
 void PackageScopeContent::getProviders(PackageId provideId, PackageIdVector& providers) const
 {
@@ -265,4 +327,10 @@ void PackageScopeContent::rearrangeNames()
   names = newNames;
   std::sort(pkgInfoVector.begin(), pkgInfoVector.end());
   std::sort(provideMap.begin(), provideMap.end());
+}
+
+char* PackageScopeContent::placeStringInBuffer(char* buf, size_t& offset, const std::string& value)
+{
+  assert(buf != NULL);
+  //FIXME:
 }
