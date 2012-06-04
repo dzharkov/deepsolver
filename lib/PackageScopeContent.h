@@ -125,7 +125,10 @@ public:
   PackageScopeContent() {}
 
   /**\brief The destructor*/
-  virtual ~PackageScopeContent() {}
+  virtual ~PackageScopeContent() 
+  {
+    releaseStrings();
+  }
 
 public:
   void locateRange(PackageId packageId, VarId& fromPos, VarId& toPos ) const;
@@ -139,13 +142,17 @@ public:
 
 private:
   void addRelsForEnhancing(const NamedPkgRelVector& rels, size_t& pos, size_t& count, char* stringBuf, size_t& stringBufOffset);
-char* placeStringInBuffer(char* buf, size_t& offset, const std::string& value)
+  void releaseStrings();
+  char* placeStringInBuffer(char* buf, size_t& offset, const std::string& value);
 
 public:
   StringVector names;
   PkgInfoVector pkgInfoVector;
   RelInfoVector relInfoVector;
   ProvideMapItemVector provideMap;
+
+private:
+  ConstCharStarVector m_toAutoRelease;
 }; //class PackageScopeContent;
 
 #endif //DEEPSOLVER_PACKAGE_SCOPE_CONTENT_H;

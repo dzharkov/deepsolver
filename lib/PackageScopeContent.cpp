@@ -80,21 +80,21 @@ void PackageScopeContent::enhance(const PkgVector& pkgs)
     return;
   //First of all we should collect new package names;
   StringSet newNames;
-  for(PkgVector::size_type )
+  for(PkgVector::size_type i = 0;i < pkgs.size();i++)
     {
       const Pkg& pkg = pkgs[i];
       if (!checkName(pkg.name))
 	newNames.insert(pkg.name);
-      for(NamedPkgRel::size_type k = 0;k < pkg.requires.size();k++)
+      for(NamedPkgRelVector::size_type k = 0;k < pkg.requires.size();k++)
 	if (!checkName(pkg.requires[k].pkgName))
 	  newNames.insert(pkg.requires[k].pkgName);
-      for(NamedPkgRel::size_type k = 0;k < pkg.provides.size();k++)
+      for(NamedPkgRelVector::size_type k = 0;k < pkg.provides.size();k++)
 	if (!checkName(pkg.provides[k].pkgName))
 	  newNames.insert(pkg.provides[k].pkgName);
-      for(NamedPkgRel::size_type k = 0;k < pkg.obsoletes.size();k++)
+      for(NamedPkgRelVector::size_type k = 0;k < pkg.obsoletes.size();k++)
 	if (!checkName(pkg.obsoletes[k].pkgName))
 	  newNames.insert(pkg.obsoletes[k].pkgName);
-      for(NamedPkgRel::size_type k = 0;k < pkg.conflicts.size();k++)
+      for(NamedPkgRelVector::size_type k = 0;k < pkg.conflicts.size();k++)
 	if (!checkName(pkg.conflicts[k].pkgName))
 	  newNames.insert(pkg.conflicts[k].pkgName);
     } //for(pkgs);
@@ -120,8 +120,8 @@ void PackageScopeContent::enhance(const PkgVector& pkgs)
 	stringBufSize += (pkg.obsoletes[k].type == VerNone?0:pkg.obsoletes[k].ver.size()) + 1;
     }
   logMsg(LOG_DEBUG, "String buffer for new versions and releases must have length %zu bytes", stringBufSize);
-  assert(stringBufSzie > 0);
-  std::auto_Ptr<char> stringBuf(new char[stringBufSize]);
+  assert(stringBufSize > 0);
+  std::auto_ptr<char> stringBuf(new char[stringBufSize]);
   size_t offset = 0;
   //We have done all strings preparing, adding new entries;
   for(PkgVector::size_type i = 0;i < pkgs.size();i++)
@@ -139,13 +139,15 @@ void PackageScopeContent::enhance(const PkgVector& pkgs)
       addRelsForEnhancing(pkg.conflicts, info.conflictsPos, info.conflictsCount, stringBuf.get(), offset);
       addRelsForEnhancing(pkg.obsoletes, info.obsoletesPos, info.obsoletesCount, stringBuf.get(), offset);
       pkgInfoVector.push_back(info);
-      //FIXME:provides map updating;
+      for(RelInfoVector::size_type k = 0;k < info.providesCount;k++)
+	provideMap.push_back(ProvideMapItem(relInfoVector[info.providesPos + k].pkgId, info.pkgId));
     }
   assert(offset == stringBufSize);
   addStringToAutoRelease(stringBuf.get());
   stringBuf.release();
   std::sort(pkgInfoVector.begin(), pkgInfoVector.end());
   std::sort(provideMap.begin(), provideMap.end());
+  logMsg(LOG_DEBUG, "Package scope content enhancing completed, now have %zu packages, %zu relations, %zu provide map items", pkgInfoVector.size(), relInfoVector.size(), provideMap.size());
 }
 
 void PackageScopeContent::addRelsForEnhancing(const NamedPkgRelVector& rels, size_t& pos, size_t& count, char* stringBuf, size_t& stringBufOffset)
@@ -157,7 +159,7 @@ void PackageScopeContent::addRelsForEnhancing(const NamedPkgRelVector& rels, siz
       count = 0;
       return;
     }
-  pos = m_relInfoVector.size();
+  pos = relInfoVector.size();
   count = rels.size();
   for(NamedPkgRelVector::size_type i = 0;i < count;i++)
     {
@@ -166,9 +168,17 @@ void PackageScopeContent::addRelsForEnhancing(const NamedPkgRelVector& rels, siz
       assert(!rel.pkgName.empty());
       assert(checkName(rel.pkgName));
       info.pkgId = strToPackageId(rel.pkgName);
-      assert(rel.type != VerNone);
-      info.type = rel.type;
-      info.ver = placeStringInBuffer(stringBuf, stringBufSize, rel.version);
+      if (rel.type != VerNone)
+	{
+	  info.type = rel.type;
+	  info.ver = placeStringInBuffer(stringBuf, stringBufOffset, rel.ver);
+	} else
+	{
+	  info.type = VerNone;
+	  assert(rel.ver.empty());
+	  placeStringInBuffer(stringBuf, stringBufOffset, "");
+	}
+
       relInfoVector.push_back(info);
     }
 }
@@ -332,7 +342,8 @@ void PackageScopeContent::rearrangeNames()
 char* PackageScopeContent::placeStringInBuffer(char* buf, size_t& offset, const std::string& value)
 {
   assert(buf != NULL);
-  //FIXME:
+  strcpy(&buf[offset], value.c_str());
+  offset += value.length() + 1;
 }
 
 void PackageScopeContent::addStringToAutoRelease(char* str)

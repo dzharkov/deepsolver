@@ -25,7 +25,7 @@
 
 static void fillWithhInstalledPackages(AbstractPackageBackEnd& backEnd, PackageScope& scope, PackageScopeContent& content)
 {
-  const PackageScopeContent::PkgInfoVector& pkgs = content.getPkgs();
+  const PackageScopeContent::PkgInfoVector& pkgs = content.pkgInfoVector;
   std::auto_ptr<AbstractInstalledPackagesIterator> it = backEnd.enumInstalledPackages();
   Pkg pkg;
   while(it->moveNext(pkg))
@@ -37,7 +37,7 @@ static void fillWithhInstalledPackages(AbstractPackageBackEnd& backEnd, PackageS
 	}
       const PackageId pkgId = content.strToPackageId(pkg.name);//FIXME:must be got with checkName();
       VarId fromVarId, toVarId;
-      PackageScopeContent::locateRange(pkgs, pkgId, fromVarId, toVarId);
+      content.locateRange(pkgId, fromVarId, toVarId);
       if (fromVarId == toVarId)
 	{
 	  //We have pkgId but have no corresponding varId, it is slightly strange but actually not a problem;
