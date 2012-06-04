@@ -334,3 +334,19 @@ char* PackageScopeContent::placeStringInBuffer(char* buf, size_t& offset, const 
   assert(buf != NULL);
   //FIXME:
 }
+
+void PackageScopeContent::addStringToAutoRelease(char* str)
+{
+  assert(str != NULL);
+  for(ConstCharStarVector::size_type i = 0;i < m_toAutoRelease.size();i++)
+    if (m_toAutoRelease[i] == str)
+      return;
+  m_toAutoRelease.push_back(str);
+}
+
+void PackageScopeContent::releaseStrings()
+{
+  for(ConstCharStarVector::size_type i = 0;i < m_toAutoRelease.size();i++)
+    delete[] m_toAutoRelease[i];
+  m_toAutoRelease.clear();
+}
