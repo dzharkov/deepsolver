@@ -169,7 +169,7 @@ VarId TaskPreprocessor::processUserTaskItemToInstall(const UserTaskItemToInstall
 {
   assert(!item.pkgName.empty());
   const bool hasVersion = !item.version.empty();
-  assert(!hasVersion || !item.less || !item.greater);
+  //FIXME:  assert(!hasVersion || !item.less || !item.greater);
   if (!m_scope.checkName(item.pkgName))
     TASK_STOP("\'" + item.pkgName + "\' is not a known package name");
   const PackageId pkgId = m_scope.strToPackageId(item.pkgName);
