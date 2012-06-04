@@ -27,11 +27,10 @@ void IndexFetch::fetch(const StringToStringMap& files)
   m_currentPartNumber = 0;
   for(StringToStringMap::const_iterator it = files.begin();it != files.end();it++)
     {
-      logMsg(LOG_DEBUG, "Starting fetching of \'%s\'", it->first.c_str());
+      logMsg(LOG_DEBUG, "Fetching of \'%s\'", it->first.c_str());
       m_currentFileName = it->first;
       processFile(it->first, it->second);
       m_currentPartNumber++;
-      logMsg(LOG_DEBUG, "Fetching of \'%s\' completed", it->first.c_str());
     }
     {
     }
@@ -42,7 +41,6 @@ void IndexFetch::processFile(const std::string& url, const std::string localFile
   assert(!url.empty());
   assert(!localFile.empty());
   curlInitialize();//Don't worry about multiple calls of this, there is the check inside;
-  logMsg(LOG_DEBUG, "Creating local file \'%s\'", localFile.c_str());
   m_file.create(localFile);
   CurlInterface curl;
   curl.init();

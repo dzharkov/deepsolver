@@ -23,16 +23,20 @@
 #include"PackageScopeContentLoader.h"
 #include"transact/PackageScope.h"
 
-static void fillWithhInstalledPackages(AbstractPackageBackEnd& backEnd, PackageScope& scope, PackageScopeContent& content)
+static void fillWithhInstalledPackages(AbstractPackageBackEnd& backEnd, PackageScopeContent& content)
 {
+  logMsg(LOG_DEBUG, "Filling package scope content with installed packages");
   const PackageScopeContent::PkgInfoVector& pkgs = content.pkgInfoVector;
   std::auto_ptr<AbstractInstalledPackagesIterator> it = backEnd.enumInstalledPackages();
+  size_t installedCount = 0;
+  PkgVector toInhanceWith;
   Pkg pkg;
   while(it->moveNext(pkg))
     {
+      installedCount++;
       if (!content.checkName(pkg.name))
 	{
-	  scope.registerInstalledPackage(pkg, BAD_PACKAGE_ID);
+	  toInhanceWith.push_back(pkg);
 	  continue;
 	}
       const PackageId pkgId = content.strToPackageId(pkg.name);//FIXME:must be got with checkName();
@@ -58,8 +62,11 @@ static void fillWithhInstalledPackages(AbstractPackageBackEnd& backEnd, PackageS
 	}
       if (matchingVarId != BAD_VAR_ID)
 	continue;
-      scope.registerInstalledPackage(pkg, pkgId);
+      toInhanceWith.push_back(pkg);
     } //while(installed packages);
+  logMsg(LOG_DEBUG, "The system has %zu installed packages, %zu of them should be added to database since there are absent in attached repositories", installedCount, toInhanceWith.size());
+  content.enhance(toInhanceWith);
+  logMsg(LOG_DEBUG, "The database of known packages was updated with list of installed packages");
 }
 
 static std::string urlToFileName(const std::string& url)
@@ -145,6 +152,5 @@ void OperationCore::doInstallRemove(const UserTask& userTask)
   PackageScopeContent content;
   PackageScopeContentLoader loader(content);
   loader.loadFromFile(Directory::mixNameComponents(m_conf.root().dir.pkgData, PKG_DATA_FILE_NAME));
-  PackageScope scope(scope);
-  fillWithhInstalledPackages(*backEnd.get(), scope, content);
+  fillWithhInstalledPackages(*backEnd.get(), content);
 }

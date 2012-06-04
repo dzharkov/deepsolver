@@ -134,6 +134,7 @@ int listAvailablePackages()
   std::sort(s.begin(), s.end());
   for(StringVector::size_type i = 0;i < s.size();i++)
     std::cout << s[i] << std::endl;
+  return 0;
 }
 
 int main(int argc, char* argv[])

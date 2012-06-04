@@ -342,8 +342,10 @@ void PackageScopeContent::rearrangeNames()
 char* PackageScopeContent::placeStringInBuffer(char* buf, size_t& offset, const std::string& value)
 {
   assert(buf != NULL);
+  char* origPlace = &buf[offset];
   strcpy(&buf[offset], value.c_str());
   offset += value.length() + 1;
+  return origPlace;
 }
 
 void PackageScopeContent::addStringToAutoRelease(char* str)
