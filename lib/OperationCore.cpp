@@ -22,6 +22,7 @@
 #include"AbstractPackageBackEnd.h"
 #include"PackageScopeContentLoader.h"
 #include"transact/PackageScope.h"
+#include"PkgUtils.h"
 
 static std::string urlToFileName(const std::string& url)
 {

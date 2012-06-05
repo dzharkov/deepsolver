@@ -67,7 +67,7 @@ class VersionCond
 {
 public:
   VersionCond()
-    : type(0) {}
+    : type(VerNone) {}
 
   VersionCond(const std::string& v)
     : version(v), type(VerEquals) {}

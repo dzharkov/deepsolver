@@ -181,7 +181,7 @@ VarId TaskPreprocessor::processUserTaskItemToInstall(const UserTaskItemToInstall
       m_scope.selectMatchingVars(pkgId, vars);
     } else
     {
-      VersionCond ver(item.version, item.less, item.equals, item.greater);
+      VersionCond ver(item.version, item.verDir);
       //This line does not handle provides too;
       m_scope.selectMatchingWithVersionVars(pkgId, ver, vars);
     }
@@ -199,7 +199,7 @@ VarId TaskPreprocessor::processUserTaskItemToInstall(const UserTaskItemToInstall
    */
   if (hasVersion)
     {
-      VersionCond ver(item.version, item.less, item.equals, item.greater);
+      VersionCond ver(item.version, item.verDir);
       m_scope.selectMatchingWithVersionVarsAmongProvides(pkgId, ver, vars);
     } else
     m_scope.selectMatchingVarsAmongProvides(pkgId, vars);

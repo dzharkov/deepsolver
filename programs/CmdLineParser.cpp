@@ -18,14 +18,14 @@
 #include"deepsolver.h"
 #include"CmdLineParser.h"
 
-static VerDirection parseVerDirection(const std:;string& verDir)
+static VerDirection parseVerDirection(const std::string& verDir)
 {
   if (verDir == "=")
     return VerEquals;
   if (verDir == "<=")
-    return VerLessOrEquals;
+    return VerLess | VerEquals;
   if (verDir == ">=")
-    return VerGreaterOrEquals;
+    return VerGreater | VerEquals;
   if (verDir == "<")
     return VerLess;
   if (verDir == ">")
@@ -35,7 +35,7 @@ static VerDirection parseVerDirection(const std:;string& verDir)
 
 bool CmdLineParser::parseInstallArgs(int argc, char* argv[], int startFrom, UserTaskItemToInstallVector& taskItems, StringVector& params)
 {
-  for(int i = startFrom, i < argc, i++)
+  for(int i = startFrom; i < argc; i++)
     {
       const std::string value(argv[i]);
       if (value.empty())
@@ -51,12 +51,12 @@ bool CmdLineParser::parseInstallArgs(int argc, char* argv[], int startFrom, User
 	verDir = parseVerDirection(argv[i + 1]);
       if (verDir == VerNone)
 	{
-	  taskItems.push_back(UserTaskItemToINstall(pkgName));
+	  taskItems.push_back(UserTaskItemToInstall(pkgName));
 	  continue;
 	}
       if (i + 2 >= argc)
 	return 0;//FIXME:print informative error message;
-      taskItems.push_back(UserTaskitemToInstall(pkgName, verDir,, argv[i + 2]);
+      taskItems.push_back(UserTaskItemToInstall(pkgName, verDir, argv[i + 2]));
 			  i += 2;
     }
 	return 1;
