@@ -21,6 +21,7 @@ PackageScopeContentBuilder.cpp \
 PackageScopeContent.cpp \
 PackageScopeContentLoader.cpp \
 Pkg.cpp \
+PkgUtils.cpp \
 ProvidePriorityList.cpp \
 repo/InfoFileReader.cpp \
 repo/RepoIndexInfoFile.cpp \
@@ -68,6 +69,7 @@ PackageScopeContentBuilder.h \
 PackageScopeContent.h \
 PackageScopeContentLoader.h \
 Pkg.h \
+PkgUtils.h \
 ProvidePriorityList.h \
 repo/InfoFileReader.h \
 repo/RepoIndexInfoFile.h \
