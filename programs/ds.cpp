@@ -16,6 +16,7 @@
 */
 
 #include"deepsolver.h"
+#include"CmdLineParser.h"
 #include"OperationCore.h"
 #include"InfoCore.h"
 #include"Messages.h"
@@ -35,8 +36,8 @@ public:
 }; //class AlwaysTrueContinueRequest; 
 
 static AlwaysTrueContinueRequest alwaysTrueContinueRequest;
-
 static ConfigCenter conf;
+static CmdLineParser cmdLineParser;
 
 bool loadConfiguration()
 {
@@ -61,7 +62,6 @@ bool loadConfiguration()
     }
   return 1;
 }
-
 
 int fetchIndices()
 {
@@ -89,9 +89,18 @@ int fetchIndices()
   return 0;
 }
 
-int install(const UserTask& userTask)
+int install(int argc, char* argv[])
 {
+  assert(argc > 2);
   logMsg(LOG_DEBUG, "recognized user request to install packages");
+  UserTask userTask;
+  StringVector params;
+  cmdLineParser.parseInstallArgs(argc, argv, 2, userTask.itemsToInstall, params);
+  //FIXME:URLs must be filtered out;
+  assert(!userTask.itemsToInstall.empty());
+  logMsg(LOG_DEBUG, "Recognized %zu items to install:", userTask.itemsToInstall.size());
+  for(UserTaskItemToInstallVector::size_type i = 0;i < userTask.itemsToInstall.size();i++)
+    logMsg(LOG_DEBUG, "%s", userTask.itemsToInstall[i].toString().c_str());
   OperationCore core(conf);
   try {
     core.doInstallRemove(userTask);
@@ -147,7 +156,7 @@ int main(int argc, char* argv[])
   if (std::string(argv[1]) == "update")
     return fetchIndices();
   if (std::string(argv[1]) == "install")
-    return install(UserTask());
+    return install(argc, argv);
   if (std::string(argv[1]) == "list")
     return listAvailablePackages();
   return 1;

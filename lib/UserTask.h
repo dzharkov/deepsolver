@@ -33,9 +33,19 @@ public:
   virtual ~UserTaskItemToInstall() {}
 
 public:
-  std::string makeStr() const
+  std::string toString() const
   {
-    return "#Needs to implement!#";//FIXME:
+    if (verDir == VerNone)
+      return pkgName;
+    std::string s = pkgName;
+    s += " ";
+    if (verDir & VerLess)
+      s += "<";
+    if (verDir & VerGreater)
+      s += ">";
+    if (verDir & VerEquals)
+      s += "=";
+    return s + " " + version;
   }
 
 public:

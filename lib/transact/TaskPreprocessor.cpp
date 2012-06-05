@@ -204,7 +204,7 @@ VarId TaskPreprocessor::processUserTaskItemToInstall(const UserTaskItemToInstall
     } else
     m_scope.selectMatchingVarsAmongProvides(pkgId, vars);
   if (vars.empty())//No appropriate packages at all;
-    TASK_STOP("\'" + item.makeStr() + "\' has no installation candidat");
+    TASK_STOP("\'" + item.toString() + "\' has no installation candidat");
   if (hasVersion || m_scope.allProvidesHaveTheVersion(vars, pkgId))
     {
       const VarId res = processPriorityList(vars, pkgId);
