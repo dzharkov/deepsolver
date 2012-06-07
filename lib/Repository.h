@@ -19,7 +19,7 @@
 #define DEEPSOLVER_REPOSITORY_H
 
 #include"ConfigCenter.h"
-#include"PackageScopeContentBuilder.h"
+#include"io/PackageScopeContentBuilder.h"
 
 class Repository
 {

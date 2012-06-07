@@ -18,9 +18,9 @@
 #ifndef DEEPSOLVER_ABSTRACT_TASK_SOLVER_H
 #define DEEPSOLVER_ABSTRACT_TASK_SOLVER_H
 
-#include"PackageScopeContent.h"
+#include"transact/PackageScopeContent.h"
 #include"UserTask.h"
-#include"TaskException.h"
+#include"transact/TaskException.h"
 
 class AbstractTaskSolver
 {

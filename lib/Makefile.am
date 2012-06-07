@@ -88,7 +88,7 @@ rpm/RpmFileHeaderReader.h \
 rpm/RpmHeaderReading.h \
 rpm/vercmp.h \
 transact/TaskException.h \
-transact/INstalledReferences.h \
+transact/InstalledReferences.h \
 transact/PackageScope.h \
 transact/TaskPreprocessor.h \
 UserTask.h \

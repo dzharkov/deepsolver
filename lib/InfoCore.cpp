@@ -17,7 +17,7 @@
 
 #include"deepsolver.h"
 #include"InfoCore.h"
-#include"PackageScopeContentLoader.h"
+#include"io/PackageScopeContentLoader.h"
 
 void InfoCore::availablePackages(PkgVector& pkgs)
 {

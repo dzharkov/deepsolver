@@ -20,7 +20,7 @@
 #include"Repository.h"
 #include"IndexFetch.h"
 #include"AbstractPackageBackEnd.h"
-#include"PackageScopeContentLoader.h"
+#include"io/PackageScopeContentLoader.h"
 #include"transact/PackageScope.h"
 #include"PkgUtils.h"
 

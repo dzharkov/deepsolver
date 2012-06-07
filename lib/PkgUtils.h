@@ -19,7 +19,7 @@
 #define DEEPSOLVER_PKG_UTILS_H
 
 #include"AbstractPackageBackEnd.h"
-#include"PackageScopeContent.h"
+#include"transact/PackageScopeContent.h"
 
 void fillWithhInstalledPackages(AbstractPackageBackEnd& backEnd, PackageScopeContent& content);
 

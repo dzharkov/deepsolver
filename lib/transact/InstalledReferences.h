@@ -25,24 +25,20 @@ public:
   virtual ~InstalledReferences() {}
 
 public:
-  InstalledReferences() {}
-  virtual ~InstalledReferences() {}
-
-public:
-  void add(VarId refTo, VarId drefFrom);
+  void add(VarId refTo, VarId refFrom);
   void commit();
   void searchReferencesTo(VarId refTo, VarIdVector& res);
 
 private:
-  struct reference
+  struct Reference
   {
     Reference()
-      : refFrom(BAD_VAR_ID), refTo(BAD_VAR_ID) {}
+      : refTo(BAD_VAR_ID), refFrom(BAD_VAR_ID) {}
 
     Reference(VarId t, VarId f)
       : refTo(t), refFrom(f) {}
 
-    bool operator <(const reference& r) const
+    bool operator <(const Reference& r) const
     {
       return refTo < r.refTo;
     }

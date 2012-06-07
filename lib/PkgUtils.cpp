@@ -60,6 +60,6 @@ void fillWithhInstalledPackages(AbstractPackageBackEnd& backEnd, PackageScopeCon
       toInhanceWith.push_back(pkg);
     } //while(installed packages);
   logMsg(LOG_DEBUG, "The system has %zu installed packages, %zu of them should be added to database since there are absent in attached repositories", installedCount, toInhanceWith.size());
-  content.enhance(toInhanceWith);
+  content.enhance(toInhanceWith, PkgFlagInstalled);
   logMsg(LOG_DEBUG, "The database of known packages was updated with list of installed packages");
 }

@@ -73,7 +73,7 @@ void PackageScopeContent::locateRange(PackageId packageId, VarId& fromPos, VarId
   toPos = 0;
 }
 
-void PackageScopeContent::enhance(const PkgVector& pkgs)
+void PackageScopeContent::enhance(const PkgVector& pkgs, int flags)
 {
   logMsg(LOG_DEBUG, "Trying to enhance package scope content with %zu new packages", pkgs.size());
   if (pkgs.empty())
@@ -134,6 +134,7 @@ void PackageScopeContent::enhance(const PkgVector& pkgs)
       info.ver = placeStringInBuffer(stringBuf.get(), offset, pkg.version);
       info.release = placeStringInBuffer(stringBuf.get(), offset, pkg.release);
       info.buildTime = pkg.buildTime;
+      info.flags = flags;
       addRelsForEnhancing(pkg.requires, info.requiresPos, info.requiresCount, stringBuf.get(), offset);
       addRelsForEnhancing(pkg.provides, info.providesPos, info.providesCount, stringBuf.get(), offset);
       addRelsForEnhancing(pkg.conflicts, info.conflictsPos, info.conflictsCount, stringBuf.get(), offset);

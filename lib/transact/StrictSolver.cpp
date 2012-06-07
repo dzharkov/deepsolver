@@ -21,7 +21,7 @@
 class StrictSolver: public AbstractTaskSolver
 {
 public:
-  StrictSolver()
+  StrictSolver() {}
   virtual ~StrictSolver() {}
 
 public:

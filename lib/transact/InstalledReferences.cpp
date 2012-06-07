@@ -82,7 +82,7 @@ void InstalledReferences::searchReferencesTo(VarId refTo, VarIdVector& res)
   assert(res.empty());
 }
 
-void InstalledReferences::add(VarId refTo, VarId drefFrom)
+void InstalledReferences::add(VarId refTo, VarId refFrom)
 {
   assert(refTo != BAD_VAR_ID && refFrom != BAD_VAR_ID);
   m_references.push_back(Reference(refTo, refFrom));

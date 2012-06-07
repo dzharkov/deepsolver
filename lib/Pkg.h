@@ -133,4 +133,10 @@ public:
 std::ostream& operator <<(std::ostream& s, const PkgBase& );
 std::ostream& operator <<(std::ostream& s, const NamedPkgRel& r);
 
+enum {
+  PkgFlagAvailableByRepo = 1,
+  PkgFlagAvailableByUrl = 2,
+PkgFlagInstalled = 4
+};
+
 #endif //DEEPSOLVER_PKG_H;

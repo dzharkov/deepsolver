@@ -18,7 +18,7 @@
 #ifndef DEEPSOLVER_PACKAGE_SCOPE_CONTENT_LOADER_H
 #define DEEPSOLVER_PACKAGE_SCOPE_CONTENT_LOADER_H
 
-#include"PackageScopeContent.h"
+#include"transact/PackageScopeContent.h"
 
 class PackageScopeContentLoader
 {
