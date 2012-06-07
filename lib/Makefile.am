@@ -1,4 +1,5 @@
 
+
 AM_CXXFLAGS = $(DEEPSOLVER_CXXFLAGS) $(DEEPSOLVER_INCLUDES)
 LIBS += -lrpm -lcurl
 LIBdir=${libdir}
@@ -17,9 +18,9 @@ logging.cpp \
 OperationCore.cpp \
 os/Directory.cpp \
 os/File.cpp \
-PackageScopeContentBuilder.cpp \
-PackageScopeContent.cpp \
-PackageScopeContentLoader.cpp \
+io/PackageScopeContentBuilder.cpp \
+transact/PackageScopeContent.cpp \
+io/PackageScopeContentLoader.cpp \
 Pkg.cpp \
 PkgUtils.cpp \
 ProvidePriorityList.cpp \
@@ -34,7 +35,9 @@ rpm/Rpmdb.cpp \
 rpm/RpmFileHeaderReader.cpp \
 rpm/RpmHeaderReading.cpp \
 rpm/vercmp.cpp \
+transact/InstalledReferences.cpp \
 transact/PackageScope.cpp \
+transact/StrictSolver.cpp \
 transact/TaskPreprocessor.cpp \
 utils/CurlInterface.cpp \
 utils/GZipInterface.cpp \
@@ -47,6 +50,7 @@ version.cpp
 libdeepsolver_la_HEADERS = \
 AbstractConsoleMessages.h \
 AbstractPackageBackEnd.h \
+AbstractTaskSolver.h \
 AbstractWarningHandler.h \
 ConfigCenter.h \
 ConfigData.h \
@@ -65,9 +69,9 @@ os/Directory.h \
 os/File.h \
 os/SystemException.h \
 os/system.h \
-PackageScopeContentBuilder.h \
-PackageScopeContent.h \
-PackageScopeContentLoader.h \
+io/PackageScopeContentBuilder.h \
+transact/PackageScopeContent.h \
+io/PackageScopeContentLoader.h \
 Pkg.h \
 PkgUtils.h \
 ProvidePriorityList.h \
@@ -83,7 +87,8 @@ rpm/RpmFile.h \
 rpm/RpmFileHeaderReader.h \
 rpm/RpmHeaderReading.h \
 rpm/vercmp.h \
-TaskException.h \
+transact/TaskException.h \
+transact/INstalledReferences.h \
 transact/PackageScope.h \
 transact/TaskPreprocessor.h \
 UserTask.h \
