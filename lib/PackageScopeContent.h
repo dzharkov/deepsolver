@@ -45,6 +45,26 @@
 class PackageScopeContent
 {
 public:
+  /**\brief The default constructor*/
+  PackageScopeContent() {}
+
+  /**\brief The destructor*/
+  virtual ~PackageScopeContent() 
+  {
+    releaseStrings();
+  }
+
+public:
+  void locateRange(PackageId packageId, VarId& fromPos, VarId& toPos ) const;
+  void getProviders(PackageId provideId, PackageIdVector& providers) const;
+  bool checkName(const std::string& name) const;
+  PackageId strToPackageId(const std::string& name) const;
+  std::string packageIdToStr(PackageId packageId) const;
+  void addStringToAutoRelease(char* str);
+  void rearrangeNames();
+  void enhance(const PkgVector& pkgs, int flags);
+
+public:
   struct RelInfo
   {
     RelInfo()
@@ -69,7 +89,8 @@ public:
 	requiresPos(0), requiresCount(0),
 	providesPos(0), providesCount(0),
       conflictsPos(0), conflictsCount(0),
-      obsoletesPos(0), obsoletesCount(0) {}
+	obsoletesPos(0), obsoletesCount(0), 
+	flags(0) {}
 
     bool operator <(const PkgInfo& pkgInfo) const
     {
@@ -90,7 +111,7 @@ public:
     size_t providesPos, providesCount;
     size_t conflictsPos, conflictsCount;
     size_t obsoletesPos, obsoletesCount;
-    size_t aux;
+    int flags;
   }; //struct PkgInfo;
 
   typedef std::list<PkgInfo> PkgInfoList;
@@ -119,26 +140,6 @@ public:
 
   typedef std::vector<ProvideMapItem> ProvideMapItemVector;
   typedef std::list<ProvideMapItem> ProvideMapItemList;
-
-public:
-  /**\brief The default constructor*/
-  PackageScopeContent() {}
-
-  /**\brief The destructor*/
-  virtual ~PackageScopeContent() 
-  {
-    releaseStrings();
-  }
-
-public:
-  void locateRange(PackageId packageId, VarId& fromPos, VarId& toPos ) const;
-  void getProviders(PackageId provideId, PackageIdVector& providers) const;
-  bool checkName(const std::string& name) const;
-  PackageId strToPackageId(const std::string& name) const;
-  std::string packageIdToStr(PackageId packageId) const;
-  void addStringToAutoRelease(char* str);
-  void rearrangeNames();
-  void enhance(const PkgVector& pkgs);
 
 private:
   void addRelsForEnhancing(const NamedPkgRelVector& rels, size_t& pos, size_t& count, char* stringBuf, size_t& stringBufOffset);
