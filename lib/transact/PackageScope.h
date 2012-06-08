@@ -62,10 +62,13 @@ public:
   //Only by provides but respecting version info (entries without version must be silently skipped);
   void selectMatchingWithVersionVarsAmongProvides(PackageId packageId, const VersionCond& ver, VarIdVector& vars);
 
+  bool isInstalled(VarId varId) const;
   //Only by real names;
-  bool isINstalled(PackageId packageId) const;
+  void selectINstalledNoProvides(PackageId pkgId, VarIdVector& vars) const;
+  void selectInstalledWithVersionNoProvides(PackageId pkgId, const VersionCond& ver, VarIdVector& vars) const;
+
   //By real name and provides;
-  bool isInstallWithProvides(PackageId packageId);
+  void selectInstallWithProvides(PackageId pkgId, VarIdVector& vars) const;
 
   //Only by versions of real names;
   void selectTheNewest(VarIdVector& vars);
@@ -80,15 +83,11 @@ public:
   void getRequires(VarId varId, PackageIdVector& depWithoutVersion, PackageIdVector& depWithVersion, VersionCondVector& versions) const;
   void getConflicts(VarId varId, PackageIdVector& withoutVersion, PackageIdVector& withVersion, VersionCondVector& versions) const;
 
-  //if pkgId is not BAD_PACKAGE_ID, new package must be registered with the specified value;
-  void registerInstalledPackage(const Pkg& pkg, PackageId pkgId);
-
-  //  void whatRequiresAmongInstalled();
-
 private:
   typedef PackageScopeContent::PkgInfoVector PkgInfoVector;
   typedef PackageScopeContent::RelInfoVector RelInfoVector;
 
+private:
   const PackageScopeContent& m_content;
 }; //class PackageScope; 
 

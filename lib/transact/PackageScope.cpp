@@ -192,18 +192,39 @@ void PackageScope::selectMatchingWithVersionVarsAmongProvides(PackageId packageI
     }
 }
 
-bool PackageScope::isINstalled(PackageId packageId) const
+bool PackageScope::isInstalled(VarId varId) const
 {
-  //Checking only by real name;
-  assert(0);//FIXME:currently not needed;
-  return 0;
+  assert(varId != BAD_VAR_ID);
+  const PkgInfoVector& pkgs = m_content.pkgInfoVector;
+  assert(varId < pkgs.size());
+  return pkgs[varId].flags & PkgFlagInstalled;
 }
 
-bool PackageScope::isInstallWithProvides(PackageId packageId)
+void PackageScope::selectINstalledNoProvides(PackageId pkgId, VarIdVector& vars) const
+{
+  vars.clear()
+  assert(pkgId != BAD_PACKAGE_ID);
+  VarId fromVarId, toVarId;
+  m_content.locateRange(pkgId, fromVarId, toVarId);
+  if (fromVarId == toVarId)
+    return;
+  const PkgInfoVector& pkgs = m_content.pkgInfoVector;
+  for(VarId i = fromVarId;i < toVarId;i++)
+    if (pkgs[i].flags & PkgFlagInstalled)
+      vars.push_back(i);
+}
+
+void PackageScope::selectInstalledWithVersionNoProvides(PackageId pkgId, const VersionCond& ver, VarIdVector& vars) const
+{
+  vars.clear();
+  //FIXME:
+  assert(0);
+}
+
+void PackageScope::selectInstallWithProvides(PackageId pkgId, VarIdVector& vars) const
 {
   //Checking by real name and by all known provides of installed packages;
   assert(0);//FIXME:currently not needed;
-  return 0;
 }
 
 void PackageScope::selectTheNewest(VarIdVector& vars)
@@ -344,7 +365,3 @@ void PackageScope::getConflicts(VarId varId, PackageIdVector& withoutVersion, Pa
     }
 }
 
-void PackageScope::registerInstalledPackage(const Pkg& pkg, PackageId pkgId)
-{
-  std::cout << pkg << std::endl;
-}

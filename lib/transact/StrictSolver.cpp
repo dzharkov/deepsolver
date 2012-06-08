@@ -31,6 +31,7 @@ public:
 
 private:
   void translateUserTask(const UserTask& userTask);
+  void isValidTask() const;
 
 private:
   const PackageScopeContent& m_content;
@@ -48,28 +49,63 @@ std::auto_ptr<AbstractTaskSolver> createStrictTaskSolver(const PackageScopeConte
 void StrictSolver::solve(const UserTask& task, VarIdVector& toInstall, VarIdVector& toRemove, VarIdToVarIdMap& toUpgrade)
 {
   translateUserTask(userTask);
+  isValidTask();
   logMsg(LOG_DEBUG, "User task translated: %zu to install, %zu to remove, %zu to upgrade", m_userTaskInstall.size(), m_userTaskRemove.size(), m_userTaskUpgrade.size());
 }
 
 void StrictSolver::translateUserTask(const UserTask& userTask)
 {
+  m_userTaskInstall.clear();
+  m_userTaskRemove.clear();
+  m_userTaskUpgrade.clear();
   for(UserTaskItemToInstallVector::size_type i = 0;i < userTask.itemsToInstall.size();i++)
     {
+      //The following line checks the entire package scope including installed packages, so it can return also the installed package if it matches the user request;
       const VarId varId = processUserTaskItemToInstall(userTask.itemsToInstall[i]);
       assert(varId != BAD_VAR_ID);
-      strongToInstall.push_back(varId);
+      m_userTaskInstall.push_back(varId);
     }
   for(StringSet::const_iterator it = userTask.namesToRemove.begin() ;it != userTask.namesToRemove.end();it++)
     {
       const PackageId pkgId = m_scope.strToPackageId(*it);
       if (pkgId == BAD_PACKAGE_ID)
-	throw TaskException(TaskErrorUnknownPackageName, *it);
+	{
+	  //FIXME:proper user notification;
+	  logMsg(LOG_DEBUG, "Request contains ask to remove unknown package \'%s\', skipping", it->c_str());
+	  continue;
+	}
       VarIdVector vars;
-      //The following line does not take into account provide entries;
-      m_scope.selectMatchingVars(pkgId, vars);
+      m_scope.selectInstalledNoProvides(pkgId, vars);
+      if (vars.empty())
+	{
+	  //FIXME:proper user notification;
+	  logMsg(LOG_DEBUG, "Request contains ask to remove not installed package \'%s\', skipping", it->c_str());
+	  continue;
+	}
+      if (vars.size() > 1)
+	logMsg(LOG_WARNING, "The package \'%s\' is installed %zu times", it->c_str(), vars.size());
       for(VarIdVector::size_type k = 0;k < vars.size();k++)
-	strongToRemove.push_back(vars[k]);
+	m_userTaskRemove.push_back(vars[k]);
     }
+  VarIdVector v;
+  for(VarIdVector::size_type i = 0;i < m_userTaskInstall.size();i++)
+    {
+      if (m_scope.isInstalled(m_userTaskInstall[i]))
+	{
+	  //FIXME:Proper user notification;
+	  logMsg(LOG_DEBUG, "Accepted to install variable %zu is already installed, skipping", m_userTaskInstall[i]);
+	  continue;
+	}
+      v.push_back(m_userTaskInstall[i]);
+    }
+  m_userTaskInstall.clear();
+      //FIXME:to upgrade;
+  removeDublications(m_userTaskInstall);
+  removeDublications(m_userTaskRemove);
+}
+
+void StrictSolver::isValidTask() const
+{
   for(VarIdVector::size_type i1 = 0;i1 < strongToInstall.size();i1++)
     for(VarIdVector::size_type i2 = 0;i2 < strongToRemove.size();i2++)
       if (strongToInstall[i1] == strongToRemove[i2])
@@ -78,6 +114,4 @@ void StrictSolver::translateUserTask(const UserTask& userTask)
 	  assert(!pkgName.empty());
 	  throw TaskException(TaskErrorBothInstallRemove, pkgName);
 	}
-  removeDublications(strongToInstall);
-  removeDublications(strongToRemove);
 }
