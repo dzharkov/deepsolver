@@ -53,6 +53,7 @@ typedef size_t VarId;
 typedef std::vector<VarId> VarIdVector;
 typedef std::list<VarId> VarIdList;
 typedef std::set<VarId> VarIdSet;
+typedef std::map<VarId, VarId> VarIdToVarIdMap;
 
 typedef char VerDirection;
 

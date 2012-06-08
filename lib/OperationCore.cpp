@@ -20,8 +20,8 @@
 #include"Repository.h"
 #include"IndexFetch.h"
 #include"AbstractPackageBackEnd.h"
+#include"AbstractTaskSolver.h"
 #include"io/PackageScopeContentLoader.h"
-#include"transact/PackageScope.h"
 #include"PkgUtils.h"
 
 static std::string urlToFileName(const std::string& url)
@@ -108,4 +108,8 @@ void OperationCore::doInstallRemove(const UserTask& userTask)
   PackageScopeContentLoader loader(content);
   loader.loadFromFile(Directory::mixNameComponents(m_conf.root().dir.pkgData, PKG_DATA_FILE_NAME));
   fillWithhInstalledPackages(*backEnd.get(), content);
+  std::auto_ptr<AbstractTaskSolver> solver = createStrictTaskSolver(content);
+  VarIdVector toInstall, toRemove;
+  VarIdToVarIdMap toUpgrade;
+  solver->solve(userTask, toInstall, toRemove);
 }

@@ -74,13 +74,6 @@ std::string PackageScope::packageIdToStr(PackageId packageId) const
   return m_content.packageIdToStr(packageId);
 }
 
-VarId PackageScope::registerTemporarily(const std::string& url)
-{
-  assert(0);
-  //FIXME:not needed right now;
-  return BAD_VAR_ID;
-}
-
 void PackageScope::selectMatchingVars(PackageId packageId, VarIdVector& vars)
 {
   //Here we must process only real package names, no provides are required;

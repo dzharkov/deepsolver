@@ -20,8 +20,6 @@
 #include"TaskException.h"
 #include"version.h"
 
-#define TASK_STOP(x) throw TaskException(x)
-
 struct PrioritySortItem
 {
   PrioritySortItem(VarId v, const std::string& n)
@@ -72,7 +70,7 @@ void TaskPreprocessor::preprocess(const UserTask& userTask,
     {
       const PackageId pkgId = m_scope.strToPackageId(*it);
       if (pkgId == BAD_PACKAGE_ID)
-	TASK_STOP("\'" + *it + "\' is not a known package name");
+	throw TaskException(TaskErrorUnknownPackageName, *it);
       VarIdVector vars;
       //The following line does not take into account provide entries;
       m_scope.selectMatchingVars(pkgId, vars);
@@ -88,7 +86,7 @@ void TaskPreprocessor::preprocess(const UserTask& userTask,
 	{
 	  const std::string pkgName = m_scope.packageIdToStr(strongToInstall[i1]);
 	  assert(!pkgName.empty());
-	  TASK_STOP("User task requires the impossible solution: \'" + pkgName + "\' was selected to be installed and to be removed simultaneously");
+	  throw TaskException(TaskErrorBothInstallRemove, pkgName);
 	}
   removeDublications(strongToInstall);
   removeDublications(strongToRemove);
@@ -171,7 +169,7 @@ VarId TaskPreprocessor::processUserTaskItemToInstall(const UserTaskItemToInstall
   const bool hasVersion = !item.version.empty();
   //FIXME:  assert(!hasVersion || !item.less || !item.greater);
   if (!m_scope.checkName(item.pkgName))
-    TASK_STOP("\'" + item.pkgName + "\' is not a known package name");
+    throw TaskException(TaskErrorUnknownPackageName, item.pkgName);
   const PackageId pkgId = m_scope.strToPackageId(item.pkgName);
   assert(pkgId != BAD_PACKAGE_ID);
   VarIdVector vars;
@@ -204,7 +202,7 @@ VarId TaskPreprocessor::processUserTaskItemToInstall(const UserTaskItemToInstall
     } else
     m_scope.selectMatchingVarsAmongProvides(pkgId, vars);
   if (vars.empty())//No appropriate packages at all;
-    TASK_STOP("\'" + item.toString() + "\' has no installation candidat");
+    throw TaskException(TaskErrorNoInstallationCandidat, item.toString());
   if (hasVersion || m_scope.allProvidesHaveTheVersion(vars, pkgId))
     {
       const VarId res = processPriorityList(vars, pkgId);
@@ -241,7 +239,7 @@ VarId TaskPreprocessor::processRequireWithoutVersion(PackageId pkgId)
    */
   m_scope.selectMatchingVarsAmongProvides(pkgId, vars);
   if (vars.empty())//No appropriate packages at all;
-    TASK_STOP("Require entry \'" + m_scope.packageIdToStr(pkgId) + "\' has no installation candidat");
+    throw TaskException(TaskErrorNoInstallationCandidat, m_scope.packageIdToStr(pkgId));
   if (m_scope.allProvidesHaveTheVersion(vars, pkgId))
     {
       const VarId res = processPriorityList(vars, pkgId);
@@ -278,7 +276,7 @@ VarId TaskPreprocessor::processRequireWithVersion(PackageId pkgId, const Version
    */
   m_scope.selectMatchingWithVersionVarsAmongProvides(pkgId, cond, vars);
   if (vars.empty())//No appropriate packages at all;
-    TASK_STOP("Require entry \'" + m_scope.packageIdToStr(pkgId) + "\' with version has no installation candidat");
+    throw TaskException(TaskErrorNoInstallationCandidat, m_scope.packageIdToStr(pkgId));
   const VarId res = processPriorityList(vars, pkgId);
   if (res != BAD_VAR_ID)
     return res;
