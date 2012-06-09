@@ -42,20 +42,20 @@ void fillWithhInstalledPackages(AbstractPackageBackEnd& backEnd, PackageScopeCon
 	  //We have pkgId but have no corresponding varId, it is slightly strange but actually not a problem;
 	  logMsg(LOG_WARNING, "Package \'%s\' with corresponding pkgId=%zu has no any varId", pkg.name.c_str(), pkgId);
 	}
-      VarId matchingVarId = BAD_VAR_ID;
+      bool found = 0;
       for(VarId varId = fromVarId;varId < toVarId;varId++)
 	{
 	  assert(varId < pkgs.size());
-	  const PackageScopeContent::PkgInfo& info = pkgs[varId];
+	  PackageScopeContent::PkgInfo& info = pkgs[varId];
 	  assert(info.pkgId == pkgId);
 	  //Extremely important place: the following line determines is installed package the same as one available from repository index;
 	  if (pkg.version == info.ver && pkg.release == info.release && pkg.buildTime == info.buildTime)
 	    {
-	      matchingVarId = varId;
-	      break;
+	      info.flags |= PkgFlagInstalled;
+	      found = 1;
 	    }
 	}
-      if (matchingVarId != BAD_VAR_ID)
+      if (found)
 	continue;
       toInhanceWith.push_back(pkg);
     } //while(installed packages);

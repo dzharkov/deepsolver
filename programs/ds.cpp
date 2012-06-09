@@ -123,12 +123,24 @@ int install(int argc, char* argv[])
   return 0;
 }
 
-int listAvailablePackages()
+int listAvailablePackages(int argc, char* argv[])
 {
-  logMsg(LOG_DEBUG, "Recognized request to list all available packages");
+  logMsg(LOG_DEBUG, "Recognized request to list known packages");
+  bool noInstalled = 0, noRepoAvailable = 0, showBuildTime = 0;
+  assert(argc >= 2);
+  for(int i = 2;i < argc;i++)
+    {
+      const std:;string value(argv[i]);
+	if (value == "--no-installed")
+	  noInstalled = 1;
+	if (value == "--no-repo")
+	  noRepoAvailable = 1;
+	if (value == "--buildtime)
+printBuildTime = 1;
+    }
   InfoCore core(conf);
   PkgVector pkgs;
-  core.availablePackages(pkgs);
+  core.listKnownPackages(pkgs, noInstalled, noRepoAvailable);
   StringVector s;
   s.resize(pkgs.size());
   for(PkgVector::size_type i = 0;i < pkgs.size();i++)
@@ -138,6 +150,8 @@ int listAvailablePackages()
       //      if (pkgs[i].epoch > 0)
       //	ss << pkgs[i].epoch << ":";
       ss << pkgs[i].version << "-" << pkgs[i].release;
+if (printBuildTime)
+ss << " (" << pkgs[i].buildTime << ")";
       s[i] = ss.str();
     }
   std::sort(s.begin(), s.end());

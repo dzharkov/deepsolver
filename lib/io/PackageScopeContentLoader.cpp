@@ -111,6 +111,7 @@ void PackageScopeContentLoader::loadFromFile(const std::string& fileName)
       info.conflictsCount = readSizeValue(s);
       info.obsoletesPos = readSizeValue(s);
       info.obsoletesCount = readSizeValue(s);
+      info.flags = PkgFlagAvailableByRepo;
     }
   //Reading package relations;
   for(PackageScopeContent::RelInfoVector::size_type i = 0;i < m_c.relInfoVector.size();i++)
