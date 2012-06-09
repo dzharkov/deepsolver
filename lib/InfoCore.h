@@ -30,7 +30,7 @@ public:
     virtual ~InfoCore() {}
 
 public:
-    void listKnownPackages(PkgVector& pkgs, bool NoINstalled, bool noRepoAvailable);
+    void listKnownPackages(PkgVector& pkgs, bool noInstalled, bool noRepoAvailable);
 
 private:
   const ConfigCenter& m_conf;

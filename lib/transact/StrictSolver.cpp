@@ -17,6 +17,7 @@
 
 #include"deepsolver.h"
 #include"AbstractTaskSolver.h"
+#include"PackageScope.h"
 
 class StrictSolver: public AbstractTaskSolver
 {
@@ -48,7 +49,7 @@ std::auto_ptr<AbstractTaskSolver> createStrictTaskSolver(const PackageScopeConte
 
 void StrictSolver::solve(const UserTask& task, VarIdVector& toInstall, VarIdVector& toRemove, VarIdToVarIdMap& toUpgrade)
 {
-  translateUserTask(userTask);
+  translateUserTask(task);
   isValidTask();
   logMsg(LOG_DEBUG, "User task translated: %zu to install, %zu to remove, %zu to upgrade", m_userTaskInstall.size(), m_userTaskRemove.size(), m_userTaskUpgrade.size());
 }
@@ -61,7 +62,7 @@ void StrictSolver::translateUserTask(const UserTask& userTask)
   for(UserTaskItemToInstallVector::size_type i = 0;i < userTask.itemsToInstall.size();i++)
     {
       //The following line checks the entire package scope including installed packages, so it can return also the installed package if it matches the user request;
-      const VarId varId = processUserTaskItemToInstall(userTask.itemsToInstall[i]);
+      const VarId varId = 0;//FIXME: = processUserTaskItemToInstall(userTask.itemsToInstall[i]);
       assert(varId != BAD_VAR_ID);
       m_userTaskInstall.push_back(varId);
     }
@@ -100,12 +101,13 @@ void StrictSolver::translateUserTask(const UserTask& userTask)
     }
   m_userTaskInstall.clear();
       //FIXME:to upgrade;
-  removeDublications(m_userTaskInstall);
-  removeDublications(m_userTaskRemove);
+  //  removeDublications(m_userTaskInstall);
+  //  removeDublications(m_userTaskRemove);
 }
 
 void StrictSolver::isValidTask() const
 {
+  /*FIXME:
   for(VarIdVector::size_type i1 = 0;i1 < strongToInstall.size();i1++)
     for(VarIdVector::size_type i2 = 0;i2 < strongToRemove.size();i2++)
       if (strongToInstall[i1] == strongToRemove[i2])
@@ -114,4 +116,5 @@ void StrictSolver::isValidTask() const
 	  assert(!pkgName.empty());
 	  throw TaskException(TaskErrorBothInstallRemove, pkgName);
 	}
+  */
 }

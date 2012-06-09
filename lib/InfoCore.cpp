@@ -18,12 +18,12 @@
 #include"deepsolver.h"
 #include"InfoCore.h"
 #include"io/PackageScopeContentLoader.h"
-#include"Abstract PackageBackEnd.h"
+#include"AbstractPackageBackEnd.h"
 #include"PkgUtils.h"
 
-void InfoCore::listKnownPackages(PkgVector& pkgs, bool NoINstalled, bool noRepoAvailable);
+void InfoCore::listKnownPackages(PkgVector& pkgs, bool noInstalled, bool noRepoAvailable)
 {
-  assert(noInstalled || noRepoAvailable);
+  assert(!noInstalled || !noRepoAvailable);
   pkgs.clear();
   if (noRepoAvailable && !noInstalled)
     {
@@ -32,7 +32,7 @@ void InfoCore::listKnownPackages(PkgVector& pkgs, bool NoINstalled, bool noRepoA
       std::auto_ptr<AbstractPackageBackEnd> backend = createRpmBackEnd();
       std::auto_ptr<AbstractInstalledPackagesIterator> it = backend->enumInstalledPackages();
       Pkg pkg;
-      while(it->moveNext())
+      while(it->moveNext(pkg))
 	pkgs.push_back(pkg);
       logMsg(LOG_DEBUG, "%zu packages enumerated", pkgs.size());
       return;

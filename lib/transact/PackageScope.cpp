@@ -200,9 +200,9 @@ bool PackageScope::isInstalled(VarId varId) const
   return pkgs[varId].flags & PkgFlagInstalled;
 }
 
-void PackageScope::selectINstalledNoProvides(PackageId pkgId, VarIdVector& vars) const
+void PackageScope::selectInstalledNoProvides(PackageId pkgId, VarIdVector& vars) const
 {
-  vars.clear()
+  vars.clear();
   assert(pkgId != BAD_PACKAGE_ID);
   VarId fromVarId, toVarId;
   m_content.locateRange(pkgId, fromVarId, toVarId);

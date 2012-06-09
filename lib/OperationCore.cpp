@@ -111,5 +111,5 @@ void OperationCore::doInstallRemove(const UserTask& userTask)
   std::auto_ptr<AbstractTaskSolver> solver = createStrictTaskSolver(content);
   VarIdVector toInstall, toRemove;
   VarIdToVarIdMap toUpgrade;
-  solver->solve(userTask, toInstall, toRemove);
+  solver->solve(userTask, toInstall, toRemove, toUpgrade);
 }

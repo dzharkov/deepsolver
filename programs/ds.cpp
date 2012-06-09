@@ -126,16 +126,16 @@ int install(int argc, char* argv[])
 int listAvailablePackages(int argc, char* argv[])
 {
   logMsg(LOG_DEBUG, "Recognized request to list known packages");
-  bool noInstalled = 0, noRepoAvailable = 0, showBuildTime = 0;
+  bool noInstalled = 0, noRepoAvailable = 0, printBuildTime = 0;
   assert(argc >= 2);
   for(int i = 2;i < argc;i++)
     {
-      const std:;string value(argv[i]);
+      const std::string value(argv[i]);
 	if (value == "--no-installed")
 	  noInstalled = 1;
 	if (value == "--no-repo")
 	  noRepoAvailable = 1;
-	if (value == "--buildtime)
+	if (value == "--buildtime")
 printBuildTime = 1;
     }
   InfoCore core(conf);
@@ -172,7 +172,7 @@ int main(int argc, char* argv[])
   if (std::string(argv[1]) == "install")
     return install(argc, argv);
   if (std::string(argv[1]) == "list")
-    return listAvailablePackages();
+    return listAvailablePackages(argc, argv);
   return 1;
 }
 

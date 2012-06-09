@@ -54,12 +54,6 @@ void TaskPreprocessor::preprocess(const UserTask& userTask,
 {
   strongToInstall.clear();
   strongToRemove.clear();
-  /*
-   * First of all adding to scope all packages newly temporarily available;
-   * the set of temporary packages must be definitely install;
-   */
-  for(StringSet::const_iterator it = userTask.urlsToInstall.begin(); it != userTask.urlsToInstall.end();it++) 
-    strongToInstall.push_back(m_scope.registerTemporarily(*it));
   for(UserTaskItemToInstallVector::size_type i = 0;i < userTask.itemsToInstall.size();i++)
     {
       const VarId varId = processUserTaskItemToInstall(userTask.itemsToInstall[i]);

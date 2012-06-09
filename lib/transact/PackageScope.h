@@ -64,7 +64,7 @@ public:
 
   bool isInstalled(VarId varId) const;
   //Only by real names;
-  void selectINstalledNoProvides(PackageId pkgId, VarIdVector& vars) const;
+  void selectInstalledNoProvides(PackageId pkgId, VarIdVector& vars) const;
   void selectInstalledWithVersionNoProvides(PackageId pkgId, const VersionCond& ver, VarIdVector& vars) const;
 
   //By real name and provides;

@@ -21,7 +21,7 @@
 void fillWithhInstalledPackages(AbstractPackageBackEnd& backEnd, PackageScopeContent& content)
 {
   logMsg(LOG_DEBUG, "Filling package scope content with installed packages");
-  const PackageScopeContent::PkgInfoVector& pkgs = content.pkgInfoVector;
+  PackageScopeContent::PkgInfoVector& pkgs = content.pkgInfoVector;
   std::auto_ptr<AbstractInstalledPackagesIterator> it = backEnd.enumInstalledPackages();
   size_t installedCount = 0;
   PkgVector toInhanceWith;
