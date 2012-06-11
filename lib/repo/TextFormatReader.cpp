@@ -182,7 +182,7 @@ void TextFormatReader::parsePkgFileSection(const StringList& sect, PkgFile& pkgF
       const std::string& line = *it;
       assert(!line.empty());
       std::string tail;
-      //Parsing only name, epoch, version, release and all relations;
+      //Parsing only name, epoch, version, release, buildtime and all relations;
       if (stringBegins(line, "n=", tail))
 	{
 	pkgFile.name = tail;
@@ -205,6 +205,15 @@ void TextFormatReader::parsePkgFileSection(const StringList& sect, PkgFile& pkgF
       if (stringBegins(line, "r=", tail))
 	{
 	  pkgFile.release = tail;
+	  continue;
+	}
+      if (stringBegins(line, "btime=", tail))
+	{
+	  std::istringstream ss(tail);
+	  if (!(ss >> pkgFile.buildTime))
+	    {
+	      assert(0);//FIXME:must be an exception;
+	    }
 	  continue;
 	}
       if (stringBegins(line, "r:", tail))

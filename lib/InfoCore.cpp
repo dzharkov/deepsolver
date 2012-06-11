@@ -44,6 +44,7 @@ void InfoCore::listKnownPackages(PkgVector& pkgs, bool noInstalled, bool noRepoA
   logMsg(LOG_DEBUG, "%Loaded information about %zu available packages", content.pkgInfoVector.size());
   if (!noInstalled)
     {
+      File::readAhead("/var/lib/rpm/Packages");//FIXME:take the value from configuration;
       std::auto_ptr<AbstractPackageBackEnd> backend = createRpmBackEnd();
       logMsg(LOG_DEBUG, "Adding information about installed packages");
       fillWithhInstalledPackages(*backend.get(), content);

@@ -171,7 +171,7 @@ int main(int argc, char* argv[])
     return fetchIndices();
   if (std::string(argv[1]) == "install")
     return install(argc, argv);
-  if (std::string(argv[1]) == "list")
+  if (std::string(argv[1]) == "ls")
     return listAvailablePackages(argc, argv);
   return 1;
 }
