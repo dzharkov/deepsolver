@@ -103,7 +103,7 @@ void StrictSolver::translateUserTask(const UserTask& userTask)
       const PackageId pkgId = m_scope.strToPackageId(*it);
       if (pkgId == BAD_PACKAGE_ID)
 	{
-	  //FIXME:proper user notification;
+	  std::cout << "requested to remove package \'" << *it << "\' is not installed" << std::endl;//FIXME:proper user notification;
 	  logMsg(LOG_DEBUG, "Request contains ask to remove unknown package \'%s\', skipping", it->c_str());
 	  continue;
 	}
@@ -111,7 +111,7 @@ void StrictSolver::translateUserTask(const UserTask& userTask)
       m_scope.selectInstalledNoProvides(pkgId, vars);
       if (vars.empty())
 	{
-	  //FIXME:proper user notification;
+	  std::cout << "requested to remove package \'" << *it << "\' is not installed" << std::endl;//FIXME:proper user notification;
 	  logMsg(LOG_DEBUG, "Request contains ask to remove not installed package \'%s\', skipping", it->c_str());
 	  continue;
 	}
@@ -125,7 +125,7 @@ void StrictSolver::translateUserTask(const UserTask& userTask)
     {
       if (m_scope.isInstalled(m_userTaskInstall[i]))
 	{
-	  //FIXME:Proper user notification;
+	  std::cout << m_scope.constructPackageName(m_userTaskInstall[i]) << " is the newest version" << std::endl;//FIXME:Proper user notification;
 	  logMsg(LOG_DEBUG, "Accepted to install variable %zu is already installed, skipping", m_userTaskInstall[i]);
 	  continue;
 	}
