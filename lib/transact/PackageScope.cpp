@@ -243,7 +243,7 @@ void PackageScope::selectTheNewest(VarIdVector& vars)
   if (versionGreater(pkgs[vars[i]].ver, pkgs[currentMax].ver))
     currentMax = i;
     }
-  assert(currentMax < vars.size());
+  assert(currentMax < pkgs.size());
   const std::string maxVersion = pkgs[currentMax].ver;
   size_t hasCount = 0;
   for(VarIdVector::size_type i = 0;i < vars.size();i++)
