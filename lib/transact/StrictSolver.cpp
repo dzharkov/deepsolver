@@ -55,7 +55,12 @@ public:
 
 private:
   void translateUserTask(const UserTask& userTask);
+  void walkThroughRequires(VarId startFrom, VarIdVector& mustBeInstalled, VarIdVector& mayBeInstalled);
   VarId translateItemToInstall(const UserTaskItemToInstall& item);
+  VarId satisfyRequire(PackageId pkgId);
+  VarId satisfyRequire(PackageId pkgId, const VersionCond& version);
+  bool canBeSatisfiedByInstalled(PackageId pkgId);
+  bool canBeSatisfiedByInstalled(PackageId pkgId, const VersionCond& version);
   void isValidTask() const;
   VarId processPriorityList(const VarIdVector& vars, PackageId provideEntry) const;
   VarId processPriorityBySorting(const VarIdVector& vars) const;
@@ -152,6 +157,58 @@ void StrictSolver::translateUserTask(const UserTask& userTask)
   //  removeDublications(m_userTaskRemove);
 }
 
+void StrictSolver::walkThroughRequires(VarId startFrom, VarIdVector& mustBeInstalled, VarIdVector& mayBeInstalled)
+{
+  assert(startFrom != BAD_VAR_ID);
+  VarIdSet processed;
+  VarIdVector pending;
+  pending.push_back(startFrom);
+  while(!pending.empty())
+    {
+      const VarId varId = pending[pending.size() - 1];
+      pending.pop_back();
+      processed.insert(varId);
+      PackageIdVector depWithoutVersion, depWithVersion;
+      VersionCondVector versions;
+      m_scope.getRequires(startFrom, depWithoutVersion, depWithVersion, versions);
+      assert(depWithVersion.size() == versions.size());
+      for(PackageIdVector::size_type i = 0;i < depWithoutVersion.size();i++)
+	{
+	  const VarId dep = satisfyRequire(depWithoutVersion[i]);
+	  if (dep == startFrom)//explicit check to be sure, assuming startFrom must be installed anyway;
+	    continue;
+	  if (m_scope.isInstalled(dep))//it is already installed, never mind;
+	    continue;
+	  if (!canBeSatisfiedByInstalled(depWithoutVersion[i]))
+	    {
+	      //This package is strongly required, processing;
+	      if (processed.find(dep) != processed.end())
+		continue;
+	      mustBeInstalled.push_back(dep);
+	      pending.push_back(dep);
+	    } else 
+	    mayBeInstalled.push_back(dep);//This package is not strongly required to be installed, so marking it as just possible;
+	} //for(depWithoutVersion);
+      for(PackageIdVector::size_type i = 0;i < depWithVersion.size();i++)
+	{
+	  const VarId dep = satisfyRequire(depWithVersion[i], versions[i]);
+	  if (dep == startFrom)//explicit check to be sure, assuming startFrom must be installed anyway;
+	    continue;
+	  if (m_scope.isInstalled(dep))//it is already installed, never mind;
+	    continue;
+	  if (!canBeSatisfiedByInstalled(depWithVersion[i], versions[i]))
+	    {
+	      //This package is strongly required, processing;
+	      if (processed.find(dep) != processed.end())
+		continue;
+	      mustBeInstalled.push_back(dep);
+	      pending.push_back(dep);
+	    } else 
+	    mayBeInstalled.push_back(dep);//This package is not strongly required to be installed, so marking it as just possible;
+	} //for(depWithoutVersion);
+    } //while(pending);
+}
+
 VarId StrictSolver::translateItemToInstall(const UserTaskItemToInstall& item) 
 {
   assert(!item.pkgName.empty());
@@ -207,6 +264,25 @@ VarId StrictSolver::translateItemToInstall(const UserTaskItemToInstall& item)
   if (res != BAD_VAR_ID)
     return res;
   return processPriorityBySorting(vars);
+}
+
+VarId StrictSolver::satisfyRequire(PackageId pkgId)
+{
+  //FIXME:
+}
+
+VarId StrictSolver::satisfyRequire(PackageId pkgId, const VersionCond& version)
+{
+  //FIXME:
+}
+
+bool StrictSolver::canBeSatisfiedByInstalled(PackageId pkgId)
+{
+  //FIXME:
+}
+
+bool StrictSolver::canBeSatisfiedByInstalled(PackageId pkgId, const VersionCond& version)
+{
 }
 
 void StrictSolver::isValidTask() const
