@@ -37,11 +37,7 @@ void fillWithhInstalledPackages(AbstractPackageBackEnd& backEnd, PackageScopeCon
       const PackageId pkgId = content.strToPackageId(pkg.name);//FIXME:must be got with checkName();
       VarId fromVarId, toVarId;
       content.locateRange(pkgId, fromVarId, toVarId);
-      if (fromVarId == toVarId)
-	{
-	  //We have pkgId but have no corresponding varId, it is slightly strange but actually not a problem;
-	  logMsg(LOG_WARNING, "Package \'%s\' with corresponding pkgId=%zu has no any varId", pkg.name.c_str(), pkgId);
-	}
+      //Here fromVarId can be equal to toVarId, it means name of installed package was met in relations in attached repo but them do not have such exact package;
       bool found = 0;
       for(VarId varId = fromVarId;varId < toVarId;varId++)
 	{

@@ -218,7 +218,6 @@ private:
 std::auto_ptr<AbstractTextFileReader> createTextFileReader(int type, const std::string& fileName)
 {
   assert(!fileName.empty());
-  logMsg(LOG_DEBUG, "Opening text file \'%s\' for reading", fileName.c_str());
   if (type == TextFileStd)
     {
       std::auto_ptr<StdTextFileReader> reader(new StdTextFileReader());
@@ -238,7 +237,6 @@ std::auto_ptr<AbstractTextFileReader> createTextFileReader(int type, const std::
 std::auto_ptr<AbstractTextFileWriter> createTextFileWriter(int type, const std::string& fileName)
 {
   assert(!fileName.empty());
-  logMsg(LOG_DEBUG, "Opening text file \'%s\' for writing", fileName.c_str());
   if (type == TextFileStd)
     {
       std::auto_ptr<StdTextFileWriter> writer(new StdTextFileWriter());
