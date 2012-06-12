@@ -59,6 +59,19 @@ std::string PackageScope::constructPackageName(VarId varId) const
   return res;
 }
 
+std::string PackageScope::constructFullVersion(VarId varId) const
+{
+  const PkgInfoVector& pkgs = m_content.pkgInfoVector;
+  assert(varId < pkgs.size());
+  const PackageScopeContent::PkgInfo& pkg = pkgs[varId];
+  assert(pkg.ver != NULL && pkg.release != NULL);
+  std::ostringstream ss;
+  if (pkg.epoch > 0)
+    ss << pkg.epoch << ":";
+  ss << pkg.ver << "-" << pkg.release;
+  return ss.str();
+}
+
 bool PackageScope::checkName(const std::string& name) const
 {
   return m_content.checkName(name);
@@ -240,14 +253,14 @@ void PackageScope::selectTheNewest(VarIdVector& vars)
     {
       assert(vars[i] < pkgs.size());
   assert(pkgs[vars[i]].ver != NULL);
-  if (versionGreater(pkgs[vars[i]].ver, pkgs[currentMax].ver))
-    currentMax = i;
+  if (versionGreater(constructFullVersion(vars[i]), constructFullVersion(currentMax)))
+    currentMax = vars[i];
     }
   assert(currentMax < pkgs.size());
-  const std::string maxVersion = pkgs[currentMax].ver;
+  const std::string maxVersion = constructFullVersion(currentMax);;
   size_t hasCount = 0;
   for(VarIdVector::size_type i = 0;i < vars.size();i++)
-    if (versionEqual(pkgs[vars[i]].ver, maxVersion))
+    if (versionEqual(constructFullVersion(vars[i]), maxVersion))
       vars[hasCount++] = vars[i];
   assert(hasCount > 0);
   vars.resize(hasCount);
