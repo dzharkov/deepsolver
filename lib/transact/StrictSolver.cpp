@@ -18,6 +18,29 @@
 #include"deepsolver.h"
 #include"AbstractTaskSolver.h"
 #include"PackageScope.h"
+#include"version.h"
+
+struct PrioritySortItem
+{
+  PrioritySortItem(VarId v, const std::string& n)
+    : varId(v), name(n) {}
+
+  bool operator <(const PrioritySortItem& item) const
+  {
+    return versionCompare(name, item.name) < 0;
+  }
+
+  bool operator >(const PrioritySortItem& item) const
+  {
+    return versionCompare(name, item.name) > 0;
+  }
+
+  VarId varId;
+  std::string name;
+}; //struct PrioritySortItem;
+
+typedef std::vector<PrioritySortItem> PrioritySortItemVector;
+typedef std::list<PrioritySortItem> PrioritySortItemList;
 
 class StrictSolver: public AbstractTaskSolver
 {
@@ -32,7 +55,10 @@ public:
 
 private:
   void translateUserTask(const UserTask& userTask);
+  VarId translateItemToInstall(const UserTaskItemToInstall& item);
   void isValidTask() const;
+  VarId processPriorityList(const VarIdVector& vars, PackageId provideEntry) const;
+  VarId processPriorityBySorting(const VarIdVector& vars) const;
 
 private:
   const PackageScopeContent& m_content;
@@ -52,6 +78,12 @@ void StrictSolver::solve(const UserTask& task, VarIdVector& toInstall, VarIdVect
   translateUserTask(task);
   isValidTask();
   logMsg(LOG_DEBUG, "User task translated: %zu to install, %zu to remove, %zu to upgrade", m_userTaskInstall.size(), m_userTaskRemove.size(), m_userTaskUpgrade.size());
+  for(VarIdVector::size_type i = 0;i < m_userTaskInstall.size();i++)
+    logMsg(LOG_DEBUG, "install: %s", m_scope.constructPackageName(m_userTaskInstall[i]).c_str());
+  for(VarIdVector::size_type i = 0;i < m_userTaskRemove.size();i++)
+    logMsg(LOG_DEBUG, "remove: %s", m_scope.constructPackageName(m_userTaskRemove[i]).c_str());
+  for(VarIdToVarIdMap::const_iterator it = m_userTaskUpgrade.begin();it != m_userTaskUpgrade.end();it++)
+    logMsg(LOG_DEBUG, "upgrade: %s -> %s", m_scope.constructPackageName(it->first).c_str(), m_scope.constructPackageName(it->second).c_str());
 }
 
 void StrictSolver::translateUserTask(const UserTask& userTask)
@@ -62,7 +94,7 @@ void StrictSolver::translateUserTask(const UserTask& userTask)
   for(UserTaskItemToInstallVector::size_type i = 0;i < userTask.itemsToInstall.size();i++)
     {
       //The following line checks the entire package scope including installed packages, so it can return also the installed package if it matches the user request;
-      const VarId varId = 0;//FIXME: = processUserTaskItemToInstall(userTask.itemsToInstall[i]);
+      const VarId varId = translateItemToInstall(userTask.itemsToInstall[i]);
       assert(varId != BAD_VAR_ID);
       m_userTaskInstall.push_back(varId);
     }
@@ -100,9 +132,81 @@ void StrictSolver::translateUserTask(const UserTask& userTask)
       v.push_back(m_userTaskInstall[i]);
     }
   m_userTaskInstall.clear();
-      //FIXME:to upgrade;
+  for(VarIdVector::size_type i = 0;i < v.size();i++)
+    {
+      const VarId varId = v[i];
+      const PackageId pkgId = m_scope.packageIdOfVarId(varId);
+      assert(pkgId != BAD_PACKAGE_ID);
+      VarIdVector installed;
+      m_scope.selectInstalledNoProvides(pkgId, installed);
+      if (installed.size() > 1)
+	logMsg(LOG_WARNING, "Package \'%s\' is installed more than once", m_scope.packageIdToStr(pkgId));
+      if (installed.size() >= 1)
+	{
+	  assert(m_userTaskUpgrade.find(installed[0]) == m_userTaskUpgrade.end());//FIXME:Actually we should handle it more carefully;
+	  m_userTaskUpgrade.insert(VarIdToVarIdMap::value_type(installed[0], varId));
+	} else
+	m_userTaskInstall.push_back(varId);
+    }
   //  removeDublications(m_userTaskInstall);
   //  removeDublications(m_userTaskRemove);
+}
+
+VarId StrictSolver::translateItemToInstall(const UserTaskItemToInstall& item) 
+{
+  assert(!item.pkgName.empty());
+  const bool hasVersion = item.verDir != VerNone;
+  assert(!hasVersion || !item.version.empty());
+  if (!m_scope.checkName(item.pkgName))
+    throw TaskException(TaskErrorUnknownPackageName, item.pkgName);
+  const PackageId pkgId = m_scope.strToPackageId(item.pkgName);
+  assert(pkgId != BAD_PACKAGE_ID);
+  VarIdVector vars;
+  if (!hasVersion)
+    {
+      //The following line does not take into account available provides;
+      m_scope.selectMatchingVars(pkgId, vars);
+    } else
+    {
+      VersionCond ver(item.version, item.verDir);
+      //This line does not handle provides too;
+      m_scope.selectMatchingWithVersionVars(pkgId, ver, vars);
+    }
+  if (!vars.empty())
+    {
+      m_scope.selectTheNewest(vars);
+      assert(!vars.empty());
+      //We can get here more than one the newest packages, assuming no difference what exact one to take;
+      return vars.front();
+    }
+  /*
+   * We cannot find anything just by real names (no package with required
+   * name at all or there have inappropriate version restrictions ), so 
+   * now the time to select anything among presented provides records;
+   */
+  if (hasVersion)
+    {
+      VersionCond ver(item.version, item.verDir);
+      m_scope.selectMatchingWithVersionVarsAmongProvides(pkgId, ver, vars);
+    } else
+    m_scope.selectMatchingVarsAmongProvides(pkgId, vars);
+  if (vars.empty())//No appropriate packages at all;
+    throw TaskException(TaskErrorNoInstallationCandidat, item.toString());
+  if (hasVersion || m_scope.allProvidesHaveTheVersion(vars, pkgId))
+    {
+      const VarId res = processPriorityList(vars, pkgId);
+      if (res != BAD_VAR_ID)
+	return res;
+      m_scope.selectTheNewestByProvide(vars, pkgId);
+      assert(!vars.empty());
+      if (vars.size() == 1)
+	return vars.front();
+      return processPriorityBySorting(vars);
+    }
+  const VarId res = processPriorityList(vars, pkgId);
+  if (res != BAD_VAR_ID)
+    return res;
+  return processPriorityBySorting(vars);
 }
 
 void StrictSolver::isValidTask() const
@@ -117,4 +221,39 @@ void StrictSolver::isValidTask() const
 	  throw TaskException(TaskErrorBothInstallRemove, pkgName);
 	}
   */
+}
+
+VarId StrictSolver::processPriorityList(const VarIdVector& vars, PackageId provideEntry) const
+{
+  assert(!vars.empty());
+  /*
+  //Process the system provide priority list using provideEntry;
+  const std::string provideName = m_scope.packageIdToStr(provideEntry);
+  StringVector providers;
+  m_providePriorityList.getPriority(provideName, providers);
+  //Providers vector can easily be empty;
+  for(StringVector::size_type i = 0;i < providers.size();i++)
+    {
+      const PackageId providerId = m_scope.strToPackageId(providers[i]);//FIXME:there can be an error since priority list can return an invalid package name due to its invalid content;
+      assert(providerId != BAD_PACKAGE_ID);
+      for(VarIdVector::size_type k = 0;k < vars.size();k++)
+	if (providerId == m_scope.packageIdOfVarId(vars[k]))
+	  return vars[k];
+    }
+  //No matching entry in priority list;
+  return BAD_VAR_ID;
+  */
+  return BAD_VAR_ID;
+}
+
+VarId StrictSolver::processPriorityBySorting(const VarIdVector& vars) const
+{
+  assert(!vars.empty());
+  //Perform sorting by real package names and take last one;
+  PrioritySortItemVector items;
+  for(VarIdVector::size_type i = 0;i < vars.size();i++)
+    items.push_back(PrioritySortItem(vars[i], m_scope.packageIdToStr(m_scope.packageIdOfVarId(vars[i]))));
+  std::sort(items.begin(), items.end());
+  assert(!items.empty());
+  return items[items.size() - 1].varId;
 }
