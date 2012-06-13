@@ -332,6 +332,37 @@ bool PackageScope::allProvidesHaveTheVersion(const VarIdVector& vars, PackageId 
   return 1;
 }
 
+bool PackageScope::canBeSatisfiedByInstalled(PackageId pkgId)
+{
+  assert(pkgId != BAD_PACKAGE_ID);
+  const PkgInfoVector& pkgs = m_content.pkgInfoVector;
+  VarId fromPos = BAD_VAR_ID, toPos = BAD_VAR_ID;
+  m_content.locateRange(pkgId, fromPos, toPos);
+  if (fromPos != toPos)
+    for(VarId varId = fromPos;varId < toPos;varId++)
+      {
+	assert(varId < pkgs.size() && pkgs[varId].pkgId == pkgId);
+	if (pkgs[varId].flags & PkgFlagInstalled)
+	  return 1;
+      }
+
+  PackageIdVector providers;
+  m_content.getProviders(pkgId, providers);
+  for(PackageIdVector::size_type i = 0;i < providers.size();i++)
+    {
+      VarId fromPos = BAD_VAR_ID, toPos = BAD_VAR_ID;
+      assert(0);
+      //FIXME:      if (fromPos != toPos)
+	//FIXME:	for(VarId varId = fromPos;varId < toPos;varId++)
+    }
+  return 0;
+}
+
+bool PackageScope ::canBeSatisfiedByInstalled(PackageId pkgId, const VersionCond& version)
+{
+  return 0;//FIXME:
+}
+
 void PackageScope::getRequires(VarId varId, PackageIdVector& depWithoutVersion, PackageIdVector& depWithVersion, VersionCondVector& versions) const
 {
   depWithoutVersion.clear();
@@ -377,4 +408,3 @@ void PackageScope::getConflicts(VarId varId, PackageIdVector& withoutVersion, Pa
 	}
     }
 }
-

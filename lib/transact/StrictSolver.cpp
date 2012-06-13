@@ -268,21 +268,69 @@ VarId StrictSolver::translateItemToInstall(const UserTaskItemToInstall& item)
 
 VarId StrictSolver::satisfyRequire(PackageId pkgId)
 {
-  //FIXME:
+  assert(pkgId != BAD_PACKAGE_ID);
+  VarIdVector vars;
+  //The following line does not take into account available provides;
+  m_scope.selectMatchingVars(pkgId, vars);
+  if (!vars.empty())
+    {
+      m_scope.selectTheNewest(vars);
+      assert(!vars.empty());
+      //We can get here more than one the newest packages, assuming no difference what exact one to take;
+      return vars.front();
+    }
+  /*
+   * We cannot find anything just by real names, so 
+   * now the time to select anything among presented provides records;
+   */
+  m_scope.selectMatchingVarsAmongProvides(pkgId, vars);
+  if (vars.empty())//No appropriate packages at all;
+    throw TaskException(TaskErrorNoInstallationCandidat, m_scope.packageIdToStr(pkgId));
+  if (m_scope.allProvidesHaveTheVersion(vars, pkgId))
+    {
+      const VarId res = processPriorityList(vars, pkgId);
+      if (res != BAD_VAR_ID)
+	return res;
+      m_scope.selectTheNewestByProvide(vars, pkgId);
+      assert(!vars.empty());
+      if (vars.size() == 1)
+	return vars.front();
+      return processPriorityBySorting(vars);
+    }
+  const VarId res = processPriorityList(vars, pkgId);
+  if (res != BAD_VAR_ID)
+    return res;
+  return processPriorityBySorting(vars);
 }
 
 VarId StrictSolver::satisfyRequire(PackageId pkgId, const VersionCond& version)
 {
-  //FIXME:
-}
-
-bool StrictSolver::canBeSatisfiedByInstalled(PackageId pkgId)
-{
-  //FIXME:
-}
-
-bool StrictSolver::canBeSatisfiedByInstalled(PackageId pkgId, const VersionCond& version)
-{
+  assert(pkgId != BAD_PACKAGE_ID);
+  VarIdVector vars;
+  //This line does not handle provides ;
+  m_scope.selectMatchingWithVersionVars(pkgId, cond, vars);
+  if (!vars.empty())
+    {
+      m_scope.selectTheNewest(vars);
+      assert(!vars.empty());
+      //We can get here more than one the newest packages, assuming no difference what exact one to take;
+      return vars.front();
+    }
+  /*
+   * We cannot find anything just by real names, so 
+   * now the time to select anything among presented provides records;
+   */
+  m_scope.selectMatchingWithVersionVarsAmongProvides(pkgId, cond, vars);
+  if (vars.empty())//No appropriate packages at all;
+    throw TaskException(TaskErrorNoInstallationCandidat, m_scope.packageIdToStr(pkgId));
+  const VarId res = processPriorityList(vars, pkgId);
+  if (res != BAD_VAR_ID)
+    return res;
+  m_scope.selectTheNewestByProvide(vars, pkgId);
+  assert(!vars.empty());
+  if (vars.size() == 1)
+    return vars.front();
+  return processPriorityBySorting(vars);
 }
 
 void StrictSolver::isValidTask() const
