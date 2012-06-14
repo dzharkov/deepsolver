@@ -59,8 +59,6 @@ private:
   VarId translateItemToInstall(const UserTaskItemToInstall& item);
   VarId satisfyRequire(PackageId pkgId);
   VarId satisfyRequire(PackageId pkgId, const VersionCond& version);
-  bool canBeSatisfiedByInstalled(PackageId pkgId);
-  bool canBeSatisfiedByInstalled(PackageId pkgId, const VersionCond& version);
   void isValidTask() const;
   VarId processPriorityList(const VarIdVector& vars, PackageId provideEntry) const;
   VarId processPriorityBySorting(const VarIdVector& vars) const;
@@ -179,7 +177,7 @@ void StrictSolver::walkThroughRequires(VarId startFrom, VarIdVector& mustBeInsta
 	    continue;
 	  if (m_scope.isInstalled(dep))//it is already installed, never mind;
 	    continue;
-	  if (!canBeSatisfiedByInstalled(depWithoutVersion[i]))
+	  if (!m_scope.canBeSatisfiedByInstalled(depWithoutVersion[i]))
 	    {
 	      //This package is strongly required, processing;
 	      if (processed.find(dep) != processed.end())
@@ -196,7 +194,7 @@ void StrictSolver::walkThroughRequires(VarId startFrom, VarIdVector& mustBeInsta
 	    continue;
 	  if (m_scope.isInstalled(dep))//it is already installed, never mind;
 	    continue;
-	  if (!canBeSatisfiedByInstalled(depWithVersion[i], versions[i]))
+	  if (!m_scope.canBeSatisfiedByInstalled(depWithVersion[i], versions[i]))
 	    {
 	      //This package is strongly required, processing;
 	      if (processed.find(dep) != processed.end())
@@ -308,7 +306,7 @@ VarId StrictSolver::satisfyRequire(PackageId pkgId, const VersionCond& version)
   assert(pkgId != BAD_PACKAGE_ID);
   VarIdVector vars;
   //This line does not handle provides ;
-  m_scope.selectMatchingWithVersionVars(pkgId, cond, vars);
+  m_scope.selectMatchingWithVersionVars(pkgId, version, vars);
   if (!vars.empty())
     {
       m_scope.selectTheNewest(vars);
@@ -320,7 +318,7 @@ VarId StrictSolver::satisfyRequire(PackageId pkgId, const VersionCond& version)
    * We cannot find anything just by real names, so 
    * now the time to select anything among presented provides records;
    */
-  m_scope.selectMatchingWithVersionVarsAmongProvides(pkgId, cond, vars);
+  m_scope.selectMatchingWithVersionVarsAmongProvides(pkgId, version, vars);
   if (vars.empty())//No appropriate packages at all;
     throw TaskException(TaskErrorNoInstallationCandidat, m_scope.packageIdToStr(pkgId));
   const VarId res = processPriorityList(vars, pkgId);

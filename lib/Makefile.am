@@ -37,6 +37,7 @@ rpm/RpmHeaderReading.cpp \
 rpm/vercmp.cpp \
 transact/InstalledReferences.cpp \
 transact/PackageScope.cpp \
+transact/ProvideMap.cpp \
 transact/StrictSolver.cpp \
 transact/TaskPreprocessor.cpp \
 utils/CurlInterface.cpp \
@@ -90,6 +91,7 @@ rpm/vercmp.h \
 transact/TaskException.h \
 transact/InstalledReferences.h \
 transact/PackageScope.h \
+transact/ProvideMap.h \
 transact/TaskPreprocessor.h \
 UserTask.h \
 utils/CurlInterface.h \
