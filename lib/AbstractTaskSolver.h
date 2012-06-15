@@ -21,6 +21,7 @@
 #include"transact/PackageScopeContent.h"
 #include"UserTask.h"
 #include"transact/TaskException.h"
+#include"transact/ProvideMap.h"
 
 class AbstractTaskSolver
 {
@@ -32,6 +33,6 @@ public:
   virtual void solve(const UserTask& task, VarIdVector& toInstall, VarIdVector& toRemove, VarIdToVarIdMap& toUpgrade) = 0;
 }; //class AbstractTaskSolver;
 
-std::auto_ptr<AbstractTaskSolver> createStrictTaskSolver(const PackageScopeContent& content);
+std::auto_ptr<AbstractTaskSolver> createStrictTaskSolver(const PackageScopeContent& content, const ProvideMap& provideMap);
 
 #endif //DEEPSOLVER_ABSTRACT_TASK_SOLVER_H;

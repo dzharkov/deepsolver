@@ -184,65 +184,6 @@ void PackageScopeContent::addRelsForEnhancing(const NamedPkgRelVector& rels, siz
     }
 }
 
-
-
-void PackageScopeContent::getProviders(PackageId provideId, PackageIdVector& providers) const
-{
-  providers.clear();
-  if (provideMap.empty())
-    return;
-  ProvideMapItemVector::size_type l = 0, r = provideMap.size();
-  while(l + 1 < r)
-    {
-      const ProvideMapItemVector::size_type center = (l + r) / 2;
-      assert(center < provideMap.size());
-      if (provideMap[center].provideId == provideId)
-	{
-	  ProvideMapItemVector::size_type fromPos, toPos;
-	  fromPos = center;
-	  toPos = center;
-	  while(fromPos > 0 && provideMap[fromPos].provideId == provideId)//size_type is unsigned, so all known overflow troubles is possible here, be careful!
-	    fromPos--;
-	  assert(fromPos < provideMap.size());
-	  if (provideMap[fromPos].provideId != provideId)
-	    fromPos++;
-	  assert(provideMap[fromPos].provideId == provideId);
-	  while(toPos < provideMap.size() && provideMap[toPos].provideId == provideId)
-	    toPos++;
-	  assert(fromPos < toPos);
-	  for(ProvideMapItemVector::size_type i = fromPos; i < toPos;i++)
-	    providers.push_back(provideMap[i].pkgId);
-	  return;
-	}
-      if (provideMap[center].provideId > provideId)
-	r = center; else
-	l = center;
-    }
-  assert(l <= r);
-  const ProvideMapItemVector::size_type center = (l + r) / 2;
-  assert(center < provideMap.size());
-  if (provideMap[center].provideId == provideId)
-    {
-      ProvideMapItemVector::size_type fromPos, toPos;
-      fromPos = center;
-      toPos = center;
-      while(fromPos > 0 && provideMap[fromPos].provideId == provideId)//size_type is unsigned, so all known overflow troubles is possible here, be careful!
-	fromPos--;
-      assert(fromPos < provideMap.size());
-      if (provideMap[fromPos].provideId != provideId)
-	fromPos++;
-      assert(provideMap[fromPos].provideId == provideId);
-      while(toPos < provideMap.size() && provideMap[toPos].provideId == provideId)
-	toPos++;
-      assert(fromPos < toPos);
-      for(ProvideMapItemVector::size_type i = fromPos; i < toPos;i++)
-	providers.push_back(provideMap[i].pkgId);
-      return;
-    }
-  //We cannot find anything here;
-  assert(providers.empty());
-}
-
 bool PackageScopeContent::checkName(const std::string& name) const
 {
   assert(!name.empty());

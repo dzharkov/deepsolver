@@ -108,25 +108,8 @@ void OperationCore::doInstallRemove(const UserTask& userTask)
   PackageScopeContentLoader loader(content);
   loader.loadFromFile(Directory::mixNameComponents(m_conf.root().dir.pkgData, PKG_DATA_FILE_NAME));
   fillWithhInstalledPackages(*backEnd.get(), content);
-
-
-
-  const clock_t startClock = clock();
-  PackageScopeContent::ProvideMapItemVector v;
-  const PackageScopeContent::PkgInfoVector& pkgs = content.pkgInfoVector;
-  const PackageScopeContent::RelInfoVector& rels = content.relInfoVector;
-  for(size_t i = 0;i < pkgs.size();i++)
-    {
-      const size_t pos = pkgs[i].providesPos, count = pkgs[i].providesCount;
-      for(size_t k = 0;k < count;k++)
-	v.push_back(PackageScopeContent::ProvideMapItem(rels[pos + k].pkgId, i));
-    }
-  std::sort(v.begin(), v.end());
-  double t = clock() - startClock;
-  t /= CLOCKS_PER_SEC;
-  std::cout << t << std::endl;
-  std::cout << v.size() << std::endl;
-
+  ProvideMap provideMap;
+  provideMap.fillWith(content);
   std::auto_ptr<AbstractTaskSolver> solver = createStrictTaskSolver(content);
   VarIdVector toInstall, toRemove;
   VarIdToVarIdMap toUpgrade;

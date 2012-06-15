@@ -26,8 +26,8 @@
 class PackageScope 
 {
 public:
-  PackageScope(const PackageScopeContent& content)
-    : m_content(content) {}
+ PackageScope(const PackageScopeContent& content, const ProvideMap& provideMap)
+   : m_content(content), m_provideMap(provideMap) {}
 
   virtual ~PackageScope() {}
 
@@ -35,8 +35,6 @@ public:
   PackageId packageIdOfVarId(VarId varId) const;
   std::string constructPackageName(VarId varId) const;
   std::string constructFullVersion(VarId varId) const;
-
-  /**\brief FIXME*/
   bool checkName(const std::string& name) const;
 
   /**\brief Translates package name as a string to PackageId value
@@ -51,40 +49,24 @@ public:
    */
   std::string packageIdToStr(PackageId packageId) const;
 
-  //Only by real names without provides;
-  void selectMatchingVars(PackageId packageId, VarIdVector& vars);
-  //Only by real names but respecting version info;
-  void selectMatchingWithVersionVars(PackageId packageId, const VersionCond& ver, VarIdVector& vars);
-  //By real names and provides;
+  void selectMatchingVarsNoProvides(PackageId packageId, VarIdVector& vars);
+  void selectMatchingVarsNoProvides(PackageId packageId, const VersionCond& ver, VarIdVector& vars);
+
   void selectMatchingVarsWithProvides(PackageId packageId, VarIdVector& vars);
-  //By real names and provides and with version respecting;
-  void selectMatchingWithVersionVarsWithProvides(PackageId packageId, const VersionCond& ver, VarIdVector& vars);
-  //Only by provides;
+  void selectMatchingVarsWithProvides(PackageId packageId, const VersionCond& ver, VarIdVector& vars);
+
   void selectMatchingVarsAmongProvides(PackageId packageId, VarIdVector& vars);
-  //Only by provides but respecting version info (entries without version must be silently skipped);
-  void selectMatchingWithVersionVarsAmongProvides(PackageId packageId, const VersionCond& ver, VarIdVector& vars);
+  void selectMatchingVarsAmongProvides(PackageId packageId, const VersionCond& ver, VarIdVector& vars);
 
   bool isInstalled(VarId varId) const;
-  //Only by real names;
   void selectInstalledNoProvides(PackageId pkgId, VarIdVector& vars) const;
-  void selectInstalledWithVersionNoProvides(PackageId pkgId, const VersionCond& ver, VarIdVector& vars) const;
 
-  //By real name and provides;
-  void selectInstallWithProvides(PackageId pkgId, VarIdVector& vars) const;
-
-  //Only by versions of real names;
   void selectTheNewest(VarIdVector& vars);
-  //Only by versions of exact provide entry;
   void selectTheNewestByProvide(VarIdVector& vars, PackageId provideEntry);
-
-
-
   bool allProvidesHaveTheVersion(const VarIdVector& vars, PackageId provideEntry);
 
-  /**\brief FIXME*/
   void getRequires(VarId varId, PackageIdVector& depWithoutVersion, PackageIdVector& depWithVersion, VersionCondVector& versions) const;
   void getConflicts(VarId varId, PackageIdVector& withoutVersion, PackageIdVector& withVersion, VersionCondVector& versions) const;
-
 
   bool canBeSatisfiedByInstalled(PackageId pkgId);
   bool canBeSatisfiedByInstalled(PackageId pkgId, const VersionCond& version);
@@ -95,6 +77,7 @@ private:
 
 private:
   const PackageScopeContent& m_content;
+  const ProvideMap& m_provideMap;
 }; //class PackageScope; 
 
 #endif //DEEPSOLVER_PACKAGE_SCOPE_H;

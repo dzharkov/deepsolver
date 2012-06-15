@@ -19,105 +19,58 @@
 #include"PackageScope.h"
 #include"version.h"
 
+#define HAS_VERSION(x) ((x).ver != NULL)
 
-static void selectVarsToTry(const PackageScopeContent& content, PackageId packageId, VarIdVector& toTry, bool includeItself)
+/**\brief Selects all variables to try by the specified package ID
+ *
+ * Selects all variables where specified package name is the name of the
+ * package itself or the name of the one of the provides entry.
+ */
+static void selectVarsToTry(const PackageScopeContent& content,
+			    const ProvideMap& provideMap,
+			    PackageId pkgId,
+			    VarIdVector& toTry,
+			    bool includeItself)
 {
-  PackageIdVector providers;
-  content.getProviders(packageId, providers);
+  toTry.clear();
   if (includeItself)
-    toTry.clear();
-  for(PackageIdVector::size_type i = 0;i < providers.size();i++)
     {
       VarId fromPos, toPos;
-      content.locateRange(providers[i], fromPos, toPos);
-      if (fromPos == toPos)
-	continue;
-      for(VarId k = fromPos;k < toPos;k++)
-	toTry.push_back(k);
+      content.locateRange(pkgId, fromPos, toPos);
+      assert(fromPos < content.pkgInfoVector.size() && toPos < content.pkgInfoVector.size());
+      for(VarId i = fromPos;i < toPos;i++)
+	toTry.push_back(i);
     }
+  VarIdVector providers;
+  provideMap.searchProviders(pkgId, providers);
+  for(VarIdVector::size_type i = 0;i < providers.size();i++)
+    toTry.push_back(providers[i]);
+  //Maybe it is good idea to perform dublications cleaning here,, but it can take time;
 }
 
-PackageId PackageScope::packageIdOfVarId(VarId varId) const
-{
-  const PkgInfoVector& pkgs = m_content.pkgInfoVector;
-  assert(varId < pkgs.size());
-  return pkgs[varId].pkgId;
-}
-
-std::string PackageScope::constructPackageName(VarId varId) const
-{
-  const PkgInfoVector& pkgs = m_content.pkgInfoVector;
-  assert(varId < pkgs.size());
-  const PackageScopeContent::PkgInfo& pkg = pkgs[varId];
-  std::string res = packageIdToStr(pkg.pkgId);
-  assert(pkg.ver != NULL);
-  res += "-";
-  res += pkg.ver;
-  assert(pkg.release != NULL);
-  res += "-";
-  res += pkg.release;
-  return res;
-}
-
-std::string PackageScope::constructFullVersion(VarId varId) const
-{
-  const PkgInfoVector& pkgs = m_content.pkgInfoVector;
-  assert(varId < pkgs.size());
-  const PackageScopeContent::PkgInfo& pkg = pkgs[varId];
-  assert(pkg.ver != NULL && pkg.release != NULL);
-  std::ostringstream ss;
-  if (pkg.epoch > 0)
-    ss << pkg.epoch << ":";
-  ss << pkg.ver << "-" << pkg.release;
-  return ss.str();
-}
-
-bool PackageScope::checkName(const std::string& name) const
-{
-  return m_content.checkName(name);
-}
-
-PackageId PackageScope::strToPackageId(const std::string& name) const
-{
-  return m_content.strToPackageId(name);
-}
-
-std::string PackageScope::packageIdToStr(PackageId packageId) const
-{
-  return m_content.packageIdToStr(packageId);
-}
-
-void PackageScope::selectMatchingVars(PackageId packageId, VarIdVector& vars)
+void PackageScope::selectMatchingVarsNoProvides(PackageId packageId, VarIdVector& vars)
 {
   //Here we must process only real package names, no provides are required;
   vars.clear();
   const PkgInfoVector& pkgs = m_content.pkgInfoVector;
   VarId fromPos, toPos;
   m_content.locateRange(packageId, fromPos, toPos);
-  assert(fromPos <= toPos);
-  if (fromPos == toPos)
-    return;
-  assert(fromPos < pkgs.size() && toPos <= pkgs.size());
-  assert(pkgs[fromPos].pkgId == packageId);
+  assert(fromPos < m_content.pkgInfoVector.size() && toPos < m_content.pkgInfoVector.size());
   for(VarId i = fromPos;i < toPos;i++)
     {
-      assert(pkgs[i].pkgId == packageId);
+      assert(m_content.pkgInfoVector[i].pkgId == packageId);
       vars.push_back(i);
     }
 }
 
-void PackageScope::selectMatchingWithVersionVars(PackageId packageId, const VersionCond& ver, VarIdVector& vars)
+void PackageScope::selectMatchingVarsNoProvides(PackageId packageId, const VersionCond& ver, VarIdVector& vars)
 {
   //Here we must process only real package names, no provides are required;
   vars.clear();
   const PkgInfoVector& pkgs = m_content.pkgInfoVector;
   VarId fromPos, toPos;
   m_content.locateRange(packageId, fromPos, toPos);
-  assert(fromPos <= toPos);
-  if (fromPos == toPos)
-    return;
-  assert(fromPos < pkgs.size() && toPos <= pkgs.size());
-  assert(pkgs[fromPos].pkgId == packageId);
+  assert(fromPos < pkgs.size() && toPos < pkgs.size());
   for(VarId i = fromPos;i < toPos;i++)
     {
       assert(pkgs[i].pkgId == packageId);
@@ -126,21 +79,21 @@ void PackageScope::selectMatchingWithVersionVars(PackageId packageId, const Vers
     }
 }
 
-void PackageScope::selectMatchingVarsWithProvides(PackageId packageId, VarIdVector& vars)
+void PackageScope::selectMatchingVarsWithProvides(PackageId pkgId, VarIdVector& vars)
 {
   //Package names and all their provides must be considered;
   vars.clear();
-  selectVarsToTry(m_content, packageId, vars, 1);//1 means include packageId itself;
+  selectVarsToTry(m_content, m_provideMap, pkgId, vars, 1);//1 means include packageId itself;
 }
 
-void PackageScope::selectMatchingWithVersionVarsWithProvides(PackageId packageId, const VersionCond& ver, VarIdVector& vars)
+void PackageScope::selectMatchingVarsWithProvides(PackageId packageId, const VersionCond& ver, VarIdVector& vars)
 {
   //Considering all package and provide names only with version information;
   vars.clear();
   const PkgInfoVector& pkgs = m_content.pkgInfoVector;
   const RelInfoVector& rels = m_content.relInfoVector;
   VarIdVector toTry;
-  selectVarsToTry(m_content, packageId, toTry, 1);//1 means include packageId itself;
+  selectVarsToTry(m_content, m_provideMap, packageId, toTry, 1);//1 means include packageId itself;
   for(VarIdVector::size_type i = 0;i < toTry.size();i++)
     {
       assert(toTry[i] < pkgs.size());
@@ -157,9 +110,9 @@ void PackageScope::selectMatchingWithVersionVarsWithProvides(PackageId packageId
       for(j = 0;j < count;j++)
 	{
 	  assert(pos + j < rels.size());
-	  if (rels[pos + j].ver == NULL)
+	  if (!HAS_VERSION(rels[pos + j]))
 	    continue;  
-	  assert(rels[pos + j].type != 0);
+	  assert(rels[pos + j].type != VerNone);
 	  if (rels[pos + j].pkgId == packageId && versionOverlap(ver, VersionCond(rels[pos + j].ver, rels[pos + j].type)))
 	    break;
 	}
@@ -168,21 +121,21 @@ void PackageScope::selectMatchingWithVersionVarsWithProvides(PackageId packageId
     }
 }
 
-void PackageScope::selectMatchingVarsAmongProvides(PackageId packageId, VarIdVector& vars)
+void PackageScope::selectMatchingVarsAmongProvides(PackageId pkgId, VarIdVector& vars)
 {
   //Only provides must be considered here;
   vars.clear();
-  selectVarsToTry(m_content, packageId, vars, 0);//0 means do not include packageId itself;
+  selectVarsToTry(m_content, m_provideMap, pkgId, vars, 0);//0 means do not include packageId itself;
 }
 
-void PackageScope::selectMatchingWithVersionVarsAmongProvides(PackageId packageId, const VersionCond& ver, VarIdVector& vars)
+void PackageScope::selectMatchingVarsAmongProvides(PackageId packageId, const VersionCond& ver, VarIdVector& vars)
 {
   //Considering only provides entries and only with version information;
   vars.clear();
   const PkgInfoVector& pkgs = m_content.pkgInfoVector;
   const RelInfoVector& rels = m_content.relInfoVector;
   VarIdVector toTry;
-  selectVarsToTry(m_content, packageId, toTry, 0);//0 means do not include packageId itself;
+  selectVarsToTry(m_content, m_provideMap, packageId, toTry, 0);//0 means do not include packageId itself;
   for(VarIdVector::size_type i = 0;i < toTry.size();i++)
     {
       assert(toTry[i] < pkgs.size());
@@ -194,9 +147,9 @@ void PackageScope::selectMatchingWithVersionVarsAmongProvides(PackageId packageI
       for(j = 0;j < count;j++)
 	{
 	  assert(pos + j < rels.size());
-	  if (rels[pos + j].ver == NULL)
+	  if (!HAS_VERSION(rels[pos + j]))
 	    continue;  
-	  assert(rels[pos + j].type != 0);
+	  assert(rels[pos + j].type != VerNone);
 	  if (rels[pos + j].pkgId == packageId && versionOverlap(ver, VersionCond(rels[pos + j].ver, rels[pos + j].type)))
 	    break;
 	}
@@ -226,20 +179,7 @@ void PackageScope::selectInstalledNoProvides(PackageId pkgId, VarIdVector& vars)
     if (pkgs[i].flags & PkgFlagInstalled)
       vars.push_back(i);
 }
-
-void PackageScope::selectInstalledWithVersionNoProvides(PackageId pkgId, const VersionCond& ver, VarIdVector& vars) const
-{
-  vars.clear();
-  //FIXME:
-  assert(0);
-}
-
-void PackageScope::selectInstallWithProvides(PackageId pkgId, VarIdVector& vars) const
-{
-  //Checking by real name and by all known provides of installed packages;
-  assert(0);//FIXME:currently not needed;
-}
-
+//here;
 void PackageScope::selectTheNewest(VarIdVector& vars)
 {
   //Processing only real version of provided packages;
@@ -408,3 +348,56 @@ void PackageScope::getConflicts(VarId varId, PackageIdVector& withoutVersion, Pa
 	}
     }
 }
+
+
+
+PackageId PackageScope::packageIdOfVarId(VarId varId) const
+{
+  const PkgInfoVector& pkgs = m_content.pkgInfoVector;
+  assert(varId < pkgs.size());
+  return pkgs[varId].pkgId;
+}
+
+std::string PackageScope::constructPackageName(VarId varId) const
+{
+  const PkgInfoVector& pkgs = m_content.pkgInfoVector;
+  assert(varId < pkgs.size());
+  const PackageScopeContent::PkgInfo& pkg = pkgs[varId];
+  std::string res = packageIdToStr(pkg.pkgId);
+  assert(pkg.ver != NULL);
+  res += "-";
+  res += pkg.ver;
+  assert(pkg.release != NULL);
+  res += "-";
+  res += pkg.release;
+  return res;
+}
+
+std::string PackageScope::constructFullVersion(VarId varId) const
+{
+  const PkgInfoVector& pkgs = m_content.pkgInfoVector;
+  assert(varId < pkgs.size());
+  const PackageScopeContent::PkgInfo& pkg = pkgs[varId];
+  assert(pkg.ver != NULL && pkg.release != NULL);
+  std::ostringstream ss;
+  if (pkg.epoch > 0)
+    ss << pkg.epoch << ":";
+  ss << pkg.ver << "-" << pkg.release;
+  return ss.str();
+}
+
+bool PackageScope::checkName(const std::string& name) const
+{
+  return m_content.checkName(name);
+}
+
+PackageId PackageScope::strToPackageId(const std::string& name) const
+{
+  return m_content.strToPackageId(name);
+}
+
+std::string PackageScope::packageIdToStr(PackageId packageId) const
+{
+  return m_content.packageIdToStr(packageId);
+}
+
