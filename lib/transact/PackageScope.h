@@ -70,9 +70,11 @@ public:
   void getConflicts(VarId varId, PackageIdVector& withoutVersion, PackageIdVector& withVersion, VersionCondVector& versions) const;
 
   bool canBeSatisfiedByInstalled(PackageId pkgId);
-  bool canBeSatisfiedByInstalled(PackageId pkgId, const VersionCond& version);
+  bool canBeSatisfiedByInstalled(PackageId pkgId, const VersionCond& ver);
 
 private:
+  typedef PackageScopeContent::PkgInfo PkgInfo;
+  typedef PackageScopeContent::RelInfo RelInfo;
   typedef PackageScopeContent::PkgInfoVector PkgInfoVector;
   typedef PackageScopeContent::RelInfoVector RelInfoVector;
 
