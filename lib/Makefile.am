@@ -39,7 +39,6 @@ transact/InstalledReferences.cpp \
 transact/PackageScope.cpp \
 transact/ProvideMap.cpp \
 transact/StrictSolver.cpp \
-transact/TaskPreprocessor.cpp \
 utils/CurlInterface.cpp \
 utils/GZipInterface.cpp \
 utils/MD5.cpp \
@@ -92,7 +91,6 @@ transact/TaskException.h \
 transact/InstalledReferences.h \
 transact/PackageScope.h \
 transact/ProvideMap.h \
-transact/TaskPreprocessor.h \
 UserTask.h \
 utils/CurlInterface.h \
 utils/DateTime.h \

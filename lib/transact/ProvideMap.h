@@ -30,7 +30,7 @@ public:
   void fillWith(const PackageScopeContent& content);
   void add(PackageId provideId, VarId providedBy);
   void commit();
-  void searchProviders(PackageId provideId, VarIdVector& res);
+  void searchProviders(PackageId provideId, VarIdVector& res) const;
 
 private:
   struct Item

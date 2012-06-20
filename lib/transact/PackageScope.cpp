@@ -52,7 +52,6 @@ void PackageScope::selectMatchingVarsNoProvides(PackageId packageId, VarIdVector
 {
   //Here we must process only real package names, no provides are required;
   vars.clear();
-  const PkgInfoVector& pkgs = m_content.pkgInfoVector;
   VarId fromPos, toPos;
   m_content.locateRange(packageId, fromPos, toPos);
   assert(fromPos < m_content.pkgInfoVector.size() && toPos < m_content.pkgInfoVector.size());
@@ -179,7 +178,7 @@ void PackageScope::selectInstalledNoProvides(PackageId pkgId, VarIdVector& vars)
     if (pkgs[i].flags & PkgFlagInstalled)
       vars.push_back(i);
 }
-//here;
+
 void PackageScope::selectTheNewest(VarIdVector& vars)
 {
   //Processing only real version of provided packages;
@@ -197,7 +196,7 @@ void PackageScope::selectTheNewest(VarIdVector& vars)
     currentMax = vars[i];
     }
   assert(currentMax < pkgs.size());
-  const std::string maxVersion = constructFullVersion(currentMax);;
+  const std::string maxVersion = constructFullVersion(currentMax);
   size_t hasCount = 0;
   for(VarIdVector::size_type i = 0;i < vars.size();i++)
     if (versionEqual(constructFullVersion(vars[i]), maxVersion))
@@ -208,10 +207,10 @@ void PackageScope::selectTheNewest(VarIdVector& vars)
 
 void PackageScope::selectTheNewestByProvide(VarIdVector& vars, PackageId provideEntry)
 {
-  //Checking the version of the given provide entry;
   if (vars.size() < 2)
     return;
   const PkgInfoVector& pkgs = m_content.pkgInfoVector;
+  const RelInfoVector& rels = m_content.relInfoVector;
   StringVector versions;
   versions.resize(vars.size());
   for(VarIdVector::size_type i = 0;i < vars.size();i++)
@@ -220,17 +219,17 @@ void PackageScope::selectTheNewestByProvide(VarIdVector& vars, PackageId provide
       const PackageScopeContent::PkgInfo& pkg = pkgs[vars[i]];
       const size_t pos = pkg.providesPos;
       const size_t count = pkg.providesCount;
-      assert(pos > 0 && count > 0);
+      assert(pos > 0 && count > 0);//It means the package has any provides;
       size_t j;
-      const RelInfoVector& rels = m_content.relInfoVector;
       for(j = 0;j < count;j++)
 	{
 	  assert(pos + j < rels.size());
 	  if (rels[pos + j].pkgId == provideEntry)
 	    break;
 	}
-      assert(j < count);
-      assert(rels[pos + j].ver != NULL);
+      assert(j < count);//The package contains needed provide entry;
+      assert(HAS_VERSION(rels[pos + j]));
+      assert(rels[pos + j].type == VerEquals);//It is very strict constraint based on ALT Linux policy, but it will be better if it is so;
       versions[i] = rels[pos + j].ver;
     }
   assert(vars.size() == versions.size());
@@ -266,7 +265,7 @@ bool PackageScope::allProvidesHaveTheVersion(const VarIdVector& vars, PackageId 
 	    break;
 	}
       assert(j < count);
-      if (rels[pos + j].ver == NULL)
+      if (!HAS_VERSION(rels[pos + j]))
 	return 0;
     }
   return 1;
@@ -274,6 +273,7 @@ bool PackageScope::allProvidesHaveTheVersion(const VarIdVector& vars, PackageId 
 
 bool PackageScope::canBeSatisfiedByInstalled(PackageId pkgId)
 {
+  /*
   assert(pkgId != BAD_PACKAGE_ID);
   const PkgInfoVector& pkgs = m_content.pkgInfoVector;
   VarId fromPos = BAD_VAR_ID, toPos = BAD_VAR_ID;
@@ -295,6 +295,8 @@ bool PackageScope::canBeSatisfiedByInstalled(PackageId pkgId)
       //FIXME:      if (fromPos != toPos)
 	//FIXME:	for(VarId varId = fromPos;varId < toPos;varId++)
     }
+  return 0;
+  */
   return 0;
 }
 

@@ -20,14 +20,15 @@
 
 #include"Pkg.h"
 #include"PackageScopeContent.h"
+#include"ProvideMap.h"
 
 //All methods can throw only SystemException and RpmException;
 //Vars is the indices in the main PackageScopeContent array;
 class PackageScope 
 {
 public:
- PackageScope(const PackageScopeContent& content, const ProvideMap& provideMap)
-   : m_content(content), m_provideMap(provideMap) {}
+  PackageScope(const PackageScopeContent& content, const ProvideMap& provideMap)
+    : m_content(content), m_provideMap(provideMap) {}
 
   virtual ~PackageScope() {}
 
