@@ -18,7 +18,7 @@
 #ifndef DEEPSOLVER_PROVIDE_MAP_H
 #define DEEPSOLVER_PROVIDE_MAP_H
 
-#include"PackageScope.h"
+#include"PackageScopeContent.h"
 
 class ProvideMap
 {

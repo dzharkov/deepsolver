@@ -18,7 +18,7 @@
 #include"deepsolver.h"
 #include"ProvideMap.h"
 
-void ProvideMap::searchProviders(PackageId provideId, VarIdVector& res)
+void ProvideMap::searchProviders(PackageId provideId, VarIdVector& res) const
 {
   assert(provideId != BAD_PACKAGE_ID);
   res.clear();

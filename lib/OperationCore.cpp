@@ -110,7 +110,7 @@ void OperationCore::doInstallRemove(const UserTask& userTask)
   fillWithhInstalledPackages(*backEnd.get(), content);
   ProvideMap provideMap;
   provideMap.fillWith(content);
-  std::auto_ptr<AbstractTaskSolver> solver = createStrictTaskSolver(content);
+  std::auto_ptr<AbstractTaskSolver> solver = createStrictTaskSolver(content, provideMap);
   VarIdVector toInstall, toRemove;
   VarIdToVarIdMap toUpgrade;
   solver->solve(userTask, toInstall, toRemove, toUpgrade);

@@ -45,8 +45,8 @@ typedef std::list<PrioritySortItem> PrioritySortItemList;
 class StrictSolver: public AbstractTaskSolver
 {
 public:
-  StrictSolver(const PackageScopeContent& content) 
-    : m_content(content) , m_scope(content) {}
+  StrictSolver(const PackageScopeContent& content, const ProvideMap& provideMap) 
+    : m_content(content) , m_scope(content, provideMap) {}
 
   virtual ~StrictSolver() {}
 
@@ -70,10 +70,10 @@ private:
   VarIdToVarIdMap m_userTaskUpgrade;
 }; //class StrictSolver;
 
-std::auto_ptr<AbstractTaskSolver> createStrictTaskSolver(const PackageScopeContent& content)
+std::auto_ptr<AbstractTaskSolver> createStrictTaskSolver(const PackageScopeContent& content, const ProvideMap& provideMap)
 {
   logMsg(LOG_DEBUG, "Creating strict task solver");
-  return std::auto_ptr<AbstractTaskSolver>(new StrictSolver(content));
+  return std::auto_ptr<AbstractTaskSolver>(new StrictSolver(content, provideMap));
 }
 
 void StrictSolver::solve(const UserTask& task, VarIdVector& toInstall, VarIdVector& toRemove, VarIdToVarIdMap& toUpgrade)
@@ -143,7 +143,7 @@ void StrictSolver::translateUserTask(const UserTask& userTask)
       VarIdVector installed;
       m_scope.selectInstalledNoProvides(pkgId, installed);
       if (installed.size() > 1)
-	logMsg(LOG_WARNING, "Package \'%s\' is installed more than once", m_scope.packageIdToStr(pkgId));
+	logMsg(LOG_WARNING, "Package \'%s\' is installed more than once", m_scope.packageIdToStr(pkgId).c_str());
       if (installed.size() >= 1)
 	{
 	  assert(m_userTaskUpgrade.find(installed[0]) == m_userTaskUpgrade.end());//FIXME:Actually we should handle it more carefully;
@@ -220,12 +220,12 @@ VarId StrictSolver::translateItemToInstall(const UserTaskItemToInstall& item)
   if (!hasVersion)
     {
       //The following line does not take into account available provides;
-      m_scope.selectMatchingVars(pkgId, vars);
+      m_scope.selectMatchingVarsNoProvides(pkgId, vars);
     } else
     {
       VersionCond ver(item.version, item.verDir);
       //This line does not handle provides too;
-      m_scope.selectMatchingWithVersionVars(pkgId, ver, vars);
+      m_scope.selectMatchingVarsNoProvides(pkgId, ver, vars);
     }
   if (!vars.empty())
     {
@@ -242,7 +242,7 @@ VarId StrictSolver::translateItemToInstall(const UserTaskItemToInstall& item)
   if (hasVersion)
     {
       VersionCond ver(item.version, item.verDir);
-      m_scope.selectMatchingWithVersionVarsAmongProvides(pkgId, ver, vars);
+      m_scope.selectMatchingVarsAmongProvides(pkgId, ver, vars);
     } else
     m_scope.selectMatchingVarsAmongProvides(pkgId, vars);
   if (vars.empty())//No appropriate packages at all;
@@ -269,7 +269,7 @@ VarId StrictSolver::satisfyRequire(PackageId pkgId)
   assert(pkgId != BAD_PACKAGE_ID);
   VarIdVector vars;
   //The following line does not take into account available provides;
-  m_scope.selectMatchingVars(pkgId, vars);
+  m_scope.selectMatchingVarsNoProvides(pkgId, vars);
   if (!vars.empty())
     {
       m_scope.selectTheNewest(vars);
@@ -306,7 +306,7 @@ VarId StrictSolver::satisfyRequire(PackageId pkgId, const VersionCond& version)
   assert(pkgId != BAD_PACKAGE_ID);
   VarIdVector vars;
   //This line does not handle provides ;
-  m_scope.selectMatchingWithVersionVars(pkgId, version, vars);
+  m_scope.selectMatchingVarsNoProvides(pkgId, version, vars);
   if (!vars.empty())
     {
       m_scope.selectTheNewest(vars);
@@ -318,7 +318,7 @@ VarId StrictSolver::satisfyRequire(PackageId pkgId, const VersionCond& version)
    * We cannot find anything just by real names, so 
    * now the time to select anything among presented provides records;
    */
-  m_scope.selectMatchingWithVersionVarsAmongProvides(pkgId, version, vars);
+  m_scope.selectMatchingVarsAmongProvides(pkgId, version, vars);
   if (vars.empty())//No appropriate packages at all;
     throw TaskException(TaskErrorNoInstallationCandidat, m_scope.packageIdToStr(pkgId));
   const VarId res = processPriorityList(vars, pkgId);
