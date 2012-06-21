@@ -80,8 +80,11 @@ typedef std::list<PrioritySortItem> PrioritySortItemList;
 class StrictSolver: public AbstractTaskSolver
 {
 public:
-  StrictSolver(const PackageScopeContent& content, const ProvideMap& provideMap) 
-    : m_content(content) , m_scope(content, provideMap) {}
+  StrictSolver(const PackageScopeContent& content,
+	       const ProvideMap& provideMap,
+	       const InstalledReferences& requiresReferences,
+	       const InstalledReferences& conflictsReferences)
+    : m_content(content) , m_scope(content, provideMap, requiresReferences, conflictsReferences) {}
 
   virtual ~StrictSolver() {}
 
@@ -107,10 +110,13 @@ private:
   VarIdToVarIdMap m_userTaskUpgrade, m_anywayUpgrade;
 }; //class StrictSolver;
 
-std::auto_ptr<AbstractTaskSolver> createStrictTaskSolver(const PackageScopeContent& content, const ProvideMap& provideMap)
+std::auto_ptr<AbstractTaskSolver> createStrictTaskSolver(const PackageScopeContent& content,
+							 const ProvideMap& provideMap,
+							 const InstalledReferences& requiresReferences,
+							 const InstalledReferences& conflictsReferences)
 {
   logMsg(LOG_DEBUG, "Creating strict task solver");
-  return std::auto_ptr<AbstractTaskSolver>(new StrictSolver(content, provideMap));
+  return std::auto_ptr<AbstractTaskSolver>(new StrictSolver(content, provideMap, requiresReferences, conflictsReferences));
 }
 
 void StrictSolver::solve(const UserTask& task, VarIdVector& toInstall, VarIdVector& toRemove, VarIdToVarIdMap& toUpgrade)

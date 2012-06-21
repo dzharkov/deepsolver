@@ -25,17 +25,17 @@ public:
   virtual ~InstalledReferences() {}
 
 public:
-  void add(VarId refTo, VarId refFrom);
+  void add(PackageId refTo, VarId refFrom);
   void commit();
-  void searchReferencesTo(VarId refTo, VarIdVector& res);
+  void searchReferencesTo(PackageId refTo, VarIdVector& res);
 
 private:
   struct Reference
   {
     Reference()
-      : refTo(BAD_VAR_ID), refFrom(BAD_VAR_ID) {}
+      : refTo(BAD_PACKAGE_ID), refFrom(BAD_VAR_ID) {}
 
-    Reference(VarId t, VarId f)
+    Reference(PackageId t, VarId f)
       : refTo(t), refFrom(f) {}
 
     bool operator <(const Reference& r) const
@@ -47,8 +47,8 @@ private:
     {
       return refTo > r.refTo;
     }
-
-    VarId refTo, refFrom;
+    PackageId refTo;
+    VarId refFrom;
   }; //struct Reference;
 
   typedef std::vector<Reference> ReferenceVector;

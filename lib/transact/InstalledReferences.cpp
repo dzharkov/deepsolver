@@ -18,9 +18,9 @@
 #include"deepsolver.h"
 #include"InstalledReferences.h"
 
-void InstalledReferences::searchReferencesTo(VarId refTo, VarIdVector& res)
+void InstalledReferences::searchReferencesTo(PackageId refTo, VarIdVector& res)
 {
-  assert(refTo != BAD_VAR_ID);
+  assert(refTo != BAD_PACKAGE_ID);
   res.clear();
   if (m_references.empty())
     return;
@@ -82,7 +82,7 @@ void InstalledReferences::searchReferencesTo(VarId refTo, VarIdVector& res)
   assert(res.empty());
 }
 
-void InstalledReferences::add(VarId refTo, VarId refFrom)
+void InstalledReferences::add(PackageId refTo, VarId refFrom)
 {
   assert(refTo != BAD_VAR_ID && refFrom != BAD_VAR_ID);
   m_references.push_back(Reference(refTo, refFrom));

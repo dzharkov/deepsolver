@@ -21,14 +21,21 @@
 #include"Pkg.h"
 #include"PackageScopeContent.h"
 #include"ProvideMap.h"
+#include"InstalledReferences.h"
 
 //All methods can throw only SystemException and RpmException;
 //Vars is the indices in the main PackageScopeContent array;
 class PackageScope 
 {
 public:
-  PackageScope(const PackageScopeContent& content, const ProvideMap& provideMap)
-    : m_content(content), m_provideMap(provideMap) {}
+  PackageScope(const PackageScopeContent& content,
+	       const ProvideMap& provideMap,
+	       const InstalledReferences& requiresReferences,
+	       const InstalledReferences& conflictsReferences)
+    : m_content(content), 
+      m_provideMap(provideMap),
+      m_requiresReferences(requiresReferences),
+      m_conflictsReferences(conflictsReferences) {}
 
   virtual ~PackageScope() {}
 
@@ -81,6 +88,8 @@ private:
 private:
   const PackageScopeContent& m_content;
   const ProvideMap& m_provideMap;
+  const InstalledReferences& m_requiresReferences;
+  const InstalledReferences& m_conflictsReferences; 
 }; //class PackageScope; 
 
 #endif //DEEPSOLVER_PACKAGE_SCOPE_H;

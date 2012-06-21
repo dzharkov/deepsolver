@@ -22,6 +22,7 @@
 #include"UserTask.h"
 #include"transact/TaskException.h"
 #include"transact/ProvideMap.h"
+#include"transact/InstalledReferences.h"
 
 class AbstractTaskSolver
 {
@@ -33,6 +34,9 @@ public:
   virtual void solve(const UserTask& task, VarIdVector& toInstall, VarIdVector& toRemove, VarIdToVarIdMap& toUpgrade) = 0;
 }; //class AbstractTaskSolver;
 
-std::auto_ptr<AbstractTaskSolver> createStrictTaskSolver(const PackageScopeContent& content, const ProvideMap& provideMap);
+std::auto_ptr<AbstractTaskSolver> createStrictTaskSolver(const PackageScopeContent& content,
+							 const ProvideMap& provideMap,
+							 const InstalledReferences& requiresReferences,
+							 const InstalledReferences& conflictsReferences);
 
 #endif //DEEPSOLVER_ABSTRACT_TASK_SOLVER_H;

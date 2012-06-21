@@ -109,8 +109,31 @@ void OperationCore::doInstallRemove(const UserTask& userTask)
   loader.loadFromFile(Directory::mixNameComponents(m_conf.root().dir.pkgData, PKG_DATA_FILE_NAME));
   fillWithhInstalledPackages(*backEnd.get(), content);
   ProvideMap provideMap;
+  InstalledReferences requiresReferences, conflictsReferences;
   provideMap.fillWith(content);
-  std::auto_ptr<AbstractTaskSolver> solver = createStrictTaskSolver(content, provideMap);
+  const PackageScopeContent::PkgInfoVector& pkgs = content.pkgInfoVector;
+  const PackageScopeContent::RelInfoVector& rels = content.relInfoVector; 
+  for(PackageScopeContent::PkgInfoVector::size_type i = 0;i < pkgs.size();i++)
+    if (pkgs[i].flags & PkgFlagInstalled)
+      {
+	const PackageScopeContent::PkgInfo& pkg = pkgs[i];
+	size_t pos = pkg.requiresPos, count = pkg.requiresCount;
+	for(size_t k = 0;k < count;k++)
+	  {
+	    assert(pos + k < rels.size());
+	    requiresReferences.add(rels[pos + k].pkgId, i);
+	  }
+	pos = pkg.conflictsPos;
+	count = pkg.conflictsCount;
+	for(size_t k = 0;k < count;k++)
+	  {
+	    assert(pos + k < rels.size());
+	    conflictsReferences.add(rels[pos + k].pkgId, i);
+	  }
+      }
+  requiresReferences.commit();
+  conflictsReferences.commit();
+  std::auto_ptr<AbstractTaskSolver> solver = createStrictTaskSolver(content, provideMap, requiresReferences, conflictsReferences);
   VarIdVector toInstall, toRemove;
   VarIdToVarIdMap toUpgrade;
   solver->solve(userTask, toInstall, toRemove, toUpgrade);
