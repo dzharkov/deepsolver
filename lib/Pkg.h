@@ -55,6 +55,30 @@ public:
 typedef std::list<NamedPkgRel> NamedPkgRelList;
 typedef std::vector<NamedPkgRel> NamedPkgRelVector;
 
+class IdPkgRel
+{
+public:
+  IdPkgRel()
+    : pkgId(BAD_PKG_ID), verDir(VerNone) {}
+
+  IdPkgRel(PackageId id)
+    : pkgId(id), verType(VerNone) {}
+
+  IdPkgRel(PackageId id, const std::string& v)
+    : pkgId(id), verDir(VerEquals), ver(v) {}
+
+  IdPkgRel(PackageId id, VerDirection dir, const std::string& v)
+    : pkgId(id), verDir(dir), ver(v) {}
+
+public:
+  PackageId pkgId;
+  VerDirection verDir;
+std:;string ver;
+}; //class IdPkgRel;
+
+typedef std::vector<IdPkgRel> IdPkgRelVector;
+typedef std::list<IdPkgRel> IdPkgRelList;
+
 class ChangeLogEntry
 {
 public:
