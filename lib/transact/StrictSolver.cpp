@@ -98,6 +98,7 @@ private:
   VarId processPriorityList(const VarIdVector& vars, PackageId provideEntry) const;
   VarId processPriorityBySorting(const VarIdVector& vars) const;
   void notToInstallButToUpgrade(const VarIdVector& vars, VarIdVector& toInstall, VarIdToVarIdMap& toUpgrade);
+  void findAllConflictedVars(VarId varId, VarIdVector& res);
 
 private:
   const PackageScopeContent& m_content;
@@ -146,8 +147,29 @@ void StrictSolver::solve(const UserTask& task, VarIdVector& toInstall, VarIdVect
       removeDublications(must);
       removeDublications(may);
       notToInstallButToUpgrade(must, m_anywayInstall, m_anywayUpgrade);
+      //FIXME:may be installed;
+    }
+  //The same for packages to be upgraded;
+  for(VarIdToVarIdMap::const_iterator it = m_userTaskUpgrade.begin();it != m_userTaskUpgrade.end();it++)
+    {
+      VarIdVector must, may;
+      walkThroughRequires(it->first, must, may);
+      removeDublications(must);
+      removeDublications(may);
+      notToInstallButToUpgrade(must, m_anywayInstall, m_anywayUpgrade);
+      //FIXME:may be installed;
     }
   removeDublications(m_anywayInstall);
+  /*
+   * Here m_anywayInstall and m_anywayUpgrade have their final state;
+   * Building list of all conflicted variables;
+   */
+  for(VarIdVector::size_type i = 0;i < m_anywayInstall.size();i++)
+      findAllConflictedVars(m_anywayInstall[i], m_anywayRemove);
+  for(VarIdToVarIdMap::const_iterator it = m_anywayUpgrade.begin();it != m_anywayUpgrade.end();it++)
+      findAllConflictedVars(it->first, m_anywayRemove);
+  removeDublications(m_anywayRemove);
+
   printSolution(m_scope, m_anywayInstall, m_anywayRemove, m_anywayUpgrade);
 }
 
@@ -267,6 +289,31 @@ void StrictSolver::walkThroughRequires(VarId startFrom, VarIdVector& mustBeInsta
 	    mayBeInstalled.push_back(dep);//This package is not strongly required to be installed, so marking it as just possible;
 	} //for(depWithoutVersion);
     } //while(pending);
+}
+
+void StrictSolver::findAllConflictedVars(VarId varId, VarIdVector& res)
+{
+  //Do not clear res here!!!
+  PackageIdVector withoutVersion, withVersion;
+  VersionCondVector versions;
+  m_scope.getConflicts(varId, withoutVersion, withVersion, versions);
+  assert(withVersion.size() == versions.size());
+  for(PackageIdVector::size_type i = 0;i < withoutVersion.size();i++)
+    {
+      VarIdVector vars;
+      m_scope.selectMatchingVarsWithProvides(withoutVersion[i], vars);
+      for(VarIdVector::size_type i = 0;i < vars.size();i++)
+	if (vars[i] != varId)//Package cannot conflict with itself;
+	  res.push_back(vars[i]);
+    }
+  for(PackageIdVector::size_type i = 0;i < withVersion.size();i++)
+    {
+      VarIdVector vars;
+      m_scope.selectMatchingVarsWithProvides(withVersion[i], versions[i], vars);
+      for(VarIdVector::size_type i = 0;i < vars.size();i++)
+	if (vars[i] != varId)//Package cannot conflict with itself;
+	  res.push_back(vars[i]);
+    }
 }
 
 VarId StrictSolver::translateItemToInstall(const UserTaskItemToInstall& item) 
@@ -409,6 +456,7 @@ void StrictSolver::isValidTask() const
 
 void StrictSolver::notToInstallButToUpgrade(const VarIdVector& vars, VarIdVector& toInstall, VarIdToVarIdMap& toUpgrade)
 {
+  //Do not clear any of result structures here!!!
   for(VarIdVector::size_type i = 0;i < vars.size();i++)
     {
       const VarId varId = vars[i];
