@@ -371,6 +371,148 @@ void PackageScope::getConflicts(VarId varId, PackageIdVector& withoutVersion, Pa
     }
 }
 
+void PackageScope::whatDependsAmongINstalled(VarId varId, VarIdVector& res, IdPkgRelVector& resRels)
+{
+  res.clear();
+  resRels.clear();
+  const PkgInfoVector& pkgs = m_content.pkgInfoVector;
+  const RelInfoVector& rels = m_content.relInfoVector;
+  assert(varId < pkgs.size());
+  const PkgINfo& pkg = pkgs[varId];
+  VarIdVector v;
+  //First of all checking the package itself;
+  m_requiresReferences.searchReferencesTo(pkgs[varId].pkgId, v);
+  for(VarIdVector::size_type i = 0;i < v.size();i++)
+    {
+      assert(v[i] < pkgs.size());
+      assert(pkgs[v[i]].flags & PkgFlagInstalled);
+      PackageIdVector withoutVersion, withVersion;
+      VersionCondVector versions;
+      getRequires(v[i], withoutVersion, withVersion, versions);
+      assert(withVersion.size() == versions.size());
+      for(PackageIdVector::size_type k = 0;k < withoutVersion.size();k++)
+	if (withoutVersion[k] == pkg.pkgId)
+	  {
+	    res.push_back(v[i]);
+	    resRels.push_back(IdPkgRel(withoutVersion[k]));
+	  }
+      for(PackageIdVector::size_type k = 0;k < withVersion.size();k++)
+	if (withVersion[k] == pkg.pkgId && VersionSatisfies(versions[k], pkg.epoch, pkg.ver, pkg.release))
+	  {
+	    res.push_back(v[i]);
+	    resRels.push_back(IdPkgRel(withVersion[k], versions[k]));
+	  }
+    } //For every package depending on varId without provides;
+  //Now we check all provide entries of pkg;
+  const size_t pos = pkg.provides Pos;
+  const size_t count = pkg.providesCount;
+  for(size_t i RelInfoVector::size_type i = 0;i < count;i++
+    {
+      assert(pos + i < rels.size());
+      const RelInfo& rel = rels[pos + i];
+      v.clear();
+      m_requiresReferences.searchReferencesTo(rel.pkgId, v);
+      for(VarIdVector::size_type k = 0;k < v.size();k++)
+	{
+	  assert(v[k] < pkgs.size());
+	  assert(pkgs[v[k]].flags & PkgFlagInstalled);
+	  PackageIdVector withoutVersion, withVersion;
+	  VersionCondVector versions;
+	  getRequires(v[k], withoutVersion, withVersion, versions);
+	  assert(withVersion.size() == versions.size());
+	  //Checking without version anyway;
+	  for(PackageIdVector:size_type q = 0;q < withoutVersion.size();q++)
+	    if (withoutVersion[q] == rel.pkgId)
+	      {
+		res.push_back(v[k]);
+		resRels.push_back(IdPkgRel(withoutVersion[q]));
+	      }
+	  //With version must be checked only if provide entry has the version
+	  if (HAS_VERSION(rel))
+	    {
+	      assert(rel.type == VerEquals);//FIXME:Actually it shouldn't be an assert, we can silently skip this provide;
+	      for(PackageIdVector::size_type q = 0;q < withVersion.size();q++)
+		if (withVersion[q] == rel.pkgId && VersionSatisfies(versions[q], rel.ver))
+		  {
+		    res.push_back(v[k]);
+		    resRels.push_back(IdPkgRel(withVersion[q], versions[q]));
+		  }
+	    }//if has version;
+	}
+    } //for provides;
+}
+
+void PackageScope::whatConflictsAmongINstalled(VarId varId, VarIdVector& res, IdPkgRelVector& resRels)
+{
+  res.clear();
+  resRels.clear();
+  const PkgInfoVector& pkgs = m_content.pkgInfoVector;
+  const RelInfoVector& rels = m_content.relInfoVector;
+  assert(varId < pkgs.size());
+  const PkgINfo& pkg = pkgs[varId];
+  VarIdVector v;
+  //First of all checking the package itself;
+  m_conflictsReferences.searchReferencesTo(pkgs[varId].pkgId, v);
+  for(VarIdVector::size_type i = 0;i < v.size();i++)
+    {
+      assert(v[i] < pkgs.size());
+      assert(pkgs[v[i]].flags & PkgFlagInstalled);
+      PackageIdVector withoutVersion, withVersion;
+      VersionCondVector versions;
+      getConflicts(v[i], withoutVersion, withVersion, versions);
+      assert(withVersion.size() == versions.size());
+      for(PackageIdVector::size_type k = 0;k < withoutVersion.size();k++)
+	if (withoutVersion[k] == pkg.pkgId)
+	  {
+	    res.push_back(v[i]);
+	    resRels.push_back(IdPkgRel(withoutVersion[k]));
+	  }
+      for(PackageIdVector::size_type k = 0;k < withVersion.size();k++)
+	if (withVersion[k] == pkg.pkgId && VersionSatisfies(versions[k], pkg.epoch, pkg.ver, pkg.release))
+	  {
+	    res.push_back(v[i]);
+	    resRels.push_back(IdPkgRel(withVersion[k], versions[k]));
+	  }
+    } //For every package depending on varId without provides;
+  //Now we check all provide entries of pkg;
+  const size_t pos = pkg.provides Pos;
+  const size_t count = pkg.providesCount;
+  for(size_t i RelInfoVector::size_type i = 0;i < count;i++
+    {
+      assert(pos + i < rels.size());
+      const RelInfo& rel = rels[pos + i];
+      v.clear();
+      m_conflictsReferences.searchReferencesTo(rel.pkgId, v);
+      for(VarIdVector::size_type k = 0;k < v.size();k++)
+	{
+	  assert(v[k] < pkgs.size());
+	  assert(pkgs[v[k]].flags & PkgFlagInstalled);
+	  PackageIdVector withoutVersion, withVersion;
+	  VersionCondVector versions;
+	  getConflicts(v[k], withoutVersion, withVersion, versions);
+	  assert(withVersion.size() == versions.size());
+	  //Checking without version anyway;
+	  for(PackageIdVector:size_type q = 0;q < withoutVersion.size();q++)
+	    if (withoutVersion[q] == rel.pkgId)
+	      {
+		res.push_back(v[k]);
+		resRels.push_back(IdPkgRel(withoutVersion[q]));
+	      }
+	  //With version must be checked only if provide entry has the version
+	  if (HAS_VERSION(rel))
+	    {
+	      assert(rel.type == VerEquals);//FIXME:Actually it shouldn't be an assert, we can silently skip this provide;
+	      for(PackageIdVector::size_type q = 0;q < withVersion.size();q++)
+		if (withVersion[q] == rel.pkgId && VersionSatisfies(versions[q], rel.ver))
+		  {
+		    res.push_back(v[k]);
+		    resRels.push_back(IdPkgRel(withVersion[q], versions[q]));
+		  }
+	    }//if has version;
+	}
+    } //for provides;
+}
+
 PackageId PackageScope::packageIdOfVarId(VarId varId) const
 {
   const PkgInfoVector& pkgs = m_content.pkgInfoVector;
