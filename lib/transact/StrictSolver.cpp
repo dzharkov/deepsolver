@@ -486,6 +486,59 @@ void StrictSolver::firstStageValidTask() const
     }
 }
 
+void StrictSolver::handleDependentBreaks(VarIdVector& moreInstall, VarIdVector& moreRemove )
+{
+  moreINstall.clear();
+  moreRemove.clear();
+  VarIdVector pending;
+  //Selecting pending packages from m_anywayRemove;
+  for(VarIdVector::size_type i = 0;i < m_anywayRemove.size();i++)
+    if (m_scope.isInstalled(m_anywayRemove[i]))
+      pending.push_back(m_anywayRemove[i]);
+  //Checking packages to upgrade and add them to pending if necessary;
+  for(varIdToVarIdMap::const_iterator it = m_anywayUpgrade.begin();m_anywayUpgrade.end();it++)
+    {
+      //Checking is new version is suitable instead of old one;
+      assert(m_scope.packageIdOfVarId(it->first) == m_scope.packageIdOfVarId(it->second));
+      VarIdVector deps;
+      IdPkgRel rels;
+      m_scope.whatDependsAmongInstalled(it->first, deps, rels);
+      assert(deps.size() == rels.size());
+      for(VarIdVector::size_type i = 0;i < deps.size();i++)
+	if (!m_scope.variableSatisfies(it->second, rels))
+	  pending.push_back(deps[i]);
+    }
+  while(!pending.empty())//FIXME:I don't know can be cycles here...
+    {
+      const VarId cur = pending[pending.size() - 1];
+      pending.pop_back();
+      VarIdvector deps;
+      IdPkgRel rels;
+      m_scope.whatDependsAmongInstalled(cur, deps, rels);
+      assert(deps.size() == rels.size());
+      for(VarIdVector:;size_type i = 0;i < deps.size();i++)
+	{
+	  bool present = 0;//Just to be sure;
+	  bool anythingElse = 0;
+	  VarIdVector matching;
+	  m_scope.whatSatisfiesAmongInstalled(rels[i], matching);
+	  for(VarIdVector::size_type j = 0;j < matching.size();j++)
+	    {
+	      if (matching[j] == cur)
+		present = 1; else 
+		anythingElse = 1;
+	    }
+	  assert(present);//To be sure;
+	  if (!anythingElse)
+	    {
+	      //FIXME:processed;
+	      moreRemove.push_back(deps[i]);
+	      pending.push_back(deps[i]);
+	    }
+	} //for(deps);
+    } //while(pending);
+}
+
 void StrictSolver::notToInstallButToUpgrade(const VarIdVector& vars, VarIdVector& toInstall, VarIdToVarIdMap& toUpgrade)
 {
   //Do not clear any of result structures here!!!

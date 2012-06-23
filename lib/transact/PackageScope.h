@@ -66,6 +66,7 @@ public:
   void selectMatchingVarsAmongProvides(PackageId packageId, VarIdVector& vars);
   void selectMatchingVarsAmongProvides(PackageId packageId, const VersionCond& ver, VarIdVector& vars);
 
+  bool isInstalled(VarId varId) const;
   bool isInstalledWithMatchingAlternatives(VarId varId) const;
   void selectInstalledNoProvides(PackageId pkgId, VarIdVector& vars) const;
 
@@ -78,9 +79,12 @@ public:
 
   bool canBeSatisfiedByInstalled(PackageId pkgId);
   bool canBeSatisfiedByInstalled(PackageId pkgId, const VersionCond& ver);
+  void whatSatisfiesAmongInstalled(const IdPkgRel& rel, VarIdVector& res);
 
   void whatDependsAmongInstalled(VarId varId, VarIdVector& res, IdPkgRelVector& resRels);
   void whatConflictsAmongInstalled(VarId varId, VarIdVector& res, IdPkgRelVector& resRels);
+
+  bool variableSatisfies(VarId varId, const IdPkgRel& rel);
 
 private:
   typedef PackageScopeContent::PkgInfo PkgInfo;

@@ -74,6 +74,18 @@ public:
     : pkgId(id), verDir(cond.type), ver(cond.version) {}
 
 public:
+  bool hasVer() const
+  {
+    if (verDir == VerNone)
+      {
+	assert(ver.empty());
+	return 0;
+      }
+    assert(!ver.empty());
+    return 1;
+  }
+
+public:
   PackageId pkgId;
   VerDirection verDir;
   std::string ver;

@@ -157,6 +157,14 @@ void PackageScope::selectMatchingVarsAmongProvides(PackageId packageId, const Ve
     }
 }
 
+bool PackageScope::isInstalled(VarId varId) const
+{
+  assert(varId != BAD_VAR_ID);
+  const PkgInfoVector& pkgs = m_content.pkgInfoVector;
+  assert(varId < pkgs.size());
+  return pkgs[varId].flags & PkgFlagInstalled;
+}
+
 bool PackageScope::isInstalledWithMatchingAlternatives(VarId varId) const
 {
   assert(varId != BAD_VAR_ID);
@@ -332,11 +340,60 @@ bool PackageScope ::canBeSatisfiedByInstalled(PackageId pkgId, const VersionCond
       if (!HAS_VERSION(rels[pos + j]))//Provide entry has no version;
 	continue;
       assert(rels[pos + j].type != VerNone);
-
       if (versionOverlap(ver, VersionCond(rels[pos + j].ver, rels[pos + j].type)))
 	return 1;
     }
   return 0;
+}
+
+void PackageScope::whatSatisfiesAmongInstalled(const IdPkgRel& rel, VarIdVector& res)
+{
+  assert(rel.pkgId != BAD_PACKAGE_ID);
+  res.clear();
+  if (!rel.hasver())
+    {
+      VarIdVector vars;
+      selectVarsToTry(m_content, m_provideMap, rel.pkgId, vars, 1);//1 means to include package itself;
+      const PkgInfoVector& pkgs = m_content.pkgInfoVector;
+      for(VarIdVector::size_type i = 0;i < vars.size();i++)
+	{
+	  assert(vars[i] < pkgs.size());
+	  if (pkgs[vars[i]].flags & PkgFlagInstalled)
+	    res.push_back(vars[i]);
+	}
+      return;
+    } //without version;
+  VarIdVector vars;
+  selectVarsToTry(m_content, m_provideMap, pkgId, vars, 1);//1 means to include package itself;
+  const PkgInfoVector& pkgs = m_content.pkgInfoVector;
+  const RelInfoVector& rels = m_content.relInfoVector;
+  for(VarIdVector::size_type i = 0;i < vars.size();i++)
+    {
+      assert(vars[i] < pkgs.size());
+      const PkgInfo& pkg = pkgs[vars[i]];
+      if (!(pkg.flags & PkgFlagInstalled))
+	continue;
+      if (pkg.pkgId == pkgId && versionSatisfies(ver, pkg.epoch, pkg.ver, pkg.release))
+	res.push_back(vars[i]);
+      const size_t pos = pkg.providesPos;
+      const size_t count = pkg.providesCount;
+      if (count == 0)//There are no provides entries;
+	continue;
+      size_t j;
+      for(j = 0;j < count;j++)
+	{
+	  assert(pos + j < rels.size());
+	  if (rels[pos + j].pkgId == rel.pkgId)//Again assuming each package can have only one provide entry for every pkgId;
+	    break;
+	}
+      if (j >= count)//No corresponding provide entry at all;
+	continue;
+      if (!HAS_VERSION(rels[pos + j]))//Provide entry has no version;
+	continue;
+      assert(rels[pos + j].type != VerNone);
+      if (versionOverlap(ver, VersionCond(rels[pos + j].ver, rels[pos + j].type)))
+	res.push_back(vars[i]);
+    }
 }
 
 void PackageScope::getRequires(VarId varId, PackageIdVector& depWithoutVersion, PackageIdVector& depWithVersion, VersionCondVector& versions) const
@@ -525,6 +582,13 @@ void PackageScope::whatConflictsAmongInstalled(VarId varId, VarIdVector& res, Id
 	    }//if has version;
 	}
     } //for provides;
+}
+
+bool PackageScope::variableSatisfies(VarId varId, const IdPkgRel& rel)
+{
+  //FIXME:!
+  assert(0);
+  return 0;
 }
 
 PackageId PackageScope::packageIdOfVarId(VarId varId) const
