@@ -216,7 +216,7 @@ void StrictSolver::translateUserTask(const UserTask& userTask)
   VarIdVector v;
   for(VarIdVector::size_type i = 0;i < m_userTaskInstall.size();i++)
     {
-      if (m_scope.isInstalled(m_userTaskInstall[i]))
+      if (m_scope.isInstalledWithMatchingAlternatives(m_userTaskInstall[i]))
 	{
 	  std::cout << m_scope.constructPackageName(m_userTaskInstall[i]) << " is the newest version" << std::endl;//FIXME:Proper user notification;
 	  logMsg(LOG_DEBUG, "Accepted to install variable %zu is already installed, skipping", m_userTaskInstall[i]);
@@ -265,7 +265,7 @@ void StrictSolver::walkThroughRequires(VarId startFrom, VarIdVector& mustBeInsta
 	  const VarId dep = satisfyRequire(depWithoutVersion[i]);
 	  if (dep == startFrom)//explicit check to be sure, assuming startFrom must be installed anyway;
 	    continue;
-	  if (m_scope.isInstalled(dep))//it is already installed, never mind;
+	  if (m_scope.isInstalledWithMatchingAlternatives(dep))//it is already installed, never mind;
 	    continue;
 	  if (!m_scope.canBeSatisfiedByInstalled(depWithoutVersion[i]))
 	    {
@@ -282,7 +282,7 @@ void StrictSolver::walkThroughRequires(VarId startFrom, VarIdVector& mustBeInsta
 	  const VarId dep = satisfyRequire(depWithVersion[i], versions[i]);
 	  if (dep == startFrom)//explicit check to be sure, assuming startFrom must be installed anyway;
 	    continue;
-	  if (m_scope.isInstalled(dep))//it is already installed, never mind;
+	  if (m_scope.isInstalledWithMatchingAlternatives(dep))//it is already installed, never mind;
 	    continue;
 	  if (!m_scope.canBeSatisfiedByInstalled(depWithVersion[i], versions[i]))
 	    {

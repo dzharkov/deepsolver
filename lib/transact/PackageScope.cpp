@@ -157,12 +157,26 @@ void PackageScope::selectMatchingVarsAmongProvides(PackageId packageId, const Ve
     }
 }
 
-bool PackageScope::isInstalled(VarId varId) const
+bool PackageScope::isInstalledWithMatchingAlternatives(VarId varId) const
 {
   assert(varId != BAD_VAR_ID);
   const PkgInfoVector& pkgs = m_content.pkgInfoVector;
   assert(varId < pkgs.size());
-  return pkgs[varId].flags & PkgFlagInstalled;
+  if (pkgs[varId].flags & PkgFlagInstalled)
+    return 1;
+  //Not everything is so simple, there can be other variables of this package and they can be installed;
+  VarId fromPos, toPos;
+  m_content.locateRange(pkgs[varId].pkgId, fromPos, toPos);
+  assert(fromPos <= toPos && fromPos < pkgs.size() && toPos < pkgs.size());
+  const PkgInfo& p1 = pkgs[varId];
+  for(VarId i = fromPos;i < toPos ;i++)
+    if (pkgs[i].flags & PkgFlagInstalled)
+      {
+  const PkgInfo& p2 = pkgs[i];
+  if (p1.pkgId == p2.pkgId && p1.epoch == p2.epoch && std::string(p1.ver) == p2.ver && std::string(p1.release) == p2.release)//No need to check buildtime here;
+    return 1;
+      }
+  return 0;
 }
 
 void PackageScope::selectInstalledNoProvides(PackageId pkgId, VarIdVector& vars) const

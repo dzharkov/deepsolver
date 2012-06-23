@@ -66,7 +66,7 @@ public:
   void selectMatchingVarsAmongProvides(PackageId packageId, VarIdVector& vars);
   void selectMatchingVarsAmongProvides(PackageId packageId, const VersionCond& ver, VarIdVector& vars);
 
-  bool isInstalled(VarId varId) const;
+  bool isInstalledWithMatchingAlternatives(VarId varId) const;
   void selectInstalledNoProvides(PackageId pkgId, VarIdVector& vars) const;
 
   void selectTheNewest(VarIdVector& vars);
