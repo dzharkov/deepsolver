@@ -320,6 +320,12 @@ void StrictSolver::findAllConflictedVars(VarId varId, VarIdVector& res)
 	if (vars[i] != varId)//Package cannot conflict with itself;
 	  res.push_back(vars[i]);
     }
+  //Here we check are there any conflicts from the installed packages;
+  VarIdVector vars;
+  IdPkgRelVector rels;
+  m_scope.whatConflictsAmongInstalled(varId, vars, rels);
+  for(VarIdVector::size_type i = 0;i < vars.size();i++)
+    res.push_back(vars[i]);
 }
 
 VarId StrictSolver::translateItemToInstall(const UserTaskItemToInstall& item) 

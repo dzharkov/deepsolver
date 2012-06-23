@@ -371,7 +371,7 @@ void PackageScope::getConflicts(VarId varId, PackageIdVector& withoutVersion, Pa
     }
 }
 
-void PackageScope::whatDependsAmongINstalled(VarId varId, VarIdVector& res, IdPkgRelVector& resRels)
+void PackageScope::whatDependsAmongInstalled(VarId varId, VarIdVector& res, IdPkgRelVector& resRels)
 {
   res.clear();
   resRels.clear();
@@ -442,7 +442,7 @@ void PackageScope::whatDependsAmongINstalled(VarId varId, VarIdVector& res, IdPk
     } //for provides;
 }
 
-void PackageScope::whatConflictsAmongINstalled(VarId varId, VarIdVector& res, IdPkgRelVector& resRels)
+void PackageScope::whatConflictsAmongInstalled(VarId varId, VarIdVector& res, IdPkgRelVector& resRels)
 {
   res.clear();
   resRels.clear();

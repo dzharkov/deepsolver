@@ -79,8 +79,8 @@ public:
   bool canBeSatisfiedByInstalled(PackageId pkgId);
   bool canBeSatisfiedByInstalled(PackageId pkgId, const VersionCond& ver);
 
-  void whatDependsAmongINstalled(VarId varId, VarIdVector& res, IdPkgRelVector& resRels);
-  void whatConflictsAmongINstalled(VarId varId, VarIdVector& res, IdPkgRelVector& resRels);
+  void whatDependsAmongInstalled(VarId varId, VarIdVector& res, IdPkgRelVector& resRels);
+  void whatConflictsAmongInstalled(VarId varId, VarIdVector& res, IdPkgRelVector& resRels);
 
 private:
   typedef PackageScopeContent::PkgInfo PkgInfo;
