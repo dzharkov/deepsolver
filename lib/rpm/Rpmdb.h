@@ -15,6 +15,8 @@
    General Public License for more details.
 */
 
+//FIXME:File lists of installed packages must be considered as their provides, but it is not so obvious, what troubles it can cause;
+
 #ifndef DEEPSOLVER_RPMDB_H
 #define DEEPSOLVER_RPMDB_H
 

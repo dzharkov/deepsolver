@@ -97,7 +97,7 @@ private:
   VarId translateItemToInstall(const UserTaskItemToInstall& item);
   VarId satisfyRequire(PackageId pkgId);
   VarId satisfyRequire(PackageId pkgId, const VersionCond& version);
-  void isValidTask() const;
+  void firstStageValidTask() const;
   VarId processPriorityList(const VarIdVector& vars, PackageId provideEntry) const;
   VarId processPriorityBySorting(const VarIdVector& vars) const;
   void notToInstallButToUpgrade(const VarIdVector& vars, VarIdVector& toInstall, VarIdToVarIdMap& toUpgrade);
@@ -175,6 +175,8 @@ void StrictSolver::solve(const UserTask& task, VarIdVector& toInstall, VarIdVect
   for(VarIdToVarIdMap::const_iterator it = m_anywayUpgrade.begin();it != m_anywayUpgrade.end();it++)
       findAllConflictedVars(it->first, m_anywayRemove);
   removeDublications(m_anywayRemove);
+  firstStageValidTask();
+  logMsg(LOG_DEBUG, "Here we have %zu packages not to be installed, checking what breaks it can cause", m_anywayRemove.size());
 
   printSolution(m_scope, m_anywayInstall, m_anywayRemove, m_anywayUpgrade);
 }
@@ -452,18 +454,36 @@ VarId StrictSolver::satisfyRequire(PackageId pkgId, const VersionCond& version)
   return processPriorityBySorting(vars);
 }
 
-void StrictSolver::isValidTask() const
+void StrictSolver::firstStageValidTask() const
 {
-  /*FIXME:
-  for(VarIdVector::size_type i1 = 0;i1 < strongToInstall.size();i1++)
-    for(VarIdVector::size_type i2 = 0;i2 < strongToRemove.size();i2++)
-      if (strongToInstall[i1] == strongToRemove[i2])
+  //FIXME:	  throw TaskException(TaskErrorBothInstallRemove, pkgName);
+  for(VarIdVector::size_type i = 0;i < m_anywayRemove.size();i++)
+    {
+      VarIdVector::size_type j;
+      for(j = 0;j < m_anywayInstall.size();j++)
+	if (m_anywayInstall[j] == m_anywayRemove[i])
+	  break;
+      if (j < m_anywayInstall.size())
 	{
-	  const std::string pkgName = m_scope.packageIdToStr(strongToInstall[i1]);
-	  assert(!pkgName.empty());
-	  throw TaskException(TaskErrorBothInstallRemove, pkgName);
+	  //FIXME:user exception;
+	  logMsg(LOG_ERR, "Package \'%s\' selected is presented in anyway to install set and in anyway to remove set", m_scope.constructPackageName(m_anywayRemove[i]).c_str());
+	  assert(0);
 	}
-  */
+      if (m_anywayUpgrade.find (m_anywayRemove[i]) != m_anywayUpgrade.end())
+	{
+	  //FIXME:user exception;
+	  logMsg(LOG_ERR, "Package \'%s\' selected is presented in anyway to upgrade set and in anyway to remove set", m_scope.constructPackageName(m_anywayRemove[i]).c_str());
+	  assert(0);
+	}
+    }
+  for(VarIdToVarIdMap::const_iterator it = m_anywayUpgrade.begin();it != m_anywayUpgrade.end();it++)
+    {
+      assert(m_scope.packageIdOfVarId(it->first) == m_scope.packageIdOfVarId(it->second));
+      for(VarIdVector::size_type i = 0;i < m_anywayInstall.size();i++)
+	{
+	  assert(m_scope.packageIdOfVarId(it->first) != m_scope.packageIdOfVarId(m_anywayInstall[i]));
+	}
+    }
 }
 
 void StrictSolver::notToInstallButToUpgrade(const VarIdVector& vars, VarIdVector& toInstall, VarIdToVarIdMap& toUpgrade)
