@@ -18,7 +18,7 @@
 #include"deepsolver.h"
 #include"InstalledReferences.h"
 
-void InstalledReferences::searchReferencesTo(PackageId refTo, VarIdVector& res)
+void InstalledReferences::searchReferencesTo(PackageId refTo, VarIdVector& res) const
 {
   assert(refTo != BAD_PACKAGE_ID);
   res.clear();

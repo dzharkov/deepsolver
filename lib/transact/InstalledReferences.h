@@ -27,7 +27,7 @@ public:
 public:
   void add(PackageId refTo, VarId refFrom);
   void commit();
-  void searchReferencesTo(PackageId refTo, VarIdVector& res);
+  void searchReferencesTo(PackageId refTo, VarIdVector& res) const;
 
 private:
   struct Reference
