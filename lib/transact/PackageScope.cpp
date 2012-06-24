@@ -350,7 +350,7 @@ void PackageScope::whatSatisfiesAmongInstalled(const IdPkgRel& rel, VarIdVector&
 {
   assert(rel.pkgId != BAD_PACKAGE_ID);
   res.clear();
-  if (!rel.hasver())
+  if (!rel.hasVer())
     {
       VarIdVector vars;
       selectVarsToTry(m_content, m_provideMap, rel.pkgId, vars, 1);//1 means to include package itself;
@@ -364,7 +364,7 @@ void PackageScope::whatSatisfiesAmongInstalled(const IdPkgRel& rel, VarIdVector&
       return;
     } //without version;
   VarIdVector vars;
-  selectVarsToTry(m_content, m_provideMap, pkgId, vars, 1);//1 means to include package itself;
+  selectVarsToTry(m_content, m_provideMap, rel.pkgId, vars, 1);//1 means to include package itself;
   const PkgInfoVector& pkgs = m_content.pkgInfoVector;
   const RelInfoVector& rels = m_content.relInfoVector;
   for(VarIdVector::size_type i = 0;i < vars.size();i++)
@@ -373,7 +373,7 @@ void PackageScope::whatSatisfiesAmongInstalled(const IdPkgRel& rel, VarIdVector&
       const PkgInfo& pkg = pkgs[vars[i]];
       if (!(pkg.flags & PkgFlagInstalled))
 	continue;
-      if (pkg.pkgId == pkgId && versionSatisfies(ver, pkg.epoch, pkg.ver, pkg.release))
+      if (pkg.pkgId == rel.pkgId && versionSatisfies(VersionCond(rel.ver, rel.verDir), pkg.epoch, pkg.ver, pkg.release))
 	res.push_back(vars[i]);
       const size_t pos = pkg.providesPos;
       const size_t count = pkg.providesCount;
@@ -391,7 +391,7 @@ void PackageScope::whatSatisfiesAmongInstalled(const IdPkgRel& rel, VarIdVector&
       if (!HAS_VERSION(rels[pos + j]))//Provide entry has no version;
 	continue;
       assert(rels[pos + j].type != VerNone);
-      if (versionOverlap(ver, VersionCond(rels[pos + j].ver, rels[pos + j].type)))
+      if (versionOverlap(VersionCond(rel.ver, rel.verDir), VersionCond(rels[pos + j].ver, rels[pos + j].type)))
 	res.push_back(vars[i]);
     }
 }
@@ -586,8 +586,36 @@ void PackageScope::whatConflictsAmongInstalled(VarId varId, VarIdVector& res, Id
 
 bool PackageScope::variableSatisfies(VarId varId, const IdPkgRel& rel)
 {
-  //FIXME:!
-  assert(0);
+  assert(varId != BAD_VAR_ID && rel.pkgId != BAD_PACKAGE_ID);
+  const PkgInfoVector& pkgs = m_content.pkgInfoVector;
+  const RelInfoVector& rels = m_content.relInfoVector;
+  assert(varId < pkgs.size());
+  const PkgInfo& pkg = pkgs[varId];
+  if (packageIdOfVarId(varId) == rel.pkgId)
+    {
+      if (!rel.hasVer())
+	return 1;
+      if (versionSatisfies(VersionCond(rel.ver, rel.verDir), pkg.epoch, pkg.ver, pkg.release))
+	return 1;
+    }
+  //The package itself does not match, checking its provides;
+  const size_t pos = pkg.providesPos;
+  const size_t count = pkg.providesCount;
+  if (count == 0)
+    return 0;
+  for(size_t i = 0;i < count;i++)
+    {
+      assert(pos + i < rels.size());
+      const RelInfo& r = rels[pos + i];
+      if (r.pkgId != rel.pkgId)
+	continue;
+      if (!rel.hasVer())
+	return 1;
+      if (!HAS_VERSION(r))
+	continue;
+      if (versionOverlap(VersionCond(rel.ver, rel.verDir), VersionCond(r.ver, r.type)))
+	return 1;
+    }
   return 0;
 }
 

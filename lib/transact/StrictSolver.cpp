@@ -102,6 +102,7 @@ private:
   VarId processPriorityBySorting(const VarIdVector& vars) const;
   void notToInstallButToUpgrade(const VarIdVector& vars, VarIdVector& toInstall, VarIdToVarIdMap& toUpgrade);
   void findAllConflictedVars(VarId varId, VarIdVector& res);
+  void handleDependentBreaks(VarIdVector& moreInstall, VarIdVector& moreRemove );
 
 private:
   const PackageScopeContent& m_content;
@@ -177,7 +178,11 @@ void StrictSolver::solve(const UserTask& task, VarIdVector& toInstall, VarIdVect
   removeDublications(m_anywayRemove);
   firstStageValidTask();
   logMsg(LOG_DEBUG, "Here we have %zu packages not to be installed, checking what breaks it can cause", m_anywayRemove.size());
-
+  VarIdVector moreInstall, moreRemove;
+  handleDependentBreaks(moreInstall, moreRemove);
+  assert(moreInstall.empty());
+  for(VarIdVector::size_type i = 0;i < moreRemove.size();i++)
+    m_anywayRemove.push_back(moreRemove[i]);
   printSolution(m_scope, m_anywayInstall, m_anywayRemove, m_anywayUpgrade);
 }
 
@@ -488,13 +493,18 @@ void StrictSolver::firstStageValidTask() const
 
 void StrictSolver::handleDependentBreaks(VarIdVector& moreInstall, VarIdVector& moreRemove )
 {
-  moreINstall.clear();
+  moreInstall.clear();
   moreRemove.clear();
   VarIdVector pending;
+  VarIdSet processed;
   //Selecting pending packages from m_anywayRemove;
   for(VarIdVector::size_type i = 0;i < m_anywayRemove.size();i++)
     if (m_scope.isInstalled(m_anywayRemove[i]))
-      pending.push_back(m_anywayRemove[i]);
+      {
+	pending.push_back(m_anywayRemove[i]);
+	//These packages is already selected to be installed, so we can consider them as processed;
+	processed.push_back(m_anywayRemove[i]);
+      }
   //Checking packages to upgrade and add them to pending if necessary;
   for(varIdToVarIdMap::const_iterator it = m_anywayUpgrade.begin();m_anywayUpgrade.end();it++)
     {
@@ -505,23 +515,26 @@ void StrictSolver::handleDependentBreaks(VarIdVector& moreInstall, VarIdVector& 
       m_scope.whatDependsAmongInstalled(it->first, deps, rels);
       assert(deps.size() == rels.size());
       for(VarIdVector::size_type i = 0;i < deps.size();i++)
-	if (!m_scope.variableSatisfies(it->second, rels))
-	  pending.push_back(deps[i]);
+	if (!m_scope.variableSatisfies(it->second, rels[i]))
+	  {
+	    pending.push_back(deps[i]);
+	    processed.insert(deps[i]);
+	  }
     }
-  while(!pending.empty())//FIXME:I don't know can be cycles here...
+  while(!pending.empty())
     {
       const VarId cur = pending[pending.size() - 1];
       pending.pop_back();
-      VarIdvector deps;
+      VarIdVector deps;
       IdPkgRel rels;
       m_scope.whatDependsAmongInstalled(cur, deps, rels);
       assert(deps.size() == rels.size());
-      for(VarIdVector:;size_type i = 0;i < deps.size();i++)
+      for(VarIdVector::size_type i = 0;i < deps.size();i++)
 	{
-	  bool present = 0;//Just to be sure;
-	  bool anythingElse = 0;
 	  VarIdVector matching;
 	  m_scope.whatSatisfiesAmongInstalled(rels[i], matching);
+	  bool present = 0;//Just to be sure;
+	  bool anythingElse = 0;
 	  for(VarIdVector::size_type j = 0;j < matching.size();j++)
 	    {
 	      if (matching[j] == cur)
@@ -529,9 +542,9 @@ void StrictSolver::handleDependentBreaks(VarIdVector& moreInstall, VarIdVector& 
 		anythingElse = 1;
 	    }
 	  assert(present);//To be sure;
-	  if (!anythingElse)
+	  if (!anythingElse && processed.find(deps[i]) == processed.end())
 	    {
-	      //FIXME:processed;
+	      processed.insert(deps[i]);
 	      moreRemove.push_back(deps[i]);
 	      pending.push_back(deps[i]);
 	    }
