@@ -503,15 +503,15 @@ void StrictSolver::handleDependentBreaks(VarIdVector& moreInstall, VarIdVector& 
       {
 	pending.push_back(m_anywayRemove[i]);
 	//These packages is already selected to be installed, so we can consider them as processed;
-	processed.push_back(m_anywayRemove[i]);
+	processed.insert(m_anywayRemove[i]);
       }
   //Checking packages to upgrade and add them to pending if necessary;
-  for(varIdToVarIdMap::const_iterator it = m_anywayUpgrade.begin();m_anywayUpgrade.end();it++)
+  for(VarIdToVarIdMap::const_iterator it = m_anywayUpgrade.begin();it != m_anywayUpgrade.end();it++)
     {
       //Checking is new version is suitable instead of old one;
       assert(m_scope.packageIdOfVarId(it->first) == m_scope.packageIdOfVarId(it->second));
       VarIdVector deps;
-      IdPkgRel rels;
+      IdPkgRelVector rels;
       m_scope.whatDependsAmongInstalled(it->first, deps, rels);
       assert(deps.size() == rels.size());
       for(VarIdVector::size_type i = 0;i < deps.size();i++)
@@ -526,7 +526,7 @@ void StrictSolver::handleDependentBreaks(VarIdVector& moreInstall, VarIdVector& 
       const VarId cur = pending[pending.size() - 1];
       pending.pop_back();
       VarIdVector deps;
-      IdPkgRel rels;
+      IdPkgRelVector rels;
       m_scope.whatDependsAmongInstalled(cur, deps, rels);
       assert(deps.size() == rels.size());
       for(VarIdVector::size_type i = 0;i < deps.size();i++)
