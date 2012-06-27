@@ -140,15 +140,12 @@ void PackageScopeContent::enhance(const PkgVector& pkgs, int flags)
       addRelsForEnhancing(pkg.conflicts, info.conflictsPos, info.conflictsCount, stringBuf.get(), offset);
       addRelsForEnhancing(pkg.obsoletes, info.obsoletesPos, info.obsoletesCount, stringBuf.get(), offset);
       pkgInfoVector.push_back(info);
-      for(RelInfoVector::size_type k = 0;k < info.providesCount;k++)
-	provideMap.push_back(ProvideMapItem(relInfoVector[info.providesPos + k].pkgId, info.pkgId));
     }
   assert(offset == stringBufSize);
   addStringToAutoRelease(stringBuf.get());
   stringBuf.release();
   std::sort(pkgInfoVector.begin(), pkgInfoVector.end());
-  std::sort(provideMap.begin(), provideMap.end());
-  logMsg(LOG_DEBUG, "Package scope content enhancing completed, now have %zu packages, %zu relations, %zu provide map items", pkgInfoVector.size(), relInfoVector.size(), provideMap.size());
+  logMsg(LOG_DEBUG, "Package scope content enhancing completed, now have %zu packages, %zu relations", pkgInfoVector.size(), relInfoVector.size());
 }
 
 void PackageScopeContent::addRelsForEnhancing(const NamedPkgRelVector& rels, size_t& pos, size_t& count, char* stringBuf, size_t& stringBufOffset)
@@ -269,16 +266,8 @@ void PackageScopeContent::rearrangeNames()
       assert(relInfoVector[i].pkgId < newPlaces.size());
       relInfoVector[i].pkgId = newPlaces[relInfoVector[i].pkgId];
     }
-  for(ProvideMapItemVector::size_type i = 0;i < provideMap.size();i++)
-    {
-      assert(provideMap[i].provideId < newPlaces.size());
-      assert(provideMap[i].pkgId < newPlaces.size());
-      provideMap[i].provideId = newPlaces[provideMap[i].provideId];
-      provideMap[i].pkgId = newPlaces[provideMap[i].pkgId];
-    }
   names = newNames;
   std::sort(pkgInfoVector.begin(), pkgInfoVector.end());
-  std::sort(provideMap.begin(), provideMap.end());
 }
 
 char* PackageScopeContent::placeStringInBuffer(char* buf, size_t& offset, const std::string& value)

@@ -116,30 +116,6 @@ public:
   typedef std::list<PkgInfo> PkgInfoList;
   typedef std::vector<PkgInfo> PkgInfoVector;
 
-  struct ProvideMapItem
-  {
-    ProvideMapItem()
-      : provideId(BAD_PACKAGE_ID), pkgId(BAD_PACKAGE_ID) {}
-
-    ProvideMapItem(PackageId prId, PackageId pkId)
-      : provideId(prId), pkgId(pkId) {}
-
-    bool operator <(const ProvideMapItem& item) const
-    {
-      return provideId < item.provideId;
-    }
-
-    bool operator >(const ProvideMapItem& item) const
-    {
-      return provideId > item.provideId;
-    }
-
-    PackageId provideId, pkgId;
-  }; //struct ProvideMapItem;
-
-  typedef std::vector<ProvideMapItem> ProvideMapItemVector;
-  typedef std::list<ProvideMapItem> ProvideMapItemList;
-
 private:
   void addRelsForEnhancing(const NamedPkgRelVector& rels, size_t& pos, size_t& count, char* stringBuf, size_t& stringBufOffset);
   void releaseStrings();
@@ -149,7 +125,6 @@ public:
   StringVector names;
   PkgInfoVector pkgInfoVector;
   RelInfoVector relInfoVector;
-  ProvideMapItemVector provideMap;
 
 private:
   ConstCharStarVector m_toAutoRelease;
