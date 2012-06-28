@@ -34,9 +34,9 @@ enum {
  * This class instance indicates any problem in Deepsolver configuration
  * structures. Be careful, it must not be confused with
  * ConfigFileException used to notify about configuration file syntax
- * error.
+ * errors.
  *
- * The objects of ConfigException save the error code, optional string
+ * The objects of ConfigException provide the error code, optional string
  * argument which meaning depends on error code and error location in
  * configuration files if there is any. Some kind of problems are actual
  * without any reference to configuration file. For example, if some
@@ -164,16 +164,75 @@ private:
   const std::string m_line;
 }; //class DeepsolverException;
 
+/**\brief Central configuration processing class
+ *
+ * This class designed as central place to store all configuration
+ * information necessary for all operations except repository index
+ * building. Every client application should create the instance of this
+ * class, process with it configuration files it need and provide the
+ * reference to OperationCore or InfoCore classes depending on required
+ * task.
+ *
+ * Configuration center class strongly associated with ConfigFile class
+ * since it is used for configuration file syntax processing. During
+ * configuration file reading two types of exceptions can be thrown:
+ * ConfigFileException and ConfigException. The first type is used for
+ * syntax error indication only, the second one is designed for general
+ * configuration data validation problems.
+ *
+ * Do not forget to call commit() method after configuration files
+ * reading. Some data may be left unprepared without commit() method
+ * invocation. After configuration files processing configuration data is
+ * placed in various structures gathered in ConfRoot type and can be
+ * accessed directly.
+ *
+ * \sa ConfRoot ConfigFile ConfigException ConfigFileException
+ */
 class ConfigCenter: private AbstractConfigFileHandler
 {
 public:
+  /**\brief The default constructor*/
   ConfigCenter() {}
+
+  /**\brief The destructor*/
   virtual ~ConfigCenter() {}
 
 public:
+  /**\brief reads one configuration file
+   *
+   * This method reads one configuration file parses it and saves processed
+   * values into internal structures for further access. You can call it
+   * multiple times for different files but do not forget make final
+   * invocation of commit() method to validate received data.
+   *
+   * This method throws two types of exceptions: ConfigFileException to
+   * indicate syntax problems and ConfigException for general errors.
+   *
+   * \param [in] fileName Name of the file to read configuration data from
+   *
+   * \sa ConfigException ConfigFileException
+   */
   void loadFromFile(const std::string& fileName);
+
+  /**\brief Verifies read configuration data
+   *
+   * This method makes final configuration data preparing and performs
+   * various checks to be sure the data is valid. In case of errors
+   * ConfigException or ConfigFileException can be thrown. This method call
+   * is strongly required for proper further execution.
+   *
+   * \sa ConfigException ConfigFileException
+   */
   void commit();
 
+  /**\brief Returns the reference to parsed configuration data
+   *
+   * This method used for access to parsed values after configuration data reading during operations processing.
+   *
+   * \return The reference to parsed data
+   *
+   * \sa ConfRoot
+   */
   const ConfRoot& root() const
   {
     return m_root;
