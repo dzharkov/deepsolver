@@ -65,7 +65,6 @@ void PackageScopeContentLoader::loadFromFile(const std::string& fileName)
   assert(m_c.names.empty());
   assert(m_c.pkgInfoVector.empty());
   assert(m_c.relInfoVector.empty());
-  assert(m_c.provideMap.empty());
   //FIXME:  assert(m_stringBuf == NULL);
   std::ifstream s(fileName.c_str());
   assert(s.is_open());//FIXME:error checking;
@@ -80,8 +79,6 @@ void PackageScopeContentLoader::loadFromFile(const std::string& fileName)
   logMsg(LOG_DEBUG, "%zu packages", m_c.pkgInfoVector.size());
   m_c.relInfoVector.resize(readSizeValue(s));
   logMsg(LOG_DEBUG, "%zu package relations", m_c.relInfoVector.size());
-  m_c.provideMap.resize(readSizeValue(s));
-  logMsg(LOG_DEBUG, "%zu provide map items", m_c.provideMap.size());
   //Reading all version and release strings;
   char* stringBuf = new char[stringBufSize];
   m_c.addStringToAutoRelease(stringBuf);
@@ -126,12 +123,6 @@ void PackageScopeContentLoader::loadFromFile(const std::string& fileName)
 	  info.ver = stringBuf + verOffset;
 	} else
 	info.ver = NULL;
-    }
-  //Reading provide map;
-  for(PackageScopeContent::ProvideMapItemVector::size_type i = 0;i < m_c.provideMap.size();i++)
-    {
-      m_c.provideMap[i].provideId = readSizeValue(s);
-      m_c.provideMap[i].pkgId = readSizeValue(s);
     }
 }
 
