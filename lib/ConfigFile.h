@@ -206,8 +206,8 @@ public:
 public:
   void processSection(const std::string& line);
   void processValue(const std::string& line);
-  void stopSection(int state, std::string::size_type pos, char ch, const std::string& line);
-  void stopParam(int state, std::string::size_type pos, char ch, const std::string& line);
+  void stopSection(int state, std::string::size_type pos, const std::string& line);
+  void stopParam(int state, std::string::size_type pos, const std::string& line);
 
 private:
   AbstractConfigFileHandler& m_handler;

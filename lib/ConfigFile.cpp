@@ -100,7 +100,7 @@ void ConfigFile::processSection(const std::string& line)
 	      state = SECT_BEFORE_NAME;
 	      continue;
 	    }
-	  stopSection(state, i, c, line);
+	  stopSection(state, i, line);
 	  assert(0);
 	} //SECT_INITIAL;
       //SECT_BEFORE_NAME;
@@ -115,7 +115,7 @@ void ConfigFile::processSection(const std::string& line)
 	      state = SECT_NAME;
 	      continue;
 	    }
-	  stopSection(state, i , c, line);
+	  stopSection(state, i , line);
 	  assert(0);
 	} //SECT_BEFORE_NAME;
       //SECT_NAME;
@@ -145,7 +145,7 @@ void ConfigFile::processSection(const std::string& line)
 	      m_path.push_back(value);
 	      return;
 	    }
-	  stopSection(state, i, c, line);
+	  stopSection(state, i, line);
 	  assert(0);
 	} //SECT_NAME;
       //SECT_AFTER_NAME;
@@ -167,7 +167,7 @@ void ConfigFile::processSection(const std::string& line)
 	      m_sectArgPos = i;
 	      continue;
 	    }
-	  stopSection(state, i, c, line);
+	  stopSection(state, i, line);
 	  assert(0);
 	} //SECT_AFTER_NAME; 
       //SECT_ARG;
@@ -196,11 +196,11 @@ void ConfigFile::processSection(const std::string& line)
 	    continue;
 	  if (c == ']')
 	    return;
-	  stopSection(state, i, c, line);
+	  stopSection(state, i, line);
 	  assert(0);
 	} //SECT_AFTER_ARG;
     } //for();
-  stopSection(state, line.length(), 0, line);
+  stopSection(state, line.length(), line);
 }
 
 void ConfigFile::processValue(const std::string& line)
@@ -225,7 +225,7 @@ void ConfigFile::processValue(const std::string& line)
 	      state = PARAM_NAME;
 	      continue;
 	    }
-	  stopParam(state, i, c, line);
+	  stopParam(state, i, line);
 	  assert(0);
 	} //PARAM_INITIAL;
       if (state == PARAM_NAME)
@@ -249,7 +249,7 @@ void ConfigFile::processValue(const std::string& line)
 		state = PARAM_NEXT_NAME;
 		continue;
 	    }
-	  stopParam(state, i, c, line);
+	  stopParam(state, i, line);
 	  assert(0);
 	} //PARAM_NAME;
       //PARAM_NEXT_NAME;
@@ -264,7 +264,7 @@ void ConfigFile::processValue(const std::string& line)
 	      state = PARAM_NAME;
 	      continue;
 	    }
-	  stopParam(state, i, c, line);
+	  stopParam(state, i, line);
 	  assert(0);
 	} //PARAM_NEXT_NAME;
       //PARAM_AFTER_NAME;
@@ -290,14 +290,14 @@ void ConfigFile::processValue(const std::string& line)
 	      i++;
 	      if (line[i] != '=')
 		{
-		  stopParam(state, i, line[i], line);
+		  stopParam(state, i, line);
 		  assert(0);
 		}
 	      state = PARAM_VALUE;
 	      m_assignMode = ModeAdding;
 	      continue;
 	    }
-	  stopParam(state, i, c, line);
+	  stopParam(state, i, line);
 	  assert(0);
 	} //PARAM_AFTER_NAME;
       //PARAM_VALUE;
@@ -308,7 +308,7 @@ void ConfigFile::processValue(const std::string& line)
 	  if (c == '\\')
 	    {
 	      if (i + 1 >= line.length())
-		stopParam(state, line.length(), 0, line);
+		stopParam(state, line.length(), line);
 	      m_paramValue += line[i + 1];
 	      i++;
 	      continue;
@@ -317,12 +317,11 @@ void ConfigFile::processValue(const std::string& line)
 	} //STATE_VALUE;
     }
   if (state != PARAM_VALUE)
-    stopParam(state, line.length(), 0, line);
+    stopParam(state, line.length(), line);
 }
 
 void ConfigFile::stopSection(int state,
 			     std::string::size_type pos,
-			     char ch,
 			     const std::string& line)
 {
   int code;
@@ -356,7 +355,6 @@ void ConfigFile::stopSection(int state,
 
 void ConfigFile::stopParam(int state,
 			   std::string::size_type pos,
-			   char ch,
 			   const std::string& line)
 {
   int code;
