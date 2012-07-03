@@ -191,7 +191,7 @@ public:
 	return "";
       } //switch();
     std::ostringstream ss;
-    ss << m_fileName + "(" + m_lineNumber + "):" << msg;
+    ss << m_fileName << "(" << m_lineNumber << "):" << msg;
     return ss.str();
   }
 
@@ -213,12 +213,54 @@ ConfigFilePosInfo(const std::string& f, size_t ln, const std::string& l)
   const std::string& line;
 }; //struct ConfigFilePosInfo;
 
+/**\brief The interface to listen parsed configuration file parameters
+ *
+ * This abstract class describes the interface to get every parsed
+ * configuration line parameter. It is generally purposed for various
+ * configuration file handlers. It does not take care about any
+ * configuration semantics.
+ *
+ * The events are sent only for every parameter but not for section
+ * headers. It is enough for current requirements but in future the
+ * section events must present as well as parameter events now. In
+ * additional parameter events must be slightly extended to provide
+ * complete information necessary for constructing text form of
+ * configuration file back. It makes possible creation of various
+ * configuration data editing utilities.
+ *
+ * \sa ConfigFile ConfigFilePosInfo
+ */
 class AbstractConfigFileHandler
 {
 public:
+  /**\brief The destructor*/
   virtual ~AbstractConfigFileHandler() {}
 
 public:
+  /**\brief The event about newly parsed configuration file parameter
+   *
+   *
+   * This method transmits information about one parsed configuration line
+   * parameter with complete information for its proper processing The
+   * information includes parameter path, first section argument if it has
+   * any boolean flag to indicate is it new assignment or adding to already
+   * existing value, the parameter value and information about parameter
+   * position in file.
+   *
+   * The parameter name consists of several components called parameter
+   * path. The last path component is the exact parameter name and it is
+   * always present, all previous components are the section names and can
+   * be mentioned in file either in section header or in the line of
+   * parameter. In both cases name components are delimited by dots. If
+   * section argument is not empty it is always associated with first
+   * component in parameter path.
+   *
+   * \param [in] path The parameter path including its exact name
+   * \param [in] sectArg The argument for the first path component if it has any
+   * \param [in] value The parameter value
+   \param [in] * adding The flag for indication not to erase previously set value if was any and perform adding
+   * \param [in] pos The information about the line position in the configuration file
+   */
   virtual void onConfigFileValue(const StringVector& path, 
 				 const std::string& sectArg,
 				 const std::string& value,
