@@ -35,7 +35,7 @@ enum {
   ConfigErrorValueUnexpectedValueEnd = 11
 };
 
-/**\brief The exception class for config file syntax error indication
+/**\brief The exception class for config file syntax errors
  *
  * This class instance is thrown when configuration file syntax error was
  * encountered. The client application can access various information
@@ -147,7 +147,52 @@ public:
    */
   std::string getMessage() const
   {
-    return "FIXME";
+    std::string msg;
+    switch(m_code)
+      {
+      case ConfigErrorSectionInvalidType:
+	msg = "invalid section type";
+	break;
+      case ConfigErrorSectionWaitingOpenBracket:
+	msg = "missed opening bracket";
+	break;
+      case ConfigErrorSectionWaitingName:
+	msg = "missed section name";
+	break;
+      case ConfigErrorSectionInvalidNameChar:
+	msg = "invalid section name character";
+	break;
+      case ConfigErrorSectionWaitingCloseBracketOrArg:
+	msg = "missed closing bracket or section header argument";
+	break;
+      case ConfigErrorSectionUnexpectedArgEnd:
+	msg = "unexpected argument end";
+	break;
+      case ConfigErrorSectionWaitingCloseBracket:
+	msg = "missed closing bracket";
+	break;
+      case ConfigErrorValueWaitingName:
+	msg = "missed parameter name";
+	break;
+      case ConfigErrorValueInvalidNameChar:
+	msg = "invalid parameter name character";
+	break;
+      case ConfigErrorValueWaitingAssignOrNewName:
+	msg = "illegal new name component or missed equals sign";
+	break;
+      case ConfigErrorValueWaitingNewName:
+	msg = "illegal new parameter name component";
+	break;
+      case ConfigErrorValueUnexpectedValueEnd:
+	msg = "unexpected value end";
+	break;
+      default:
+	assert(0);
+	return "";
+      } //switch();
+    std::ostringstream ss;
+    ss << m_fileName + "(" + m_lineNumber + "):" << msg;
+    return ss.str();
   }
 
 private:
