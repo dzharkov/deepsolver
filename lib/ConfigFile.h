@@ -203,8 +203,22 @@ private:
   const std::string m_line;
 }; //class ConfigFileException;
 
+/**\brief Stores the information about position in configuration file
+ *
+ * This structure saves the complete configuration file position
+ * information necessary for constructing proper error message. This
+ * information is provided to parsing process listening class.
+ *
+ * \sa AbstractConfigFileHandler ConfigFile
+ */
 struct ConfigFilePosInfo
 {
+  /**\brief The constructor
+   *
+   * \param [in] f The configuration file name
+   * \param [in] ln The number of the line with the invalid content
+   * \param [in] l The content of the invalid line
+   */
 ConfigFilePosInfo(const std::string& f, size_t ln, const std::string& l)
     : fileName(f), lineNumber(ln), line(l) {}
 
@@ -268,6 +282,24 @@ public:
 				 const ConfigFilePosInfo& pos) = 0;
 }; //class AbstractConfigHandler;
 
+/**\brief The configuration file format parser
+ *
+ * This class performs general configuration file syntax parsing but
+ * don't take care about configuration data semantics. That means the
+ * another handler must be used in addition to this class to process
+ * semantics.
+ * 
+ * This parser doesn't read file from disk by itself. The client
+ * implementation should provide content line-by-line receiving parsed
+ * data back through special callback interface. However the
+ * configuration file name must be provided since it is used in syntax
+ * error messages construction. One instance of this parser may be used
+ * only for one file because it has internal line counter. By the same
+ * reason the empty lines must be given as well as lines with any
+ * content.
+ *
+ * \sa ConfigCenter AbstractConfigHandler ConfigFileException
+ */
 class ConfigFile
 {
 private:
@@ -277,6 +309,11 @@ private:
   };
 
 public:
+  /**\brief The constructor
+   *
+   * \param [in] handler The reference to the handler object for parsed data processing
+   * \param [in] fileName The name of the file being parsed
+   */
   ConfigFile(AbstractConfigFileHandler& handler, const std::string fileName)
     : m_handler(handler),
       m_fileName(fileName),
@@ -285,12 +322,19 @@ public:
       m_sectArgPos(0),
       m_assignMode(ModeAssign) {}
 
+  /**\brief The destructor*/
   virtual ~ConfigFile() {}
 
 public:
+  /**\brief Processes one configuration file line
+   *
+   * Use this method to parse one line and receive parsed data back.
+   *
+   * \param [in] The content of the line to process
+   */
   void processLine(const std::string& line);
 
-public:
+private:
   void processSection(const std::string& line);
   void processValue(const std::string& line);
   void stopSection(int state, std::string::size_type pos, const std::string& line);
