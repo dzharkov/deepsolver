@@ -76,39 +76,6 @@ bool TextFormatReader::readPackage(PkgFile& pkgFile)
   return 1;
 }
 
-bool TextFormatReader::readProvides(std::string& provideName, StringVector& providers)
-{
-  provideName.erase();
-  providers.clear();
-  if (m_reader.get() == NULL || m_noMoreData)
-    return 0;
-  std::string line;
-  //Sections are delimited by an empty line, searching first non-empty line;
-      while(readLine(line))
-	if (!line.empty())
-	  break;
-      if (line.empty())//No more data;
-	{
-	  m_noMoreData = 1;
-	  return 0;
-	}
-      if (line.length() <= 2 || line[0] != '[' || line[line.length() - 1] != ']')
-	throw TextFormatReaderException(TextFormatReaderErrorInvalidSectionHeader, m_fileName, m_lineNumber, m_line);
-  for(std::string::size_type i = 1;i < line.length();i++)
-    line[i - 1] = line[i];
-  line.resize(line.size() - 2);
-  provideName = line;
-      //OK, we have found section header and can process it content;
-  while(readLine(line))
-    {
-      if (line.empty())
-	return 1;
-      providers.push_back(line);
-    }
-  m_noMoreData = 1;
-  return 1;
-}
-
 void TextFormatReader::translateRelType(const std::string& str, NamedPkgRel& rel)
 {
   assert(str == "<" || str == ">" || str == "=" || str == "<=" || str == ">=");

@@ -99,7 +99,6 @@ public:
   void openFile(const std::string& fileName, int textFileType);
   void close();
   bool readPackage(PkgFile& pkgFile);
-  bool readProvides(std::string& provideName, StringVector& providers);
 
 private:
   void translateRelType(const std::string& str, NamedPkgRel& rel);
