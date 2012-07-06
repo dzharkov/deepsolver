@@ -15,8 +15,8 @@
    General Public License for more details.
 */
 
-#ifndef DEEPSOLVER_REPO_INDEX_TEXT_FORMAT_WRITER_H
-#define DEEPSOLVER_REPO_INDEX_TEXT_FORMAT_WRITER_H
+#ifndef DEEPSOLVER_TEXT_FORMAT_WRITER_H
+#define DEEPSOLVER_TEXT_FORMAT_WRITER_H
 
 #include"Pkg.h"
 #include"IndexCore.h"
@@ -63,16 +63,18 @@ public:
  * references includes dependencies from collected packages and in
  * additional from optional string list.
  *
- * \sa IndexCore RepoIndexInfoFile
+ * \sa IndexCore TextFormatReader InfoFileWriter InfoFileReader
  */
-class RepoIndexTextFormatWriter
+class TextFormatWriter
 {
 public:
-  RepoIndexTextFormatWriter(const AbstractRequireFilter& requireFilter,
+  TextFormatWriter(const AbstractRequireFilter& requireFilter,
 			    const RepoIndexParams& params,
 			    AbstractConsoleMessages& console,
 			    const std::string& dir,
 			    const StringSet& additionalRefs);
+
+  virtual ~TextFormatWriter() {}
 
 public:
   void initBinary();
@@ -153,6 +155,6 @@ private:
   const StringSet& m_additionalRefs;
   const StringList& m_filterProvidesByDirs;
   StringSet m_refsSet;
-}; //class RepoIndexTextFormatWriter;
+}; //class TextFormatWriter;
 
-#endif //DEEPSOLVER_REPO_INDEX_TEXT_FORMAT_WRITER_H;
+#endif //DEEPSOLVER_TEXT_FORMAT_WRITER_H;

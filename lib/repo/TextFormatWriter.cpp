@@ -18,7 +18,7 @@
 //FIXME:change log;
 
 #include"deepsolver.h"
-#include"RepoIndexTextFormatWriter.h"
+#include"TextFormatWriter.h"
 #include"IndexCoreException.h"
 
 #define TMP_FILE "tmp_packages_data1"
@@ -174,7 +174,7 @@ static bool fileFromDirs(const std::string& fileName, const StringList& dirs)
   return 0;
 }
 
-RepoIndexTextFormatWriter::RepoIndexTextFormatWriter(const AbstractRequireFilter& requireFilter,
+TextFormatWriter::TextFormatWriter(const AbstractRequireFilter& requireFilter,
 						     const RepoIndexParams& params,
 						     AbstractConsoleMessages& console,
 						     const std::string& dir,
@@ -193,17 +193,17 @@ RepoIndexTextFormatWriter::RepoIndexTextFormatWriter(const AbstractRequireFilter
 {
 }
 
-void RepoIndexTextFormatWriter::initBinary()
+void TextFormatWriter::initBinary()
 {
   m_tmpFile = createTextFileWriter(TextFileStd, m_tmpFileName);
 }
 
-void RepoIndexTextFormatWriter::initSource()
+void TextFormatWriter::initSource()
 {
   m_srpmsFile = createTextFileWriter(selectTextFileType(m_params.compressionType), m_srpmsFileName);
 }
 
-void RepoIndexTextFormatWriter::addBinary(const PkgFile& pkgFile, const StringList& fileList)
+void TextFormatWriter::addBinary(const PkgFile& pkgFile, const StringList& fileList)
 {
   m_tmpFile->writeLine("[" + File::baseName(pkgFile.fileName) + "]");
   m_tmpFile->writeLine(NAME_STR + pkgFile.name);
@@ -273,7 +273,7 @@ void RepoIndexTextFormatWriter::addBinary(const PkgFile& pkgFile, const StringLi
   m_tmpFile->writeLine("");
 }
 
-void RepoIndexTextFormatWriter::addSource(const PkgFile& pkgFile)
+void TextFormatWriter::addSource(const PkgFile& pkgFile)
 {
   m_srpmsFile->writeLine("[" + File::baseName(pkgFile.fileName) + "]");
   m_srpmsFile->writeLine(NAME_STR + pkgFile.name);
@@ -295,7 +295,7 @@ void RepoIndexTextFormatWriter::addSource(const PkgFile& pkgFile)
   m_srpmsFile->writeLine("");
 }
 
-void RepoIndexTextFormatWriter::commitBinary()
+void TextFormatWriter::commitBinary()
 {
   m_tmpFile->close();
   if (m_filterProvidesByRefs)
@@ -316,12 +316,12 @@ void RepoIndexTextFormatWriter::commitBinary()
   File::unlink(m_tmpFileName);
 }
 
-void RepoIndexTextFormatWriter::commitSource()
+void TextFormatWriter::commitSource()
 {
   m_srpmsFile->close();
 }
 
-void RepoIndexTextFormatWriter::additionalPhase()
+void TextFormatWriter::additionalPhase()
 {
   assert(m_provideMap.empty());
   assert(m_resolvingItems.empty());
@@ -361,7 +361,7 @@ void RepoIndexTextFormatWriter::additionalPhase()
   File::unlink(inputFileName);
 }
 
-void RepoIndexTextFormatWriter::firstProvideReg(const std::string& pkgName, const std::string& provideName)
+void TextFormatWriter::firstProvideReg(const std::string& pkgName, const std::string& provideName)
 {
   StringToIntMap::iterator it;
   it = m_provideMap.find(pkgName);
@@ -373,7 +373,7 @@ void RepoIndexTextFormatWriter::firstProvideReg(const std::string& pkgName, cons
     it->second++;
 }
 
-void RepoIndexTextFormatWriter::prepareResolvingData()
+void TextFormatWriter::prepareResolvingData()
 {
   m_resolvingItems.reserve(m_provideMap.size());
   for(StringToIntMap::const_iterator it = m_provideMap.begin();it != m_provideMap.end();it++)
@@ -387,7 +387,7 @@ void RepoIndexTextFormatWriter::prepareResolvingData()
     m_resolvingData[i] = (size_t) -1;
 }
 
-void RepoIndexTextFormatWriter::secondPhase()
+void TextFormatWriter::secondPhase()
 {
   assert(!m_tmpFileName.empty());
   std::auto_ptr<AbstractTextFileReader> inputFile = createTextFileReader(TextFileStd, m_tmpFileName);
@@ -411,7 +411,7 @@ void RepoIndexTextFormatWriter::secondPhase()
     } //while(1);
 }
 
-void RepoIndexTextFormatWriter::secondProvideReg(const std::string& pkgName, const std::string& provideName)
+void TextFormatWriter::secondProvideReg(const std::string& pkgName, const std::string& provideName)
 {
   const ProvideResolvingItemVector::size_type itemIndex = findProvideResolvingItem(provideName);
   assert(itemIndex < m_resolvingItems.size());
@@ -426,7 +426,7 @@ void RepoIndexTextFormatWriter::secondProvideReg(const std::string& pkgName, con
   m_resolvingData[i] = pkgIndex;
 }
 
-void RepoIndexTextFormatWriter::writeProvideResolvingData()
+void TextFormatWriter::writeProvideResolvingData()
 {
   std::auto_ptr<AbstractTextFileWriter> file = createTextFileWriter(selectTextFileType(m_params.compressionType), m_providesFileName);
   for(ProvideResolvingItemVector::size_type i = 0;i < m_resolvingItems.size();i++)
@@ -444,7 +444,7 @@ void RepoIndexTextFormatWriter::writeProvideResolvingData()
     }
 }
 
-RepoIndexTextFormatWriter::ProvideResolvingItemVector::size_type RepoIndexTextFormatWriter::findProvideResolvingItem(const std::string& name)
+TextFormatWriter::ProvideResolvingItemVector::size_type TextFormatWriter::findProvideResolvingItem(const std::string& name)
 {
   assert(!m_resolvingItems.empty());
   ProvideResolvingItemVector::size_type l = 0, r = m_resolvingItems.size();
@@ -462,7 +462,7 @@ RepoIndexTextFormatWriter::ProvideResolvingItemVector::size_type RepoIndexTextFo
   return 0;//Just to reduce warning messages;
 }
 
-size_t RepoIndexTextFormatWriter::fillProvideResolvingItemsPos(ProvideResolvingItemVector& v)
+size_t TextFormatWriter::fillProvideResolvingItemsPos(ProvideResolvingItemVector& v)
 {
   size_t c = 0;
   for(ProvideResolvingItemVector::size_type i = 0;i < v.size();i++)
