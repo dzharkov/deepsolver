@@ -361,32 +361,6 @@ void TextFormatWriter::additionalPhase()
   File::unlink(inputFileName);
 }
 
-void TextFormatWriter::firstProvideReg(const std::string& pkgName, const std::string& provideName)
-{
-  StringToIntMap::iterator it;
-  it = m_provideMap.find(pkgName);
-  if (it == m_provideMap.end())
-    m_provideMap.insert(StringToIntMap::value_type(pkgName, 0));
-  it = m_provideMap.find(provideName);
-  if (it == m_provideMap.end())
-    m_provideMap.insert(StringToIntMap::value_type(provideName, 1)); else
-    it->second++;
-}
-
-void TextFormatWriter::prepareResolvingData()
-{
-  m_resolvingItems.reserve(m_provideMap.size());
-  for(StringToIntMap::const_iterator it = m_provideMap.begin();it != m_provideMap.end();it++)
-    m_resolvingItems.push_back(ProvideResolvingItem(it->first, it->second));
-  m_provideMap.clear();
-  //Normally m_provideMap must be iterated by the increasing order of name, but we run sorting one more time to be completely sure;
-  std::sort(m_resolvingItems.begin(), m_resolvingItems.end());
-  const size_t totalCount = fillProvideResolvingItemsPos(m_resolvingItems);
-  m_resolvingData.resize(totalCount);
-  for(SizeVector::size_type i = 0;i < m_resolvingData.size();i++)
-    m_resolvingData[i] = (size_t) -1;
-}
-
 void TextFormatWriter::secondPhase()
 {
   assert(!m_tmpFileName.empty());
@@ -411,6 +385,18 @@ void TextFormatWriter::secondPhase()
     } //while(1);
 }
 
+void TextFormatWriter::firstProvideReg(const std::string& pkgName, const std::string& provideName)
+{
+  StringToIntMap::iterator it;
+  it = m_provideMap.find(pkgName);
+  if (it == m_provideMap.end())
+    m_provideMap.insert(StringToIntMap::value_type(pkgName, 0));
+  it = m_provideMap.find(provideName);
+  if (it == m_provideMap.end())
+    m_provideMap.insert(StringToIntMap::value_type(provideName, 1)); else
+    it->second++;
+}
+
 void TextFormatWriter::secondProvideReg(const std::string& pkgName, const std::string& provideName)
 {
   const ProvideResolvingItemVector::size_type itemIndex = findProvideResolvingItem(provideName);
@@ -424,51 +410,4 @@ void TextFormatWriter::secondProvideReg(const std::string& pkgName, const std::s
   assert(i <item.pos + item.count);
   assert(i < m_resolvingData.size());
   m_resolvingData[i] = pkgIndex;
-}
-
-void TextFormatWriter::writeProvideResolvingData()
-{
-  std::auto_ptr<AbstractTextFileWriter> file = createTextFileWriter(selectTextFileType(m_params.compressionType), m_providesFileName);
-  for(ProvideResolvingItemVector::size_type i = 0;i < m_resolvingItems.size();i++)
-    {
-      const ProvideResolvingItem& item = m_resolvingItems[i];
-      if (item.count == 0)
-	continue;
-      file->writeLine("[" + item.name + "]");
-      for(SizeVector::size_type k = item.pos;k < item.pos + item.count && m_resolvingData[k] != (size_t)-1;k++)
-	{
-	  assert(m_resolvingData[k] < m_resolvingItems.size());
-	  file->writeLine(m_resolvingItems[m_resolvingData[k]].name);
-	}
-      file->writeLine("");
-    }
-}
-
-TextFormatWriter::ProvideResolvingItemVector::size_type TextFormatWriter::findProvideResolvingItem(const std::string& name)
-{
-  assert(!m_resolvingItems.empty());
-  ProvideResolvingItemVector::size_type l = 0, r = m_resolvingItems.size();
-  while(l < r)
-    {
-      const ProvideResolvingItemVector::size_type middle = (l + r) / 2;
-      assert(middle < m_resolvingItems.size());
-      if (m_resolvingItems[middle].name == name)
-	return middle;
-      if (m_resolvingItems[middle].name > name)
-	r = middle; else
-	l = middle;
-    }
-  assert(0);
-  return 0;//Just to reduce warning messages;
-}
-
-size_t TextFormatWriter::fillProvideResolvingItemsPos(ProvideResolvingItemVector& v)
-{
-  size_t c = 0;
-  for(ProvideResolvingItemVector::size_type i = 0;i < v.size();i++)
-    {
-      v[i].pos = c;
-      c += v[i].count;
-    }
-  return c;
 }

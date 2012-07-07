@@ -102,46 +102,10 @@ public:
   }
 
 private:
-  struct ProvideResolvingItem
-  {
-  public:
-    ProvideResolvingItem(const std::string& n, size_t c)
-      : name(n), count(c), pos(0) {}
-
-  public:
-    bool operator <(const ProvideResolvingItem& i) const
-    {
-      return name < i.name;
-    }
-
-    bool operator >(const ProvideResolvingItem& i) const
-    {
-      return name > i.name;
-    }
-
-  public:
-    std::string name;
-    size_t count, pos;
-  }; //struct ProvideResolvingItem;
-
-private:
-  typedef std::vector<ProvideResolvingItem> ProvideResolvingItemVector;
-  typedef std::map<std::string, size_t> StringToIntMap;
-
-private:
   void firstProvideReg(const std::string& pkgName, const std::string& provideName);
   void secondProvideReg(const std::string& pkgName, const std::string& provideName);
-  void prepareResolvingData();
-  size_t fillProvideResolvingItemsPos(ProvideResolvingItemVector& v);
-  ProvideResolvingItemVector::size_type findProvideResolvingItem(const std::string& name);
-  void writeProvideResolvingData();
   void secondPhase();
   void additionalPhase();
-
-private://Fields for provides resolving;
-  StringToIntMap m_provideMap;
-  ProvideResolvingItemVector m_resolvingItems;
-  SizeVector m_resolvingData;
 
 private:
   const AbstractRequireFilter& m_requireFilter;
