@@ -38,28 +38,22 @@ static std::string escapeString(const std::string& s)
   return res;
 }
 
-static void writeParam(std::ostream& s, const std::string& name, const std::string& value)
-{
-  s << name << " = " << escapeString(value) << std::endl;
-}
-
 void RepoIndexInfoFile::write(const std::string& fileName, const StringToStringMap& params) const
 {
+  std::ostringstream ss;
   time_t t;
   time(&t);
-  f << "# Repository index information file" << std::endl;
-    f << "# Generated on " << ctime(&t) << std::endl;
-  f << "# This file contains a set of options to control various parameters of" << std::endl;
-  f << "# repository index structure. An empty lines are silently ignored. Any" << std::endl;
-  f << "# line text after the character `#\' is skipped as a comment. " << std::endl;
-  f << "# Character `\\\' should be used in the conjunction with the following character to" << std::endl;
-  f << "# prevent special character processing." << std::endl;
-  f << std::endl;
-  writeParam(f, "format_version", m_formatVersion);
-  writeParam(f, "format_type", m_formatType);
-  writeParam(f, "compression_type", m_compressionType);
-  writeParam(f, "md5sum_file", m_md5sumFile);
-  for(StringToStringMap::const_iterator it = m_userParams.begin();it != m_userParams.end();it++)
-    writeParam(f, it->first, it->second);
-  return 1;
+  ss << "# Repository index information file" << std::endl;
+  ss << "# Generated on " << ctime(&t) << std::endl;
+  ss << "# This file contains a set of options to control various parameters of" << std::endl;
+  ss << "# repository index structure. An empty lines are silently ignored. Any" << std::endl;
+  ss << "# line text after the character `#\' is skipped as a comment. " << std::endl;
+  ss << "# Character `\\\' should be used in the conjunction with the following character to" << std::endl;
+  ss << "# prevent special character processing." << std::endl;
+  ss << std::endl;
+  for(StringToStringMap::const_iterator it = params.begin();it != params.end();it++)
+      ss << it->first << " = " << escapeString(it->second) << std::endl;
+  File f;
+  f.create(fileName);
+  f.write(ss.str().c_str(), ss.str().length());
 }
