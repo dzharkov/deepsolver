@@ -16,7 +16,7 @@
 */
 
 #include"deepsolver.h"
-#include"RepoIndexInfoFile.h"
+#include"InfoFileWriter.h"
 
 static std::string escapeString(const std::string& s)
 {
@@ -43,23 +43,8 @@ static void writeParam(std::ostream& s, const std::string& name, const std::stri
   s << name << " = " << escapeString(value) << std::endl;
 }
 
-bool RepoIndexInfoFile::read(const std::string& fileName, std::string& errorMessage, StringList& warningMessages)
+void RepoIndexInfoFile::write(const std::string& fileName, const StringToStringMap& params) const
 {
-  errorMessage.erase();
-  warningMessages.clear();
-  return 0;
-}
-
-bool RepoIndexInfoFile::write(const std::string& fileName, std::string& errorMessage, StringList& warningMessages)
-{
-  errorMessage.erase();
-  warningMessages.clear();
-  std::ofstream f(fileName.c_str());
-  if (!f)
-    {
-      errorMessage = "Could not create \'" + fileName + "\' for writing";
-      return 0;
-    }
   time_t t;
   time(&t);
   f << "# Repository index information file" << std::endl;
