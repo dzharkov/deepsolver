@@ -33,47 +33,56 @@ public:
   virtual bool excludeRequire(const std::string& requireEntry) const = 0;
 }; //class abstractRequireFilter;
 
-/**\brief The class to write repo index data in text format
+class AbstractTextFormatWriterListener
+{
+public:
+  virtual ~AbstractTextFormatWriterListener() {}
+}; //class AbstractTextFormatWriterListener;
+
+/**\brief Write repository index data in text format
  *
  * This is the main class for writing repository index data in text
- * format. It must be used by IndexCore class only and not purposed for
- * direct using by library client applications. By the way it performs
- * provides filtering with the options used during the invocation and
- * saves provide resolving data. To be memory-efficient this class
- * creates and then removes one or more temporary files. It means that
+ * format. It is designed to be used by IndexCore class only and not purposed for
+ * direct using by library client. By the way it performs
+ * provides filtering with various options. To be memory-efficient this class
+ * creates and then removes one or more temporary files. That means that
  * directory for repository index must have more free disk space than
  * just for index data itself.
  *
  * The work consists of three steps: initialization, package data
- * collecting and commit. On initialization only temporary file for
- * package data storing is created . On every add operation during the
- * collecting step all required information about single package file is
- * written to this temporary file. Main work is done on commit step. This
- * step makes provides filtering and building provide resolving table. 
- *
- * Provide resolving table shows what packages can be used for every
- * provide entry dependency. Building this information during repository
- * index creation can significantly reduce time used for package
- * installation and removing operations. 
+ * collecting and commit. Initialization step only creates temporary file
+ * for package data storing but nothing writes. On every add operation during the
+ * collecting step all required information about each package
+ * goes into temporary file. Main work is done on commit step. This
+ * step makes provides filtering and writes the final index files.
  *
  * There are two options for provide filtering:register the provide entry
  * if corresponding require/conflict reference is present and filter provides by
  * directories list. The second case is actual only for provides as files
  * from the file list of the package. The filtering mode by require/conflict
  * references includes dependencies from collected packages and in
- * additional from optional string list.
+ * addition from optional string list.
  *
- * \sa IndexCore TextFormatReader InfoFileWriter InfoFileReader
+ * \sa IndexCore TextFormatReader InfoFileWriter InfoFileReader AbstractTextFormatWriterListener
  */
 class TextFormatWriter
 {
 public:
-  TextFormatWriter(const AbstractRequireFilter& requireFilter,
-			    const RepoIndexParams& params,
-			    AbstractConsoleMessages& console,
-			    const std::string& dir,
-			    const StringSet& additionalRefs);
+  /**\brief The constructor
+   *
+   * \param [in] listener The reference to the handling object for user status notification
+   * \param [in] requireFilter The object for excluding needless requires
+   * \param [in] params The various repository index parameters
+   * \param [in] dir The directory to put newly created index in
+   * \param [in] additionalRefs The set of package names to use as references in provide filtering
+   */
+  TextFormatWriter(AbstractTextFormatWriterListener& listener,
+		   const AbstractRequireFilter& requireFilter,
+		   const RepoIndexParams& params,
+		   const std::string& dir,
+		   const StringSet& additionalRefs);
 
+  /**\brief The destructor*/
   virtual ~TextFormatWriter() {}
 
 public:
@@ -86,19 +95,14 @@ public:
   void commitBinary();
   void commitSource();
 
-  std::string getRpmsFileName() const
+  std::string getPackagesFileName() const
   {
-    return m_rpmsFileName;
+    return m_packagesFileName;
   }
 
-  std::string getSrpmsFileName() const
+  std::string getSourcesFileName() const
   {
-    return m_srpmsFileName;
-  }
-
-  std::string getProvidesFileName() const
-  {
-    return m_providesFileName;
+    return m_sourcesFileName;
   }
 
 private:
@@ -108,6 +112,7 @@ private:
   void additionalPhase();
 
 private:
+  AbstractTextFormatWriterListener& m_listener;
   const AbstractRequireFilter& m_requireFilter;
   const RepoIndexParams& m_params;
   AbstractConsoleMessages& m_console;

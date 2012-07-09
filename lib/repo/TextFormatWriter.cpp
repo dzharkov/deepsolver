@@ -174,14 +174,14 @@ static bool fileFromDirs(const std::string& fileName, const StringList& dirs)
   return 0;
 }
 
-TextFormatWriter::TextFormatWriter(const AbstractRequireFilter& requireFilter,
-						     const RepoIndexParams& params,
-						     AbstractConsoleMessages& console,
-						     const std::string& dir,
-						     const StringSet& additionalRefs)
-  : m_requireFilter(requireFilter),
+TextFormatWriter::TextFormatWriter(AbstractTextFormatListener& listener,
+				   const AbstractRequireFilter& requireFilter,
+				   const RepoIndexParams& params,
+				   const std::string& dir,
+				   const StringSet& additionalRefs)
+  : m_listener(listener),
+    m_requireFilter(requireFilter),
     m_params(params),
-    m_console(console),
     m_dir(dir),
     m_rpmsFileName(addCompressionExtension(Directory::mixNameComponents(dir, REPO_INDEX_PACKAGES_DATA_FILE), params)),
     m_srpmsFileName(addCompressionExtension(Directory::mixNameComponents(dir, REPO_INDEX_SOURCE_DATA_FILE), params)),
