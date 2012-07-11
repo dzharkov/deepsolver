@@ -17,8 +17,8 @@
 
 #include"deepsolver.h"
 #include"IndexCore.h"
-#include"repo/RepoIndexInfoFile.h"
-#include"repo/RepoIndexTextFormatWriter.h"
+#include"repo/InfoFileWriter.h"
+#include"repo/TextFormatWriter.h"
 #include"rpm/RpmFile.h"
 #include"rpm/RpmFileHeaderReader.h"
 #include"utils/MD5.h"
@@ -26,7 +26,6 @@
 
 void IndexCore::collectRefs(const std::string& dirName, StringSet& res) 
 {
-  m_console.msg() << "Collecting additional references from " << dirName << "...";
   std::auto_ptr<Directory::Iterator> it = Directory::enumerate(dirName);
   while(it->moveNext())
     {
@@ -44,7 +43,6 @@ void IndexCore::collectRefs(const std::string& dirName, StringSet& res)
       for(NamedPkgRelVector::size_type i = 0;i < conflicts.size();i++)
 	res.insert(conflicts[i].pkgName);
     }
-  m_console.msg() << " " << res.size() << " found!" << std::endl;
 }
 
 void IndexCore::collectRefsFromDirs(const StringList& dirs, StringSet& res)
@@ -80,11 +78,10 @@ void IndexCore::processPackages(const std::string& indexDir, const std::string& 
   RequireFilter requireFilter;
   if (!params.excludeRequiresFile.empty())
     requireFilter.load(params.excludeRequiresFile);
-  RepoIndexTextFormatWriter handler(requireFilter, params, m_console, indexDir, additionalRefs);
+  TextFormatWriter handler(requireFilter, params, indexDir, additionalRefs);
   //Binary packages;
   handler.initBinary();
   logMsg(LOG_DEBUG, "RepoIndexTextFormatWriter created and initialized for binary packages");
-  m_console.msg() << "Looking through " << rpmsDir << " to pick packages for repository index...";
   std::auto_ptr<Directory::Iterator> it = Directory::enumerate(rpmsDir);
   logMsg(LOG_DEBUG, "Created directory iterator for enumerating \'%s\'", rpmsDir.c_str());
   size_t count = 0;
@@ -100,12 +97,10 @@ void IndexCore::processPackages(const std::string& indexDir, const std::string& 
       handler.addBinary(pkgFile, files);
       count++;
     }
-  m_console.msg() << " picked up " << count << " binary packages!" << std::endl;
   handler.commitBinary();
   logMsg(LOG_DEBUG, "Committed %zu binary packages", count);
   //Source packages;
   logMsg(LOG_DEBUG, "Binary packages processing is finished, switching to sources");
-  m_console.msg() << "Looking through " << srpmsDir << " to pick source packages...";
   it = Directory::enumerate(srpmsDir);
   logMsg(LOG_DEBUG, "Created directory iterator for enumerating \'%s\'", srpmsDir.c_str());
   count = 0;
@@ -123,11 +118,9 @@ void IndexCore::processPackages(const std::string& indexDir, const std::string& 
       handler.addSource(pkgFile);
       count++;
     }
-  m_console.msg() << " picked up " << count << " source packages!" << std::endl;
   logMsg(LOG_DEBUG, "Committed %zu source packages", count);
   handler.commitSource();
   //Saving md5sum;
-  m_console.msg() << "Creating " << REPO_INDEX_MD5SUM_FILE << "...";
   std::auto_ptr<AbstractTextFileWriter> md5sum = createTextFileWriter(TextFileStd, Directory::mixNameComponents(indexDir, REPO_INDEX_MD5SUM_FILE));
   MD5 md5;
   md5.init();
@@ -142,7 +135,6 @@ void IndexCore::processPackages(const std::string& indexDir, const std::string& 
   md5.init();
   md5.updateFromFile(handler.getProvidesFileName());
   md5sum->writeLine(md5.commit(File::baseName(handler.getProvidesFileName())));
-  m_console.msg() << " OK!" << std::endl;
 }
 
 void IndexCore::writeInfoFile(const std::string& fileName, const RepoIndexParams& params)
@@ -181,5 +173,4 @@ void IndexCore::writeInfoFile(const std::string& fileName, const RepoIndexParams
     m_warningHandler.onWarning(*it);
   if (!res)
     INDEX_CORE_STOP(errorMessage);
-  m_console.msg() << "Created repository index info file " << fileName << std::endl;
 }

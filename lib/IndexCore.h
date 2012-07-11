@@ -18,8 +18,6 @@
 #ifndef DEEPSOLVER_INDEX_CORE_H
 #define DEEPSOLVER_INDEX_CORE_H
 
-#include"AbstractConsoleMessages.h"
-#include"AbstractWarningHandler.h"
 #include"IndexCoreException.h"
 
 class RepoIndexParams
@@ -61,8 +59,7 @@ public:
 class IndexCore
 {
 public:
-  IndexCore(AbstractConsoleMessages& console, AbstractWarningHandler& warningHandler)
-    : m_console(console), m_warningHandler(warningHandler) {}
+  IndexCore() {}
 
 public:
   void build(const RepoIndexParams& params);
@@ -72,10 +69,6 @@ private:
   void collectRefsFromDirs(const StringList& dirs, StringSet& res);
   void processPackages(const std::string& indexDir, const std::string& rpmsDir, const std::string& srpmsDir, const RepoIndexParams& params);
   void writeInfoFile(const std::string& fileName, const RepoIndexParams& params);
-
-private:
-  AbstractConsoleMessages& m_console;
-  AbstractWarningHandler& m_warningHandler;
 }; //class IndexCore;
 
 #endif //DEEPSOLVER_INDEX_CORE_H;

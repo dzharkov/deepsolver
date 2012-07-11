@@ -20,7 +20,6 @@
 
 #include"Pkg.h"
 #include"IndexCore.h"
-#include"AbstractConsoleMessages.h"
 #include"utils/TextFiles.h"
 
 class AbstractRequireFilter
@@ -115,9 +114,8 @@ private:
   AbstractTextFormatWriterListener& m_listener;
   const AbstractRequireFilter& m_requireFilter;
   const RepoIndexParams& m_params;
-  AbstractConsoleMessages& m_console;
   const std::string m_dir;
-  const std::string m_rpmsFileName, m_srpmsFileName, m_providesFileName;
+  const std::string m_packagesFileName, m_sourcesFileName;
   std::string m_tmpFileName;//Additional phase modifies this file name;
   std::auto_ptr<AbstractTextFileWriter> m_tmpFile, m_srpmsFile;
   const bool m_filterProvidesByRefs;

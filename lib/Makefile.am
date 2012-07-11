@@ -25,9 +25,9 @@ Pkg.cpp \
 PkgUtils.cpp \
 ProvidePriorityList.cpp \
 repo/InfoFileReader.cpp \
-repo/RepoIndexInfoFile.cpp \
+repo/InfoFileWriter.cpp \
 repo/TextFormatReader.cpp \
-repo/RepoIndexTextFormatWriter.cpp \
+repo/TextFormatWriter.cpp \
 Repository.cpp \
 RequireFilter.cpp \
 RpmBackEnd.cpp \
@@ -76,9 +76,9 @@ Pkg.h \
 PkgUtils.h \
 ProvidePriorityList.h \
 repo/InfoFileReader.h \
-repo/RepoIndexInfoFile.h \
+repo/InfoFileWriter.h \
 repo/TextFormatReader.h \
-repo/RepoIndexTextFormatWriter.h \
+repo/TextFormatWriter.h \
 Repository.h \
 RequireFilter.h \
 rpm/RpmException.h \

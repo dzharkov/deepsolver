@@ -28,12 +28,12 @@ enum {
   OperationErrorBrokenIndexFile = 2
 };
 
-/**\brief The exception class for general operation problem reporting
+/**\brief The exception class for general operation problems
  *
- * This class is purposed for various general operation problem
- * reporting. The errors can be thrown only by the methods of
+ * This class is purposed for various general operation problems.
+ * The errors can be thrown only by the methods of
  * OperationCore class covering transaction processing as well as index
- * updating and information retrieving. General error types are checksum
+ * updating. General error types are checksum
  * mismatch, invalid content of repo file and so on. Downloading problems
  * have their own exception class called CurlException.
  *
@@ -49,6 +49,7 @@ public:
   OperationException(int code) 
     : m_code(code) {}
 
+  /**\brief The destructor*/
   virtual ~OperationException() {}
 
 public:
@@ -94,13 +95,26 @@ private:
   const int m_code;
 }; //class OperationException;
 
+/**\brief The abstract interface for continuous process interruption
+ *
+ * Various continuous processes (such as downloading) ask external object
+ * to be sure the user do not want to interrupt the task being
+ * performed. This class declares the interface for objects to provide
+ * such information. It is called multiple times during the work. Any
+ * negative answer causes immediate process cancelling.
+ *
+ * \sa OperationCore
+ */
 class AbstractOperationContinueRequest
 {
 public:
+  /**\brief The destructor*/
   virtual ~AbstractOperationContinueRequest() {}
 
 public:
-  /**\brief FIXME
+  /**\brief Asks external structures to continue operation
+   *
+   * Implement this method to be able interrupt continuous operations.
    *
    * \return Non-zero means to continue operation
    */
