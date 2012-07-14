@@ -174,7 +174,7 @@ static bool fileFromDirs(const std::string& fileName, const StringList& dirs)
   return 0;
 }
 
-TextFormatWriter::TextFormatWriter(AbstractTextFormatListener& listener,
+TextFormatWriter::TextFormatWriter(AbstractIndexConstructionListener& listener,
 				   const AbstractRequireFilter& requireFilter,
 				   const RepoIndexParams& params,
 				   const std::string& dir,
@@ -183,9 +183,8 @@ TextFormatWriter::TextFormatWriter(AbstractTextFormatListener& listener,
     m_requireFilter(requireFilter),
     m_params(params),
     m_dir(dir),
-    m_rpmsFileName(addCompressionExtension(Directory::mixNameComponents(dir, REPO_INDEX_PACKAGES_DATA_FILE), params)),
-    m_srpmsFileName(addCompressionExtension(Directory::mixNameComponents(dir, REPO_INDEX_SOURCE_DATA_FILE), params)),
-    m_providesFileName(addCompressionExtension(Directory::mixNameComponents(dir, REPO_INDEX_PROVIDES_DATA_FILE), params)),
+    m_packagesFileName(addCompressionExtension(Directory::mixNameComponents(dir, REPO_INDEX_PACKAGES_DATA_FILE), params)),
+    m_sourcesFileName(addCompressionExtension(Directory::mixNameComponents(dir, REPO_INDEX_SOURCE_DATA_FILE), params)),
     m_tmpFileName(Directory::mixNameComponents(dir, TMP_FILE)),
     m_filterProvidesByRefs(params.provideFilteringByRefs),
     m_additionalRefs(additionalRefs),
@@ -200,7 +199,7 @@ void TextFormatWriter::initBinary()
 
 void TextFormatWriter::initSource()
 {
-  m_srpmsFile = createTextFileWriter(selectTextFileType(m_params.compressionType), m_srpmsFileName);
+  m_sourcesFile = createTextFileWriter(selectTextFileType(m_params.compressionType), m_sourcesFileName);
 }
 
 void TextFormatWriter::addBinary(const PkgFile& pkgFile, const StringList& fileList)
@@ -275,24 +274,24 @@ void TextFormatWriter::addBinary(const PkgFile& pkgFile, const StringList& fileL
 
 void TextFormatWriter::addSource(const PkgFile& pkgFile)
 {
-  m_srpmsFile->writeLine("[" + File::baseName(pkgFile.fileName) + "]");
-  m_srpmsFile->writeLine(NAME_STR + pkgFile.name);
+  m_sourcesFile->writeLine("[" + File::baseName(pkgFile.fileName) + "]");
+  m_sourcesFile->writeLine(NAME_STR + pkgFile.name);
   std::ostringstream epochStr;
   epochStr << EPOCH_STR << pkgFile.epoch;
-  m_srpmsFile->writeLine(epochStr.str());
-  m_srpmsFile->writeLine(VERSION_STR + pkgFile.version);
-  m_srpmsFile->writeLine(RELEASE_STR + pkgFile.release);
+  m_sourcesFile->writeLine(epochStr.str());
+  m_sourcesFile->writeLine(VERSION_STR + pkgFile.version);
+  m_sourcesFile->writeLine(RELEASE_STR + pkgFile.release);
   //No nned need to write arch for source packages;
-  m_srpmsFile->writeLine(URL_STR + pkgFile.url);
-  m_srpmsFile->writeLine(LICENSE_STR + pkgFile.license);
-  m_srpmsFile->writeLine(PACKAGER_STR + pkgFile.packager);
-  m_srpmsFile->writeLine(SUMMARY_STr + pkgFile.summary);
-  m_srpmsFile->writeLine(DESCRIPTION_STR + encodeMultiline(pkgFile.description));
+  m_sourcesFile->writeLine(URL_STR + pkgFile.url);
+  m_sourcesFile->writeLine(LICENSE_STR + pkgFile.license);
+  m_sourcesFile->writeLine(PACKAGER_STR + pkgFile.packager);
+  m_sourcesFile->writeLine(SUMMARY_STr + pkgFile.summary);
+  m_sourcesFile->writeLine(DESCRIPTION_STR + encodeMultiline(pkgFile.description));
   //No need to write src.rpm entry, usually it is empty for source packages;
   if (m_params.changeLogSources)
     for(ChangeLog::size_type i = 0;i < pkgFile.changeLog.size();i++)
-      m_srpmsFile->writeLine(CHANGELOG_STR + encodeChangeLogEntry(pkgFile.changeLog[i]));
-  m_srpmsFile->writeLine("");
+      m_sourcesFile->writeLine(CHANGELOG_STR + encodeChangeLogEntry(pkgFile.changeLog[i]));
+  m_sourcesFile->writeLine("");
 }
 
 void TextFormatWriter::commitBinary()
@@ -300,32 +299,25 @@ void TextFormatWriter::commitBinary()
   m_tmpFile->close();
   if (m_filterProvidesByRefs)
     {
-      m_console.msg() << "Collected " << m_refsSet.size() << " references among picked packages for provides filtering" << std::endl; 
-      m_console.msg() << "running additional phase...";
       additionalPhase();
-      m_console.msg() << " provides filtering completed!" << std::endl;
     }
-  prepareResolvingData();
-  m_console.msg() << "" "Writing final binary package index file " << m_rpmsFileName << "...";
+  //KILLME:  prepareResolvingData();
   secondPhase();
-  m_console.msg() << " OK!" << std::endl;
-  m_console.msg() << "Writing provide resolving file " << m_providesFileName << "...";
-  writeProvideResolvingData();
-  m_console.msg() << " OK!" << std::endl;
+  //KILLME:  writeProvideResolvingData();
   logMsg(LOG_DEBUG, "Removing \'%s\'", m_tmpFileName.c_str());
   File::unlink(m_tmpFileName);
 }
 
 void TextFormatWriter::commitSource()
 {
-  m_srpmsFile->close();
+  m_sourcesFile->close();
 }
 
 void TextFormatWriter::additionalPhase()
 {
-  assert(m_provideMap.empty());
-  assert(m_resolvingItems.empty());
-  assert(m_resolvingData.empty());
+  //KILLME:  assert(m_provideMap.empty());
+  //KILLME:  assert(m_resolvingItems.empty());
+  //KILLME:  assert(m_resolvingData.empty());
   assert(m_filterProvidesByRefs);
   const std::string inputFileName = m_tmpFileName, outputFileName = Directory::mixNameComponents(m_dir, TMP_FILE_ADDITIONAL);
   m_tmpFileName = outputFileName;//Changing name of a file to be processed on the second phase;
@@ -365,7 +357,7 @@ void TextFormatWriter::secondPhase()
 {
   assert(!m_tmpFileName.empty());
   std::auto_ptr<AbstractTextFileReader> inputFile = createTextFileReader(TextFileStd, m_tmpFileName);
-  std::auto_ptr<AbstractTextFileWriter> outputFile = createTextFileWriter(selectTextFileType(m_params.compressionType), m_rpmsFileName);
+  std::auto_ptr<AbstractTextFileWriter> outputFile = createTextFileWriter(selectTextFileType(m_params.compressionType), m_packagesFileName);
   std::string name, line;
   while(inputFile->readLine(line))
     {
@@ -387,6 +379,7 @@ void TextFormatWriter::secondPhase()
 
 void TextFormatWriter::firstProvideReg(const std::string& pkgName, const std::string& provideName)
 {
+  /*KILLME:
   StringToIntMap::iterator it;
   it = m_provideMap.find(pkgName);
   if (it == m_provideMap.end())
@@ -395,10 +388,12 @@ void TextFormatWriter::firstProvideReg(const std::string& pkgName, const std::st
   if (it == m_provideMap.end())
     m_provideMap.insert(StringToIntMap::value_type(provideName, 1)); else
     it->second++;
+  */
 }
 
 void TextFormatWriter::secondProvideReg(const std::string& pkgName, const std::string& provideName)
 {
+  /*KILLME:
   const ProvideResolvingItemVector::size_type itemIndex = findProvideResolvingItem(provideName);
   assert(itemIndex < m_resolvingItems.size());
   const ProvideResolvingItem& item = m_resolvingItems[itemIndex];
@@ -410,4 +405,5 @@ void TextFormatWriter::secondProvideReg(const std::string& pkgName, const std::s
   assert(i <item.pos + item.count);
   assert(i < m_resolvingData.size());
   m_resolvingData[i] = pkgIndex;
+  */
 }

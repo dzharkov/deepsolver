@@ -20,6 +20,7 @@
 
 #include"Pkg.h"
 #include"IndexCore.h"
+#include"AbstractIndexConstructionListener.h"
 #include"utils/TextFiles.h"
 
 class AbstractRequireFilter
@@ -31,12 +32,6 @@ public:
 public:
   virtual bool excludeRequire(const std::string& requireEntry) const = 0;
 }; //class abstractRequireFilter;
-
-class AbstractTextFormatWriterListener
-{
-public:
-  virtual ~AbstractTextFormatWriterListener() {}
-}; //class AbstractTextFormatWriterListener;
 
 /**\brief Write repository index data in text format
  *
@@ -75,7 +70,7 @@ public:
    * \param [in] dir The directory to put newly created index in
    * \param [in] additionalRefs The set of package names to use as references in provide filtering
    */
-  TextFormatWriter(AbstractTextFormatWriterListener& listener,
+  TextFormatWriter(AbstractIndexConstructionListener& listener,
 		   const AbstractRequireFilter& requireFilter,
 		   const RepoIndexParams& params,
 		   const std::string& dir,
@@ -111,13 +106,13 @@ private:
   void additionalPhase();
 
 private:
-  AbstractTextFormatWriterListener& m_listener;
+  AbstractIndexConstructionListener& m_listener;
   const AbstractRequireFilter& m_requireFilter;
   const RepoIndexParams& m_params;
   const std::string m_dir;
   const std::string m_packagesFileName, m_sourcesFileName;
   std::string m_tmpFileName;//Additional phase modifies this file name;
-  std::auto_ptr<AbstractTextFileWriter> m_tmpFile, m_srpmsFile;
+  std::auto_ptr<AbstractTextFileWriter> m_tmpFile, m_sourcesFile;
   const bool m_filterProvidesByRefs;
   const StringSet& m_additionalRefs;
   const StringList& m_filterProvidesByDirs;
