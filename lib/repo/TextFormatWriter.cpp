@@ -159,11 +159,8 @@ void TextFormatWriter::commitBinary()
   m_tmpFile->close();
   if (m_filterProvidesByRefs)
     {
-      additionalPhase();
+      secondPhase();
     }
-  //KILLME:  prepareResolvingData();
-  secondPhase();
-  //KILLME:  writeProvideResolvingData();
   logMsg(LOG_DEBUG, "Removing \'%s\'", m_tmpFileName.c_str());
   File::unlink(m_tmpFileName);
 }
@@ -173,14 +170,10 @@ void TextFormatWriter::commitSource()
   m_sourcesFile->close();
 }
 
-void TextFormatWriter::additionalPhase()
+void TextFormatWriter::secondPhase()
 {
-  //KILLME:  assert(m_provideMap.empty());
-  //KILLME:  assert(m_resolvingItems.empty());
-  //KILLME:  assert(m_resolvingData.empty());
   assert(m_filterProvidesByRefs);
-  const std::string inputFileName = m_tmpFileName, outputFileName = Directory::mixNameComponents(m_dir, TMP_FILE);
-  m_tmpFileName = outputFileName;//Changing name of a file to be processed on the second phase;
+  const std::string inputFileName = m_tmpFileName, outputFileName = m_packagesFileName;
   std::auto_ptr<AbstractTextFileReader> inputFile = createTextFileReader(TextFileStd, inputFileName);
   std::auto_ptr<AbstractTextFileWriter> outputFile = createTextFileWriter(TextFileStd, outputFileName);
   std::string name, line;
@@ -200,7 +193,8 @@ void TextFormatWriter::additionalPhase()
 	}
       const std::string provideName = getPkgRelName(tail);
       assert(!provideName.empty());
-      if (m_refsSet.find(provideName) != m_refsSet.end() || m_additionalRefs.find(provideName) != m_additionalRefs.end() ||
+      if (m_collectedRefs.find(provideName) != m_collectedRefs.end() || 
+	  m_additionalRefs.find(provideName) != m_additionalRefs.end() ||
 	  (!m_filterProvidesByDirs.empty() && fileFromDirs(provideName, m_filterProvidesByDirs)))
 	{
 	  outputFile->writeLine(line);
@@ -210,29 +204,6 @@ void TextFormatWriter::additionalPhase()
   outputFile->close();
   logMsg(LOG_DEBUG, "Removing \'%s\'", inputFileName.c_str());
   File::unlink(inputFileName);
-}
-
-void TextFormatWriter::secondPhase()
-{
-  assert(!m_tmpFileName.empty());
-  std::auto_ptr<AbstractTextFileReader> inputFile = createTextFileReader(TextFileStd, m_tmpFileName);
-  std::auto_ptr<AbstractTextFileWriter> outputFile = createTextFileWriter(mapTextFileType(m_params.compressionType), m_packagesFileName);
-  std::string name, line;
-  while(inputFile->readLine(line))
-    {
-      std::string tail;
-      if (stringBegins(line, NAME_STR, tail))
-	name = tail;
-      if (!stringBegins(line, PROVIDES_STR, tail))
-	{
-	  outputFile->writeLine(line);
-	  continue;
-	}
-      const std::string provideName = getPkgRelName(tail);
-      assert(!provideName.empty());
-      assert(!name.empty());
-      outputFile->writeLine(line);
-    } //while(1);
 }
 
 int TextFormatWriter::mapTextFileType(int compressionType)

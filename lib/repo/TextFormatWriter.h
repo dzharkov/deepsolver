@@ -115,16 +115,20 @@ private:
 
 private:
   AbstractIndexConstructionListener& m_listener;
+
+private://Files;
   const AbstractRequireFilter& m_requireFilter;
   const RepoIndexParams& m_params;
   const std::string m_dir;
   const std::string m_packagesFileName, m_sourcesFileName;
   std::string m_tmpFileName;//Additional phase modifies this file name;
   std::auto_ptr<AbstractTextFileWriter> m_tmpFile, m_sourcesFile;
+
+private://Provides filtering;
   const bool m_filterProvidesByRefs;
   const StringSet& m_additionalRefs;
+  StringSet m_collectedRefs;
   const StringList& m_filterProvidesByDirs;
-  StringSet m_refsSet;
 }; //class TextFormatWriter;
 
 #endif //DEEPSOLVER_TEXT_FORMAT_WRITER_H;
