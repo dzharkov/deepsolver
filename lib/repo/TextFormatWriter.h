@@ -100,10 +100,11 @@ public:
   }
 
 private:
-  void firstProvideReg(const std::string& pkgName, const std::string& provideName);
-  void secondProvideReg(const std::string& pkgName, const std::string& provideName);
   void secondPhase();
   void additionalPhase();
+
+private:
+  static int mapTextFileType(int compressionType);
 
 private:
   AbstractIndexConstructionListener& m_listener;

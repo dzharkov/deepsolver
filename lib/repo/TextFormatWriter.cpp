@@ -15,14 +15,11 @@
    General Public License for more details.
 */
 
-//FIXME:change log;
-
 #include"deepsolver.h"
 #include"TextFormatWriter.h"
 #include"IndexCoreException.h"
 
 #define TMP_FILE "tmp_packages_data1"
-#define TMP_FILE_ADDITIONAL "tmp_packages_data2"
 
 #define NAME_STR "n="
 #define EPOCH_STR "e="
@@ -42,137 +39,6 @@
 #define CONFLICTS_STR "c:"
 #define OBSOLETES_STR "o:"
 #define CHANGELOG_STR "cl:"
-
-static int selectTextFileType(int compressionParam)
-{
-  switch(compressionParam)
-    {
-    case RepoIndexParams::CompressionTypeNone:
-      return TextFileStd;
-    case RepoIndexParams::CompressionTypeGzip:
-      return TextFileGZip;
-    default:
-      assert(0);
-    }; //switch();
-  return 0;//Just to reduce warning messages;
-}
-
-static std::string addCompressionExtension(const std::string& fileName, const RepoIndexParams& params)
-{
-  if (params.compressionType == RepoIndexParams::CompressionTypeGzip)
-    return fileName + ".gz";
-  assert(params.compressionType == RepoIndexParams::CompressionTypeNone);
-  return fileName;
-}
-
-static std::string getPkgRelName(const std::string& line)
-{
-  //Name is stored at the beginning of line until first space without previously used backslash;
-  std::string res;
-  for(std::string::size_type i = 0;i < line.length();i++)
-    {
-      if (line[i] == '\\')
-	{
-	  i++;
-	  if (i < line.length())
-	    res += line[i]; else 
-	    return res + "\\";
-	  continue;
-	}
-      if (line[i] == ' ')
-	return res;
-      res += line[i];
-    } //for();
-  return res;
-}
-
-static std::string saveNamedPkgRel(const NamedPkgRel& r)
-{
-  std::ostringstream s;
-  std::string name;
-  for(std::string::size_type i = 0;i < r.pkgName.length();i++)
-    {
-      if (r.pkgName[i] == ' ' || r.pkgName[i] == '\\')
-	name += "\\";
-      name += r.pkgName[i];
-    }
-  s << name;
-  if (r.ver.empty())
-    return s.str();
-  const bool less = r.type & VerLess, equals = r.type & VerEquals, greater = r.type & VerGreater;
-  assert(!less || !greater);
-  std::string t;
-  if (less)
-    t += "<";
-  if (greater)
-    t += ">";
-  if (equals)
-    t += "=";
-  s << " " << t << " " << r.ver;
-  return s.str();
-}
-
-static std::string saveFileName(const std::string& fileName)
-{
-  std::string s;
-  for(std::string::size_type i = 0;i < fileName.length();i++)
-    {
-      if (fileName[i] == ' ' || fileName[i] == '\\')
-	s += "\\";
-      s += fileName[i];
-    }
-  return s;
-}
-
-static std::string encodeMultiline(const std::string& s)
-{
-  std::string r;
-  for(std::string::size_type i = 0;i < s.length();i++)
-    {
-      switch(s[i])
-	{
-	case '\\':
-	  r += "\\\\";
-	  break;
-	case '\n':
-	  r += "\\n";
-	  break;
-	case '\r':
-	  continue;
-	default:
-	  r += s[i];
-	}; //switch(s[i]);
-    }
-  return r;
-}
-
-static std::string encodeChangeLogEntry(const ChangeLogEntry& entry)
-{
-  struct tm brTime;
-  gmtime_r(&entry.time, &brTime);
-  std::ostringstream s;
-  s << (brTime.tm_year + 1900) << "-";
-  if (brTime.tm_mon < 10)
-    s << "0";
-  s << (brTime.tm_mon + 1) << "-";
-  if (brTime.tm_mday < 10)
-    s << "0";
-  s << brTime.tm_mday << std::endl;
-  s << entry.name << std::endl;
-  s << entry.text;
-  return encodeMultiline(s.str());
-}
-
-static bool fileFromDirs(const std::string& fileName, const StringList& dirs)
-{
-  std::string tail;
-  for(StringList::const_iterator it = dirs.begin();it != dirs.end();it++)
-    {
-      if (stringBegins(fileName, *it, tail))
-	return 1;
-    }
-  return 0;
-}
 
 TextFormatWriter::TextFormatWriter(AbstractIndexConstructionListener& listener,
 				   const AbstractRequireFilter& requireFilter,
@@ -230,9 +96,6 @@ void TextFormatWriter::addBinary(const PkgFile& pkgFile, const StringList& fileL
        * filtering on additional phase.
        */
       m_tmpFile->writeLine(PROVIDES_STR + saveNamedPkgRel(*it));
-      //But registration must be done only if we have no additional phase ;
-      if (!m_filterProvidesByRefs)
-	firstProvideReg(pkgFile.name, it->pkgName);
     }
   for(StringList::const_iterator it = fileList.begin();it != fileList.end();it++)
     /*
@@ -246,9 +109,6 @@ void TextFormatWriter::addBinary(const PkgFile& pkgFile, const StringList& fileL
     if (m_filterProvidesByRefs || m_filterProvidesByDirs.empty() || fileFromDirs(*it, m_filterProvidesByDirs))
       {
 	m_tmpFile->writeLine(PROVIDES_STR + saveFileName(*it));
-	//But we are performing registration only if there is no additional phase ;
-	if (!m_filterProvidesByRefs)
-	  firstProvideReg(pkgFile.name, *it);
       }
   for(NamedPkgRelVector::const_iterator it = pkgFile.requires.begin();it != pkgFile.requires.end();it++)
     {
@@ -344,7 +204,6 @@ void TextFormatWriter::additionalPhase()
 	  (!m_filterProvidesByDirs.empty() && fileFromDirs(provideName, m_filterProvidesByDirs)))
 	{
 	  outputFile->writeLine(line);
-	  firstProvideReg(name, provideName);
 	}
     } //while();
   inputFile->close();
@@ -372,38 +231,137 @@ void TextFormatWriter::secondPhase()
       const std::string provideName = getPkgRelName(tail);
       assert(!provideName.empty());
       assert(!name.empty());
-      secondProvideReg(name, provideName);
       outputFile->writeLine(line);
     } //while(1);
 }
 
-void TextFormatWriter::firstProvideReg(const std::string& pkgName, const std::string& provideName)
+int TextFormatWriter::mapTextFileType(int compressionType)
 {
-  /*KILLME:
-  StringToIntMap::iterator it;
-  it = m_provideMap.find(pkgName);
-  if (it == m_provideMap.end())
-    m_provideMap.insert(StringToIntMap::value_type(pkgName, 0));
-  it = m_provideMap.find(provideName);
-  if (it == m_provideMap.end())
-    m_provideMap.insert(StringToIntMap::value_type(provideName, 1)); else
-    it->second++;
-  */
+  switch(compressionType)
+    {
+    case RepoIndexParams::CompressionTypeNone:
+      return TextFileStd;
+    case RepoIndexParams::CompressionTypeGzip:
+      return TextFileGZip;
+    default:
+      assert(0);
+    }; //switch();
+  return 0;//Just to reduce warning messages;
 }
 
-void TextFormatWriter::secondProvideReg(const std::string& pkgName, const std::string& provideName)
+std::string TextFormatWriter::addCompressionExtension(const std::string& fileName, const RepoIndexParams& params)
 {
-  /*KILLME:
-  const ProvideResolvingItemVector::size_type itemIndex = findProvideResolvingItem(provideName);
-  assert(itemIndex < m_resolvingItems.size());
-  const ProvideResolvingItem& item = m_resolvingItems[itemIndex];
-  const ProvideResolvingItemVector::size_type pkgIndex = findProvideResolvingItem(pkgName);
-  assert(pkgIndex < m_resolvingItems.size());
-  SizeVector::size_type i = item.pos;
-  while(i < item.pos + item.count && m_resolvingData[i] != (size_t)-1)
-    i++;
-  assert(i <item.pos + item.count);
-  assert(i < m_resolvingData.size());
-  m_resolvingData[i] = pkgIndex;
-  */
+  if (params.compressionType == RepoIndexParams::CompressionTypeGzip)
+    return fileName + COMPRESSION_SUFFIX_GZIP;
+  assert(params.compressionType == RepoIndexParams::CompressionTypeNone);
+  return fileName;
+}
+
+std::string TextFormatWriter::getPkgRelName(const std::string& line)
+{
+  //Name is stored at the beginning of line until first space without previously used backslash;
+  std::string res;
+  for(std::string::size_type i = 0;i < line.length();i++)
+    {
+      if (line[i] == '\\')
+	{
+	  i++;
+	  if (i < line.length())
+	    res += line[i]; else 
+	    return res + "\\";
+	  continue;
+	}
+      if (line[i] == ' ')
+	return res;
+      res += line[i];
+    } //for();
+  return res;
+}
+
+std::string TextFormatWriter::saveNamedPkgRel(const NamedPkgRel& r)
+{
+  std::string name;
+  for(std::string::size_type i = 0;i < r.pkgName.length();i++)
+    {
+      if (r.pkgName[i] == ' ' || r.pkgName[i] == '\\')
+	name += "\\";
+      name += r.pkgName[i];
+    }
+  std::ostringstream s;
+  s << name;
+  if (r.ver.empty())
+    return s.str();
+  const bool less = r.type & VerLess, equals = r.type & VerEquals, greater = r.type & VerGreater;
+  assert(!less || !greater);
+  std::string t;
+  if (less)
+    t += "<";
+  if (greater)
+    t += ">";
+  if (equals)
+    t += "=";
+  s << " " << t << " " << r.ver;
+  return s.str();
+}
+
+std::string TextFormatWriter::saveFileName(const std::string& fileName)
+{
+  std::string s;
+  for(std::string::size_type i = 0;i < fileName.length();i++)
+    {
+      if (fileName[i] == ' ' || fileName[i] == '\\')
+	s += "\\";
+      s += fileName[i];
+    }
+  return s;
+}
+
+std::string TextFormatWriter::encodeMultiline(const std::string& s)
+{
+  std::string r;
+  for(std::string::size_type i = 0;i < s.length();i++)
+    {
+      switch(s[i])
+	{
+	case '\\':
+	  r += "\\\\";
+	  break;
+	case '\n':
+	  r += "\\n";
+	  break;
+	case '\r':
+	  continue;
+	default:
+	  r += s[i];
+	}; //switch(s[i]);
+    }
+  return r;
+}
+
+std::string TextFormatWriter::encodeChangeLogEntry(const ChangeLogEntry& entry)
+{
+  struct tm brTime;
+  gmtime_r(&entry.time, &brTime);
+  std::ostringstream s;
+  s << (brTime.tm_year + 1900) << "-";
+  if (brTime.tm_mon < 10)
+    s << "0";
+  s << (brTime.tm_mon + 1) << "-";
+  if (brTime.tm_mday < 10)
+    s << "0";
+  s << brTime.tm_mday << std::endl;
+  s << entry.name << std::endl;
+  s << entry.text;
+  return encodeMultiline(s.str());
+}
+
+bool TextFormatWriter::fileFromDirs(const std::string& fileName, const StringList& dirs)
+{
+  std::string tail;
+  for(StringList::const_iterator it = dirs.begin();it != dirs.end();it++)
+    {
+      if (stringBegins(fileName, *it, tail))
+	return 1;
+    }
+  return 0;
 }
