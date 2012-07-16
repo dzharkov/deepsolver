@@ -105,6 +105,13 @@ private:
 
 private:
   static int mapTextFileType(int compressionType);
+  static std::string addCompressionExtension(const std::string& fileName, const RepoIndexParams& params);
+  static std::string getPkgRelName(const std::string& line);
+  static std::string saveNamedPkgRel(const NamedPkgRel& r);
+  static std::string saveFileName(const std::string& fileName);
+  static std::string encodeMultiline(const std::string& s);
+  static std::string encodeChangeLogEntry(const ChangeLogEntry& entry);
+  static bool fileFromDirs(const std::string& fileName, const StringList& dirs);
 
 private:
   AbstractIndexConstructionListener& m_listener;

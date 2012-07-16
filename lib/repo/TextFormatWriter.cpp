@@ -65,7 +65,7 @@ void TextFormatWriter::initBinary()
 
 void TextFormatWriter::initSource()
 {
-  m_sourcesFile = createTextFileWriter(selectTextFileType(m_params.compressionType), m_sourcesFileName);
+  m_sourcesFile = createTextFileWriter(mapTextFileType(m_params.compressionType), m_sourcesFileName);
 }
 
 void TextFormatWriter::addBinary(const PkgFile& pkgFile, const StringList& fileList)
@@ -179,7 +179,7 @@ void TextFormatWriter::additionalPhase()
   //KILLME:  assert(m_resolvingItems.empty());
   //KILLME:  assert(m_resolvingData.empty());
   assert(m_filterProvidesByRefs);
-  const std::string inputFileName = m_tmpFileName, outputFileName = Directory::mixNameComponents(m_dir, TMP_FILE_ADDITIONAL);
+  const std::string inputFileName = m_tmpFileName, outputFileName = Directory::mixNameComponents(m_dir, TMP_FILE);
   m_tmpFileName = outputFileName;//Changing name of a file to be processed on the second phase;
   std::auto_ptr<AbstractTextFileReader> inputFile = createTextFileReader(TextFileStd, inputFileName);
   std::auto_ptr<AbstractTextFileWriter> outputFile = createTextFileWriter(TextFileStd, outputFileName);
@@ -216,7 +216,7 @@ void TextFormatWriter::secondPhase()
 {
   assert(!m_tmpFileName.empty());
   std::auto_ptr<AbstractTextFileReader> inputFile = createTextFileReader(TextFileStd, m_tmpFileName);
-  std::auto_ptr<AbstractTextFileWriter> outputFile = createTextFileWriter(selectTextFileType(m_params.compressionType), m_packagesFileName);
+  std::auto_ptr<AbstractTextFileWriter> outputFile = createTextFileWriter(mapTextFileType(m_params.compressionType), m_packagesFileName);
   std::string name, line;
   while(inputFile->readLine(line))
     {
