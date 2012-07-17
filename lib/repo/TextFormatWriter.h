@@ -80,28 +80,15 @@ public:
   virtual ~TextFormatWriter() {}
 
 public:
+  void addBinary(const PkgFile& pkgFile, const StringList& fileList);
+  void addSource(const PkgFile& pkgFile);
+  void commitBinary(StringList& files);
+  void commitSource(StringList& files);
   void initBinary();
   void initSource();
 
-  void addBinary(const PkgFile& pkgFile, const StringList& fileList);
-  void addSource(const PkgFile& pkgFile);
-
-  void commitBinary();
-  void commitSource();
-
-  std::string getPackagesFileName() const
-  {
-    return m_packagesFileName;
-  }
-
-  std::string getSourcesFileName() const
-  {
-    return m_sourcesFileName;
-  }
-
 private:
   void secondPhase();
-  void additionalPhase();
 
 private:
   static int mapTextFileType(int compressionType);
@@ -120,9 +107,8 @@ private://Files;
   const AbstractRequireFilter& m_requireFilter;
   const RepoIndexParams& m_params;
   const std::string m_dir;
-  const std::string m_packagesFileName, m_sourcesFileName;
-  std::string m_tmpFileName;//Additional phase modifies this file name;
-  std::auto_ptr<AbstractTextFileWriter> m_tmpFile, m_sourcesFile;
+  const std::string m_tmpFileName, m_packagesFileName, m_packagesDescrFileName, m_sourcesFileName, m_sourcesDescrFileName;
+  std::auto_ptr<AbstractTextFileWriter> m_packagesFile, m_packagesDescrFile, m_sourcesFile, m_sourcesDescrFile;
 
 private://Provides filtering;
   const bool m_filterProvidesByRefs;
