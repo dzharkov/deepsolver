@@ -34,8 +34,8 @@ public:
   };
 
   RepoIndexParams()
-    : compressionType(DEFAULT_REPO_INDEX_COMPRESSION_TYPE), //Real value is defined in DefaultValues.h;
-      formatType(DEFAULT_REPO_INDEX_FORMAT_TYPE), //Real value is defined in DefaultValues.h;
+    : compressionType(CompressionTypeNone),
+      formatType(FormatTypeText),
     provideFilteringByRefs(0),
     changeLogBinary(0),
       changeLogSources(0)
@@ -44,7 +44,7 @@ public:
 public:
   char compressionType;//Must be exactly signed for error value indications;
   char formatType;//Must be exactly signed for error value indications;
-  std::string arch;
+  std::string arch, component;
   std::string topDir;
   StringToStringMap userParams;
   //If the following list is empty provide filtering by directories is disabled;
@@ -69,6 +69,9 @@ private:
   void collectRefsFromDirs(const StringList& dirs, StringSet& res);
   void processPackages(const std::string& indexDir, const std::string& rpmsDir, const std::string& srpmsDir, const RepoIndexParams& params);
   void writeInfoFile(const std::string& fileName, const RepoIndexParams& params);
+
+ private:
+  AbstractIndexConstructionListener& m_listener;
 }; //class IndexCore;
 
 #endif //DEEPSOLVER_INDEX_CORE_H;

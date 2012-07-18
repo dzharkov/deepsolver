@@ -54,14 +54,16 @@ void IndexCore::collectRefsFromDirs(const StringList& dirs, StringSet& res)
 
 void IndexCore::build(const RepoIndexParams& params)
 {
+  assert(!params.arch.empty());
+  assert(!params.component.empty());
   const std::string archDir = Directory::mixNameComponents(params.topDir, params.arch);
-  const std::string indexDir = Directory::mixNameComponents(archDir, REPO_INDEX_DIR);
+  const std::string indexDir = Directory::mixNameComponents(archDir, REPO_INDEX_DIR_PREFIX + params.component);
   const std::string infoFile = Directory::mixNameComponents(indexDir, REPO_INDEX_INFO_FILE);
   Directory::ensureExists(indexDir);
   writeInfoFile(infoFile, params);
   processPackages(indexDir,
-		  Directory::mixNameComponents(archDir, REPO_RPMS_DIR_NAME),
-		  Directory::mixNameComponents(archDir, REPO_SRPMS_DIR_NAME),
+		  Directory::mixNameComponents(archDir, REPO_PACKAGES_DIR_NAME),
+		  Directory::mixNameComponents(archDir, REPO_SOURCES_DIR_NAME),
 		  params);
 }
 
