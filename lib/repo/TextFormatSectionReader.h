@@ -18,21 +18,66 @@
 #ifndef DEEPSOLVER_TEXT_FORMAT_SECTION_READER_H
 #define DEEPSOLVER_TEXT_FORMAT_SECTION_READER_H
 
-class TextFormatSectionReader
+class AbstractTextFormatSectionReader
 {
 public:
-  TextFormatSectionReader(File& file)
-    : m_file(file),
-      m_noMoreData(0) {}
-  virtual ~TextFormatSectionReader() {}
+  AbstractTextFormatSectionReader(File& file)
+    : m_noMoreData(0) {}
+  virtual ~AbstractTextFormatSectionReader() {}
 
 public:
   bool readNext(std::string& s);
 
+protected:
+  virtual size_t readData(void* buf, size_t bufSize) = 0;
+
 private:
-  File& m_file;
   bool m_noMoreData;
   std::string m_queue;
-}; //class TextFormatSectionReader; 
+}; //class abstractTextFormatSectionReader; 
+
+class TextFormatSectionReader: public AbstractTextFormatSectionReader
+{
+public:
+  TextFormatSectionReader() {}
+  virtual ~TextFormatSectionReader() {}
+
+public:
+  void open(const std::string& fileName)
+  {
+    m_file.open(fileName);
+  }
+
+protected:
+  size_t readData(void* buf, size_t bufSize)
+  {
+    return m_file.read(buf, bufSize);
+  }
+
+private:
+  File m_file;
+}; //class TextFormatSectionReader;
+
+class TextFormatSectionReaderGzip: public AbstractTextFormatSectionReader
+{
+public:
+  TextFormatSectionReaderGzip() {}
+  virtual ~TextFormatSectionReaderGzip() {}
+
+public:
+  void open(const std::string& fileName)
+  {
+    m_file.open(fileName);
+  }
+
+protected:
+  size_t readData(void* buf, size_t bufSize)
+  {
+    return m_file.read(buf, bufSize);
+  }
+
+private:
+  GzipInputFile m_file;
+}; //class TextFormatSectionReader;
 
 #endif //DEEPSOLVER_TEXT_FORMAT_SECTION_READER_H;
