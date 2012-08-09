@@ -47,18 +47,23 @@ private:
 class IndexCore
 {
 public:
+  /**\brief The default constructor*/
   IndexCore() {}
 
+  /**\brief The destructor*/
+  virtual ~IndexCore() {}
+
 public:
-  void build(const RepoIndexParams& params);
+  void buildIndex(const RepoParams& params);
+  void rebuildIndex(const RepoParams& params, const StringVector& toAdd, const stringVector& toRemove);
 
 private:
   void collectRefs(const std::string& dirName, StringSet& res);
-  void collectRefsFromDirs(const StringList& dirs, StringSet& res);
-  void processPackages(const std::string& indexDir, const std::string& rpmsDir, const std::string& srpmsDir, const RepoIndexParams& params);
-  void writeInfoFile(const std::string& fileName, const RepoIndexParams& params);
 
- private:
+private:
+  static std::string compressionExtension(char compressionType);
+
+private:
   AbstractIndexConstructionListener& m_listener;
 }; //class IndexCore;
 

@@ -57,3 +57,42 @@ void RepoIndexInfoFile::write(const std::string& fileName, const StringToStringM
   f.create(fileName);
   f.write(ss.str().c_str(), ss.str().length());
 }
+
+void IndexCore::writeInfoFile(const std::string& fileName, const RepoIndexParams& params)
+{
+  RepoIndexInfoFile infoFile;
+  switch(params.compressionType)
+    {
+    case RepoIndexParams::CompressionTypeNone:
+      infoFile.setCompressionType("none");
+      break;
+    case RepoIndexParams::CompressionTypeGzip:
+      infoFile.setCompressionType("gzip");
+      break;
+    default:
+      assert(0);
+    }; //switch(compressionType);
+  switch(params.formatType)
+    {
+    case RepoIndexParams::FormatTypeText:
+      infoFile.setFormatType("text");
+      break;
+    case RepoIndexParams::FormatTypeBinary:
+      infoFile.setFormatType("binary");
+      break;
+    default:
+      assert(0);
+    }; //switch(formatType);
+  infoFile.setFormatVersion(PACKAGE_VERSION);
+  infoFile.setMd5sumFile(REPO_INDEX_MD5SUM_FILE);
+  for(StringToStringMap::const_iterator it = params.userParams.begin();it != params.userParams.end();it++)
+    infoFile.addUserParam(it->first, it->second);
+  std::string errorMessage;
+  StringList warningMessages;
+  const bool res = infoFile.write(fileName, errorMessage, warningMessages);
+  for(StringList::const_iterator it = warningMessages.begin();it != warningMessages.end();it++)
+    m_warningHandler.onWarning(*it);
+  if (!res)
+    INDEX_CORE_STOP(errorMessage);
+}
+

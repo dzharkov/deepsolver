@@ -17,54 +17,26 @@
 
 #include"deepsolver.h"
 #include"IndexCore.h"
-#include"repo/InfoFileWriter.h"
-#include"repo/TextFormatWriter.h"
 #include"rpm/RpmFile.h"
 #include"rpm/RpmFileHeaderReader.h"
 #include"utils/MD5.h"
-#include"RequireFilter.h"
 
-void IndexCore::collectRefs(const std::string& dirName, StringSet& res) 
+#define TMP_FILE "tmp_packages_data"
+
+void IndexCore::buildRepo(const RepoIndexParams& params)
 {
-  std::auto_ptr<Directory::Iterator> it = Directory::enumerate(dirName);
-  while(it->moveNext())
+  assert(!params.indexPath.empty());
+  assert(!params.pkgSources.empty());
+  Directory::ensureExists(params.indexPath);
+  params.writeInfoFile(Directory::mixNameComponents(params.indexPath, REPO_INDEX_INFO_FILE));
+  StringSet providesRefs;
+  for(StringVector::size_type i = 0;i < providesRefsSources.size();i++)
+    collectRefs(providesRefsSources[i], providesRefs);
+
+  for(StringVector::size_type i = 0;i < params.pkgSources.size();i++)
     {
-      if (it->getName() == "." || it->getName() == "..")
-	continue;
-      if (!checkExtension(it->getName(), ".rpm"))
-	continue;
-      NamedPkgRelVector requires, conflicts;
-      RpmFileHeaderReader reader;
-      reader.load(it->getFullPath());
-      reader.fillRequires(requires);
-      reader.fillConflicts(conflicts);
-      for(NamedPkgRelVector::size_type i =0; i < requires.size();i++)
-	res.insert(requires[i].pkgName);
-      for(NamedPkgRelVector::size_type i = 0;i < conflicts.size();i++)
-	res.insert(conflicts[i].pkgName);
+
     }
-}
-
-void IndexCore::collectRefsFromDirs(const StringList& dirs, StringSet& res)
-{
-  res.clear();
-  for(StringList::const_iterator it = dirs.begin();it != dirs.end();it++)
-    collectRefs(*it, res);
-}
-
-void IndexCore::build(const RepoIndexParams& params)
-{
-  assert(!params.arch.empty());
-  assert(!params.component.empty());
-  const std::string archDir = Directory::mixNameComponents(params.topDir, params.arch);
-  const std::string indexDir = Directory::mixNameComponents(archDir, REPO_INDEX_DIR_PREFIX + params.component);
-  const std::string infoFile = Directory::mixNameComponents(indexDir, REPO_INDEX_INFO_FILE);
-  Directory::ensureExists(indexDir);
-  writeInfoFile(infoFile, params);
-  processPackages(indexDir,
-		  Directory::mixNameComponents(archDir, REPO_PACKAGES_DIR_NAME),
-		  Directory::mixNameComponents(archDir, REPO_SOURCES_DIR_NAME),
-		  params);
 }
 
 void IndexCore::processPackages(const std::string& indexDir, const std::string& rpmsDir, const std::string& srpmsDir, const RepoIndexParams& params)
@@ -139,45 +111,35 @@ void IndexCore::processPackages(const std::string& indexDir, const std::string& 
   md5sum->writeLine(md5.commit(File::baseName(handler.getProvidesFileName())));
 }
 
-void IndexCore::writeInfoFile(const std::string& fileName, const RepoIndexParams& params)
+std::string IndexCore::compressionExtension(char compressionType)
 {
-  RepoIndexInfoFile infoFile;
-  switch(params.compressionType)
-    {
-    case RepoIndexParams::CompressionTypeNone:
-      infoFile.setCompressionType("none");
-      break;
-    case RepoIndexParams::CompressionTypeGzip:
-      infoFile.setCompressionType("gzip");
-      break;
-    default:
-      assert(0);
-    }; //switch(compressionType);
-  switch(params.formatType)
-    {
-    case RepoIndexParams::FormatTypeText:
-      infoFile.setFormatType("text");
-      break;
-    case RepoIndexParams::FormatTypeBinary:
-      infoFile.setFormatType("binary");
-      break;
-    default:
-      assert(0);
-    }; //switch(formatType);
-  infoFile.setFormatVersion(PACKAGE_VERSION);
-  infoFile.setMd5sumFile(REPO_INDEX_MD5SUM_FILE);
-  for(StringToStringMap::const_iterator it = params.userParams.begin();it != params.userParams.end();it++)
-    infoFile.addUserParam(it->first, it->second);
-  std::string errorMessage;
-  StringList warningMessages;
-  const bool res = infoFile.write(fileName, errorMessage, warningMessages);
-  for(StringList::const_iterator it = warningMessages.begin();it != warningMessages.end();it++)
-    m_warningHandler.onWarning(*it);
-  if (!res)
-    INDEX_CORE_STOP(errorMessage);
+  if (compressionType == RepoParams::CompressionTypeGzip)
+    return COMPRESSION_SUFFIX_GZIP;
+  assert(compressionType == RepoIParams::CompressionTypeNone);
+  return "";
 }
 
-#define TMP_FILE "tmp_packages_data"
+
+void IndexCore::collectRefs(const std::string& dirName, StringSet& res) 
+{
+  std::auto_ptr<Directory::Iterator> it = Directory::enumerate(dirName);
+  while(it->moveNext())
+    {
+      if (it->getName() == "." || it->getName() == "..")
+	continue;
+      if (!checkExtension(it->getName(), ".rpm"))
+	continue;
+      NamedPkgRelVector requires, conflicts;
+      RpmFileHeaderReader reader;
+      reader.load(it->getFullPath());
+      reader.fillRequires(requires);
+      reader.fillConflicts(conflicts);
+      for(NamedPkgRelVector::size_type i =0; i < requires.size();i++)
+	res.insert(requires[i].pkgName);
+      for(NamedPkgRelVector::size_type i = 0;i < conflicts.size();i++)
+	res.insert(conflicts[i].pkgName);
+    }
+}
 
 
 TextFormatWriter::TextFormatWriter(AbstractIndexConstructionListener& listener,
@@ -202,121 +164,20 @@ TextFormatWriter::TextFormatWriter(AbstractIndexConstructionListener& listener,
 {
 }
 
-void TextFormatWriter::initBinary()
-{
+/*
   if (m_filterProvidesByRefs)//It means the second phase is needed;
     m_packagesFile = createTextFileWriter(TextFileStd, m_tmpFileName); else
     m_packagesFile = createTextFileWriter(mapTextFileType(m_params.compressionType), m_packagesFileName);
     m_packagesDescrFile = createTextFileWriter(mapTextFileType(m_params.compressionType), m_packagesDescrFileName);
-}
-
-void TextFormatWriter::initSource()
-{
   m_sourcesFile = createTextFileWriter(mapTextFileType(m_params.compressionType), m_sourcesFileName);
   m_sourcesDescrFile = createTextFileWriter(mapTextFileType(m_params.compressionType), m_sourcesDescrFileName);
-}
-
-void TextFormatWriter::addBinary(const PkgFile& pkgFile, const StringList& fileList)
-{
-  m_packagesFile->writeLine("[" + File::baseName(pkgFile.fileName) + "]");
-  m_packagesDescrFile->writeLine("[" + File::baseName(pkgFile.fileName) + "]");
-  m_packagesFile->writeLine(NAME_STR + pkgFile.name);
-  std::ostringstream epochStr;
-  epochStr << EPOCH_STR << pkgFile.epoch;
-  m_packagesFile->writeLine(epochStr.str());
-  m_packagesFile->writeLine(VERSION_STR + pkgFile.version);
-  m_packagesFile->writeLine(RELEASE_STR + pkgFile.release);
-  m_packagesFile->writeLine(ARCH_STR + pkgFile.arch);
-  m_packagesDescrFile->writeLine(URL_STR + pkgFile.url);
-  m_packagesDescrFile->writeLine(LICENSE_STR + pkgFile.license);
-  m_packagesDescrFile->writeLine(PACKAGER_STR + pkgFile.packager);
-  m_packagesDescrFile->writeLine(SUMMARY_STr + pkgFile.summary);
-  m_packagesDescrFile->writeLine(DESCRIPTION_STR + encodeMultiline(pkgFile.description));
-  m_packagesFile->writeLine(SRCRPM_STR + pkgFile.srcRpm);
-  std::ostringstream bt;
-  bt << pkgFile.buildTime;
-  m_packagesFile->writeLine(BUILDTIME_STR + bt.str());
-  for(NamedPkgRelVector::const_iterator it = pkgFile.provides.begin();it != pkgFile.provides.end();it++)
-    {
-      /*
-       * The following operation must be done in both cases: in filtering by
-       * references mode and without filtering. If there is no filtering we just
-       * saving all provides, if filtering is enabled we will proceed real
-       * filtering on additional phase.
-       */
-      m_packagesFile->writeLine(PROVIDES_STR + saveNamedPkgRel(*it));
-    }
-  for(StringList::const_iterator it = fileList.begin();it != fileList.end();it++)
-    /*
-     * If filtering by references is enabled we are writing all possible
-     * provides to filter them on additional phase. If filterProvidesByDirs
-     * string list is empty it means filtering by directories is disabled and
-     * we also must write current file as provides. If filtering by
-     * directories is enabled we are writing file as provides only if its
-     * directory presents in directory list.
-     */
-    if (m_filterProvidesByRefs || m_filterProvidesByDirs.empty() || fileFromDirs(*it, m_filterProvidesByDirs))
-      m_packagesFile->writeLine(PROVIDES_STR + saveFileName(*it));
-  for(NamedPkgRelVector::const_iterator it = pkgFile.requires.begin();it != pkgFile.requires.end();it++)
-    {
-      if (m_requireFilter.excludeRequire(it->pkgName))
-	continue;
-      m_packagesFile->writeLine(REQUIRES_STR + saveNamedPkgRel(*it));
-      if (m_filterProvidesByRefs)
-	m_refsSet.insert(it->pkgName);
-    }
-  for(NamedPkgRelVector::const_iterator it = pkgFile.conflicts.begin();it != pkgFile.conflicts.end();it++)
-    {
-      m_packagesFile->writeLine(CONFLICTS_STR + saveNamedPkgRel(*it));
-      if (m_filterProvidesByRefs)
-	m_refsSet.insert(it->pkgName);
-    }
-  for(NamedPkgRelVector::const_iterator it = pkgFile.obsoletes.begin();it != pkgFile.obsoletes.end();it++)
-    m_packagesFile->writeLine(OBSOLETES_STR + saveNamedPkgRel(*it));
-  if (m_params.changeLogBinary)
-    for(ChangeLog::size_type i = 0;i < pkgFile.changeLog.size();i++)
-      m_packagesDescrFile->writeLine(CHANGELOG_STR + encodeChangeLogEntry(pkgFile.changeLog[i]));
-  m_packagesFile->writeLine("");
-  m_packagesDescrFile->writeLine("");
-}
-
-void TextFormatWriter::addSource(const PkgFile& pkgFile)
-{
-  m_sourcesFile->writeLine("[" + File::baseName(pkgFile.fileName) + "]");
-  m_sourcesDescrFile->writeLine("[" + File::baseName(pkgFile.fileName) + "]");
-  m_sourcesFile->writeLine(NAME_STR + pkgFile.name);
-  std::ostringstream epochStr;
-  epochStr << EPOCH_STR << pkgFile.epoch;
-  m_sourcesFile->writeLine(epochStr.str());
-  m_sourcesFile->writeLine(VERSION_STR + pkgFile.version);
-  m_sourcesFile->writeLine(RELEASE_STR + pkgFile.release);
-  //No need need to write arch for source packages;
-  m_sourcesDescrFile->writeLine(URL_STR + pkgFile.url);
-  m_sourcesDescrFile->writeLine(LICENSE_STR + pkgFile.license);
-  m_sourcesDescrFile->writeLine(PACKAGER_STR + pkgFile.packager);
-  m_sourcesDescrFile->writeLine(SUMMARY_STr + pkgFile.summary);
-  m_sourcesDescrFile->writeLine(DESCRIPTION_STR + encodeMultiline(pkgFile.description));
-  //No need to write src.rpm entry, usually it is empty for source packages;
-  if (m_params.changeLogSources)
-    for(ChangeLog::size_type i = 0;i < pkgFile.changeLog.size();i++)
-      m_sourcesDescrFile->writeLine(CHANGELOG_STR + encodeChangeLogEntry(pkgFile.changeLog[i]));
-  m_sourcesFile->writeLine("");
-  m_sourcesDescrFile->writeLine("");
-}
-
-void TextFormatWriter::commitBinary()
-{
   m_packagesFile->close();
   m_packagesDescrFile->close();
   if (m_filterProvidesByRefs)
     secondPhase();
-}
-
-void TextFormatWriter::commitSource()
-{
   m_sourcesFile->close();
   m_sourcesDescrFile->close();
-}
+*/
 
 void TextFormatWriter::secondPhase()
 {
@@ -352,28 +213,6 @@ void TextFormatWriter::secondPhase()
   outputFile->close();
   logMsg(LOG_DEBUG, "Removing \'%s\'", inputFileName.c_str());
   File::unlink(inputFileName);
-}
-
-int TextFormatWriter::mapTextFileType(int compressionType)
-{
-  switch(compressionType)
-    {
-    case RepoIndexParams::CompressionTypeNone:
-      return TextFileStd;
-    case RepoIndexParams::CompressionTypeGzip:
-      return TextFileGZip;
-    default:
-      assert(0);
-    }; //switch();
-  return 0;//Just to reduce warning messages;
-}
-
-std::string TextFormatWriter::addCompressionExtension(const std::string& fileName, const RepoIndexParams& params)
-{
-  if (params.compressionType == RepoIndexParams::CompressionTypeGzip)
-    return fileName + COMPRESSION_SUFFIX_GZIP;
-  assert(params.compressionType == RepoIndexParams::CompressionTypeNone);
-  return fileName;
 }
 
 bool TextFormatWriter::fileFromDirs(const std::string& fileName, const StringList& dirs)
