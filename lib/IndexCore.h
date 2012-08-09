@@ -18,43 +18,31 @@
 #ifndef DEEPSOLVER_INDEX_CORE_H
 #define DEEPSOLVER_INDEX_CORE_H
 
-#include"IndexCoreException.h"
+#include"repo/RepoParams.h"
 
-class RepoIndexParams
+class IndexCoreException: public DeepsolverException 
 {
 public:
-  enum {
-    CompressionTypeNone = 0,
-    CompressionTypeGzip = 1
-  };
+  IndexCoreException() {}
+  IndexCoreException(const std::string& message):
+    m_message(message) {}
 
-  enum {
-    FormatTypeText = 1,//The single currently supported;
-    FormatTypeBinary = 2
-  };
-
-  RepoIndexParams()
-    : compressionType(CompressionTypeNone),
-      formatType(FormatTypeText),
-    provideFilteringByRefs(0),
-    changeLogBinary(0),
-      changeLogSources(0)
-  {}
+  virtual ~IndexCoreException() {}
 
 public:
-  char compressionType;//Must be exactly signed for error value indications;
-  char formatType;//Must be exactly signed for error value indications;
-  std::string arch, component;
-  std::string topDir;
-  StringToStringMap userParams;
-  //If the following list is empty provide filtering by directories is disabled;
-  StringList provideFilterDirs;
-  bool provideFilteringByRefs;
-  StringList takeRefsFromPackageDirs;
-  bool changeLogBinary;
-  std::string excludeRequiresFile;
-  bool changeLogSources;
-}; //class RepoIndexParams;
+  std::string getType() const
+  {
+    return "index core";
+  }
+
+  std::string getMessage() const
+  {
+    return m_message;
+  }
+
+private:
+  const std::string m_message;
+}; //class IndexCoreException;
 
 class IndexCore
 {
