@@ -21,7 +21,94 @@
 #include"rpm/RpmFileHeaderReader.h"
 #include"utils/MD5.h"
 
-#define TMP_FILE "tmp_packages_data"
+#define TMP_FILE_NAME "tmp_packages_data"
+
+class UnifiedOutput
+{
+public:
+  UnifiedOutput() {}
+  virtual ~UnifiedOutput() 
+  {
+    close();
+  }
+
+public:
+  virtual void writeData(const std:;string& str = 0;)
+    virtual void close() = 0;
+}; //class UnifiedOutput;
+
+class StdOutput: public UnifiedOutput
+{
+public:
+  StdOutput() {}
+
+  StdOutput(const std::string& fileName)
+  {
+    open(fileName);
+  }
+
+  virtual ~StdOutput() {}
+
+public:
+  void open(const std::string& fileName)
+  {
+    assert(!m_stream.is_opened());
+    assert(!fileName.empty());
+    m_stream.open(fileName.c_str());
+    assert(m_stream.is_opened());//FIXME:Must be an exception;
+  }
+
+  void writeData(const std::string& str)
+  {
+    assert(m_stream.is_opened());
+    m_stream << str;
+  }
+
+  void close()
+  {
+    if (!m_stream.is_opened())
+      return;
+    m_stream << std::endl;
+    m_stream.flush();
+    m_stream.close();
+  }
+
+private:
+  std::ofstream m_stream;
+}; //class StdOutput;
+
+class GzipOutput: public UnifiedOutput
+{
+public:
+  GzipOutput() {}
+
+  GzipOutput(const std::string& fileName)
+  {
+    open(fileName);
+  }
+
+  virtual ~GzipOutput() {}
+
+public:
+  void open(const std::string& fileName)
+  {
+    m_file.open(fileName);
+  }
+
+  void writeData(const std::string& str)
+  {
+    m_file.write(str.c_str(), str.length());
+  }
+
+  void close()
+  {
+    m_file.close();
+  }
+
+private:
+  GzipOutputFile m_file;
+}; //class GzipOutput;
+
 
 void IndexCore::buildRepo(const RepoIndexParams& params)
 {
@@ -32,6 +119,36 @@ void IndexCore::buildRepo(const RepoIndexParams& params)
   StringSet providesRefs;
   for(StringVector::size_type i = 0;i < providesRefsSources.size();i++)
     collectRefs(providesRefsSources[i], providesRefs);
+
+  const std::string pkgFileName = REPO_INDEX_PACKAGES_FILE + compressionExtension();
+  const std::string pkgDescrFileName = REPO_INDEX_PACKAGES_DESCR_FILE + compressionExtension();
+  const std::string srcFileName = REPO_INDEX_SOURCES_FILE + compressionExtension();
+  const std::string srcDescrFileName = REPO_INDEX_SOURCES_DESCR_FILE + compressionExtension();
+  const std::string tmpFileName = TMP_FILE_NAME;
+  std::auto_ptr<UnifiedOutput> pkgFile, pkgDescrFile, srcFile, srcDescrFile;
+  if (params.compressionType == RepoParams.CompressionTypeGzip)
+    {
+      if (params.filterProvidesByRefs)//That means additional phase is required;
+	pkgFile = std::auto_ptr<UnifiedOutput>(new StdOutput(tmpFileName)); else
+	pkgFile = std::auto_ptr<UnifiedOutput>(new GzipOutput(pkgFileName));
+      pkgDescrFile = std::auto_ptr<UnifiedOutput>(new GzipOutput(pkgDescrFileName));
+      srcFile = std::auto_ptr<UnifiedOutput>(new GzipOutput(srcFileName));
+      srcDescrFile = std::auto_ptr<UnifiedOutput>(new GzipOutput(srcDescrFileName));
+    } else 
+    {
+      assert(params.compressionType == RepoParams::CompressionTypeNone);
+      if (params.filterProvidesByRefs)//That means additional phase is required;
+	pkgFile = std::auto_ptr<UnifiedOutput>(new StdOutput(tmpFileName)); else
+	pkgFile = std::auto_ptr<UnifiedOutput>(new StdOutput(pkgFileName));
+      pkgDescrFile = std::auto_ptr<UnifiedOutput>(new StdOutput(pkgDescrFileName));
+      srcFile = std::auto_ptr<UnifiedOutput>(new StdOutput(srcFileName));
+      srcDescrFile = std::auto_ptr<UnifiedOutput>(new StdOutput(srcDescrFileName));
+kaka
+
+    }
+
+
+
 
   for(StringVector::size_type i = 0;i < params.pkgSources.size();i++)
     {
