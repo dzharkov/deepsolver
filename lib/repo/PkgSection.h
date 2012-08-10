@@ -23,6 +23,9 @@
 class PkgSection
 {
 public:
+  static std::string saveBaseInfo(const PkgFile& pkgFile;
+  static std::string saveDescr(const PkgFile& pkgFile;
+
 
 private:
   static std::string getPkgRelName(const std::string& line);
