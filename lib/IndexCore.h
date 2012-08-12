@@ -44,18 +44,23 @@ private:
   const std::string m_message;
 }; //class IndexCoreException;
 
+class AbstractIndexConstructionListener
+{
+}; //class AbstractIndexConstructionListener;
+
 class IndexCore
 {
 public:
-  /**\brief The default constructor*/
-  IndexCore() {}
+  /**\brief The constructor*/
+  IndexCore(AbstractIndexConstructionListener& listener) 
+    : m_listener(listener) {}
 
   /**\brief The destructor*/
   virtual ~IndexCore() {}
 
 public:
   void buildIndex(const RepoParams& params);
-  void rebuildIndex(const RepoParams& params, const StringVector& toAdd, const stringVector& toRemove);
+  void rebuildIndex(const RepoParams& params, const StringVector& toAdd, const StringVector& toRemove);
 
 private:
   void collectRefs(const std::string& dirName, StringSet& res);

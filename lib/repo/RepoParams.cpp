@@ -96,3 +96,7 @@ void IndexCore::writeInfoFile(const std::string& fileName, const RepoIndexParams
     INDEX_CORE_STOP(errorMessage);
 }
 
+void RepoParams::writeInfoFile(const std::string& fileName) const
+{
+  //FIXME:
+}

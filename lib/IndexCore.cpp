@@ -17,9 +17,11 @@
 
 #include"deepsolver.h"
 #include"IndexCore.h"
-#include"rpm/RpmFile.h"
-#include"rpm/RpmFileHeaderReader.h"
+#include"AbstractPackageBackEnd.h"
+#include"repo/PkgSection.h"
+#include"repo/TextFormatSectionReader.h"
 #include"utils/MD5.h"
+#include"utils/GZipInterface.h"
 
 #define TMP_FILE_NAME "tmp_packages_data"
 
@@ -33,7 +35,7 @@ public:
   }
 
 public:
-  virtual void writeData(const std:;string& str = 0;)
+  virtual void writeData(const std::string& str) = 0;
     virtual void close() = 0;
 }; //class UnifiedOutput;
 
@@ -52,21 +54,21 @@ public:
 public:
   void open(const std::string& fileName)
   {
-    assert(!m_stream.is_opened());
+    assert(!m_stream.is_open());
     assert(!fileName.empty());
     m_stream.open(fileName.c_str());
-    assert(m_stream.is_opened());//FIXME:Must be an exception;
+    assert(m_stream.is_open());//FIXME:Must be an exception;
   }
 
   void writeData(const std::string& str)
   {
-    assert(m_stream.is_opened());
+    assert(m_stream.is_open());
     m_stream << str;
   }
 
   void close()
   {
-    if (!m_stream.is_opened())
+    if (!m_stream.is_open())
       return;
     m_stream << std::endl;
     m_stream.flush();
@@ -106,26 +108,26 @@ public:
   }
 
 private:
-  GzipOutputFile m_file;
+  GZipOutputFile m_file;
 }; //class GzipOutput;
 
-void IndexCore::buildRepo(const RepoIndexParams& params)
+void IndexCore::buildIndex(const RepoParams& params)
 {
   assert(!params.indexPath.empty());
   assert(!params.pkgSources.empty());
   Directory::ensureExists(params.indexPath);
   params.writeInfoFile(Directory::mixNameComponents(params.indexPath, REPO_INDEX_INFO_FILE));
   StringSet providesRefs;
-  for(StringVector::size_type i = 0;i < providesRefsSources.size();i++)
-    collectRefs(providesRefsSources[i], providesRefs);
+  for(StringVector::size_type i = 0;i < params.providesRefsSources.size();i++)
+    collectRefs(params.providesRefsSources[i], providesRefs);
 
-  const std::string pkgFileName = REPO_INDEX_PACKAGES_FILE + compressionExtension();
-  const std::string pkgDescrFileName = REPO_INDEX_PACKAGES_DESCR_FILE + compressionExtension();
-  const std::string srcFileName = REPO_INDEX_SOURCES_FILE + compressionExtension();
-  const std::string srcDescrFileName = REPO_INDEX_SOURCES_DESCR_FILE + compressionExtension();
+  const std::string pkgFileName = REPO_INDEX_PACKAGES_FILE + compressionExtension(params.compressionType);
+  const std::string pkgDescrFileName = REPO_INDEX_PACKAGES_DESCR_FILE + compressionExtension(params.compressionType);
+  const std::string srcFileName = REPO_INDEX_SOURCES_FILE + compressionExtension(params.compressionType);
+  const std::string srcDescrFileName = REPO_INDEX_SOURCES_DESCR_FILE + compressionExtension(params.compressionType);
   const std::string tmpFileName = TMP_FILE_NAME;
   std::auto_ptr<UnifiedOutput> pkgFile, pkgDescrFile, srcFile, srcDescrFile;
-  if (params.compressionType == RepoParams.CompressionTypeGzip)
+  if (params.compressionType == RepoParams::CompressionTypeGzip)
     {
       if (params.filterProvidesByRefs)//That means additional phase is required;
 	pkgFile = std::auto_ptr<UnifiedOutput>(new StdOutput(tmpFileName)); else
@@ -155,17 +157,17 @@ void IndexCore::buildRepo(const RepoIndexParams& params)
 	    continue;
 	  if (!backend->validPkgFileName(it->getName()))
 	    continue;
-	  PkgFile pkgFile;
-	  backend->readPackageFile(it->getFullPath(), pkgFile);
-	  pkgFile.fileName = it->getFileName();
-	  if (!pkgFIle.isSource)
+	  PkgFile pkg;
+	  backend->readPackageFile(it->getFullPath(), pkg);
+	  pkg.fileName = it->getName();
+	  if (!pkg.isSource)
 	    {
-	      pkgFile->write(pkgSection::saveBaseInfo(pkgFile));
-	      pkgDescrFile->write(pkgSection::saveBaseInfo(pkgFile));
+	      pkgFile->writeData(PkgSection::saveBaseInfo(pkg));
+	      pkgDescrFile->writeData(PkgSection::saveBaseInfo(pkg));
 	    } else
 	    {
-	      srcFile->write(pkgSection::saveBaseInfo(pkgFile));
-	      srcDescrFile->write(pkgSection::saveBaseInfo(pkgFile));
+	      srcFile->writeData(PkgSection::saveBaseInfo(pkg));
+	      srcDescrFile->writeData(PkgSection::saveBaseInfo(pkg));
 	    }
 	} //for package files;
     } //for listed directories;
@@ -179,8 +181,8 @@ void IndexCore::buildRepo(const RepoIndexParams& params)
       TextFormatSectionReader reader;
       reader.open(tmpFileName);
       if (params.compressionType == RepoParams::CompressionTypeGzip)
-	pkgFile = std::auto_ptr<UnifiedOutput>(GzipOutput(pkgFileName)); else
-	pkgFile = std::auto_ptr<UnifiedOutput>(StdOutput(pkgFileName));
+	pkgFile = std::auto_ptr<UnifiedOutput>(new GzipOutput(pkgFileName)); else
+	pkgFile = std::auto_ptr<UnifiedOutput>(new StdOutput(pkgFileName));
       std::string sect;
       while(reader.readNext(sect))
 	{
@@ -192,7 +194,7 @@ void IndexCore::buildRepo(const RepoIndexParams& params)
 	  (!m_filterProvidesByDirs.empty() && fileFromDirs(provideName, m_filterProvidesByDirs)))
 	  */
 	  //FIXME:filtering;
-	  pkgFile->write(sect);
+	  pkgFile->writeData(sect);
 	} //while(packages);
       reader.close();
       pkgFile->close();
@@ -200,6 +202,7 @@ void IndexCore::buildRepo(const RepoIndexParams& params)
     } //Additional phase;
   MD5 md5;
   md5.init();
+  /*FIXME:
   md5.updateFromFile(Directory::mixNameComponents(indexDir, REPO_INDEX_INFO_FILE));
   md5sum->writeLine(md5.commit(REPO_INDEX_INFO_FILE));
   md5.init();

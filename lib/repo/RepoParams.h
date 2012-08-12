@@ -34,7 +34,7 @@ public:
   RepoParams()
     : compressionType(CompressionTypeNone),
       formatType(FormatTypeText),
-      provideFilteringByRefs(0),
+      filterProvidesByRefs(0),
       changeLogBinary(0),
       changeLogSources(0)
   {}
@@ -54,6 +54,9 @@ public:
   std::string indexPath;
   StringVector pkgSources;
   StringVector providesRefsSources;
+
+public:
+  void writeInfoFile(const std::string& fileName) const;
 }; //class RepoParams;
 
 #endif //DEEPSOLVER_REPO_PARAMS_H;
