@@ -25,9 +25,9 @@ static std::string booleanValue(bool value)
 
 static std::string saveStringVector(const StringVector& values)
 {
-  if (value.empty())
-    return;
- std:;string str = values[0];
+  if (values.empty())
+    return "";
+  std::string str = values[0];
   for(StringVector::size_type i = 1;i < values.size();i++)
     {
       str += ":";
@@ -56,7 +56,7 @@ static std::string escapeString(const std::string& s)
   return res;
 }
 
-static void writeInfoFileParamsToDisk(const std::string& fileName, const StringToStringMap& params) const
+static void writeInfoFileParamsToDisk(const std::string& fileName, const StringToStringMap& params)
 {
   std::ostringstream ss;
   time_t t;

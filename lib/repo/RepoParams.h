@@ -45,7 +45,7 @@ public:
   char compressionType;
   char formatType;
   //If the following list is empty provide filtering by directories disabled;
-  StringVector filterProvideByDirs;
+  StringVector filterProvidesByDirs;
   bool filterProvidesByRefs;
   StringVector excludeRequiresRegExp;
   bool changeLogBinary;
