@@ -1,5 +1,4 @@
 
-
 AM_CXXFLAGS = $(DEEPSOLVER_CXXFLAGS) $(DEEPSOLVER_INCLUDES)
 LIBS += -lrpm -lcurl
 LIBdir=${libdir}
@@ -14,21 +13,21 @@ ConfigFile.cpp \
 IndexCore.cpp \
 IndexFetch.cpp \
 InfoCore.cpp \
+io/PackageScopeContentBuilder.cpp \
+io/PackageScopeContentLoader.cpp \
 logging.cpp \
 OperationCore.cpp \
 os/Directory.cpp \
 os/File.cpp \
-io/PackageScopeContentBuilder.cpp \
-transact/PackageScopeContent.cpp \
-io/PackageScopeContentLoader.cpp \
 Pkg.cpp \
 PkgUtils.cpp \
 ProvidePriorityList.cpp \
 repo/InfoFileReader.cpp \
-repo/InfoFileWriter.cpp \
-repo/TextFormatReader.cpp \
-repo/TextFormatWriter.cpp \
+repo/PkgSection.cpp \
+repo/RepoParams.cpp \
 Repository.cpp \
+repo/TextFormatReader.cpp \
+repo/TextFormatSectionReader.cpp \
 RequireFilter.cpp \
 RpmBackEnd.cpp \
 rpm/Rpmdb.cpp \
@@ -36,22 +35,22 @@ rpm/RpmFileHeaderReader.cpp \
 rpm/RpmHeaderReading.cpp \
 rpm/vercmp.cpp \
 transact/InstalledReferences.cpp \
+transact/PackageScopeContent.cpp \
 transact/PackageScope.cpp \
 transact/ProvideMap.cpp \
+transact/sat.cpp \
 transact/StrictSolver.cpp \
 utils/CurlInterface.cpp \
 utils/GZipInterface.cpp \
 utils/MD5.cpp \
 utils/string-utils.cpp \
-utils/TextFiles.cpp \
 utils/TinyFileDownload.cpp \
-version.cpp 
+version.cpp
 
 libdeepsolver_la_HEADERS = \
-AbstractConsoleMessages.h \
+AbstractIndexConstructionListener.h \
 AbstractPackageBackEnd.h \
 AbstractTaskSolver.h \
-AbstractWarningHandler.h \
 ConfigCenter.h \
 ConfigData.h \
 ConfigFile.h \
@@ -59,44 +58,44 @@ DeepsolverException.h \
 deepsolver.h \
 DeepsolverTypes.h \
 DefaultValues.h \
-IndexCoreException.h \
 IndexCore.h \
 IndexFetch.h \
 InfoCore.h \
+io/PackageScopeContentBuilder.h \
+io/PackageScopeContentLoader.h \
 logging.h \
 OperationCore.h \
 os/Directory.h \
 os/File.h \
 os/SystemException.h \
 os/system.h \
-io/PackageScopeContentBuilder.h \
-transact/PackageScopeContent.h \
-io/PackageScopeContentLoader.h \
 Pkg.h \
 PkgUtils.h \
 ProvidePriorityList.h \
 repo/InfoFileReader.h \
-repo/InfoFileWriter.h \
-repo/TextFormatReader.h \
-repo/TextFormatWriter.h \
+repo/PkgSection.h \
+repo/RepoParams.h \
 Repository.h \
+repo/TextFormatReader.h \
+repo/TextFormatSectionReader.h \
 RequireFilter.h \
-rpm/RpmException.h \
 rpm/Rpmdb.h \
+rpm/RpmException.h \
 rpm/RpmFile.h \
 rpm/RpmFileHeaderReader.h \
 rpm/RpmHeaderReading.h \
 rpm/vercmp.h \
-transact/TaskException.h \
 transact/InstalledReferences.h \
+transact/PackageScopeContent.h \
 transact/PackageScope.h \
 transact/ProvideMap.h \
+transact/sat.h \
+transact/TaskException.h \
 UserTask.h \
 utils/CurlInterface.h \
 utils/DateTime.h \
 utils/GZipInterface.h \
 utils/MD5.h \
 utils/string-utils.h \
-utils/TextFiles.h \
 utils/TinyFileDownload.h \
-version.h 
+version.h
