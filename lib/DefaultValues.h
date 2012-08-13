@@ -42,11 +42,17 @@
 
 //Info file;
 #define INFO_FILE_FORMAT_TYPE "format_type"
-#define INFO_FILE_COMPRESSION_TYPE "compression_type"
-#define INFO_FILE_MD5SUM "md5sum_file"
 #define INFO_FILE_FORMAT_TYPE_TEXT "text"
 #define INFO_FILE_FORMAT_TYPE_BINARY "binary"
+#define INFO_FILE_COMPRESSION_TYPE "compression_type"
 #define INFO_FILE_COMPRESSION_TYPE_NONE "none"
 #define INFO_FILE_COMPRESSION_TYPE_GZIP "gzip"
+#define INFO_FILE_VERSION "version"
+#define INFO_FILE_MD5SUM "md5sum_file"
+#define INFO_FILE_FILTER_PROVIDES_BY_DIRS "filter_provides_by_dirs"
+#define INFO_FILE_FILTER_PROVIDES_BY_REFS "filter_provides_by_refs"
+#define INFO_FILE_EXCLUDE_REQUIRES "exclude_requires"
+#define INFO_FILE_CHANGELOG_BINARY "changelog_binary"
+#define INFO_FILE_CHANGELOG_SOURCES "changelog_sources"
 
 #endif //DEEPSOLVER_DEFAULT_VALUES_H;

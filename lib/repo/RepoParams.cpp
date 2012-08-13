@@ -16,7 +16,25 @@
 */
 
 #include"deepsolver.h"
-#include"InfoFileWriter.h"
+#include"RepoParams.h"
+
+static std::string booleanValue(bool value)
+{
+  return value?"yes":"no";
+}
+
+static std::string saveStringVector(const StringVector& values)
+{
+  if (value.empty())
+    return;
+ std:;string str = values[0];
+  for(StringVector::size_type i = 1;i < values.size();i++)
+    {
+      str += ":";
+      str += values[i];
+    }
+  return str;
+}
 
 static std::string escapeString(const std::string& s)
 {
@@ -38,7 +56,7 @@ static std::string escapeString(const std::string& s)
   return res;
 }
 
-void RepoIndexInfoFile::write(const std::string& fileName, const StringToStringMap& params) const
+static void writeInfoFileParamsToDisk(const std::string& fileName, const StringToStringMap& params) const
 {
   std::ostringstream ss;
   time_t t;
@@ -58,45 +76,39 @@ void RepoIndexInfoFile::write(const std::string& fileName, const StringToStringM
   f.write(ss.str().c_str(), ss.str().length());
 }
 
-void IndexCore::writeInfoFile(const std::string& fileName, const RepoIndexParams& params)
+void RepoParams::writeInfoFile(const std::string& fileName) const
 {
-  RepoIndexInfoFile infoFile;
-  switch(params.compressionType)
+  StringToStringMap params;
+  switch(formatType)
     {
-    case RepoIndexParams::CompressionTypeNone:
-      infoFile.setCompressionType("none");
+    case FormatTypeText:
+      params.insert(StringToStringMap::value_type(INFO_FILE_FORMAT_TYPE, INFO_FILE_FORMAT_TYPE_TEXT));
       break;
-    case RepoIndexParams::CompressionTypeGzip:
-      infoFile.setCompressionType("gzip");
-      break;
-    default:
-      assert(0);
-    }; //switch(compressionType);
-  switch(params.formatType)
-    {
-    case RepoIndexParams::FormatTypeText:
-      infoFile.setFormatType("text");
-      break;
-    case RepoIndexParams::FormatTypeBinary:
-      infoFile.setFormatType("binary");
+    case FormatTypeBinary:
+      params.insert(StringToStringMap::value_type(INFO_FILE_FORMAT_TYPE, INFO_FILE_FORMAT_TYPE_BINARY));
       break;
     default:
       assert(0);
     }; //switch(formatType);
-  infoFile.setFormatVersion(PACKAGE_VERSION);
-  infoFile.setMd5sumFile(REPO_INDEX_MD5SUM_FILE);
-  for(StringToStringMap::const_iterator it = params.userParams.begin();it != params.userParams.end();it++)
-    infoFile.addUserParam(it->first, it->second);
-  std::string errorMessage;
-  StringList warningMessages;
-  const bool res = infoFile.write(fileName, errorMessage, warningMessages);
-  for(StringList::const_iterator it = warningMessages.begin();it != warningMessages.end();it++)
-    m_warningHandler.onWarning(*it);
-  if (!res)
-    INDEX_CORE_STOP(errorMessage);
-}
-
-void RepoParams::writeInfoFile(const std::string& fileName) const
-{
-  //FIXME:
+  switch(compressionType)
+    {
+    case CompressionTypeNone:
+      params.insert(StringToStringMap::value_type(INFO_FILE_COMPRESSION_TYPE, INFO_FILE_COMPRESSION_TYPE_NONE));
+      break;
+    case CompressionTypeGzip:
+      params.insert(StringToStringMap::value_type(INFO_FILE_COMPRESSION_TYPE, INFO_FILE_COMPRESSION_TYPE_GZIP));
+      break;
+    default:
+      assert(0);
+    }; //switch(compressionType);
+  params.insert(StringToStringMap::value_type(INFO_FILE_VERSION, version));
+  params.insert(StringToStringMap::value_type(INFO_FILE_FILTER_PROVIDES_BY_DIRS, saveStringVector(filterProvidesByDirs)));
+  params.insert(StringToStringMap::value_type(INFO_FILE_FILTER_PROVIDES_BY_DIRS, saveStringVector(filterProvidesByDirs)));
+  params.insert(StringToStringMap::value_type(INFO_FILE_FILTER_PROVIDES_BY_REFS, booleanValue(filterProvidesByRefs)));
+  params.insert(StringToStringMap::value_type(INFO_FILE_EXCLUDE_REQUIRES, saveStringVector(excludeRequiresRegExp)));
+  params.insert(StringToStringMap::value_type(INFO_FILE_CHANGELOG_BINARY, booleanValue(changeLogBinary)));
+  params.insert(StringToStringMap::value_type(INFO_FILE_CHANGELOG_SOURCES, booleanValue(changeLogSources)));
+  for(StringToStringMap::const_iterator it = userParams.begin();it != userParams.end();it++)
+    params.insert(*it);
+  writeInfoFileParamsToDisk(fileName, params);
 }

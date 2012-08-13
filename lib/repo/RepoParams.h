@@ -32,7 +32,8 @@ public:
   };
 
   RepoParams()
-    : compressionType(CompressionTypeNone),
+    : version(PACKAGE_VERSION),
+      compressionType(CompressionTypeNone),
       formatType(FormatTypeText),
       filterProvidesByRefs(0),
       changeLogBinary(0),
@@ -40,15 +41,17 @@ public:
   {}
 
 public:
+  std::string version;
   char compressionType;
   char formatType;
-  //If the following list is empty provide filtering by directories is disabled;
+  //If the following list is empty provide filtering by directories disabled;
   StringVector filterProvideByDirs;
   bool filterProvidesByRefs;
   StringVector excludeRequiresRegExp;
   bool changeLogBinary;
   bool changeLogSources;
   StringToStringMap userParams;
+  std::string md5sumFileName;
 
   //Values not mapped into repo information file;
   std::string indexPath;
