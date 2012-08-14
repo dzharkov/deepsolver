@@ -15,6 +15,7 @@
    General Public License for more details.
 */
 
+#include"deepsolver.h"
 #include"TextFormatSectionReader.h"
 
 #define IO_BUF_SIZE 2048

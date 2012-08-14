@@ -152,6 +152,7 @@ class PkgRelations
 {
 public:
   NamedPkgRelVector requires, provides, conflicts, obsoletes;
+  StringVector fileList;
 }; //class PkgRelations;
 
 class Pkg: public PkgBase, public PkgRelations

@@ -24,15 +24,14 @@ class PkgSection
 {
 public:
   static std::string saveBaseInfo(const PkgFile& pkgFile);
-  static std::string saveDescr(const PkgFile& pkgFile);
-
+  static std::string saveDescr(const PkgFile& pkgFile, bool saveChangeLog);
 
 private:
-  static std::string getPkgRelName(const std::string& line);
-  static std::string saveNamedPkgRel(const NamedPkgRel& r);
-  static std::string saveFileName(const std::string& fileName);
   static std::string encodeMultiline(const std::string& s);
   static std::string encodeChangeLogEntry(const ChangeLogEntry& entry);
+  static std::string saveNamedPkgRel(const NamedPkgRel& r);
+  static std::string saveFileName(const std::string& fileName);
+  //FIXME:static std::string getPkgRelName(const std::string& line);
 }; //class PkgSection;
 
 #endif //DEEPSOLVER_PKG_SECTION_H;
