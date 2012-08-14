@@ -146,7 +146,7 @@ void IndexCore::buildIndex(const RepoParams& params)
       srcDescrFile = std::auto_ptr<UnifiedOutput>(new StdOutput(srcDescrFileName));
     }
 
-  std::auto_ptr<AbstractPackageBackEnd> backend = createRpmBackEnd();//Or anything else user wants;
+  std::auto_ptr<AbstractPackageBackEnd> backend = CREATE_PACKAGE_BACKEND;
   //We ready to collect information about packages in specified directories;
   for(StringVector::size_type i = 0;i < params.pkgSources.size();i++)
     {
@@ -200,9 +200,9 @@ void IndexCore::buildIndex(const RepoParams& params)
       pkgFile->close();
   File::unlink(tmpFileName);
     } //Additional phase;
+  /*
   MD5 md5;
   md5.init();
-  /*FIXME:
   md5.updateFromFile(Directory::mixNameComponents(indexDir, REPO_INDEX_INFO_FILE));
   md5sum->writeLine(md5.commit(REPO_INDEX_INFO_FILE));
   md5.init();
@@ -219,22 +219,20 @@ void IndexCore::buildIndex(const RepoParams& params)
 
 void IndexCore::collectRefs(const std::string& dirName, StringSet& res) 
 {
+  std::auto_ptr<AbstractPackageBackEnd> backend = CREATE_PACKAGE_BACKEND;
   std::auto_ptr<Directory::Iterator> it = Directory::enumerate(dirName);
   while(it->moveNext())
     {
       if (it->getName() == "." || it->getName() == "..")
 	continue;
-      if (!checkExtension(it->getName(), ".rpm"))
+      if (!backend->validPkgFileName(it->getName()))
 	continue;
-      NamedPkgRelVector requires, conflicts;
-      RpmFileHeaderReader reader;
-      reader.load(it->getFullPath());
-      reader.fillRequires(requires);
-      reader.fillConflicts(conflicts);
-      for(NamedPkgRelVector::size_type i =0; i < requires.size();i++)
-	res.insert(requires[i].pkgName);
-      for(NamedPkgRelVector::size_type i = 0;i < conflicts.size();i++)
-	res.insert(conflicts[i].pkgName);
+      PkgFile pkgFile;
+      backend->readPackageFile(it->getFullPath(), pkgFile);
+      for(NamedPkgRelVector::size_type i =0; i < pkgFile.requires.size();i++)
+	res.insert(pkgFile.requires[i].pkgName);
+      for(NamedPkgRelVector::size_type i = 0;i < pkgFile.conflicts.size();i++)
+	res.insert(pkgFile.conflicts[i].pkgName);
     }
 }
 
@@ -242,7 +240,7 @@ std::string IndexCore::compressionExtension(char compressionType)
 {
   if (compressionType == RepoParams::CompressionTypeGzip)
     return COMPRESSION_SUFFIX_GZIP;
-  assert(compressionType == RepoIParams::CompressionTypeNone);
+  assert(compressionType == RepoParams::CompressionTypeNone);
   return "";
 }
 

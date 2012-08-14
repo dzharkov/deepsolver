@@ -44,4 +44,7 @@ public:
 
 std::auto_ptr<AbstractPackageBackEnd> createRpmBackEnd();
 
+//General proposal consider this line as main switch what backend we want;
+#define CREATE_PACKAGE_BACKEND createRpmBackEnd()
+
 #endif //DEEPSOLVER_ABSTRACT_PACKAGE_BACK_END_H;
