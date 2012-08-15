@@ -104,7 +104,7 @@ void Repository::addIndexFilesForFetch(StringToStringMap& files)
 
 void Repository::addPackagesToScope(const StringToStringMap& files, PackageScopeContentBuilder& content)
 {
-  int textFileType;
+  //FIXME:  int textFileType;
   /*FIXME:
   if (m_compressionType == CompressionTypeNone)
     textFileType = TextFileStd; else 
@@ -124,7 +124,7 @@ void Repository::addPackagesToScope(const StringToStringMap& files, PackageScope
   TextFormatReader reader;
   logMsg(LOG_DEBUG, "Reading packages information from \'%s\' for repository \'%s\'", pkgFileName.c_str(), m_name.c_str());
   try {
-    reader.openFile(pkgFileName, textFileType);
+    reader.openFile(pkgFileName, 1);//FIXME:textFileType
     PkgFile pkgFile;
     while(reader.readPackage(pkgFile))
       content.addPkg(pkgFile);
@@ -138,7 +138,7 @@ void Repository::addPackagesToScope(const StringToStringMap& files, PackageScope
   logMsg(LOG_DEBUG, "Package data from \'%s\' was loaded successfully", pkgFileName.c_str());
   logMsg(LOG_DEBUG, "Reading provides information from \'%s\' for repository \'%s\'", providesFileName.c_str(), m_name.c_str());
   try {
-    reader.openFile(providesFileName, textFileType);
+    reader.openFile(providesFileName, 1);//FIXME:textFileType;
     std::string provideName;
     StringVector providers;
     while(1)//FIXME:reader.readProvides(provideName, providers);

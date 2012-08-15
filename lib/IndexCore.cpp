@@ -29,14 +29,11 @@ class UnifiedOutput
 {
 public:
   UnifiedOutput() {}
-  virtual ~UnifiedOutput() 
-  {
-    close();
-  }
+  virtual ~UnifiedOutput() {}
 
 public:
   virtual void writeData(const std::string& str) = 0;
-    virtual void close() = 0;
+  virtual void close();
 }; //class UnifiedOutput;
 
 class StdOutput: public UnifiedOutput
@@ -49,7 +46,10 @@ public:
     open(fileName);
   }
 
-  virtual ~StdOutput() {}
+  virtual ~StdOutput() 
+  {
+    close();
+  }
 
 public:
   void open(const std::string& fileName)
@@ -89,7 +89,10 @@ public:
     open(fileName);
   }
 
-  virtual ~GzipOutput() {}
+  virtual ~GzipOutput() 
+  {
+    close();
+  }
 
 public:
   void open(const std::string& fileName)
