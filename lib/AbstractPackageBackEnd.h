@@ -39,7 +39,7 @@ public:
 public:
   virtual std::auto_ptr<AbstractInstalledPackagesIterator> enumInstalledPackages() = 0;
   virtual void readPackageFile(const std::string& fileName, PkgFile& pkgFile) = 0;
-  virtual bool validPkgFileName(const std::string& fileName) const;
+  virtual bool validPkgFileName(const std::string& fileName) const = 0;
 }; //class AbstractPackageBackEnd;
 
 std::auto_ptr<AbstractPackageBackEnd> createRpmBackEnd();

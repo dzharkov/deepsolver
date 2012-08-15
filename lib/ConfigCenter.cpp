@@ -17,7 +17,6 @@
 
 #include"deepsolver.h"
 #include"ConfigCenter.h"
-#include"utils/TextFiles.h"
 
 static std::string buildConfigParamTitle(const StringVector& path, const std::string& sectArg)
 {
@@ -34,11 +33,17 @@ void ConfigCenter::loadFromFile(const std::string& fileName)
 {
   logMsg(LOG_DEBUG, "Reading configuration data from \'%s\'", fileName.c_str());
   assert(!fileName.empty());
-  std::auto_ptr<AbstractTextFileReader> file = createTextFileReader(TextFileStd, fileName);
+  std::ifstream ifile(fileName.c_str());
+  assert(ifile);//FIXME:exception;
   ConfigFile parser(*this, fileName);
   std::string line;
-  while(file->readLine(line))
-    parser.processLine(line);
+  while(1)
+    {
+      std::getline(ifile, line);
+      if (!ifile)
+	break;
+      parser.processLine(line);
+    }
 }
 
 void ConfigCenter::commit()

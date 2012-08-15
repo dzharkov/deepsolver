@@ -59,6 +59,17 @@ public:
     rpmIterator.release();
     return it;
   }
+
+void readPackageFile(const std::string& fileName, PkgFile& pkgFile)
+  {
+    assert(0);//FIXME:
+  }
+
+bool validPkgFileName(const std::string& fileName) const
+  {
+    assert(0);//FIXME:
+    return 0;
+  }
 }; //class RpmBackEnd;
 
 std::auto_ptr<AbstractPackageBackEnd> createRpmBackEnd()

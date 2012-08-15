@@ -34,6 +34,7 @@ struct Graph
   Link* links;
 }; //struct Graph;
 
+/*
 void solve2Sat(const ClauseVector& clauses, BoolVector& res)
 {
   VarId maxVar = 0;
@@ -47,3 +48,4 @@ void solve2Sat(const ClauseVector& clauses, BoolVector& res)
 	maxVar = clauses[i].var2;
     }
 }
+*/

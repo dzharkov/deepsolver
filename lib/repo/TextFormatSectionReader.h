@@ -30,6 +30,7 @@ public:
   bool readNext(std::string& s);
 
 protected:
+  virtual void init();
   virtual size_t readData(void* buf, size_t bufSize) = 0;
 
 private:

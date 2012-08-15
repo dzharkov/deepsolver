@@ -20,14 +20,14 @@
 
 #define IO_BUF_SIZE 2048
 
-void TextFormatSectionReader::init()
+void AbstractTextFormatSectionReader::init()
 {
   m_queue.erase();
   char buf[IO_BUF_SIZE];
   size_t bracketPos, readCount;
   while(1)
     {
-      readCount = m_file(buf, IO_BUF_SIZE);
+      readCount = readData(buf, IO_BUF_SIZE);
       if (readCount == 0)
 	{
 	  m_noMoreData = 1;
@@ -44,7 +44,7 @@ void TextFormatSectionReader::init()
     m_queue += buf[bracketPos++];
 }
 
-bool TextFormatSectionReader::readNext(std::string& s)
+bool AbstractTextFormatSectionReader::readNext(std::string& s)
 {
   if (m_noMoreData)
     return 0;
@@ -58,7 +58,7 @@ bool TextFormatSectionReader::readNext(std::string& s)
       if (pos < m_queue.size())//New section header found;
 	break;
       char buf[IO_BUF_SIZE];
-      const size_t readCount = m_file.read(buf, IO_BUF_SIZE);
+      const size_t readCount = readData(buf, IO_BUF_SIZE);
       if (readCount == 0)
 	{
 	  m_noMoreData = 1;
@@ -74,7 +74,7 @@ bool TextFormatSectionReader::readNext(std::string& s)
     {
       s = m_queue;
       m_queue.erase();
-      return;
+      return 1;
     }
   s = m_queue.substr(0, pos);
   m_queue = m_queue.substr(pos);

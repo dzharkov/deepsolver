@@ -22,25 +22,27 @@
 
 void TextFormatReader::openFile(const std::string& fileName, int textFileType)
 {
-  assert(m_reader.get() == NULL);
+  //FIXME:  assert(m_reader.get() == NULL);
   m_noMoreData = 0;
-  m_reader = createTextFileReader(textFileType, fileName);
+  //FIXME:  m_reader = createTextFileReader(textFileType, fileName);
   m_fileName = fileName;
   m_lineNumber = 0;
 }
 
 void TextFormatReader::close()
 {
-  assert(m_reader.get() != NULL);
-  delete m_reader.release();
+  //FIXME:  assert(m_reader.get() != NULL);
+  //FIXME:  delete m_reader.release();
   m_fileName.erase();
 }
 
 bool TextFormatReader::readPackage(PkgFile& pkgFile)
 {
   pkgFile = PkgFile();
+  /*FIXME:
   if (m_noMoreData || m_reader.get() == NULL)
     return 0;
+  */
   std::string line;
   StringList section;
   if (m_lastSectionHeader.empty())
@@ -134,7 +136,7 @@ void TextFormatReader::parsePkgRel(const std::string& str, NamedPkgRel& rel)
 
 void TextFormatReader::parsePkgFileSection(const StringList& sect, PkgFile& pkgFile)
 {
-  pkgFile.source = 0;
+  pkgFile.isSource = 0;
   assert(!sect.empty());
   StringList::const_iterator it = sect.begin();
   pkgFile.fileName = *it;
@@ -216,8 +218,8 @@ void TextFormatReader::parsePkgFileSection(const StringList& sect, PkgFile& pkgF
 
 bool TextFormatReader::readLine(std::string& line)
 {
-  assert(m_reader.get() != NULL);
-  if (!m_reader->readLine(line))
+  //FIXME:  assert(m_reader.get() != NULL);
+  if (1)//FIXME:!m_reader->readLine(line)
     return 0;
   m_lineNumber++;
   m_line = line;

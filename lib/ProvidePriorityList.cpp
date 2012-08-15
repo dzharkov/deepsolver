@@ -17,7 +17,6 @@
 
 #include"deepsolver.h"
 #include"ProvidePriorityList.h"
-#include"utils/TextFiles.h"
 
 static void splitBySpaces(const std::string& str, StringList& items)
 {
@@ -40,10 +39,14 @@ static void splitBySpaces(const std::string& str, StringList& items)
 
 void ProvidePriorityList::load(const std::string& fileName)
 {
-  std::auto_ptr<AbstractTextFileReader> reader = createTextFileReader(TextFileStd, fileName);
+  std::ifstream ifile(fileName.c_str());
+  assert(ifile);//FIXME:exception;
   std::string line;
-  while(reader->readLine(line))
+  while(1)
     {
+      std::getline(ifile, line);
+      if (!ifile)
+	break;
       std::string::size_type k = 0;
       while(k < line.length() && BLANK_CHAR(line[k]))
 	k++;
