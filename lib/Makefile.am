@@ -48,7 +48,6 @@ utils/TinyFileDownload.cpp \
 version.cpp
 
 libdeepsolver_la_HEADERS = \
-AbstractIndexConstructionListener.h \
 AbstractPackageBackEnd.h \
 AbstractTaskSolver.h \
 ConfigCenter.h \

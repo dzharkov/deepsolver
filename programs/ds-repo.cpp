@@ -19,43 +19,34 @@
 #include"IndexCore.h"
 #include"rpm/RpmException.h"
 
-#define PREFIX "genbasedir:"
+#define PREFIX "ds-repo:"
 
-static RepoIndexParams params;
+static RepoParams params;
 
-class ConsoleMessages: public AbstractConsoleMessages
+class IndexConstructionListener: public AbstractIndexConstructionListener
 {
 public:
-  ConsoleMessages() {}
+  IndexConstructionListener() {}
+  virtual ~IndexConstructionListener() {}
 
 public:
-  std::ostream& msg()
+  void onReferenceCollecting(const std::string& path)
   {
-    return std::cout;
+    std::cout << "Collecting requires/conflicts in " << path << std::endl;
   }
 
-  std::ostream& verboseMsg()
+  void onPackageCollecting(const std::string& path)
   {
-    return std::cout;
-  }
-}; //class ConsoleMessages;
-
-class WarningHandler: public AbstractWarningHandler
-{
-public:
-  WarningHandler(std::ostream& s):
-    m_stream(s) {}
-
-  void onWarning(const std::string& message)
-  {
-    m_stream << PREFIX << "warning:" << message << std::endl;
+    std::cout << "Reading packages in " << path << std::endl;
   }
 
-private:
-  std::ostream& m_stream;
-}; //class WarningHandler;
+  void onProvidesCleaning()
+  {
+    std::cout << "Provides filtering" << std::endl;
+  }
+}; //class IndexConstructionListener;
 
-static void splitColonDelimitedList(const std::string& str, StringList& res)
+static void splitColonDelimitedList(const std::string& str, StringVector& res)
 {
   std::string s;
   for(std::string::size_type i = 0;i < str.length();i++)
@@ -116,18 +107,18 @@ static void printHelp()
 char selectCompressionType(const std::string& value)
 {
   if (value == "none")
-    return RepoIndexParams::CompressionTypeNone;
+    return RepoParams::CompressionTypeNone;
   if (value == "gzip")
-    return RepoIndexParams::CompressionTypeGzip;
+    return RepoParams::CompressionTypeGzip;
   return -1;
 }
 
 char selectFormatType(const std::string& value)
 {
   if (value == "binary")
-    return RepoIndexParams::FormatTypeBinary;
+    return RepoParams::FormatTypeBinary;
   if (value == "text")
-    return RepoIndexParams::FormatTypeText;
+    return RepoParams::FormatTypeText;
   return -1;
 }
 
@@ -146,7 +137,6 @@ static bool processUserParam(const std::string& s)
 
 static bool parseCmdLine(int argc, char* argv[])
 {
-  params.topDir = ".";
   while(1)
     {
       const int p = getopt(argc, argv, "c:d:e:hu:rp:l");
@@ -165,16 +155,16 @@ static bool parseCmdLine(int argc, char* argv[])
 	  params.changeLogBinary = 1;
 	  break;
 	case 'r':
-	  params.provideFilteringByRefs = 1;
+	  params.filterProvidesByRefs = 1;
 	  break;
 	case 'd':
-	  splitColonDelimitedList(optarg, params.takeRefsFromPackageDirs);
+	  splitColonDelimitedList(optarg, params.providesRefsSources);
 	  break;
 	case 'e':
-	  params.excludeRequiresFile = optarg;
+	  //FIXME:	  params.excludeRequiresFile = optarg;
 	  break;
 	case 'p':
-	  splitColonDelimitedList(optarg, params.provideFilterDirs);
+	  splitColonDelimitedList(optarg, params.filterProvidesByDirs);
 	  break;
 	case 'u':
 	  if (!processUserParam(optarg))
@@ -191,54 +181,34 @@ return 0;
 	      return 0;
 	    }
 	  break;
-	  /*TODO:not implemented - not accessible;
-	case 'f':
-	  params.formatType = selectFormatType(optarg);
-	  if (params.formatType < 0)
-	    {
-	      std::cerr << PREFIX << "value \'" << optarg << "\' is not a valid format type" << std::endl;
-	      return 0;
-	    }
-	  break;
-	  */
 	default:
 	  assert(0);
 	}; //switch(p);
     } //while(1);
-  assert(optind <= argc);
-  if (optind == argc)
+  StringVector values;
+  for(int i = optind;i < argc;i++)
+    values.push_back(argv[i]);
+  if (values.empty())
     {
-      std::cerr << PREFIX << "packages architecture is not specified" << std::endl;
+      std::cerr << PREFIX << "Index directory is not mentioned; try \'--help\' for usage information" << std::endl;
 	return 0;
     }
-  if (optind + 2 < argc)
+  params.indexPath = values[0];
+  if (values.size() == 1)
     {
-      std::cerr << PREFIX << "too many command line arguments" << std::endl;
-	return 0;
-}
-  params.arch = argv[optind];
-  if (optind + 1 < argc)
-    params.topDir = argv[optind + 1];
-  if (!hasNonSpaces(params.arch))
-    {
-      std::cerr << PREFIX << "Required architecture cannot be an empty string" << std::endl;
-      return 0;
+      params.pkgSources.push_back(".");
+      return 1;
     }
-  if (!hasNonSpaces(params.topDir))
-    {
-      std::cerr << PREFIX << "Repository directory cannot be an empty string" << std::endl;
-      return 0;
-    }
+  for(StringVector::size_type i = 1;i < values.size();i++)
+    params.pkgSources.push_back(values[i]);
   return 1;
 }
 
 void run()
 {
-  ConsoleMessages consoleMessages;
-  WarningHandler warningHandler(std::cerr);
-  IndexCore indexCore(consoleMessages, warningHandler);
-  indexCore.build(params);
-  consoleMessages.msg() << "Repository index was built successfully!" << std::endl;
+  IndexConstructionListener listener;
+  IndexCore indexCore(listener);
+  indexCore.buildIndex(params);
 }
 
 int main(int argc, char* argv[])

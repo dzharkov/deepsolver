@@ -33,7 +33,7 @@ public:
 
 public:
   virtual void writeData(const std::string& str) = 0;
-  virtual void close();
+  virtual void close() = 0;
 }; //class UnifiedOutput;
 
 class StdOutput: public UnifiedOutput
