@@ -46,7 +46,7 @@ public:
   }
 }; //class IndexConstructionListener;
 
-static void splitColonDelimitedList(const std::string& str, StringVector& res)
+void splitColonDelimitedList(const std::string& str, StringVector& res)
 {
   std::string s;
   for(std::string::size_type i = 0;i < str.length();i++)
@@ -65,7 +65,7 @@ static void splitColonDelimitedList(const std::string& str, StringVector& res)
     res.push_back(s);
 }
 
-static bool splitUserParam(const std::string& str, std::string& name, std::string& value)
+bool splitUserParam(const std::string& str, std::string& name, std::string& value)
 {
   name.erase();
   value.erase();
@@ -84,23 +84,28 @@ static bool splitUserParam(const std::string& str, std::string& name, std::strin
   return wasEquals;
 }
 
-static void printHelp()
+void printLogo()
 {
-  printf("%s%s", PREFIX,
-	 "The utility to build index data of package repository\n\n"
+  std::cout << "ds-repo: utility to create index of Deepsolver package repository" << std::endl;
+    std::cout << "Version: " << PACKAGE_VERSION << std::endl;
+  std::cout << std::endl;
+}
+
+void printHelp()
+{
+  printf("%s", 
 	 "Usage:\n"
-	 "\tgenbasedir [OPTIONS] [ARCH [TOPDIR]]\n\n"
+	 "\tds-repo [OPTIONS] INDEX_DIR [PACKAGES_DIR1 [PACKAGES_DIR2 [...]]]\n"
 	 "Valid command line options are:\n"
 	 "\t-h - print this help screen;\n"
 	 "\t-c TYPE - choose compression type: none or gzip (default is gzip);\n"
-	 "\t-e FILENAME - ignore require entries mentioned in FILENAME;\n"
-	 "\t-d DIRLIST - add colon-delimited list of directories to take references from for provides filtering (in addition to \'-r\' if it is used);\n"
+	 "\t-e FILENAME - ignore require entries mentioned in FILENAME;\n"//FIXME:
+	 "\t-d DIRLIST - add colon-delimited list of directories to take provides filtering references (in addition to \'-r\' if it is used);\n"
 	 "\t-l - include change log into binary and source indices;\n"
-	 //TODO:	 "\t-f FORMAT - choose data format: binary or text (default is text);\n"
-	 "\t-p DIRLIST - enable provides filtering by colon-delimited list of directories;\n"
+	 "\t-p DIRLIST - set colon-delimited list of directories for provides filtering;\n"
 	 "\t-r - enable provides filtering by used requires/conflicts (recommended) (see also \'-d\' option);\n"
 	 "\t-u NAME=VALUE - add a user defined parameter to repository index information file.\n\n"
-	 "If directory is not specified current directory is used to search packages of repository.\n"
+	 "If PACKAGE_DIR1 is not specified current directory is used to search packages for the repository.\n"
 	 );
 }
 
@@ -122,20 +127,29 @@ char selectFormatType(const std::string& value)
   return -1;
 }
 
-static bool processUserParam(const std::string& s)
+bool processUserParam(const std::string& s)
 {
-  //FIXME:do not allow using of reserved parameters;
   std::string name, value;
   if (!splitUserParam(s, name, value))
     return 0;
   for(std::string::size_type i = 0;i < name.length();i++)
     if (s[i] == '#' || s[i] == '\\' || BLANK_CHAR(s[i]))
       return 0;
+  if (name == INFO_FILE_FORMAT_TYPE ||
+name == INFO_FILE_COMPRESSION_TYPE ||
+name == INFO_FILE_VERSION ||
+name == INFO_FILE_MD5SUM ||
+name == INFO_FILE_FILTER_PROVIDES_BY_DIRS ||
+name == INFO_FILE_FILTER_PROVIDES_BY_REFS ||
+name == INFO_FILE_EXCLUDE_REQUIRES ||
+name == INFO_FILE_CHANGELOG_SOURCES ||
+      name == INFO_FILE_CHANGELOG_BINARY)
+    return 0;
   params.userParams.insert(StringToStringMap::value_type(name, value));
   return 1;
 }
 
-static bool parseCmdLine(int argc, char* argv[])
+bool parseCmdLine(int argc, char* argv[])
 {
   while(1)
     {
@@ -147,6 +161,7 @@ static bool parseCmdLine(int argc, char* argv[])
       switch (p)
 	{
 	case 'h':
+	  printLogo();
 	  printHelp();
 	  exit(EXIT_SUCCESS);
 	  break;
@@ -206,9 +221,6 @@ return 0;
 
 void run()
 {
-  IndexConstructionListener listener;
-  IndexCore indexCore(listener);
-  indexCore.buildIndex(params);
 }
 
 int main(int argc, char* argv[])
@@ -217,7 +229,10 @@ int main(int argc, char* argv[])
     return 1;
   initLogging("/tmp/genbasedir.log", LOG_DEBUG);//FIXME:
   try {
-    run();
+    printLogo();
+    IndexConstructionListener listener;
+    IndexCore indexCore(listener);
+    indexCore.buildIndex(params);
   }
   catch(const DeepsolverException& e)
     {
