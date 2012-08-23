@@ -72,7 +72,7 @@ bool validPkgFileName(const std::string& fileName) const
       return 0;
     const std::string ext = ".rpm";
     for(std::string::size_type i = 0;i < ext.size();i++)
-      if (!fileName[fileName.length() - ext.length() + i] != ext[i])
+      if (fileName[fileName.length() - ext.length() + i] != ext[i])
 	return 0;
     return 1;
     assert(0);//FIXME:

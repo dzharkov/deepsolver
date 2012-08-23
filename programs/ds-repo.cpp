@@ -227,7 +227,7 @@ int main(int argc, char* argv[])
 {
   if (!parseCmdLine(argc, argv))
     return 1;
-  initLogging("/tmp/genbasedir.log", LOG_DEBUG);//FIXME:
+  initLogging("/tmp/ds-repo.log", LOG_DEBUG);//FIXME:
   try {
     printLogo();
     IndexConstructionListener listener;

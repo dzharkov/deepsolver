@@ -23,7 +23,7 @@
 class PkgSection
 {
 public:
-  static std::string saveBaseInfo(const PkgFile& pkgFile);
+  static std::string saveBaseInfo(const PkgFile& pkgFile, const StringVector& filterProvidesByDirs);
   static std::string saveDescr(const PkgFile& pkgFile, bool saveChangeLog);
 
 private:
@@ -31,6 +31,7 @@ private:
   static std::string encodeChangeLogEntry(const ChangeLogEntry& entry);
   static std::string saveNamedPkgRel(const NamedPkgRel& r);
   static std::string saveFileName(const std::string& fileName);
+  static bool fileFromDirs(const std::string& fileName, const StringVector& dirs);
   //FIXME:static std::string getPkgRelName(const std::string& line);
 }; //class PkgSection;
 

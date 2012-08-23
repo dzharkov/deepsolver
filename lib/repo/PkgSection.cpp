@@ -36,7 +36,7 @@
 #define OBSOLETES_STR "o:"
 #define CHANGELOG_STR "cl:"
 
-std::string PkgSection::saveBaseInfo(const PkgFile& pkgFile)
+std::string PkgSection::saveBaseInfo(const PkgFile& pkgFile, const StringVector& filterProvidesByDirs)
 {
   std::ostringstream ss;
   ss << "[" << File::baseName(pkgFile.fileName) << "]" << std::endl;
@@ -57,16 +57,8 @@ std::string PkgSection::saveBaseInfo(const PkgFile& pkgFile)
       ss << PROVIDES_STR << saveNamedPkgRel(*it) << std::endl;
     }
   for(StringVector::size_type i = 0;i < pkgFile.fileList.size();i++)
-    /*
-     * If filtering by references is enabled we are writing all possible
-     * provides to filter them on additional phase. If filterProvidesByDirs
-     * string list is empty it means filtering by directories is disabled and
-     * we also must write current file as provides. If filtering by
-     * directories is enabled we are writing file as provides only if its
-     * directory presents in directory list.
-     */
-    //FIXME:    if (m_filterProvidesByRefs || m_filterProvidesByDirs.empty() || fileFromDirs(*it, m_filterProvidesByDirs))
-    ss << PROVIDES_STR << saveFileName(pkgFile.fileList[i]) << std::endl;
+    if (filterProvidesByDirs.empty() || fileFromDirs(pkgFile.fileList[i], filterProvidesByDirs))
+      ss << PROVIDES_STR << saveFileName(pkgFile.fileList[i]) << std::endl;
   for(NamedPkgRelVector::const_iterator it = pkgFile.requires.begin();it != pkgFile.requires.end();it++)
       //FIXME:      if (m_requireFilter.excludeRequire(it->pkgName))
     ss << REQUIRES_STR << saveNamedPkgRel(*it) << std::endl;
@@ -173,6 +165,17 @@ std::string PkgSection::saveFileName(const std::string& fileName)
     }
   return s;
 }
+
+bool PkgSection::fileFromDirs(const std::string& fileName, const StringVector& dirs)
+{
+  std::string tail;
+  for(StringVector::const_iterator it = dirs.begin();it != dirs.end();it++)
+    if (stringBegins(fileName, *it, tail))
+      return 1;
+  return 0;
+}
+
+
 
 /*FIXME:
 std::string PkgSection::getPkgRelName(const std::string& line)

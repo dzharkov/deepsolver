@@ -119,11 +119,12 @@ void IndexCore::buildIndex(const RepoParams& params)
   assert(!params.indexPath.empty());
   assert(!params.pkgSources.empty());
   Directory::ensureExists(params.indexPath);
+  logMsg(LOG_DEBUG, "Starting index creation in \'%s\'", params.indexPath.c_str());
   params.writeInfoFile(Directory::mixNameComponents(params.indexPath, REPO_INDEX_INFO_FILE));
   StringSet providesRefs;
   for(StringVector::size_type i = 0;i < params.providesRefsSources.size();i++)
     collectRefs(params.providesRefsSources[i], providesRefs);
-
+  logMsg(LOG_DEBUG, "Has %zu provides references", providesRefs.size());
   const std::string pkgFileName = REPO_INDEX_PACKAGES_FILE + compressionExtension(params.compressionType);
   const std::string pkgDescrFileName = REPO_INDEX_PACKAGES_DESCR_FILE + compressionExtension(params.compressionType);
   const std::string srcFileName = REPO_INDEX_SOURCES_FILE + compressionExtension(params.compressionType);
@@ -148,11 +149,12 @@ void IndexCore::buildIndex(const RepoParams& params)
       srcFile = std::auto_ptr<UnifiedOutput>(new StdOutput(srcFileName));
       srcDescrFile = std::auto_ptr<UnifiedOutput>(new StdOutput(srcDescrFileName));
     }
-
   std::auto_ptr<AbstractPackageBackEnd> backend = CREATE_PACKAGE_BACKEND;
   //We ready to collect information about packages in specified directories;
   for(StringVector::size_type i = 0;i < params.pkgSources.size();i++)
     {
+      logMsg(LOG_DEBUG, "Reading packages in \'%s\'", params.pkgSources[i].c_str());
+      m_listener.onPackageCollecting(params.pkgSources[i]);
       std::auto_ptr<Directory::Iterator> it = Directory::enumerate(params.pkgSources[i]);
       while(it->moveNext())
 	{
@@ -165,12 +167,12 @@ void IndexCore::buildIndex(const RepoParams& params)
 	  pkg.fileName = it->getName();
 	  if (!pkg.isSource)
 	    {
-	      pkgFile->writeData(PkgSection::saveBaseInfo(pkg));
-	      pkgDescrFile->writeData(PkgSection::saveBaseInfo(pkg));
+	      pkgFile->writeData(PkgSection::saveBaseInfo(pkg, params.filterProvidesByRefs?StringVector():params.filterProvidesByDirs));
+	      pkgDescrFile->writeData(PkgSection::saveDescr(pkg, params.changeLogBinary));
 	    } else
 	    {
-	      srcFile->writeData(PkgSection::saveBaseInfo(pkg));
-	      srcDescrFile->writeData(PkgSection::saveBaseInfo(pkg));
+	      srcFile->writeData(PkgSection::saveBaseInfo(pkg, params.filterProvidesByRefs?StringVector():params.filterProvidesByDirs));
+	      srcDescrFile->writeData(PkgSection::saveDescr(pkg, params.changeLogSources));
 	    }
 	} //for package files;
     } //for listed directories;

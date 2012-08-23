@@ -33,7 +33,7 @@ public:
 
   RepoParams()
     : version(PACKAGE_VERSION),
-      compressionType(CompressionTypeNone),
+      compressionType(CompressionTypeGzip),
       formatType(FormatTypeText),
       filterProvidesByRefs(0),
       changeLogBinary(0),

@@ -78,6 +78,7 @@ static void writeInfoFileParamsToDisk(const std::string& fileName, const StringT
 
 void RepoParams::writeInfoFile(const std::string& fileName) const
 {
+  logMsg(LOG_DEBUG, "Saving info file in \'%s\'", fileName.c_str());
   StringToStringMap params;
   switch(formatType)
     {
