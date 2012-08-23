@@ -279,7 +279,7 @@ void rpmFillChangeLog(Header& header, ChangeLog& changeLog)
     changeLog[i].time = time[i];
 }
 
-void rpmFillFileList(Header& header, StringList& v)
+void rpmFillFileList(Header& header, StringVector& v)
 {
   v.clear();
   StringVector dirNames;

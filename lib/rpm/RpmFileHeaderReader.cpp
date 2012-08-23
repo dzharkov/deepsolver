@@ -85,12 +85,12 @@ void RpmFileHeaderReader::fillChangeLog(ChangeLog& changeLog)
   rpmFillChangeLog(m_header, changeLog);
 }
 
-void RpmFileHeaderReader::fillFileList(StringList& v)
+void RpmFileHeaderReader::fillFileList(StringVector& v)
 {
   rpmFillFileList(m_header, v);
 }
 
-void readRpmPkgFile(const std::string& fileName, PkgFile& pkgFile, StringList& fileList)
+void readRpmPkgFile(const std::string& fileName, PkgFile& pkgFile)
 {
   RpmFileHeaderReader reader;
   reader.load(fileName);
@@ -100,8 +100,7 @@ void readRpmPkgFile(const std::string& fileName, PkgFile& pkgFile, StringList& f
   reader.fillObsoletes(pkgFile.obsoletes);
   reader.fillRequires(pkgFile.requires);
   reader.fillChangeLog(pkgFile.changeLog);
-  reader.fillFileList(fileList);
+  reader.fillFileList(pkgFile.fileList);
   reader.close();
   pkgFile.fileName = fileName;
 }
-

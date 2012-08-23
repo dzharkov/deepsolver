@@ -86,7 +86,7 @@ bool splitUserParam(const std::string& str, std::string& name, std::string& valu
 
 void printLogo()
 {
-  std::cout << "ds-repo: utility to create index of Deepsolver package repository" << std::endl;
+  std::cout << "ds-repo: utility to create Deepsolver repository index" << std::endl;
     std::cout << "Version: " << PACKAGE_VERSION << std::endl;
   std::cout << std::endl;
 }

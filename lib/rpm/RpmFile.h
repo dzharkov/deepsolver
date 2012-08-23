@@ -21,6 +21,6 @@
 #include"Pkg.h"
 #include"RpmException.h"
 
-bool readRpmPkgFile(const std::string& fileName, PkgFile& pkgFile, StringList& files);
+void readRpmPkgFile(const std::string& fileName, PkgFile& pkgFile);
 
 #endif //DEEPSOLVER_RPM_FILE_H;

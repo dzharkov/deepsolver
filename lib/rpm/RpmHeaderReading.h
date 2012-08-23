@@ -28,7 +28,7 @@ void rpmFillConflicts(Header& header, NamedPkgRelVector& v);
 void rpmFillObsoletes(Header& header, NamedPkgRelVector& v);
 void rpmFillRequires(Header& header, NamedPkgRelVector& v);
 void rpmFillChangeLog(Header& header, ChangeLog& changeLog);
-void rpmFillFileList(Header& header, StringList& v);
+void rpmFillFileList(Header& header, StringVector& v);
 //Throws RpmException if required tag does not exist;
 void rpmGetStringTagValue(Header& header, int_32 tag, std::string& value);
 //Does nothing if required tag does not exist; 

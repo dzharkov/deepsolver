@@ -18,6 +18,7 @@
 #include"deepsolver.h"
 #include"AbstractPackageBackEnd.h"
 #include"rpm/Rpmdb.h"
+#include"rpm/RpmFile.h"
 
 class RpmInstalledPackagesIterator: public AbstractInstalledPackagesIterator
 {
@@ -62,13 +63,19 @@ public:
 
 void readPackageFile(const std::string& fileName, PkgFile& pkgFile)
   {
-    assert(0);//FIXME:
+    readRpmPkgFile(fileName, pkgFile);
   }
 
 bool validPkgFileName(const std::string& fileName) const
   {
+    if (fileName.length() <= 4)
+      return 0;
+    const std::string ext = ".rpm";
+    for(std::string::size_type i = 0;i < ext.size();i++)
+      if (!fileName[fileName.length() - ext.length() + i] != ext[i])
+	return 0;
+    return 1;
     assert(0);//FIXME:
-    return 0;
   }
 }; //class RpmBackEnd;
 

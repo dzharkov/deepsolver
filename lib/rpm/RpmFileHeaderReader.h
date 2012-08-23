@@ -42,7 +42,7 @@ public:
   void fillObsoletes(NamedPkgRelVector& v);
   void fillRequires(NamedPkgRelVector& v);
   void fillChangeLog(ChangeLog& changeLog);
-  void fillFileList(StringList& v);
+  void fillFileList(StringVector& v);
 
 private:
   FD_t m_fd;
