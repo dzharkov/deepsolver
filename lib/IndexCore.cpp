@@ -121,10 +121,13 @@ void IndexCore::buildIndex(const RepoParams& params)
   Directory::ensureExists(params.indexPath);
   logMsg(LOG_DEBUG, "Starting index creation in \'%s\'", params.indexPath.c_str());
   params.writeInfoFile(Directory::mixNameComponents(params.indexPath, REPO_INDEX_INFO_FILE));
-  StringSet providesRefs;
+  StringSet internalProvidesRefs, externalProvidesRefs;
   for(StringVector::size_type i = 0;i < params.providesRefsSources.size();i++)
-    collectRefs(params.providesRefsSources[i], providesRefs);
-  logMsg(LOG_DEBUG, "Has %zu provides references", providesRefs.size());
+    {
+      m_listener.onReferenceCollecting(params.providesRefsSources[i]);
+      collectRefs(params.providesRefsSources[i], externalProvidesRefs);
+    }
+  logMsg(LOG_DEBUG, "Has %zu external provides references", externalProvidesRefs.size());
   const std::string pkgFileName = REPO_INDEX_PACKAGES_FILE + compressionExtension(params.compressionType);
   const std::string pkgDescrFileName = REPO_INDEX_PACKAGES_DESCR_FILE + compressionExtension(params.compressionType);
   const std::string srcFileName = REPO_INDEX_SOURCES_FILE + compressionExtension(params.compressionType);
@@ -165,6 +168,10 @@ void IndexCore::buildIndex(const RepoParams& params)
 	  PkgFile pkg;
 	  backend->readPackageFile(it->getFullPath(), pkg);
 	  pkg.fileName = it->getName();
+	  for(NamedPkgRelVector::size_type k = 0;k < pkg.requires.size();k++)
+	    internalProvidesRefs.insert(pkg.requires[k].pkgName);
+	  for(NamedPkgRelVector::size_type k = 0;k < pkg.conflicts.size();k++)
+	    internalProvidesRefs.insert(pkg.conflicts[k].pkgName);
 	  if (!pkg.isSource)
 	    {
 	      pkgFile->writeData(PkgSection::saveBaseInfo(pkg, params.filterProvidesByRefs?StringVector():params.filterProvidesByDirs));
@@ -180,30 +187,36 @@ void IndexCore::buildIndex(const RepoParams& params)
   pkgDescrFile->close();
   srcFile->close();
   srcDescrFile->close();
+  logMsg(LOG_DEBUG, "Has %zu internal provides references and %zu external provides references", internalProvidesRefs.size(), externalProvidesRefs.size());
   //Additional phase for provides filtering if needed;
   if (params.filterProvidesByRefs)
     {
-      TextFormatSectionReader reader;
-      reader.open(tmpFileName);
+      m_listener.onProvidesCleaning();
+      std::ifstream is(tmpFileName.c_str());
+      if (!is.is_open())
+	throw IndexCoreException(IndexErrorInternalIOProblem);
       if (params.compressionType == RepoParams::CompressionTypeGzip)
 	pkgFile = std::auto_ptr<UnifiedOutput>(new GzipOutput(pkgFileName)); else
 	pkgFile = std::auto_ptr<UnifiedOutput>(new StdOutput(pkgFileName));
-      std::string sect;
-      while(reader.readNext(sect))
+      while(1)
 	{
-	  /*
-      const std::string provideName = getPkgRelName(tail);
-      assert(!provideName.empty());
-      if (m_collectedRefs.find(provideName) != m_collectedRefs.end() || 
-	  m_additionalRefs.find(provideName) != m_additionalRefs.end() ||
-	  (!m_filterProvidesByDirs.empty() && fileFromDirs(provideName, m_filterProvidesByDirs)))
-	  */
-	  //FIXME:filtering;
-	  pkgFile->writeData(sect);
-	} //while(packages);
-      reader.close();
+	  std::string line;
+	  std::getline(is, line);
+	  if (!is)
+	    break;
+	  std::string pkgName;
+	  if (!PkgSection::isProvidesLine(line, pkgName))
+	    {
+	      pkgFile->writeData(line);
+	      continue;
+	    }
+	  if (internalProvidesRefs.find(pkgName) != internalProvidesRefs.end() || 
+	  externalProvidesRefs.find(pkgName) != externalProvidesRefs.end() ||
+	  (!params.filterProvidesByDirs.empty() && fileFromDirs(pkgName, params.filterProvidesByDirs)))
+	pkgFile->writeData(line);
+	} //for(lines);
       pkgFile->close();
-  File::unlink(tmpFileName);
+      //FIXME:  File::unlink(tmpFileName);
     } //Additional phase;
   /*
   MD5 md5;
@@ -249,13 +262,11 @@ std::string IndexCore::compressionExtension(char compressionType)
   return "";
 }
 
-bool IndexCore::fileFromDirs(const std::string& fileName, const StringList& dirs)
+bool IndexCore::fileFromDirs(const std::string& fileName, const StringVector& dirs)
 {
   std::string tail;
-  for(StringList::const_iterator it = dirs.begin();it != dirs.end();it++)
-    {
-      if (stringBegins(fileName, *it, tail))
-	return 1;
-    }
+  for(StringVector::const_iterator it = dirs.begin();it != dirs.end();it++)
+    if (stringBegins(fileName, *it, tail))
+      return 1;
   return 0;
 }

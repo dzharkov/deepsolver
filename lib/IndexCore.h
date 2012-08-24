@@ -20,12 +20,15 @@
 
 #include"repo/RepoParams.h"
 
+enum {
+  IndexErrorInternalIOProblem = 0
+};
+
 class IndexCoreException: public DeepsolverException 
 {
 public:
-  IndexCoreException() {}
-  IndexCoreException(const std::string& message):
-    m_message(message) {}
+  IndexCoreException(int code)
+    : m_code(code) {}
 
   virtual ~IndexCoreException() {}
 
@@ -37,11 +40,11 @@ public:
 
   std::string getMessage() const
   {
-    return m_message;
+    return "FIXME";
   }
 
 private:
-  const std::string m_message;
+  const int m_code;
 }; //class IndexCoreException;
 
 class AbstractIndexConstructionListener
@@ -74,7 +77,7 @@ private:
 
 private:
   static std::string compressionExtension(char compressionType);
-  static bool fileFromDirs(const std::string& fileName, const StringList& dirs);
+  static bool fileFromDirs(const std::string& fileName, const StringVector& dirs);
 
 private:
   AbstractIndexConstructionListener& m_listener;

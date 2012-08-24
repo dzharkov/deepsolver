@@ -89,6 +89,15 @@ std::string PkgSection::saveDescr(const PkgFile& pkgFile, bool saveChangeLog)
   return ss.str();
 }
 
+bool PkgSection::isProvidesLine(const std::string& line, std::string& pkgName)
+{
+  std::string tail;
+  if (!stringBegins(line, PROVIDES_STR, tail))
+    return 0;
+  pkgName = extractPkgRelName(tail);
+  return 1;
+}
+
 std::string PkgSection::encodeMultiline(const std::string& s)
 {
   std::string r;
@@ -175,10 +184,7 @@ bool PkgSection::fileFromDirs(const std::string& fileName, const StringVector& d
   return 0;
 }
 
-
-
-/*FIXME:
-std::string PkgSection::getPkgRelName(const std::string& line)
+std::string PkgSection::extractPkgRelName(const std::string& line)
 {
   //Name is stored at the beginning of line until first space without previously used backslash;
   std::string res;
@@ -189,7 +195,10 @@ std::string PkgSection::getPkgRelName(const std::string& line)
 	  i++;
 	  if (i < line.length())
 	    res += line[i]; else 
-	    return res + "\\";
+	    {
+	      logMsg(LOG_WARNING, "Found abnormal line in text format binary: \'%s\'", line.c_str());
+	      return res + "\\";
+	    }
 	  continue;
 	}
       if (line[i] == ' ')
@@ -198,4 +207,3 @@ std::string PkgSection::getPkgRelName(const std::string& line)
     } //for();
   return res;
 }
-*/
