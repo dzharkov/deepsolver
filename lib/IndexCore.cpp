@@ -235,6 +235,10 @@ void IndexCore::buildIndex(const RepoParams& params)
   */
 }
 
+void IndexCore::rebuildIndex(const RepoParams& params, const StringVector& toAdd, const StringVector& toRemove)
+{
+}
+
 void IndexCore::collectRefs(const std::string& dirName, StringSet& res) 
 {
   std::auto_ptr<AbstractPackageBackEnd> backend = CREATE_PACKAGE_BACKEND;

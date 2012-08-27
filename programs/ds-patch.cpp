@@ -84,7 +84,7 @@ bool parseCmdLine(int argc, char* argv[])
       std::cerr << PREFIX << "No packages mentioned to add or remove" << std::endl;
       return 0;
     }
-  params.indexPath = argc[1];
+  params.indexPath = argv[1];
   int mode = 0;
   for(int i = 2;i < argc;i++)
     {
