@@ -136,13 +136,13 @@ bool processUserParam(const std::string& s)
     if (s[i] == '#' || s[i] == '\\' || BLANK_CHAR(s[i]))
       return 0;
   if (name == INFO_FILE_FORMAT_TYPE ||
-name == INFO_FILE_COMPRESSION_TYPE ||
-name == INFO_FILE_VERSION ||
-name == INFO_FILE_MD5SUM ||
-name == INFO_FILE_FILTER_PROVIDES_BY_DIRS ||
-name == INFO_FILE_FILTER_PROVIDES_BY_REFS ||
-name == INFO_FILE_EXCLUDE_REQUIRES ||
-name == INFO_FILE_CHANGELOG_SOURCES ||
+      name == INFO_FILE_COMPRESSION_TYPE ||
+      name == INFO_FILE_VERSION ||
+      name == INFO_FILE_MD5SUM ||
+      name == INFO_FILE_FILTER_PROVIDES_BY_DIRS ||
+      name == INFO_FILE_FILTER_PROVIDES_BY_REFS ||
+      name == INFO_FILE_EXCLUDE_REQUIRES ||
+      name == INFO_FILE_CHANGELOG_SOURCES ||
       name == INFO_FILE_CHANGELOG_BINARY)
     return 0;
   params.userParams.insert(StringToStringMap::value_type(name, value));
@@ -217,10 +217,6 @@ return 0;
   for(StringVector::size_type i = 1;i < values.size();i++)
     params.pkgSources.push_back(values[i]);
   return 1;
-}
-
-void run()
-{
 }
 
 int main(int argc, char* argv[])
