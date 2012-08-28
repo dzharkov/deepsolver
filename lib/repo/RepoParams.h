@@ -60,6 +60,12 @@ public:
 
 public:
   void writeInfoFile(const std::string& fileName) const;
+
+  /**\brief Reads repository parameters values from info file
+   *
+   * FIXME:Throws SystemException and InfoFileException
+   */
+  void readInfoFile(const std::string& fileName);
 }; //class RepoParams;
 
 #endif //DEEPSOLVER_REPO_PARAMS_H;

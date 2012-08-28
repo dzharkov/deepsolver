@@ -71,6 +71,7 @@ os/system.h \
 Pkg.h \
 PkgUtils.h \
 ProvidePriorityList.h \
+repo/InfoFileException.h \
 repo/InfoFileReader.h \
 repo/PkgSection.h \
 repo/RepoParams.h \

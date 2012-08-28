@@ -113,3 +113,12 @@ void RepoParams::writeInfoFile(const std::string& fileName) const
     params.insert(*it);
   writeInfoFileParamsToDisk(fileName, params);
 }
+
+void RepoParams::readInfoFile(const std::string& fileName)
+{
+  File f;
+  f.open(fileName);
+  std::string content;
+  f.readTextFile(content);
+
+}
