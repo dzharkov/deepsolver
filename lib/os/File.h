@@ -136,6 +136,9 @@ public:
   /**\brief FIXME*/
   void readTextFile(StringVector& lines);
 
+  /**\brief FIXME*/
+  void readTextFile(std::string& text);
+
   /**\brief Returns the file name without parent directories
    *
    * This method returns the provided string from the last slash character

@@ -23,6 +23,24 @@ static std::string booleanValue(bool value)
   return value?"yes":"no";
 }
 
+bool parseBooleanValue(const std::string& str, const std::string& paramName)
+{
+  if (str == "YES" || str == "Yes" || str == "yes")
+    return 1;
+  if (str == "TRUE" || str == "True" || str == "true")
+    return 1;
+  if (str == "1")
+    return 1;
+  if (str == "NO" || str == "No" || str == "no")
+    return 0;
+  if (str == "FALSE" || str == "False" || str == "false")
+    return 0;
+  if (str == "0")
+    return 0;
+  throw InfoFileValueException(InfoFileValueErrorInvalidBooleanValue, paramName);
+}
+
+
 static std::string saveStringVector(const StringVector& values)
 {
   if (values.empty())
@@ -120,5 +138,65 @@ void RepoParams::readInfoFile(const std::string& fileName)
   f.open(fileName);
   std::string content;
   f.readTextFile(content);
-
+  InfoFileReader reader;
+  StringToStringMap params;
+  reader.read(content, params);
+  for(StringToStringMap::const_iterator it = params.begin();it != params.end();it++)
+    {
+      const std::string& name = it->first;
+      const std::string& value = it->second;
+      //Format type;
+      if (trim(name) == INFO_FILE_FORMAT_TYPE)
+	{
+	  if (trim(value) == INFO_FILE_FORMAT_TYPE_TEXT)
+	    formatType = FormatTypeText; else
+	    if (trim(value) == INFO_FILE_FORMAT_TYPE_BINARY)
+	      formatType = FormatTypeBinary; else
+	      throw InfoFileValueException(InfoFileValueErrorInvalidFormatType, trim(value));
+	  continue;
+	} //Format type;
+      //Compression type;
+      if (trim(name) == INFO_FILE_COMPRESSION_TYPE)
+	{
+	  if (trim(value) == INFO_FILE_COMPRESSION_TYPE_NONE)
+	    compressionType = CompressionTypeNone; else
+	    if (trim(value) == INFO_FILE_COMPRESSION_TYPE_GZIP)
+	      compressionType = CompressionTypeGzip; else
+	      throw InfoFileValueException(InfoFileValueErrorInvalidCompressionType, trim(value));
+	  continue;
+	} //Compression type;
+      //Version;
+      if (trim(name) == INFO_FILE_VERSION)
+	{
+	  version = trim(value);
+	  continue;
+	} //Version;
+      //Md5sum;
+      if (trim(name) == INFO_FILE_MD5SUM)
+	{
+	md5sumFile = trim(value);
+	continue;
+	} //Md5sum;
+      // Change log binary;
+      if (trim(name) == INFO_FILE_CHANGELOG_BINARY)
+	{
+	  changelogBinary = parseBooleanValue(trim(value), trim(name));
+	  continue;
+	} //Change log binary;
+      //Change log sources;
+      if (trim(name) == INFO_FILE_CHANGELOG_SOURCES)
+	{
+	  changelogSources = parseBooleanValue(trim(value), trim(name));
+	  continue;
+	} //Change log sources;
+      //Filter provides by references;
+      if (trim(name) == INFO_FILE_FILTER_PROVIDES_BY_REFS)
+	{
+	  filterProvidesByRefs = parseBooleanValue(trim(value), trim(name));
+	  continue;
+	}
+      //FIXME:filterProvidesByDirs;;
+      //FIXME:excludeRequiresRegExp;;
+      userParams.insert(StringTostringMap::value_type(trim(name), trim(value)));
+    } //for(values);
 }

@@ -23,6 +23,12 @@ enum {
   InfoFileSyntaxErrorIncompleteLine = 1
 };
 
+enum {
+InfoFileValueErrorInvalidFormatType
+InfoFileValueErrorInvalidCompressionType
+InfoFileValueErrorInvalidBooleanValue
+};
+
 /**\brief The general info file error
  * FIXME
  *

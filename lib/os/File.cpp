@@ -237,3 +237,20 @@ void File::readTextFile(StringVector& lines)
   if (!line.empty())
     lines.push_back(line);
 }
+
+void File::readTextFile(std::string& text)
+{
+  assert(m_fd != -1);
+  char buf[IO_BUF_SIZE];
+  while(1)
+    {
+      int readCount = ::read(m_fd, buf, sizeof(buf));
+  TRY_SYS_CALL(readCount != -1, "read()");
+  for(int i = 0;i < readCount;i++)
+    {
+      if (buf[i] == '\r')
+	continue;
+      text += buf[i];
+    }
+    }
+}
