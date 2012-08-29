@@ -40,18 +40,62 @@ bool parseBooleanValue(const std::string& str, const std::string& paramName)
   throw InfoFileValueException(InfoFileValueErrorInvalidBooleanValue, paramName);
 }
 
+static std::string double Quotes(const std::string& str)
+{
+  std::string res;
+  for(std::string:;size_type i = 0;i < str.length();i++)
+    if (str[i] == '\"')
+      res += "\"\""; else
+      res += str[i];
+  return res;
+}
 
 static std::string saveStringVector(const StringVector& values)
 {
   if (values.empty())
     return "";
-  std::string str = values[0];
+  std::string str = "\"" + doubleQuotes(values[0]) + "\"";
   for(StringVector::size_type i = 1;i < values.size();i++)
     {
       str += ":";
-      str += values[i];
+      str += "\"" + doubleQuotes(values[i]) + "\"";
     }
   return str;
+}
+
+static void parseStringVector(const std::string& str, StringVector& res)
+{
+  res.clear();
+  std::string item;
+  bool inQuotes = 1;
+  for(std::string::size_type i = 0;i < str.length();i++)
+    {
+      if (!inQuotes && str[i] == ':')
+	{
+	  res.push_back(line);
+	  line.erase();
+	  continue;
+	}
+      if (!inQuotes && str[i] == '\"')
+	{
+	  inQuotes = 1;
+	  continue;
+	}
+      if (inQuotes && str[i] == '\"')
+	{
+	  if (i + 1 < str.length() && str[i + 1] == '\"')
+	    {
+	      line += "\"";
+	      i++;
+	      continue;
+	    }
+	  inQuotes = 0;
+	  continue;
+	}
+      line += str[i];
+    }
+  if (!res.empty() || !line.empty())
+    res.push_back(line);
 }
 
 static std::string escapeString(const std::string& s)
@@ -195,8 +239,18 @@ void RepoParams::readInfoFile(const std::string& fileName)
 	  filterProvidesByRefs = parseBooleanValue(trim(value), trim(name));
 	  continue;
 	}
-      //FIXME:filterProvidesByDirs;;
-      //FIXME:excludeRequiresRegExp;;
+      //Filter provides by dirs;
+      if (trim(name) == INFO_FILE_FILTER_PROVIDES_BY_DIRS)
+	{
+	  parseStringList(trim(value), filterProvidesByDirs);
+	  continue;
+	} //Filter provides by dirs;
+      //Exclude requires;
+      if (trim(name) == INFO_FILE_EXCLUDE_REQUIRES)
+	{
+	  parseStringList(trim(value), excludeRequiresRegExp);
+	  continue;
+	}
       userParams.insert(StringTostringMap::value_type(trim(name), trim(value)));
     } //for(values);
 }
