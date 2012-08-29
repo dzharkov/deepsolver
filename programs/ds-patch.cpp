@@ -19,7 +19,7 @@
 #include"IndexCore.h"
 #include"rpm/RpmException.h"
 
-#define PREFIX "ds-patch"
+#define PREFIX "ds-patch:"
 
 static RepoParams params;
 static StringVector filesToAdd, filesToRemove;
@@ -53,6 +53,7 @@ void printLogo()
 
 void printHelp()
 {
+  printLogo();
   printf("%s", 
 	 "Usage:\n"
 	 "\tds-patch [--help] INDEX_DIR [--add FILE1 [FILE2 [...]]] [--del FILE1 [FILE2 [...]]]\n"
@@ -102,7 +103,7 @@ bool parseCmdLine(int argc, char* argv[])
       assert(mode >= 0 && mode <= 2);
       if (mode == 0)
 	{
-	  std::cerr << PREFIX << "Unknown parameter \'" << value << "\', if it is a file to add or remove you should use \'--add\' or \'--remove\' key before" << std::endl;
+	  std::cerr << PREFIX << "Unknown parameter \'" << value << "\', if it is a file to add or remove you should use \'--add\' or \'--del\' key before" << std::endl;
 	  return 0;
 	}
       if (mode == 1)
@@ -119,6 +120,7 @@ int main(int argc, char* argv[])
   initLogging("/tmp/ds-patch.log", LOG_DEBUG);//FIXME:
   try {
     printLogo();
+    params.readInfoFile(Directory::mixNameComponents(params.indexPath, REPO_INDEX_INFO_FILE));
     IndexConstructionListener listener;
     IndexCore indexCore(listener);
     indexCore.rebuildIndex(params, filesToAdd, filesToRemove);

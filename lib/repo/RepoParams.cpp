@@ -180,7 +180,7 @@ void RepoParams::writeInfoFile(const std::string& fileName) const
 void RepoParams::readInfoFile(const std::string& fileName)
 {
   File f;
-  f.open(fileName);
+  f.openReadOnly(fileName);
   std::string content;
   f.readTextFile(content);
   InfoFileReader reader;
