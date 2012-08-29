@@ -24,9 +24,9 @@ enum {
 };
 
 enum {
-InfoFileValueErrorInvalidFormatType
-InfoFileValueErrorInvalidCompressionType
-InfoFileValueErrorInvalidBooleanValue
+  InfoFileValueErrorInvalidFormatType = 0,
+  InfoFileValueErrorInvalidCompressionType = 1,
+  InfoFileValueErrorInvalidBooleanValue = 2
 };
 
 /**\brief The general info file error
@@ -159,7 +159,7 @@ public:
    * \param [in] code The error code
    * \param [in] arg The string error argument
    */
-  InfoFileValueException(int code, const std::string&& arg)
+  InfoFileValueException(int code, const std::string& arg)
     : m_code(code),
       m_arg(arg) {}
 
@@ -183,7 +183,7 @@ public:
    * Use this method to get string argument of the error.
    *
    * \return The error argument
-   *
+   */
    const std::string& getArg() const
    {
    return m_arg;
@@ -208,8 +208,19 @@ public:
    */
   std::string getMessage() const
   {
-    //FIXME:
-    return "";
+
+    switch(m_code)
+      {
+      case InfoFileValueErrorInvalidFormatType:
+	return "invalid format type: \'" + m_arg + "\'";
+      case InfoFileValueErrorInvalidCompressionType:
+	return "invalid compression type: \'" + m_arg + "\'";
+      case InfoFileValueErrorInvalidBooleanValue:
+	return "parameter \'" + m_arg + "\' has an invalid boolean value";
+      default:
+	assert(0);
+      }
+    return "";//Just to reduce warning messages;
   }
 
 private:

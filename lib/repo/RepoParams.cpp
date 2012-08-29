@@ -17,6 +17,7 @@
 
 #include"deepsolver.h"
 #include"RepoParams.h"
+#include"InfoFileReader.h"
 
 static std::string booleanValue(bool value)
 {
@@ -40,10 +41,10 @@ bool parseBooleanValue(const std::string& str, const std::string& paramName)
   throw InfoFileValueException(InfoFileValueErrorInvalidBooleanValue, paramName);
 }
 
-static std::string double Quotes(const std::string& str)
+static std::string doubleQuotes(const std::string& str)
 {
   std::string res;
-  for(std::string:;size_type i = 0;i < str.length();i++)
+  for(std::string::size_type i = 0;i < str.length();i++)
     if (str[i] == '\"')
       res += "\"\""; else
       res += str[i];
@@ -72,8 +73,8 @@ static void parseStringVector(const std::string& str, StringVector& res)
     {
       if (!inQuotes && str[i] == ':')
 	{
-	  res.push_back(line);
-	  line.erase();
+	  res.push_back(item);
+	  item.erase();
 	  continue;
 	}
       if (!inQuotes && str[i] == '\"')
@@ -85,17 +86,17 @@ static void parseStringVector(const std::string& str, StringVector& res)
 	{
 	  if (i + 1 < str.length() && str[i + 1] == '\"')
 	    {
-	      line += "\"";
+	      item += "\"";
 	      i++;
 	      continue;
 	    }
 	  inQuotes = 0;
 	  continue;
 	}
-      line += str[i];
+      item += str[i];
     }
-  if (!res.empty() || !line.empty())
-    res.push_back(line);
+  if (!res.empty() || !item.empty())
+    res.push_back(item);
 }
 
 static std::string escapeString(const std::string& s)
@@ -218,19 +219,19 @@ void RepoParams::readInfoFile(const std::string& fileName)
       //Md5sum;
       if (trim(name) == INFO_FILE_MD5SUM)
 	{
-	md5sumFile = trim(value);
+	md5sumFileName = trim(value);
 	continue;
 	} //Md5sum;
       // Change log binary;
       if (trim(name) == INFO_FILE_CHANGELOG_BINARY)
 	{
-	  changelogBinary = parseBooleanValue(trim(value), trim(name));
+	  changeLogBinary = parseBooleanValue(trim(value), trim(name));
 	  continue;
 	} //Change log binary;
       //Change log sources;
       if (trim(name) == INFO_FILE_CHANGELOG_SOURCES)
 	{
-	  changelogSources = parseBooleanValue(trim(value), trim(name));
+	  changeLogSources = parseBooleanValue(trim(value), trim(name));
 	  continue;
 	} //Change log sources;
       //Filter provides by references;
@@ -242,15 +243,15 @@ void RepoParams::readInfoFile(const std::string& fileName)
       //Filter provides by dirs;
       if (trim(name) == INFO_FILE_FILTER_PROVIDES_BY_DIRS)
 	{
-	  parseStringList(trim(value), filterProvidesByDirs);
+	  parseStringVector(trim(value), filterProvidesByDirs);
 	  continue;
 	} //Filter provides by dirs;
       //Exclude requires;
       if (trim(name) == INFO_FILE_EXCLUDE_REQUIRES)
 	{
-	  parseStringList(trim(value), excludeRequiresRegExp);
+	  parseStringVector(trim(value), excludeRequiresRegExp);
 	  continue;
 	}
-      userParams.insert(StringTostringMap::value_type(trim(name), trim(value)));
+      userParams.insert(StringToStringMap::value_type(trim(name), trim(value)));
     } //for(values);
 }
