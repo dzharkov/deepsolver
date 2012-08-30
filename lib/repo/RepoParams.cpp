@@ -68,7 +68,7 @@ static void parseStringVector(const std::string& str, StringVector& res)
 {
   res.clear();
   std::string item;
-  bool inQuotes = 1;
+  bool inQuotes = 0;
   for(std::string::size_type i = 0;i < str.length();i++)
     {
       if (!inQuotes && str[i] == ':')
