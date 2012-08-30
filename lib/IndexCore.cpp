@@ -23,7 +23,7 @@
 #include"utils/MD5.h"
 #include"utils/GZipInterface.h"
 
-#define TMP_FILE_NAME "tmp_packages_data"
+#define TMP_FILE_NAME "tmp_data"
 
 class UnifiedOutput
 {
@@ -113,6 +113,34 @@ public:
 private:
   GZipOutputFile m_file;
 }; //class GzipOutput;
+
+std::auto_ptr<AbstractTextFormatSectionReader> createRebuildReader(const std::string& fileName, const RepoParams& params)
+{
+  if (params.compressionType == RepoParams::CompressionTypeNone)
+    {
+      std::auto_ptr<TextFormatSectionReader> reader(new TextFormatSectionReader());
+      reader->open(fileName);
+      return std::auto_ptr<AbstractTextFormatSectionReader>(reader.release());
+    }
+  if (params.compressionType == RepoParams::CompressionTypeGzip)
+    {
+      std::auto_ptr<TextFormatSectionReaderGzip> reader(new TextFormatSectionReaderGzip());
+      reader->open(fileName);
+      return std::auto_ptr<AbstractTextFormatSectionReader>(reader.release());
+    }
+  assert(0);
+  return std::auto_ptr<AbstractTextFormatSectionReader>();
+}
+
+std::auto_ptr<UnifiedOutput> createRebuildWriter(const std::string& fileName, const RepoParams& params)
+{
+  if (params.compressionType == RepoParams::CompressionTypeNone)
+    return std::auto_ptr<UnifiedOutput>(new StdOutput(fileName));
+  if (params.compressionType == RepoParams::CompressionTypeGzip)
+    return std::auto_ptr<UnifiedOutput>(new GzipOutput(fileName));
+  assert(0);
+  return std::auto_ptr<UnifiedOutput>();
+}
 
 void IndexCore::buildIndex(const RepoParams& params)
 {
@@ -237,6 +265,20 @@ void IndexCore::buildIndex(const RepoParams& params)
 
 void IndexCore::rebuildIndex(const RepoParams& params, const StringVector& toAdd, const StringVector& toRemove)
 {
+  std::string sect;
+  std::string inputFileName, outputFileName;
+    std::auto_ptr<AbstractTextFormatSectionReader> reader;
+  std::auto_ptr<UnifiedOutput> writer;
+    //Packages file;
+    inputFileName = REPO_INDEX_PACKAGES_FILE + compressionExtension(params.compressionType);
+  outputFileName = TMP_FILE_NAME + compressionExtension(params.compressionType);
+  reader = createRebuildReader(inputFileName, params);
+  writer = createRebuildWriter(outputFileName, params);
+  reader->init();
+  while(reader->readNext(sect))
+    writer->writeData(sect);
+  reader->close();
+  writer->close();
 }
 
 void IndexCore::collectRefs(const std::string& dirName, StringSet& res) 

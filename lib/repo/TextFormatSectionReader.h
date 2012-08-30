@@ -27,10 +27,11 @@ public:
   virtual ~AbstractTextFormatSectionReader() {}
 
 public:
+  void init();
   bool readNext(std::string& s);
+  virtual void close() = 0;
 
 protected:
-  virtual void init();
   virtual size_t readData(void* buf, size_t bufSize) = 0;
 
 private:
@@ -75,6 +76,11 @@ public:
   void open(const std::string& fileName)
   {
     m_file.open(fileName);
+  }
+
+  void close()
+  {
+    m_file.close();
   }
 
 protected:
