@@ -180,6 +180,7 @@ void RepoParams::writeInfoFile(const std::string& fileName) const
 void RepoParams::readInfoFile(const std::string& fileName)
 {
   File f;
+  logMsg(LOG_DEBUG, "Opening \'%s\' info file in read-only mode", fileName.c_str());
   f.openReadOnly(fileName);
   std::string content;
   f.readTextFile(content);
@@ -190,6 +191,7 @@ void RepoParams::readInfoFile(const std::string& fileName)
     {
       const std::string& name = it->first;
       const std::string& value = it->second;
+      logMsg(LOG_DEBUG, "%s:parsing \'%s\' = \'%s\'", fileName.c_str(), name.c_str(), value.c_str());
       //Format type;
       if (trim(name) == INFO_FILE_FORMAT_TYPE)
 	{

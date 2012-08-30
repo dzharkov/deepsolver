@@ -115,11 +115,17 @@ bool parseCmdLine(int argc, char* argv[])
 
 int main(int argc, char* argv[])
 {
+  setlocale(LC_ALL, "");
   if (!parseCmdLine(argc, argv))
     return 1;
   initLogging("/tmp/ds-patch.log", LOG_DEBUG);//FIXME:
+  printLogo();
+  if (filesToAdd.empty() && filesToRemove.empty())
+    {
+      std::cout << "Nothing to add and nothing to remove!" << std::endl;
+	return 0;
+    }
   try {
-    printLogo();
     params.readInfoFile(Directory::mixNameComponents(params.indexPath, REPO_INDEX_INFO_FILE));
     IndexConstructionListener listener;
     IndexCore indexCore(listener);

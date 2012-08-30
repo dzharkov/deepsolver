@@ -119,7 +119,7 @@ void File::open(const std::string fileName)
   if (m_fd < 0)
     {
       m_fd = -1;
-      SYS_STOP("open(" + fileName + "\', O_RDWR");
+      SYS_STOP("open(" + fileName + ", O_RDWR)");
     }
 }
 
@@ -130,7 +130,7 @@ void File::openReadOnly(const std::string& fileName)
   if (m_fd < 0)
     {
       m_fd = -1;
-      SYS_STOP("open(" + fileName + "\', O_RDONLY");
+      SYS_STOP("open(" + fileName + ", O_RDONLY)");
     }
 }
 
@@ -221,6 +221,8 @@ void File::readTextFile(StringVector& lines)
     {
       int readCount = ::read(m_fd, buf, sizeof(buf));
   TRY_SYS_CALL(readCount != -1, "read()");
+  if (readCount == 0)
+    break;
   for(int i = 0;i < readCount;i++)
     {
       if (buf[i] == '\r')
@@ -246,6 +248,8 @@ void File::readTextFile(std::string& text)
     {
       int readCount = ::read(m_fd, buf, sizeof(buf));
   TRY_SYS_CALL(readCount != -1, "read()");
+  if (readCount == 0)
+    break;
   for(int i = 0;i < readCount;i++)
     {
       if (buf[i] == '\r')

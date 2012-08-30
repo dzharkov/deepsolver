@@ -221,6 +221,7 @@ return 0;
 
 int main(int argc, char* argv[])
 {
+  setlocale(LC_ALL, "");
   if (!parseCmdLine(argc, argv))
     return 1;
   initLogging("/tmp/ds-repo.log", LOG_DEBUG);//FIXME:
