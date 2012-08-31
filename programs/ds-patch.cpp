@@ -42,6 +42,11 @@ public:
   void onProvidesCleaning()
   {
   }
+
+  void onPatchingFile(const std::string& fileName)
+  {
+    std::cout << "Patching file " << fileName << std::endl;
+  }
 }; //class IndexConstructionListener;
 
 void printLogo()

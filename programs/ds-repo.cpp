@@ -44,6 +44,10 @@ public:
   {
     std::cout << "Provides filtering" << std::endl;
   }
+
+  void onPatchingFile(const std::string& fileName)
+  {
+  }
 }; //class IndexConstructionListener;
 
 void splitColonDelimitedList(const std::string& str, StringVector& res)

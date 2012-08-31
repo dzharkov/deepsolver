@@ -26,6 +26,7 @@ public:
   static std::string saveBaseInfo(const PkgFile& pkgFile, const StringVector& filterProvidesByDirs);
   static std::string saveDescr(const PkgFile& pkgFile, bool saveChangeLog);
   static bool isProvidesLine(const std::string& line, std::string& pkgName);
+  static std::string getPkgFileName(const std::string& section);
 
 private:
   static std::string encodeMultiline(const std::string& s);

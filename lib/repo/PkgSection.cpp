@@ -98,6 +98,20 @@ bool PkgSection::isProvidesLine(const std::string& line, std::string& pkgName)
   return 1;
 }
 
+std::string PkgSection::getPkgFileName(const std::string& section)
+{
+  std::string::size_type i = 0;
+  while (i < section.length() && section[i] != '[')
+    i++;
+  if (i >= section.length())
+    return "";
+  std::string fileName;
+  i++;
+  while(i < section.length() && section[i] != ']')
+    fileName += section[i++];
+  return fileName;
+}
+
 std::string PkgSection::encodeMultiline(const std::string& s)
 {
   std::string r;

@@ -265,20 +265,104 @@ void IndexCore::buildIndex(const RepoParams& params)
 
 void IndexCore::rebuildIndex(const RepoParams& params, const StringVector& toAdd, const StringVector& toRemove)
 {
+  logMsg(LOG_DEBUG, "starting index patching process with %zu items to add and %zu items to remove", toAdd.size(), toRemove.size());
   std::string sect;
   std::string inputFileName, outputFileName;
     std::auto_ptr<AbstractTextFormatSectionReader> reader;
   std::auto_ptr<UnifiedOutput> writer;
+
     //Packages file;
     inputFileName = REPO_INDEX_PACKAGES_FILE + compressionExtension(params.compressionType);
   outputFileName = TMP_FILE_NAME + compressionExtension(params.compressionType);
+  logMsg(LOG_DEBUG, "Patching \'%s\' to \'%s\'", inputFileName.c_str(), outputFileName.c_str());
+  m_listener.onPatchingFile(inputFileName);
   reader = createRebuildReader(inputFileName, params);
   writer = createRebuildWriter(outputFileName, params);
   reader->init();
   while(reader->readNext(sect))
-    writer->writeData(sect);
+    {
+      const std::string fileName = PkgSection::getPkgFileName(sect);
+      assert(!fileName.empty());//FIXME:
+      StringVector::size_type i = 0;
+      for(i = 0;i < toRemove.size();i++)
+	if (fileName == toRemove[i])
+	  break;
+      if (i >= toRemove.size())
+	writer->writeData(sect); else
+	logMsg(LOG_DEBUG, "Found package to exclude: \'%s\'", fileName.c_str());
+    }
   reader->close();
   writer->close();
+
+    //Packages descriptions file;
+    inputFileName = REPO_INDEX_PACKAGES_DESCR_FILE + compressionExtension(params.compressionType);
+  outputFileName = TMP_FILE_NAME + compressionExtension(params.compressionType);
+  logMsg(LOG_DEBUG, "Patching \'%s\' to \'%s\'", inputFileName.c_str(), outputFileName.c_str());
+  m_listener.onPatchingFile(inputFileName);
+  reader = createRebuildReader(inputFileName, params);
+  writer = createRebuildWriter(outputFileName, params);
+  reader->init();
+  while(reader->readNext(sect))
+    {
+      const std::string fileName = PkgSection::getPkgFileName(sect);
+      assert(!fileName.empty());//FIXME:
+      StringVector::size_type i = 0;
+      for(i = 0;i < toRemove.size();i++)
+	if (fileName == toRemove[i])
+	  break;
+      if (i >= toRemove.size())
+	writer->writeData(sect); else
+	logMsg(LOG_DEBUG, "Found package to exclude: \'%s\'", fileName.c_str());
+    }
+  reader->close();
+  writer->close();
+
+    //Sources file;
+    inputFileName = REPO_INDEX_SOURCES_FILE + compressionExtension(params.compressionType);
+  outputFileName = TMP_FILE_NAME + compressionExtension(params.compressionType);
+  logMsg(LOG_DEBUG, "Patching \'%s\' to \'%s\'", inputFileName.c_str(), outputFileName.c_str());
+  m_listener.onPatchingFile(inputFileName);
+  reader = createRebuildReader(inputFileName, params);
+  writer = createRebuildWriter(outputFileName, params);
+  reader->init();
+  while(reader->readNext(sect))
+    {
+      const std::string fileName = PkgSection::getPkgFileName(sect);
+      assert(!fileName.empty());//FIXME:
+      StringVector::size_type i = 0;
+      for(i = 0;i < toRemove.size();i++)
+	if (fileName == toRemove[i])
+	  break;
+      if (i >= toRemove.size())
+	writer->writeData(sect); else
+	logMsg(LOG_DEBUG, "Found package to exclude: \'%s\'", fileName.c_str());
+    }
+  reader->close();
+  writer->close();
+
+    //Sources descriptions file;
+    inputFileName = REPO_INDEX_SOURCES_DESCR_FILE + compressionExtension(params.compressionType);
+  outputFileName = TMP_FILE_NAME + compressionExtension(params.compressionType);
+  logMsg(LOG_DEBUG, "Patching \'%s\' to \'%s\'", inputFileName.c_str(), outputFileName.c_str());
+  m_listener.onPatchingFile(inputFileName);
+  reader = createRebuildReader(inputFileName, params);
+  writer = createRebuildWriter(outputFileName, params);
+  reader->init();
+  while(reader->readNext(sect))
+    {
+      const std::string fileName = PkgSection::getPkgFileName(sect);
+      assert(!fileName.empty());//FIXME:
+      StringVector::size_type i = 0;
+      for(i = 0;i < toRemove.size();i++)
+	if (fileName == toRemove[i])
+	  break;
+      if (i >= toRemove.size())
+	writer->writeData(sect); else
+	logMsg(LOG_DEBUG, "Found package to exclude: \'%s\'", fileName.c_str());
+    }
+  reader->close();
+  writer->close();
+
 }
 
 void IndexCore::collectRefs(const std::string& dirName, StringSet& res) 
