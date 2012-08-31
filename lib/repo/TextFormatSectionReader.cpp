@@ -74,15 +74,16 @@ bool AbstractTextFormatSectionReader::readNext(std::string& s)
     }
   assert (pos < m_queue.size() || m_noMoreData);
   assert(pos > 0);
-  assert(pos < m_queue.size() || (m_queue[pos - 1] == '\n' && m_queue[pos] == '['));
+  assert(pos >= m_queue.size() || (m_queue[pos - 1] == '\n' && m_queue[pos] == '['));
   if (pos >= m_queue.size())
     {
+      assert(m_noMoreData);
       s = m_queue;
       m_queue.erase();
       return 1;
     }
   s = m_queue.substr(0, pos);
   m_queue = m_queue.substr(pos);
-  assert(!m_queue.empty() && m_queue[pos] == '[');
+  assert(!m_queue.empty() && m_queue[0] == '[');
   return 1;
 }
