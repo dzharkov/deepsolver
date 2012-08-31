@@ -22,12 +22,15 @@
 
 void AbstractTextFormatSectionReader::init()
 {
+  logMsg(LOG_DEBUG, "Initializing TextFormatSectionReader");
+  m_noMoreData = 0;
   m_queue.erase();
   char buf[IO_BUF_SIZE];
   size_t bracketPos, readCount;
   while(1)
     {
       readCount = readData(buf, IO_BUF_SIZE);
+      //      logMsg(LOG_DEBUG, "Read chunk of data, length is %zu bytes", readCount);
       if (readCount == 0)
 	{
 	  m_noMoreData = 1;
@@ -36,12 +39,14 @@ void AbstractTextFormatSectionReader::init()
       bracketPos = 0;
       while(bracketPos < readCount && buf[bracketPos] != '[')
 	bracketPos++;
-      if (bracketPos >= readCount)
-	continue;
+      //      logMsg(LOG_DEBUG, "bracketPos = %zu", bracketPos);
+      if (bracketPos < readCount)
+	break;
     }
   assert(buf[bracketPos] == '[');
   while(bracketPos < readCount)
     m_queue += buf[bracketPos++];
+  logMsg(LOG_DEBUG, "TextFormatSectionReader initialized with queue of %zu characters", m_queue.size());
 }
 
 bool AbstractTextFormatSectionReader::readNext(std::string& s)
