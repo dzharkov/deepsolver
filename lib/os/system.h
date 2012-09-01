@@ -55,6 +55,7 @@
 #include<locale.h>
 #include<time.h>
 
+typedef std::vector<bool> BoolVector;
 typedef std::vector<size_t> SizeVector;
 typedef std::vector<const char*> ConstCharStarVector;
 typedef std::vector<std::string> StringVector;

@@ -170,6 +170,9 @@ public:
   ChangeLog changeLog;
 };
 
+typedef std::vector<PkgFile> PkgFileVector;
+typedef std::list<PkgFile> PkgFileList;
+
 std::ostream& operator <<(std::ostream& s, const PkgBase& );
 std::ostream& operator <<(std::ostream& s, const NamedPkgRel& r);
 

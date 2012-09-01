@@ -47,6 +47,11 @@ public:
   {
     std::cout << "Patching file " << fileName << std::endl;
   }
+
+  void onNoTwiceAdding(const std::string& fileName)
+  {
+    std::cerr << "WARNING! File \'" << fileName << "\' already included in index, no second adding" << std::endl;
+  }
 }; //class IndexConstructionListener;
 
 void printLogo()

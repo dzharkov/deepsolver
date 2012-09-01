@@ -57,6 +57,7 @@ public:
   virtual void onPackageCollecting(const std::string& path) = 0;
   virtual void onProvidesCleaning() = 0;
   virtual void onPatchingFile(const std::string& fileName) = 0;
+  virtual void onNoTwiceAdding(const std::string& fileName) = 0;
 }; //class AbstractIndexConstructionListener;
 
 class IndexCore

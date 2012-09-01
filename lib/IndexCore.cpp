@@ -196,6 +196,7 @@ void IndexCore::buildIndex(const RepoParams& params)
 	  PkgFile pkg;
 	  backend->readPackageFile(it->getFullPath(), pkg);
 	  pkg.fileName = it->getName();
+	  pkg.isSource = backend->validSourcePkgFileName(it->getName());
 	  for(NamedPkgRelVector::size_type k = 0;k < pkg.requires.size();k++)
 	    internalProvidesRefs.insert(pkg.requires[k].pkgName);
 	  for(NamedPkgRelVector::size_type k = 0;k < pkg.conflicts.size();k++)
@@ -266,12 +267,25 @@ void IndexCore::buildIndex(const RepoParams& params)
 void IndexCore::rebuildIndex(const RepoParams& params, const StringVector& toAdd, const StringVector& toRemove)
 {
   logMsg(LOG_DEBUG, "starting index patching process with %zu items to add and %zu items to remove", toAdd.size(), toRemove.size());
+  std::auto_ptr<AbstractPackageBackEnd> backend = CREATE_PACKAGE_BACKEND;
+  PkgFileVector pkgs;
+  pkgs.resize(toAdd.size());
+  for(PkgFileVector::size_type i = 0;i < pkgs.size();i++)
+    {
+      backend->readPackageFile(toAdd[i], pkgs[i]);
+      pkgs[i].fileName = File::baseName(toAdd[i]);
+      pkgs[i].isSource = backend->validSourcePkgFileName(toAdd[i]);
+    }
+  BoolVector skipToAdd;
+  skipToAdd.resize(toAdd.size());
   std::string sect;
   std::string inputFileName, outputFileName;
     std::auto_ptr<AbstractTextFormatSectionReader> reader;
   std::auto_ptr<UnifiedOutput> writer;
 
     //Packages file;
+  for(BoolVector::size_type i = 0;i < skipToAdd.size();i++)
+    skipToAdd[i] = 0;
     inputFileName = REPO_INDEX_PACKAGES_FILE + compressionExtension(params.compressionType);
   outputFileName = TMP_FILE_NAME + compressionExtension(params.compressionType);
   logMsg(LOG_DEBUG, "Patching \'%s\' to \'%s\'", inputFileName.c_str(), outputFileName.c_str());
@@ -283,6 +297,14 @@ void IndexCore::rebuildIndex(const RepoParams& params, const StringVector& toAdd
     {
       const std::string fileName = PkgSection::getPkgFileName(sect);
       assert(!fileName.empty());//FIXME:
+      for(PkgFileVector::size_type i = 0;i < pkgs.size();i++)
+	{
+	  if (fileName != pkgs[i].fileName)
+	    continue;
+	  skipToAdd[i] = 1;
+	  logMsg(LOG_WARNING, "File \'%s\' already present in index \'%s\', skipping adding", fileName.c_str(), inputFileName.c_str());
+	  m_listener.onNoTwiceAdding(fileName);
+	}
       StringVector::size_type i = 0;
       for(i = 0;i < toRemove.size();i++)
 	if (fileName == toRemove[i])
@@ -291,10 +313,19 @@ void IndexCore::rebuildIndex(const RepoParams& params, const StringVector& toAdd
 	writer->writeData(sect); else
 	logMsg(LOG_DEBUG, "Found package to exclude: \'%s\'", fileName.c_str());
     }
+  for(PkgFileVector::size_type i = 0;i < pkgs.size();i++)
+    if (!pkgs[i].isSource)
+      if (!skipToAdd[i])
+	{
+	  writer->writeData(PkgSection::saveBaseInfo(pkgs[i], StringVector()));
+	  logMsg(LOG_DEBUG, "File \'%s\' added to index", pkgs[i].fileName);
+	}
   reader->close();
   writer->close();
 
     //Packages descriptions file;
+  for(BoolVector::size_type i = 0;i < skipToAdd.size();i++)
+    skipToAdd[i] = 0;
     inputFileName = REPO_INDEX_PACKAGES_DESCR_FILE + compressionExtension(params.compressionType);
   outputFileName = TMP_FILE_NAME + compressionExtension(params.compressionType);
   logMsg(LOG_DEBUG, "Patching \'%s\' to \'%s\'", inputFileName.c_str(), outputFileName.c_str());
@@ -306,6 +337,14 @@ void IndexCore::rebuildIndex(const RepoParams& params, const StringVector& toAdd
     {
       const std::string fileName = PkgSection::getPkgFileName(sect);
       assert(!fileName.empty());//FIXME:
+      for(PkgFileVector::size_type i = 0;i < pkgs.size();i++)
+	{
+	  if (fileName != pkgs[i].fileName)
+	    continue;
+	  skipToAdd[i] = 1;
+	  logMsg(LOG_WARNING, "File \'%s\' already present in index \'%s\', skipping adding", fileName.c_str(), inputFileName.c_str());
+	  m_listener.onNoTwiceAdding(fileName);
+	}
       StringVector::size_type i = 0;
       for(i = 0;i < toRemove.size();i++)
 	if (fileName == toRemove[i])
@@ -314,10 +353,19 @@ void IndexCore::rebuildIndex(const RepoParams& params, const StringVector& toAdd
 	writer->writeData(sect); else
 	logMsg(LOG_DEBUG, "Found package to exclude: \'%s\'", fileName.c_str());
     }
+  for(PkgFileVector::size_type i = 0;i < pkgs.size();i++)
+    if (!pkgs[i].isSource)
+      if (!skipToAdd[i])
+	{
+	  writer->writeData(PkgSection::saveDescr(pkgs[i], params.changeLogBinary));
+	  logMsg(LOG_DEBUG, "File \'%s\' added to index", pkgs[i].fileName);
+	}
   reader->close();
   writer->close();
 
     //Sources file;
+  for(BoolVector::size_type i = 0;i < skipToAdd.size();i++)
+    skipToAdd[i] = 0;
     inputFileName = REPO_INDEX_SOURCES_FILE + compressionExtension(params.compressionType);
   outputFileName = TMP_FILE_NAME + compressionExtension(params.compressionType);
   logMsg(LOG_DEBUG, "Patching \'%s\' to \'%s\'", inputFileName.c_str(), outputFileName.c_str());
@@ -329,6 +377,14 @@ void IndexCore::rebuildIndex(const RepoParams& params, const StringVector& toAdd
     {
       const std::string fileName = PkgSection::getPkgFileName(sect);
       assert(!fileName.empty());//FIXME:
+      for(PkgFileVector::size_type i = 0;i < pkgs.size();i++)
+	{
+	  if (fileName != pkgs[i].fileName)
+	    continue;
+	  skipToAdd[i] = 1;
+	  logMsg(LOG_WARNING, "File \'%s\' already present in index \'%s\', skipping adding", fileName.c_str(), inputFileName.c_str());
+	  m_listener.onNoTwiceAdding(fileName);
+	}
       StringVector::size_type i = 0;
       for(i = 0;i < toRemove.size();i++)
 	if (fileName == toRemove[i])
@@ -337,10 +393,19 @@ void IndexCore::rebuildIndex(const RepoParams& params, const StringVector& toAdd
 	writer->writeData(sect); else
 	logMsg(LOG_DEBUG, "Found package to exclude: \'%s\'", fileName.c_str());
     }
+  for(PkgFileVector::size_type i = 0;i < pkgs.size();i++)
+    if (pkgs[i].isSource)
+      if (!skipToAdd[i])
+	{
+	  writer->writeData(PkgSection::saveBaseInfo(pkgs[i], StringVector()));
+	  logMsg(LOG_DEBUG, "File \'%s\' added to index", pkgs[i].fileName);
+	}
   reader->close();
   writer->close();
 
     //Sources descriptions file;
+  for(BoolVector::size_type i = 0;i < skipToAdd.size();i++)
+    skipToAdd[i] = 0;
     inputFileName = REPO_INDEX_SOURCES_DESCR_FILE + compressionExtension(params.compressionType);
   outputFileName = TMP_FILE_NAME + compressionExtension(params.compressionType);
   logMsg(LOG_DEBUG, "Patching \'%s\' to \'%s\'", inputFileName.c_str(), outputFileName.c_str());
@@ -352,6 +417,14 @@ void IndexCore::rebuildIndex(const RepoParams& params, const StringVector& toAdd
     {
       const std::string fileName = PkgSection::getPkgFileName(sect);
       assert(!fileName.empty());//FIXME:
+      for(PkgFileVector::size_type i = 0;i < pkgs.size();i++)
+	{
+	  if (fileName != pkgs[i].fileName)
+	    continue;
+	  skipToAdd[i] = 1;
+	  logMsg(LOG_WARNING, "File \'%s\' already present in index \'%s\', skipping adding", fileName.c_str(), inputFileName.c_str());
+	  m_listener.onNoTwiceAdding(fileName);
+	}
       StringVector::size_type i = 0;
       for(i = 0;i < toRemove.size();i++)
 	if (fileName == toRemove[i])
@@ -360,9 +433,15 @@ void IndexCore::rebuildIndex(const RepoParams& params, const StringVector& toAdd
 	writer->writeData(sect); else
 	logMsg(LOG_DEBUG, "Found package to exclude: \'%s\'", fileName.c_str());
     }
+  for(PkgFileVector::size_type i = 0;i < pkgs.size();i++)
+    if (!pkgs[i].isSource)
+      if (!skipToAdd[i])
+	{
+	  writer->writeData(PkgSection::saveDescr(pkgs[i], params.changeLogSources));
+	  logMsg(LOG_DEBUG, "File \'%s\' added to index", pkgs[i].fileName);
+	}
   reader->close();
   writer->close();
-
 }
 
 void IndexCore::collectRefs(const std::string& dirName, StringSet& res) 

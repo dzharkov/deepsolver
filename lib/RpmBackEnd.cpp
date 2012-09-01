@@ -66,7 +66,7 @@ void readPackageFile(const std::string& fileName, PkgFile& pkgFile)
     readRpmPkgFile(fileName, pkgFile);
   }
 
-bool validPkgFileName(const std::string& fileName) const
+  bool validPkgFileName(const std::string& fileName) const
   {
     if (fileName.length() <= 4)
       return 0;
@@ -75,8 +75,20 @@ bool validPkgFileName(const std::string& fileName) const
       if (fileName[fileName.length() - ext.length() + i] != ext[i])
 	return 0;
     return 1;
-    assert(0);//FIXME:
   }
+
+  bool validSourcePkgFileName(const std::string& fileName) const
+  {
+    if (fileName.length() <= 8)
+      return 0;
+    const std::string ext = ".src.rpm";
+    for(std::string::size_type i = 0;i < ext.size();i++)
+      if (fileName[fileName.length() - ext.length() + i] != ext[i])
+	return 0;
+    return 1;
+  }
+
+
 }; //class RpmBackEnd;
 
 std::auto_ptr<AbstractPackageBackEnd> createRpmBackEnd()

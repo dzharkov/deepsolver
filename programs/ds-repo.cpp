@@ -48,6 +48,10 @@ public:
   void onPatchingFile(const std::string& fileName)
   {
   }
+
+  void onNoTwiceAdding(const std::string& fileName)
+  {
+  }
 }; //class IndexConstructionListener;
 
 void splitColonDelimitedList(const std::string& str, StringVector& res)
