@@ -21,9 +21,9 @@
  */
 
 #include"deepsolver.h"
-#include"MD5.h"
+#include"Md5.h"
 
-void MD5::init()
+void Md5::init()
 {
   memset(&m_ctx, 0, sizeof(Context));
   m_ctx.buf[0] = 0x67452301;
@@ -32,13 +32,13 @@ void MD5::init()
   m_ctx.buf[3] = 0x10325476;
 }
 
-void MD5::update(void* buf, size_t len)
+void Md5::update(void* buf, size_t len)
 {
   assert(buf);
   updateImpl(&m_ctx, static_cast<Md5Byte*>(buf), len);
 }
 
-void MD5::updateFromFile(const std::string& fileName)
+void Md5::updateFromFile(const std::string& fileName)
 {
   File f;
   f.openReadOnly(fileName);
@@ -52,7 +52,7 @@ void MD5::updateFromFile(const std::string& fileName)
     }
 }
 
-std::string MD5::commit(const std::string& fileName)
+std::string Md5::commit(const std::string& fileName)
 {
   unsigned char buf[16];
   commitImpl(&m_ctx, buf);
@@ -81,7 +81,7 @@ std::string MD5::commit(const std::string& fileName)
 #define MD5STEP(f,w,x,y,z,in,s) \
 	 (w += f(x,y,z) + in, w = (w<<s | w>>(32-s)) + x)
 
-void MD5::transform(uint32_t buf[4], uint32_t in[16]) const
+void Md5::transform(uint32_t buf[4], uint32_t in[16]) const
 {
   register uint32_t a, b, c, d;
   a = buf[0];
@@ -158,7 +158,7 @@ void MD5::transform(uint32_t buf[4], uint32_t in[16]) const
   buf[3] += d;
 }
 
-void MD5::byteSwap(uint32_t *buf, size_t count) const
+void Md5::byteSwap(uint32_t *buf, size_t count) const
 {
   size_t words = count;
   const uint32_t byteOrderTest = 0x1;
@@ -173,7 +173,7 @@ void MD5::byteSwap(uint32_t *buf, size_t count) const
     }
 }
 
-void MD5::updateImpl(Context* ctx, Md5Byte* buf, size_t len) const
+void Md5::updateImpl(Context* ctx, Md5Byte* buf, size_t len) const
 {
   assert(buf);
   uint32_t t;
@@ -202,7 +202,7 @@ void MD5::updateImpl(Context* ctx, Md5Byte* buf, size_t len) const
   memcpy(ctx->in, buf, len);
 }
 
-void MD5::commitImpl(Context* ctx, unsigned char* digest) const
+void Md5::commitImpl(Context* ctx, unsigned char* digest) const
 {
   int count = ctx->bytes[0] & 0x3f;	/* Number of bytes in ctx->in */
   Md5Byte *p = (Md5Byte *)ctx->in + count;

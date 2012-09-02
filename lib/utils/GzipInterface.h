@@ -20,13 +20,13 @@
 
 #include"DeepsolverException.h"
 
-class GZipException: public DeepsolverException
+class GzipException: public DeepsolverException
 {
 public:
-  GZipException(const std::string& msg)
+  GzipException(const std::string& msg)
     : m_msg(msg) {}
 
-  virtual ~GZipException() {}
+  virtual ~GzipException() {}
 
 public:
   std::string getType() const
@@ -41,16 +41,16 @@ public:
 
 private:
   const std::string m_msg;
-}; //class GZipException;
+}; //class GzipException;
 
-class GZipOutputFile
+class GzipOutputFile
 {
 public:
-  GZipOutputFile()
+  GzipOutputFile()
     : m_fd(-1),
       m_gzfile(NULL) {}
 
-  ~GZipOutputFile()
+  virtual ~GzipOutputFile()
   {
     close();
   }
@@ -64,16 +64,16 @@ private:
   int m_fd;
   void* m_gzfile;
   std::string m_fileName;
-}; //class GZipOutputFile;
+}; //class GzipOutputFile;
 
-class GZipInputFile
+class GzipInputFile
 {
 public:
-  GZipInputFile()
+  GzipInputFile()
     : m_fd(-1),
       m_gzfile(NULL) {}
 
-  ~GZipInputFile()
+  virtual ~GzipInputFile()
   {
     close();
   }
@@ -88,6 +88,6 @@ private:
   int m_fd;
   void* m_gzfile;
   std::string m_fileName;
-}; //class GZipOutputFile;
+}; //class GzipOutputFile;
 
 #endif //DEEPSOLVER_GZIP_INTERFACE_H;

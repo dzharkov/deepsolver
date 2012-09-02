@@ -16,12 +16,12 @@
 */
 
 #include"deepsolver.h"
-#include"GZipInterface.h"
+#include"GzipInterface.h"
 #include<zlib.h>
 
-#define GZIP_STOP(x) throw GZipException(x)
+#define GZIP_STOP(x) throw GzipException(x)
 
-void GZipOutputFile::open(const std::string& fileName)
+void GzipOutputFile::open(const std::string& fileName)
 {
   assert(m_fd == -1);
   m_fd = ::open(fileName.c_str(), O_CREAT | O_TRUNC | O_WRONLY, NEW_FILE_MODE);
@@ -36,7 +36,7 @@ void GZipOutputFile::open(const std::string& fileName)
   m_fileName = fileName;
 }
 
-void GZipOutputFile::write(const void* buf, size_t bufSize)
+void GzipOutputFile::write(const void* buf, size_t bufSize)
 {
   if (bufSize == 0)
     return;
@@ -63,7 +63,7 @@ void GZipOutputFile::write(const void* buf, size_t bufSize)
     }
 }
 
-void GZipOutputFile::close()
+void GzipOutputFile::close()
 {
   if (m_gzfile == NULL)
     return;
@@ -77,7 +77,7 @@ void GZipOutputFile::close()
   m_fileName.erase();
 }
 
-void GZipInputFile::open(const std::string& fileName)
+void GzipInputFile::open(const std::string& fileName)
 {
   assert(m_fd == -1);
   m_fd = ::open(fileName.c_str(), O_RDONLY);
@@ -92,7 +92,7 @@ void GZipInputFile::open(const std::string& fileName)
   m_fileName = fileName;
 }
 
-size_t GZipInputFile::read(void* buf, size_t bufSize)
+size_t GzipInputFile::read(void* buf, size_t bufSize)
 {
   if (bufSize == 0)
     return 0;
@@ -112,7 +112,7 @@ size_t GZipInputFile::read(void* buf, size_t bufSize)
 return (size_t)res;
 }
 
-void GZipInputFile::close()
+void GzipInputFile::close()
 {
   if (m_gzfile == NULL)
     return;
@@ -125,4 +125,3 @@ void GZipInputFile::close()
   m_fd = -1;//gzclose() automatically closes associated file descriptor;
   m_fileName.erase();
 }
-

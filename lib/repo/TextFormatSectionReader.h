@@ -18,7 +18,7 @@
 #ifndef DEEPSOLVER_TEXT_FORMAT_SECTION_READER_H
 #define DEEPSOLVER_TEXT_FORMAT_SECTION_READER_H
 
-#include"utils/GZipInterface.h"
+#include"utils/GzipInterface.h"
 
 class AbstractTextFormatSectionReader
 {
@@ -90,7 +90,7 @@ protected:
   }
 
 private:
-  GZipInputFile m_file;
+  GzipInputFile m_file;
 }; //class TextFormatSectionReader;
 
 #endif //DEEPSOLVER_TEXT_FORMAT_SECTION_READER_H;

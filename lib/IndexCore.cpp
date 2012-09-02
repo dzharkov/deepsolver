@@ -20,8 +20,8 @@
 #include"AbstractPackageBackEnd.h"
 #include"repo/PkgSection.h"
 #include"repo/TextFormatSectionReader.h"
-#include"utils/MD5.h"
-#include"utils/GZipInterface.h"
+#include"utils/Md5.h"
+#include"utils/GzipInterface.h"
 
 #define TMP_FILE_NAME "tmp_data"
 
@@ -111,7 +111,7 @@ public:
   }
 
 private:
-  GZipOutputFile m_file;
+  GzipOutputFile m_file;
 }; //class GzipOutput;
 
 std::auto_ptr<AbstractTextFormatSectionReader> createRebuildReader(const std::string& fileName, const RepoParams& params)

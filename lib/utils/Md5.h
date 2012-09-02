@@ -18,14 +18,14 @@
 #ifndef DEEPSOLVER_MD5_H
 #define DEEPSOLVER_MD5_H
 
-class MD5
+class Md5
 {
 private:
   typedef unsigned char Md5Byte;
 
 public:
-  MD5() {}
-  ~MD5() {}
+  Md5() {}
+  virtual ~Md5() {}
 
 public:
   void init();
@@ -49,6 +49,6 @@ private:
 
 private:
   Context m_ctx;
-};
+}; //class md5;
 
 #endif //DEEPSOLVER_MD5_H;
