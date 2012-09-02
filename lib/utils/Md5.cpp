@@ -38,21 +38,8 @@ void Md5::update(void* buf, size_t len)
   updateImpl(&m_ctx, static_cast<Md5Byte*>(buf), len);
 }
 
-void Md5::updateFromFile(const std::string& fileName)
-{
-  File f;
-  f.openReadOnly(fileName);
-  char buf[2048];
-  while(1)
-    {
-      const size_t count = f.read(buf, sizeof(buf));
-      if (!count)
-	break;
-      update(buf, count);
-    }
-}
 
-std::string Md5::commit(const std::string& fileName)
+std::string Md5::commit()
 {
   unsigned char buf[16];
   commitImpl(&m_ctx, buf);
@@ -64,11 +51,6 @@ std::string Md5::commit(const std::string& fileName)
       snprintf(cbuf, sizeof(cbuf), "0%x", buf[i]); else
       snprintf(cbuf, sizeof(cbuf), "%x", buf[i]);
       res += cbuf;
-    }
-  if (!fileName.empty())
-    {
-      res += " *";
-      res += fileName;
     }
   return res;
 }
