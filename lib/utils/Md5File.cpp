@@ -1,24 +1,19 @@
 /*
- * This code implements the MD5 message-digest algorithm.
- * The algorithm is due to Ron Rivest.  This code was
- * written by Colin Plumb in 1993, no copyright is claimed.
- * This code is in the public domain; do with it what you wish.
- *
- * Equivalent code is available from RSA Data Security, Inc.
- * This code has been tested against that, and is equivalent,
- * except that you don't need to include two pages of legalese
- * with every copy.
- *
- * To compute the message digest of a chunk of bytes, declare an
- * MD5Context structure, pass it to MD5Init, call MD5Update as
- * needed on buffers full of bytes, and then call MD5Final, which
- * will fill a supplied 16-byte array with the digest.
- *
- * Changed so as no longer to depend on Colin Plumb's `usual.h' header
- * definitions; now uses stuff from dpkg's config.h.
- *  - Ian Jackson <ian@chiark.greenend.org.uk>.
- * Still in the public domain.
- */
+   Copyright 2011-2012 ALT Linux
+   Copyright 2011-2012 Michael Pozhidaev
+
+   This file is part of the Deepsolver.
+
+   Deepsolver is free software; you can redistribute it and/or
+   modify it under the terms of the GNU General Public
+   License as published by the Free Software Foundation; either
+   version 2 of the License, or (at your option) any later version.
+
+   Deepsolver is distributed in the hope that it will be useful,
+   but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+   General Public License for more details.
+*/
 
 #include"deepsolver.h"
 #include"Md5File.h"
@@ -30,8 +25,8 @@ void Md5File::addItemFromFile(const std::string& fileName, const std::string& re
 {
   Md5 md5;
   md5.init();
-  FIle f;
-  f.openReadOnly(readPath);
+  File f;
+  f.openReadOnly(realPath);
   char buf[IO_BUF_SIZE];
   while(1)
     {
@@ -74,13 +69,13 @@ void Md5File::loadFromFile(const std::string& fileName)
 	    item.checksum[k] = 'a' + (item.checksum[k] - 'A');
 	  if ((item.checksum [k] >= 'a' && item.checksum[k] <= 'f') || (item.checksum[k] >= '0' && item.checksum [k] <= '9'))
 	    continue;
-	  throw Md5FileException(Md5FileErrorInvalidChecksumValue);
+	  throw Md5FileException(Md5FileErrorInvalidChecksumFormat, fileName, i, line);
 	}
       items.push_back(item);
     }
 }
 
-void Md5File::saveToFile(const std::string& fileName)
+void Md5File::saveToFile(const std::string& fileName) const
 {
   std::string s;
   for(ItemVector::size_type i = 0;i < items.size();i++)
@@ -91,13 +86,13 @@ void Md5File::saveToFile(const std::string& fileName)
   f.close();
 }
 
-void Md5File::verifyItem(size_t itemIndex, const std::string& fileName)
+bool Md5File::verifyItem(size_t itemIndex, const std::string& fileName) const
 {
   assert(itemIndex < items.size());
   Md5 md5;
   md5.init();
-  FIle f;
-  f.openReadOnly(readPath);
+  File f;
+  f.openReadOnly(fileName);
   char buf[IO_BUF_SIZE];
   while(1)
     {

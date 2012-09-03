@@ -37,9 +37,9 @@ enum {
 
 /**\brief The exception class for config file syntax errors
  *
- * This class instance is thrown when configuration file syntax error was
+ * This class instance is thrown when configuration file syntax error is
  * encountered. The client application can access various information
- * with it about the problem such as file name, line number, character
+ * with it about the problem like file name, line number, character
  * position, line content and error code. Be careful, character position
  * is given in unibyte string representation and in case of using UTF-8
  * sequences it require additional processing. Note, that this class does
