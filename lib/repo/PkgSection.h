@@ -25,8 +25,10 @@ class PkgSection
 public:
   static std::string saveBaseInfo(const PkgFile& pkgFile, const StringVector& filterProvidesByDirs);
   static std::string saveDescr(const PkgFile& pkgFile, bool saveChangeLog);
+  static std::string saveFileList(const PkgFile& pkgFile);
   static bool isProvidesLine(const std::string& line, std::string& pkgName);
   static std::string getPkgFileName(const std::string& section);
+  PkgSection::extractProvidesReferences(sect, references);//FIXME:
 
 private:
   static std::string encodeMultiline(const std::string& s);

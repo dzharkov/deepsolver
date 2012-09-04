@@ -36,8 +36,10 @@
 #define REPO_INDEX_INFO_FILE "info"
 #define REPO_INDEX_PACKAGES_FILE "rpms.data"
 #define REPO_INDEX_PACKAGES_DESCR_FILE "rpms.descr.data"
+#define REPO_INDEX_PACKAGES_FILELIST_FILE "rpms.filelist.data"
 #define REPO_INDEX_SOURCES_FILE "srpms.data"
 #define REPO_INDEX_SOURCES_DESCR_FILE "srpms.descr.data"
+#define REPO_INDEX_PACKAGES_COMPLETE_FILE "rpms.complete.data"
 #define REPO_INDEX_MD5SUM_FILE "md5sum.txt"
 
 //Info file;

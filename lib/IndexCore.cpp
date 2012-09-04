@@ -20,7 +20,7 @@
 #include"AbstractPackageBackEnd.h"
 #include"repo/PkgSection.h"
 #include"repo/TextFormatSectionReader.h"
-#include"utils/Md5.h"
+#include"utils/Md5File.h"
 #include"utils/GzipInterface.h"
 
 #define TMP_FILE_NAME "tmp_data"
@@ -156,18 +156,20 @@ void IndexCore::buildIndex(const RepoParams& params)
       collectRefs(params.providesRefsSources[i], externalProvidesRefs);
     }
   logMsg(LOG_DEBUG, "Has %zu external provides references", externalProvidesRefs.size());
-  const std::string pkgFileName = REPO_INDEX_PACKAGES_FILE + compressionExtension(params.compressionType);
-  const std::string pkgDescrFileName = REPO_INDEX_PACKAGES_DESCR_FILE + compressionExtension(params.compressionType);
-  const std::string srcFileName = REPO_INDEX_SOURCES_FILE + compressionExtension(params.compressionType);
-  const std::string srcDescrFileName = REPO_INDEX_SOURCES_DESCR_FILE + compressionExtension(params.compressionType);
-  const std::string tmpFileName = TMP_FILE_NAME;
-  std::auto_ptr<UnifiedOutput> pkgFile, pkgDescrFile, srcFile, srcDescrFile;
+  const std::string pkgFileName = Directory::mixNameComponents(params.indexPath, REPO_INDEX_PACKAGES_FILE + compressionExtension(params.compressionType));
+  const std::string pkgDescrFileName = Directory::mixNameComponents(params.indexPath, REPO_INDEX_PACKAGES_DESCR_FILE + compressionExtension(params.compressionType));
+  const std::string srcFileName = Directory::mixNameComponents(params.indexPath, REPO_INDEX_SOURCES_FILE + compressionExtension(params.compressionType));
+  const std::string srcDescrFileName = Directory::mixNameComponents(params.indexPath, REPO_INDEX_SOURCES_DESCR_FILE + compressionExtension(params.compressionType));
+  const std::string pkgFileListFileName = Directory::mixNameComponents(params.indexPath, REPO_INDEX_PACKAGES_FILELIST_FILE + compressionExtension(params.compressionType));
+  const std::string tmpFileName = Directory::mixNameComponents(params.indexPath, TMP_FILE_NAME);
+  std::auto_ptr<UnifiedOutput> pkgFile, pkgDescrFile, pkgFileListFile, srcFile, srcDescrFile;
   if (params.compressionType == RepoParams::CompressionTypeGzip)
     {
       if (params.filterProvidesByRefs)//That means additional phase is required;
 	pkgFile = std::auto_ptr<UnifiedOutput>(new StdOutput(tmpFileName)); else
 	pkgFile = std::auto_ptr<UnifiedOutput>(new GzipOutput(pkgFileName));
       pkgDescrFile = std::auto_ptr<UnifiedOutput>(new GzipOutput(pkgDescrFileName));
+      pkgFileListFile = std::auto_ptr<UnifiedOutput>(new GzipOutput(pkgFileListFileName));
       srcFile = std::auto_ptr<UnifiedOutput>(new GzipOutput(srcFileName));
       srcDescrFile = std::auto_ptr<UnifiedOutput>(new GzipOutput(srcDescrFileName));
     } else 
@@ -177,6 +179,7 @@ void IndexCore::buildIndex(const RepoParams& params)
 	pkgFile = std::auto_ptr<UnifiedOutput>(new StdOutput(tmpFileName)); else
 	pkgFile = std::auto_ptr<UnifiedOutput>(new StdOutput(pkgFileName));
       pkgDescrFile = std::auto_ptr<UnifiedOutput>(new StdOutput(pkgDescrFileName));
+      pkgFileListFile = std::auto_ptr<UnifiedOutput>(new StdOutput(pkgFileListFileName));
       srcFile = std::auto_ptr<UnifiedOutput>(new StdOutput(srcFileName));
       srcDescrFile = std::auto_ptr<UnifiedOutput>(new StdOutput(srcDescrFileName));
     }
@@ -205,6 +208,7 @@ void IndexCore::buildIndex(const RepoParams& params)
 	    {
 	      pkgFile->writeData(PkgSection::saveBaseInfo(pkg, params.filterProvidesByRefs?StringVector():params.filterProvidesByDirs));
 	      pkgDescrFile->writeData(PkgSection::saveDescr(pkg, params.changeLogBinary));
+	      pkgFileListFile->writeData(PkgSection::saveFileList(pkg));
 	    } else
 	    {
 	      srcFile->writeData(PkgSection::saveBaseInfo(pkg, params.filterProvidesByRefs?StringVector():params.filterProvidesByDirs));
@@ -214,6 +218,7 @@ void IndexCore::buildIndex(const RepoParams& params)
     } //for listed directories;
   pkgFile->close();
   pkgDescrFile->close();
+  pkgFileListFile->close();
   srcFile->close();
   srcDescrFile->close();
   logMsg(LOG_DEBUG, "Has %zu internal provides references and %zu external provides references", internalProvidesRefs.size(), externalProvidesRefs.size());
@@ -247,21 +252,14 @@ void IndexCore::buildIndex(const RepoParams& params)
       pkgFile->close();
       //FIXME:  File::unlink(tmpFileName);
     } //Additional phase;
-  /*
-  MD5 md5;
-  md5.init();
-  md5.updateFromFile(Directory::mixNameComponents(indexDir, REPO_INDEX_INFO_FILE));
-  md5sum->writeLine(md5.commit(REPO_INDEX_INFO_FILE));
-  md5.init();
-  md5.updateFromFile(handler.getRpmsFileName());
-  md5sum->writeLine(md5.commit(File::baseName(handler.getRpmsFileName())));
-  md5.init();
-  md5.updateFromFile(handler.getSrpmsFileName());
-  md5sum->writeLine(md5.commit(File::baseName(handler.getSrpmsFileName())));
-  md5.init();
-  md5.updateFromFile(handler.getProvidesFileName());
-  md5sum->writeLine(md5.commit(File::baseName(handler.getProvidesFileName())));
-  */
+  Md5File md5;
+  md5.addItemFromFile(REPO_INDEX_INFO_FILE, Directory::mixNameComponents(params.indexPath, REPO_INDEX_INFO_FILE));
+  md5.addItemFromFile(File::baseName(pkgFileName), pkgFileName);
+  md5.addItemFromFile(File::baseName(pkgDescrFileName), pkgDescrFileName);
+  md5.addItemFromFile(File::baseName(pkgFileListFileName), pkgFileListFileName);
+  md5.addItemFromFile(File::baseName(srcFileName), srcFileName);
+  md5.addItemFromFile(File::baseName(srcDescrFileName), srcDescrFileName);
+  md5.saveToFile(Directory::mixNameComponents(params.indexPath, REPO_INDEX_MD5SUM_FILE));
 }
 
 void IndexCore::rebuildIndex(const RepoParams& params, const StringVector& toAdd, const StringVector& toRemove)
@@ -442,6 +440,49 @@ void IndexCore::rebuildIndex(const RepoParams& params, const StringVector& toAdd
 	}
   reader->close();
   writer->close();
+}
+
+void IndexCore::fixReferences(const RepoParams& params)
+{
+  const std::string pkgFileName = Directory::mixNameComponents(params.indexPath, REPO_INDEX_PACKAGES_FILE + compressionExtension(params.compressionType));
+  StringSet references;
+  if (params.filterProvidesByRefs)
+    {
+      for(StringVector::size_type i = 0;i < params.providesRefsSources.size();i++)
+	collectRefs(references, params.providesRefsSources);
+      std::auto_ptr<AbstractTextFormatSectionReader> reader = createRebuildReader(pkgFileName, params);
+      std::string sect;
+      while(reader->readNext(sect))
+	PkgSection::extractProvidesReferences(sect, references);
+      reader->close();
+    }
+  File::unlink(pkgFIleName);
+  std::auto_ptr<UnifiedOutput> pkgFile;
+  if (params.compressionType == RepoParams::CompressionTypeGzip)
+    pkgFile = std::auto_ptr<UnifiedOutput>(new GzipOutput(pkgFileName)); else
+    pkgFile = std::auto_ptr<UnifiedOutput>(new StdOutput(tmpFileName));
+  //Ready for real filtering;
+  //FIXME:  m_listener.onProvidesCleaning();
+  std::ifstream is(Directory::mixNameComponents(params.indexPath, REPO_INDEX_PACKAGES_COMPLETE_FILE).c_str());
+  if (!is.is_open())
+    throw IndexCoreException(IndexErrorInternalIOProblem);
+  while(1)
+    {
+      std::string line;
+      std::getline(is, line);
+      if (!is)
+	break;
+      std::string pkgName;
+      if (!PkgSection::isProvidesLine(line, pkgName))
+	{
+	  pkgFile->writeData(line);
+	  continue;
+	}
+      if (references.find(pkgName) != references.end() || 
+	  (!params.filterProvidesByDirs.empty() && fileFromDirs(pkgName, params.filterProvidesByDirs)))
+	pkgFile->writeData(line);
+    } //while(lines);
+  pkgFile->close();
 }
 
 void IndexCore::collectRefs(const std::string& dirName, StringSet& res) 

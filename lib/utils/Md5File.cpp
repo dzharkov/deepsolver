@@ -81,7 +81,7 @@ void Md5File::saveToFile(const std::string& fileName) const
   for(ItemVector::size_type i = 0;i < items.size();i++)
     s += (items[i].checksum + " *" + items[i].fileName + "\n");
   File f;
-  f.open(fileName);
+  f.create(fileName);
   f.write(s.c_str(), s.length());
   f.close();
 }

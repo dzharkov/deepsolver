@@ -89,6 +89,16 @@ std::string PkgSection::saveDescr(const PkgFile& pkgFile, bool saveChangeLog)
   return ss.str();
 }
 
+std::string PkgSection::saveFileList(const PkgFile& pkgFile)
+{
+  std::ostringstream ss;
+  ss << "[" << pkgFile.fileName << "]" << std::endl;
+  for(StringVector::size_type i = 0;i < pkgFile.fileList.size();i++)
+    ss << pkgFile.fileList[i] << std::endl;
+  ss << std::endl;
+  return ss.str();
+}
+
 bool PkgSection::isProvidesLine(const std::string& line, std::string& pkgName)
 {
   std::string tail;
