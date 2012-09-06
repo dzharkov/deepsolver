@@ -122,6 +122,33 @@ std::string PkgSection::getPkgFileName(const std::string& section)
   return fileName;
 }
 
+void PkgSection::extractProvidesReferences(const std::string& section, StringSet& refs)
+{
+  std::string line;
+  for(std:;string::size_type i = 0;i < section.lenght();i++)
+    {
+      if (section[i] == '\r')
+	continue;
+      if (section[i] != '\n')
+	{
+	  line += section[i];
+	  continue;
+	}
+      std::string tail;
+      if (stringBegins(line, REQUIRES_STR, tail))
+	refs.insert(extractPkgRelName(tail));
+      if (stringBegins(line, CONFLICTS_STR, tail))
+	refs.insert(extractPkgRelName(tail));
+      line.erase();
+    }
+  if (line.empty())
+    return;
+  if (stringBegins(line, REQUIRES_STR, tail))
+    refs.insert(extractPkgRelName(tail));
+  if (stringBegins(line, CONFLICTS_STR, tail))
+    refs.insert(extractPkgRelName(tail));
+}
+
 std::string PkgSection::encodeMultiline(const std::string& s)
 {
   std::string r;

@@ -28,7 +28,7 @@ public:
   static std::string saveFileList(const PkgFile& pkgFile);
   static bool isProvidesLine(const std::string& line, std::string& pkgName);
   static std::string getPkgFileName(const std::string& section);
-  PkgSection::extractProvidesReferences(sect, references);//FIXME:
+  static void extractProvidesReferences(const std::string& section, StringSet& refs);
 
 private:
   static std::string encodeMultiline(const std::string& s);
