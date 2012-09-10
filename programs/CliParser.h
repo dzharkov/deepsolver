@@ -18,8 +18,24 @@
 #ifndef DEEPSOLVER_CLI_PARSER_H
 #define DEEPSOLVER_CLI_PARSER_H
 
+/**\brief The extensible command line parser*/
 class CliParser
 {
+public:
+  struct Key
+  {
+    Key()
+      : used(0) {}
+
+    StringVector names;
+    std::string argName, argValue;
+    bool used;
+    std::string descr;
+  }; //struct Key;
+
+  typedef std::list<Key> KeyList;
+  typedef std::vector<Key> KeyVector;
+
 public:
   struct Param
   {
@@ -47,15 +63,25 @@ public:
   void parse();
 
 protected:
-  size_t recognizeCluster(const StringVector& params) const;
+  virtual size_t recognizeCluster(const StringVector& params, int& mode) const;
+  virtual void parseCluster(const stringVector& cluster, int& mode);
 
-private:
-  void stopNoPrgName() const;
+protected:
+  KeyVector::size_type findKey(const std::string& name) const;
+  bool hasKeyArgument(const std::string& name) const;
+
+protected:
+  virtual void stopNoPrgName() const;
+  virtual void stopMissedArgument(const std::string& keyName) const;
 
 private:
   const std::string m_prefix;
   std::string m_prgName;
   ParamVector m_params;
+
+public:
+  KeyVector keys;
+  StringVector files;
 }; //class CliParser;
 
 #endif //DEEPSOLVER_CLI_PARSER_H;
