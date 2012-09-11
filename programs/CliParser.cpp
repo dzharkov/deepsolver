@@ -105,6 +105,18 @@ void CliParser::printHelp(std::ostream& s) const
     }
 }
 
+bool CliParser::wasKeyUsed(const std::string& keyName, std::string& arg)
+{
+  KeyVector::size_type index = findKey(keyName);
+  if (index == (KeyVector::size_type)-1)
+    return 0;
+  assert(index < keys.size());
+  if (!keys[index].used())
+    return 0;
+  if (!keys[index].argName.empty())
+    arg = keys[index].argValue;
+}
+
 void CliParser::addKey(const std::string& name, const std::string& descr)
 {
   Key key;
@@ -205,9 +217,11 @@ bool CliParser::hasKeyArgument(const std::string& name) const
 void CliParser::stopNoPrgName() const
 {
   std::cerr << m_prefix << "Command line arguments list too short, it must contain at least one item (program name)" << std::endl;
+  exit(EXIT_FAILURE);
 }
 
 void CliParser::stopMissedArgument(const std::string& keyName) const
 {
   std::cerr << m_prefix << "Command line key \'" << keyName << "\' requires an argument, but it is the last parameter" << std::endl;
+  exit(EXIT_FAILURE);
 }

@@ -17,11 +17,12 @@
 
 #include"deepsolver.h"
 #include"IndexCore.h"
-#include"rpm/RpmException.h"
+#include"CliParser.h"
 
 #define PREFIX "ds-references:"
 
 static RepoParams params;
+static CliParser cliParser(PREFIX);
 
 class IndexReconstructionListener: public AbstractIndexConstructionListener
 {
@@ -46,9 +47,16 @@ public:
   void onNoTwiceAdding(const std::string& fileName) {}
 }; //class IndexReconstructionListener;
 
+void initCliParser()
+{
+  cliParser.addKeyDoubleName("-h", "--help", "print this help screen and exit");
+  cliParser.addKey("--log", "print log to console instead of user progress information");
+  cliParser.addKey("--debug", "relax filtering level for log output");
+}
+
 void printLogo()
 {
-  std::cout << "ds-references: utility to fix provides references in Deepsolver repository index" << std::endl;
+  std::cout << "ds-references: utility to fix provides references in Deepsolver repository" << std::endl;
     std::cout << "Version: " << PACKAGE_VERSION << std::endl;
   std::cout << std::endl;
 }
@@ -58,10 +66,14 @@ void printHelp()
   printLogo();
   printf("%s", 
 	 "Usage:\n"
-	 "\tds-references [--help] INDEX_DIR [REFERENCES_SOURCES]\n"
+	 "\tds-references [OPTIONS] INDEX_DIR [REFERENCES_SOURCES]\n"
+	 "\n"
 	 "Where:\n"
-	 "\tINDEX_DIR - directory with indices to fix references in;\n"
-	 "\tREFERENCES_SOURCES - list of colon-delimited directories to take requires/conflicts from, directory can contain either the repo index or packages files.\n");
+	 "\tINDEX_DIR          - directory with indices to fix references in\n"
+	 "\tREFERENCES_SOURCES - list of colon-delimited directories to take requires/conflicts from, directory can contain either the repo index or packages files\n"
+"\n"
+	 "Valid options are:\n");
+  cliParser.printHelp(std::cout);
 }
 
 void splitColonDelimitedList(const std::string& str, StringVector& res)
@@ -85,6 +97,7 @@ void splitColonDelimitedList(const std::string& str, StringVector& res)
 
 bool parseCmdLine(int argc, char* argv[])
 {
+  /*
   for(int i = 1;i < argc;i++)
     {
       const std::string value = argv[i];
@@ -108,11 +121,15 @@ bool parseCmdLine(int argc, char* argv[])
   if (argc == 3)
     splitColonDelimitedList(argv[2], params.providesRefsSources);
   return 1;
+  */
 }
 
 int main(int argc, char* argv[])
 {
   setlocale(LC_ALL, "");
+  initCliParser();
+  printHelp();
+  return 0;
   if (!parseCmdLine(argc, argv))
     return 1;
   initLogging("/tmp/ds-references.log", LOG_DEBUG);//FIXME:
