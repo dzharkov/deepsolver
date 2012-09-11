@@ -316,7 +316,7 @@ void IndexCore::rebuildIndex(const RepoParams& params, const StringVector& toAdd
       if (!skipToAdd[i])
 	{
 	  writer->writeData(PkgSection::saveBaseInfo(pkgs[i], StringVector()));
-	  logMsg(LOG_DEBUG, "File \'%s\' added to index", pkgs[i].fileName);
+	  logMsg(LOG_DEBUG, "File \'%s\' added to index", pkgs[i].fileName.c_str());
 	}
   reader->close();
   writer->close();
@@ -356,7 +356,7 @@ void IndexCore::rebuildIndex(const RepoParams& params, const StringVector& toAdd
       if (!skipToAdd[i])
 	{
 	  writer->writeData(PkgSection::saveDescr(pkgs[i], params.changeLogBinary));
-	  logMsg(LOG_DEBUG, "File \'%s\' added to index", pkgs[i].fileName);
+	  logMsg(LOG_DEBUG, "File \'%s\' added to index", pkgs[i].fileName.c_str());
 	}
   reader->close();
   writer->close();
@@ -396,7 +396,7 @@ void IndexCore::rebuildIndex(const RepoParams& params, const StringVector& toAdd
       if (!skipToAdd[i])
 	{
 	  writer->writeData(PkgSection::saveBaseInfo(pkgs[i], StringVector()));
-	  logMsg(LOG_DEBUG, "File \'%s\' added to index", pkgs[i].fileName);
+	  logMsg(LOG_DEBUG, "File \'%s\' added to index", pkgs[i].fileName.c_str());
 	}
   reader->close();
   writer->close();
@@ -436,7 +436,7 @@ void IndexCore::rebuildIndex(const RepoParams& params, const StringVector& toAdd
       if (!skipToAdd[i])
 	{
 	  writer->writeData(PkgSection::saveDescr(pkgs[i], params.changeLogSources));
-	  logMsg(LOG_DEBUG, "File \'%s\' added to index", pkgs[i].fileName);
+	  logMsg(LOG_DEBUG, "File \'%s\' added to index", pkgs[i].fileName.c_str());
 	}
   reader->close();
   writer->close();
@@ -444,6 +444,7 @@ void IndexCore::rebuildIndex(const RepoParams& params, const StringVector& toAdd
 
 void IndexCore::fixReferences(const RepoParams& params)
 {
+  /*
   const std::string pkgFileName = Directory::mixNameComponents(params.indexPath, REPO_INDEX_PACKAGES_FILE + compressionExtension(params.compressionType));
   StringSet references;
   if (params.filterProvidesByRefs)
@@ -483,6 +484,7 @@ void IndexCore::fixReferences(const RepoParams& params)
 	pkgFile->writeData(line);
     } //while(lines);
   pkgFile->close();
+  */
 }
 
 void IndexCore::collectRefs(const std::string& dirName, StringSet& res) 
@@ -493,15 +495,15 @@ void IndexCore::collectRefs(const std::string& dirName, StringSet& res)
     logMsg(LOG_DEBUG, "Checking is there repo index");
     RepoParams repoParams;
     repoParams.readInfoFile(Directory::mixNameComponents(dirName, REPO_INDEX_INFO_FILE));
-    const std::string pkgFileName = Directory::mixNameComponents(dirName, REPO_INDEX_PACKAGES_DATA_FILE) + compressionExtension(repoParams.compressionType);
+    const std::string pkgFileName = Directory::mixNameComponents(dirName, REPO_INDEX_PACKAGES_FILE) + compressionExtension(repoParams.compressionType);
     std::auto_ptr<AbstractTextFormatSectionReader> reader = createRebuildReader(pkgFileName, repoParams);
     logMsg(LOG_DEBUG, "Creating section reader for reading file \'%s\'", pkgFileName.c_str());
     std::string sect;
     reader->init();
     while(reader->readNext(sect))
-      PkgSection::extractProvidesReferences(sect, refs);
+      PkgSection::extractProvidesReferences(sect, res);
     reader->close();
-    logMsg(LOG_DEBUG, "We successfully read references from repository index, references set contains %zu entries", refs.size());
+    logMsg(LOG_DEBUG, "We successfully read references from repository index, references set contains %zu entries", res.size());
     return;
   }
   catch (const DeepsolverException& e)

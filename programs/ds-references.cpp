@@ -26,8 +26,8 @@ static RepoParams params;
 class IndexReconstructionListener: public AbstractIndexConstructionListener
 {
 public:
-  IndexConstructionListener() {}
-  virtual ~IndexConstructionListener() {}
+  IndexReconstructionListener() {}
+  virtual ~IndexReconstructionListener() {}
 
 public:
   void onReferenceCollecting(const std::string& path)
@@ -61,7 +61,7 @@ void printHelp()
 	 "\tds-references [--help] INDEX_DIR [REFERENCES_SOURCES]\n"
 	 "Where:\n"
 	 "\tINDEX_DIR - directory with indices to fix references in;\n"
-	 "\tREFERENCES_SOURCES - list of colon-delimited directories to take requires/conflicts from, directory can contain either the repo index or packages files.\n"
+	 "\tREFERENCES_SOURCES - list of colon-delimited directories to take requires/conflicts from, directory can contain either the repo index or packages files.\n");
 }
 
 void splitColonDelimitedList(const std::string& str, StringVector& res)

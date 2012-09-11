@@ -26,13 +26,13 @@ void CliParser::init(int argc, char* argv[])
     stopNoPrgName();
   m_prgName = argv[0];
   for(int i = 1;i < argc;i++)
-    m_params.push_back(argv[i]);
+    m_params.push_back(Param(argv[i]));
 }
 
 void CliParser::parse()
 {
   StringVector params;
-  for(ParamVector::size_type i = 0;i < m_parasm.size();i++)
+  for(ParamVector::size_type i = 0;i < m_params.size();i++)
     params.push_back(m_params[i].value);
   StringVector::size_type pos = 0;
   size_t clusterValue = 0;
@@ -62,7 +62,7 @@ void CliParser::parse()
   mode = 0;
   while(pos < m_params.size())
     {
-      params.erase();
+      params.clear();
       while(pos < m_params.size() && m_params[pos].clusterNum == clusterValue)
 	params.push_back(m_params[pos++].value);
       parseCluster(params, mode);
@@ -94,8 +94,8 @@ void CliParser::printHelp(std::ostream& s) const
     }
   size_t maxLen = 0;
   for(StringVector::size_type i = 0;i < lines.size();i++)
-    if (lines[i].length() > max)
-      max = lines[i].length();
+    if (lines[i].length() > maxLen)
+      maxLen = lines[i].length();
   for(StringVector::size_type i = 0;i < lines.size();i++)
     {
       s << lines[i];
@@ -105,7 +105,7 @@ void CliParser::printHelp(std::ostream& s) const
     }
 }
 
-void addKey(const std::string& name, const std::string& descr)
+void CliParser::addKey(const std::string& name, const std::string& descr)
 {
   Key key;
   key.names.push_back(name);
@@ -158,7 +158,7 @@ size_t CliParser::recognizeCluster(const StringVector& params, int& mode) const
   return 1;
 }
 
-void CliParser::parseCluster(const stringVector& cluster, int& mode)
+void CliParser::parseCluster(const StringVector& cluster, int& mode)
 {
   assert(!cluster.empty());
   if (cluster[0] == "--")
@@ -167,7 +167,7 @@ void CliParser::parseCluster(const stringVector& cluster, int& mode)
       return;
     }
   const KeyVector::size_type pos = findKey(cluster[0]);
-  if (mode == 1 || pos == (KeyVector:;size_type)-1)
+  if (mode == 1 || pos == (KeyVector::size_type)-1)
     {
       for(StringVector::size_type i = 0;i < cluster.size();i++)
 	files.push_back(cluster[i]);
@@ -182,7 +182,7 @@ void CliParser::parseCluster(const stringVector& cluster, int& mode)
     }
 }
 
-KeyVector::size_type CliParser::findKey(const std::string& name) const
+CliParser::KeyVector::size_type CliParser::findKey(const std::string& name) const
 {
   assert(!name.empty());
   for(KeyVector::size_type i = 0;i < keys.size();i++)
@@ -196,12 +196,18 @@ bool CliParser::hasKeyArgument(const std::string& name) const
 {
   assert(!name.empty());
   KeyVector::size_type pos = findKey(name);
-  if (pos == (Keyvector::size_type)-1)
+  if (pos == (KeyVector::size_type)-1)
     return 0;
   assert(pos < keys.size());
   return !keys[pos].argName.empty();
 }
 
+void CliParser::stopNoPrgName() const
+{
+  std::cerr << m_prefix << "Command line arguments list too short, it must contain at least one item (program name)" << std::endl;
+}
 
-void CliParser::stopNoPrgName() const;
-void CliParser::stopMissedArgument(const std::string& keyName) const;
+void CliParser::stopMissedArgument(const std::string& keyName) const
+{
+  std::cerr << m_prefix << "Command line key \'" << keyName << "\' requires an argument, but it is the last parameter" << std::endl;
+}

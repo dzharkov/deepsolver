@@ -125,7 +125,7 @@ std::string PkgSection::getPkgFileName(const std::string& section)
 void PkgSection::extractProvidesReferences(const std::string& section, StringSet& refs)
 {
   std::string line;
-  for(std:;string::size_type i = 0;i < section.lenght();i++)
+  for(std::string::size_type i = 0;i < section.length();i++)
     {
       if (section[i] == '\r')
 	continue;
@@ -143,6 +143,7 @@ void PkgSection::extractProvidesReferences(const std::string& section, StringSet
     }
   if (line.empty())
     return;
+  std::string tail;
   if (stringBegins(line, REQUIRES_STR, tail))
     refs.insert(extractPkgRelName(tail));
   if (stringBegins(line, CONFLICTS_STR, tail))

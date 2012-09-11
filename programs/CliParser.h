@@ -61,10 +61,15 @@ public:
 public:
   void init(int argc, char* argv[]);
   void parse();
+  void printHelp(std::ostream& s) const;
+  void addKey(const std::string& name, const std::string& descr);
+  void addKey(const std::string& name, const std::string& argName, const std::string& descr);
+  void addKeyDoubleName(const std::string& name1, const std::string& name2, const std::string& descr);
+  void addKeyDoubleName(const std::string& name1, const std::string& name2, const std::string& argName, const std::string& descr);
 
 protected:
   virtual size_t recognizeCluster(const StringVector& params, int& mode) const;
-  virtual void parseCluster(const stringVector& cluster, int& mode);
+  virtual void parseCluster(const StringVector& cluster, int& mode);
 
 protected:
   KeyVector::size_type findKey(const std::string& name) const;
