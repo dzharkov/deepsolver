@@ -114,33 +114,13 @@ private:
   GzipOutputFile m_file;
 }; //class GzipOutput;
 
-std::auto_ptr<AbstractTextFormatSectionReader> createRebuildReader(const std::string& fileName, const RepoParams& params)
-{
-  if (params.compressionType == RepoParams::CompressionTypeNone)
-    {
-      std::auto_ptr<TextFormatSectionReader> reader(new TextFormatSectionReader());
-      reader->open(fileName);
-      return std::auto_ptr<AbstractTextFormatSectionReader>(reader.release());
-    }
-  if (params.compressionType == RepoParams::CompressionTypeGzip)
-    {
-      std::auto_ptr<TextFormatSectionReaderGzip> reader(new TextFormatSectionReaderGzip());
-      reader->open(fileName);
-      return std::auto_ptr<AbstractTextFormatSectionReader>(reader.release());
-    }
-  assert(0);
-  return std::auto_ptr<AbstractTextFormatSectionReader>();
-}
+static std::string compressionExtension(char compressionType);
+static bool fileFromDirs(const std::string& fileName, const StringVector& dirs);
+static std::auto_ptr<AbstractTextFormatSectionReader> createRebuildReader(const std::string& fileName, const RepoParams& params);
+static std::auto_ptr<UnifiedOutput> createRebuildWriter(const std::string& fileName, const RepoParams& params);
 
-std::auto_ptr<UnifiedOutput> createRebuildWriter(const std::string& fileName, const RepoParams& params)
-{
-  if (params.compressionType == RepoParams::CompressionTypeNone)
-    return std::auto_ptr<UnifiedOutput>(new StdOutput(fileName));
-  if (params.compressionType == RepoParams::CompressionTypeGzip)
-    return std::auto_ptr<UnifiedOutput>(new GzipOutput(fileName));
-  assert(0);
-  return std::auto_ptr<UnifiedOutput>();
-}
+
+
 
 void IndexCore::buildIndex(const RepoParams& params)
 {
@@ -529,7 +509,7 @@ void IndexCore::collectRefs(const std::string& dirName, StringSet& res)
     }
 }
 
-std::string IndexCore::compressionExtension(char compressionType)
+std::string compressionExtension(char compressionType)
 {
   if (compressionType == RepoParams::CompressionTypeGzip)
     return COMPRESSION_SUFFIX_GZIP;
@@ -537,11 +517,39 @@ std::string IndexCore::compressionExtension(char compressionType)
   return "";
 }
 
-bool IndexCore::fileFromDirs(const std::string& fileName, const StringVector& dirs)
+bool fileFromDirs(const std::string& fileName, const StringVector& dirs)
 {
   std::string tail;
   for(StringVector::const_iterator it = dirs.begin();it != dirs.end();it++)
     if (stringBegins(fileName, *it, tail))
       return 1;
   return 0;
+}
+
+std::auto_ptr<AbstractTextFormatSectionReader> createRebuildReader(const std::string& fileName, const RepoParams& params)
+{
+  if (params.compressionType == RepoParams::CompressionTypeNone)
+    {
+      std::auto_ptr<TextFormatSectionReader> reader(new TextFormatSectionReader());
+      reader->open(fileName);
+      return std::auto_ptr<AbstractTextFormatSectionReader>(reader.release());
+    }
+  if (params.compressionType == RepoParams::CompressionTypeGzip)
+    {
+      std::auto_ptr<TextFormatSectionReaderGzip> reader(new TextFormatSectionReaderGzip());
+      reader->open(fileName);
+      return std::auto_ptr<AbstractTextFormatSectionReader>(reader.release());
+    }
+  assert(0);
+  return std::auto_ptr<AbstractTextFormatSectionReader>();
+}
+
+std::auto_ptr<UnifiedOutput> createRebuildWriter(const std::string& fileName, const RepoParams& params)
+{
+  if (params.compressionType == RepoParams::CompressionTypeNone)
+    return std::auto_ptr<UnifiedOutput>(new StdOutput(fileName));
+  if (params.compressionType == RepoParams::CompressionTypeGzip)
+    return std::auto_ptr<UnifiedOutput>(new GzipOutput(fileName));
+  assert(0);
+  return std::auto_ptr<UnifiedOutput>();
 }

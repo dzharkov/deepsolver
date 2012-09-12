@@ -162,7 +162,7 @@ ss << " (" << pkgs[i].buildTime << ")";
 
 int main(int argc, char* argv[])
 {
-  initLogging("/tmp/ds.log", LOG_DEBUG);//FIXME:
+  //  initLogging("/tmp/ds.log", LOG_DEBUG);//FIXME:
   if (!loadConfiguration())
     return 1;
   if (argc < 2)

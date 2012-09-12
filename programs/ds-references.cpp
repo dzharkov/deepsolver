@@ -106,10 +106,12 @@ void parseCmdLine(int argc, char* argv[])
     }
   if (cliParser.files.size() > 2)
     {
-      std::cerr << PREFIX << "unknown command line argument \'" << cliParser.files[2] << "\'" << std::endl;
+      std::cerr << PREFIX << "unparsable command line argument \'" << cliParser.files[2] << "\'" << std::endl;
       exit(EXIT_FAILURE);
     }
-  exit(EXIT_SUCCESS);
+  params.indexPath = cliParser.files[0];
+  if (cliParser.files.size() == 2)
+    splitColonDelimitedList(cliParser.files[1], params.providesRefsSources);
 }
 
 int main(int argc, char* argv[])
@@ -117,7 +119,16 @@ int main(int argc, char* argv[])
   setlocale(LC_ALL, "");
   initCliParser();
   parseCmdLine(argc, argv);
-  initLogging("/tmp/ds-references.log", LOG_DEBUG);//FIXME:
+  if (cliParser.wasKeyUsed("--help"))
+    {
+      printHelp();
+      return 0;
+    }
+  if (cliParser.wasKeyUsed("--log"))
+    std::cout << "log" << std::endl;
+  if (cliParser.wasKeyUsed("--debug"))
+    std::cout << "debug" << std::endl;
+  //  initLogging("/tmp/ds-references.log", LOG_DEBUG);//FIXME:
   printLogo();
   try {
     params.readInfoFile(Directory::mixNameComponents(params.indexPath, REPO_INDEX_INFO_FILE));

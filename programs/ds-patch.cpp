@@ -128,7 +128,7 @@ int main(int argc, char* argv[])
   setlocale(LC_ALL, "");
   if (!parseCmdLine(argc, argv))
     return 1;
-  initLogging("/tmp/ds-patch.log", LOG_DEBUG);//FIXME:
+  //  initLogging("/tmp/ds-patch.log", LOG_DEBUG);//FIXME:
   printLogo();
   if (filesToAdd.empty() && filesToRemove.empty())
     {

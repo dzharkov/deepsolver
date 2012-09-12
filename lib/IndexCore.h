@@ -79,10 +79,6 @@ private:
   void collectRefs(const std::string& dirName, StringSet& res);
 
 private:
-  static std::string compressionExtension(char compressionType);
-  static bool fileFromDirs(const std::string& fileName, const StringVector& dirs);
-
-private:
   AbstractIndexConstructionListener& m_listener;
 }; //class IndexCore;
 
