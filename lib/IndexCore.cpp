@@ -124,18 +124,28 @@ static std::auto_ptr<UnifiedOutput> createRebuildWriter(const std::string& fileN
 
 void IndexCore::buildIndex(const RepoParams& params)
 {
+  //FIXME:Check target directory is empty;
   assert(!params.indexPath.empty());
   assert(!params.pkgSources.empty());
   Directory::ensureExists(params.indexPath);
-  logMsg(LOG_DEBUG, "Starting index creation in \'%s\'", params.indexPath.c_str());
+  logMsg(LOG_DEBUG, "Starting index creation in \'%s\', target directory exists and empty", params.indexPath.c_str());
   params.writeInfoFile(Directory::mixNameComponents(params.indexPath, REPO_INDEX_INFO_FILE));
   StringSet internalProvidesRefs, externalProvidesRefs;
-  for(StringVector::size_type i = 0;i < params.providesRefsSources.size();i++)
+  if (params.filterProvidesByRefs)
     {
-      m_listener.onReferenceCollecting(params.providesRefsSources[i]);
-      collectRefs(params.providesRefsSources[i], externalProvidesRefs);
+      logMsg(LOG_DEBUG, "Provides filtering by references is enabled, has %zu sources of external references", params.providesRefsSources.size());
+      for(StringVector::size_type i = 0;i < params.providesRefsSources.size();i++)
+	{
+	  m_listener.onReferenceCollecting(params.providesRefsSources[i]);
+	  collectRefs(params.providesRefsSources[i], externalProvidesRefs);
+	}
+      logMsg(LOG_DEBUG, "Has %zu external provides references", externalProvidesRefs.size());
+    } else 
+    {
+      logMsg(LOG_DEBUG, "Provides filtering by references is disabled, skipping collecting of external  references");
+      if (!params.providesRefsSources.empty())
+	logMsg(LOG_WARNING, "Provides filtering by references is disabled, but parameters have %zu external references sources", params.providesRefsSources.size());
     }
-  logMsg(LOG_DEBUG, "Has %zu external provides references", externalProvidesRefs.size());
   const std::string pkgFileName = Directory::mixNameComponents(params.indexPath, REPO_INDEX_PACKAGES_FILE + compressionExtension(params.compressionType));
   const std::string pkgDescrFileName = Directory::mixNameComponents(params.indexPath, REPO_INDEX_PACKAGES_DESCR_FILE + compressionExtension(params.compressionType));
   const std::string srcFileName = Directory::mixNameComponents(params.indexPath, REPO_INDEX_SOURCES_FILE + compressionExtension(params.compressionType));
@@ -163,11 +173,14 @@ void IndexCore::buildIndex(const RepoParams& params)
       srcFile = std::auto_ptr<UnifiedOutput>(new StdOutput(srcFileName));
       srcDescrFile = std::auto_ptr<UnifiedOutput>(new StdOutput(srcDescrFileName));
     }
+  logMsg(LOG_DEBUG, "All files were created");
   std::auto_ptr<AbstractPackageBackEnd> backend = CREATE_PACKAGE_BACKEND;
+  logMsg(LOG_DEBUG, "Package backend was created");
   //We ready to collect information about packages in specified directories;
+  size_t countBinary = 0, countSource = 0;
   for(StringVector::size_type i = 0;i < params.pkgSources.size();i++)
     {
-      logMsg(LOG_DEBUG, "Reading packages in \'%s\'", params.pkgSources[i].c_str());
+      logMsg(LOG_INFO, "Reading packages in \'%s\'", params.pkgSources[i].c_str());
       m_listener.onPackageCollecting(params.pkgSources[i]);
       std::auto_ptr<Directory::Iterator> it = Directory::enumerate(params.pkgSources[i]);
       while(it->moveNext())
@@ -180,31 +193,37 @@ void IndexCore::buildIndex(const RepoParams& params)
 	  backend->readPackageFile(it->getFullPath(), pkg);
 	  pkg.fileName = it->getName();
 	  pkg.isSource = backend->validSourcePkgFileName(it->getName());
-	  for(NamedPkgRelVector::size_type k = 0;k < pkg.requires.size();k++)
-	    internalProvidesRefs.insert(pkg.requires[k].pkgName);
-	  for(NamedPkgRelVector::size_type k = 0;k < pkg.conflicts.size();k++)
-	    internalProvidesRefs.insert(pkg.conflicts[k].pkgName);
+	  if (params.filterProvidesByRefs)
+	    {
+	      for(NamedPkgRelVector::size_type k = 0;k < pkg.requires.size();k++)
+		internalProvidesRefs.insert(pkg.requires[k].pkgName);
+	      for(NamedPkgRelVector::size_type k = 0;k < pkg.conflicts.size();k++)
+		internalProvidesRefs.insert(pkg.conflicts[k].pkgName);
+	    }
 	  if (!pkg.isSource)
 	    {
+	      countBinary++;
 	      pkgFile->writeData(PkgSection::saveBaseInfo(pkg, params.filterProvidesByRefs?StringVector():params.filterProvidesByDirs));
 	      pkgDescrFile->writeData(PkgSection::saveDescr(pkg, params.changeLogBinary));
 	      pkgFileListFile->writeData(PkgSection::saveFileList(pkg));
 	    } else
 	    {
+	      countSource++;
 	      srcFile->writeData(PkgSection::saveBaseInfo(pkg, params.filterProvidesByRefs?StringVector():params.filterProvidesByDirs));
 	      srcDescrFile->writeData(PkgSection::saveDescr(pkg, params.changeLogSources));
 	    }
 	} //for package files;
+      logMsg(LOG_DEBUG, "Directory reading completed, picked up %zu binary packages and %zu source packages so far", countBinary, countSource);
     } //for listed directories;
   pkgFile->close();
   pkgDescrFile->close();
   pkgFileListFile->close();
   srcFile->close();
   srcDescrFile->close();
-  logMsg(LOG_DEBUG, "Has %zu internal provides references and %zu external provides references", internalProvidesRefs.size(), externalProvidesRefs.size());
   //Additional phase for provides filtering if needed;
   if (params.filterProvidesByRefs)
     {
+    logMsg(LOG_INFO, "Performing additional phase for provides cleaning, has %zu internal provides references and %zu external provides references", internalProvidesRefs.size(), externalProvidesRefs.size());
       m_listener.onProvidesCleaning();
       std::ifstream is(tmpFileName.c_str());
       if (!is.is_open())
@@ -231,15 +250,26 @@ void IndexCore::buildIndex(const RepoParams& params)
 	} //for(lines);
       pkgFile->close();
       //FIXME:  File::unlink(tmpFileName);
-    } //Additional phase;
+      logMsg(LOG_DEBUG, "Provides filtering completed");
+    } else 
+    logMsg(LOG_DEBUG, "Skipping additional phase for provides filtering");
+  logMsg(LOG_DEBUG, "Preparing md5-checksum file");
   Md5File md5;
+  logMsg(LOG_DEBUG, "Registering \'%s\'", Directory::mixNameComponents(params.indexPath, REPO_INDEX_INFO_FILE).c_str());
   md5.addItemFromFile(REPO_INDEX_INFO_FILE, Directory::mixNameComponents(params.indexPath, REPO_INDEX_INFO_FILE));
+  logMsg(LOG_DEBUG, "Registering \'%s\'", pkgFileName.c_str());
   md5.addItemFromFile(File::baseName(pkgFileName), pkgFileName);
+  logMsg(LOG_DEBUG, "Registering \'%s\'", pkgDescrFileName.c_str());
   md5.addItemFromFile(File::baseName(pkgDescrFileName), pkgDescrFileName);
+  logMsg(LOG_DEBUG, "Registering \'%s\'", pkgFileListFileName.c_str());
   md5.addItemFromFile(File::baseName(pkgFileListFileName), pkgFileListFileName);
+  logMsg(LOG_DEBUG, "Registering \'%s\'", srcFileName.c_str());
   md5.addItemFromFile(File::baseName(srcFileName), srcFileName);
+  logMsg(LOG_DEBUG, "Registering \'%s\'", srcDescrFileName.c_str());
   md5.addItemFromFile(File::baseName(srcDescrFileName), srcDescrFileName);
+  logMsg(LOG_INFO, "Writing md5-checksum file");
   md5.saveToFile(Directory::mixNameComponents(params.indexPath, REPO_INDEX_MD5SUM_FILE));
+  logMsg(LOG_DEBUG, "Exiting index building procedure");
 }
 
 void IndexCore::rebuildIndex(const RepoParams& params, const StringVector& toAdd, const StringVector& toRemove)

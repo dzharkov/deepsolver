@@ -217,6 +217,8 @@ void parseCmdLine(int argc, char* argv[])
       params.pkgSources.push_back(cliParser.files[i]);
     if (params.pkgSources.empty())
       params.pkgSources.push_back(".");
+    if (!params.filterProvidesByRefs)
+      params.providesRefsSources.clear();
 }
 
 int main(int argc, char* argv[])
