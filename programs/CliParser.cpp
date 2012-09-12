@@ -111,7 +111,7 @@ bool CliParser::wasKeyUsed(const std::string& keyName, std::string& arg)
   if (index == (KeyVector::size_type)-1)
     return 0;
   assert(index < keys.size());
-  if (!keys[index].used())
+  if (!keys[index].used)
     return 0;
   if (!keys[index].argName.empty())
     arg = keys[index].argValue;

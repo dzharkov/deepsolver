@@ -71,7 +71,7 @@ void printHelp()
 	 "Where:\n"
 	 "\tINDEX_DIR          - directory with indices to fix references in\n"
 	 "\tREFERENCES_SOURCES - list of colon-delimited directories to take requires/conflicts from, directory can contain either the repo index or packages files\n"
-"\n"
+	 "\n"
 	 "Valid options are:\n");
   cliParser.printHelp(std::cout);
 }
@@ -95,43 +95,28 @@ void splitColonDelimitedList(const std::string& str, StringVector& res)
     res.push_back(s);
 }
 
-bool parseCmdLine(int argc, char* argv[])
+void parseCmdLine(int argc, char* argv[])
 {
-  /*
-  for(int i = 1;i < argc;i++)
+  cliParser.init(argc, argv);
+  cliParser.parse();
+  if (cliParser.files.empty())
     {
-      const std::string value = argv[i];
-      if (value == "--help" || value == "-h")
-	{
-	  printHelp();
-	  exit(EXIT_SUCCESS);
-	}
+      std::cerr << PREFIX << "index directory was not mentioned" << std::endl;
+      exit(EXIT_FAILURE);
     }
-  if (argc < 2)
+  if (cliParser.files.size() > 2)
     {
-      printHelp();
-      exit(EXIT_SUCCESS);
+      std::cerr << PREFIX << "unknown command line argument \'" << cliParser.files[2] << "\'" << std::endl;
+      exit(EXIT_FAILURE);
     }
-  if (argc > 3)
-    {
-      std::cerr << PREFIX << "Unexpected command line argument: \'" << argv[3] << "\'"  << std::endl;
-      return 0;
-    }
-  params.indexPath = argv[1];
-  if (argc == 3)
-    splitColonDelimitedList(argv[2], params.providesRefsSources);
-  return 1;
-  */
+  exit(EXIT_SUCCESS);
 }
 
 int main(int argc, char* argv[])
 {
   setlocale(LC_ALL, "");
   initCliParser();
-  printHelp();
-  return 0;
-  if (!parseCmdLine(argc, argv))
-    return 1;
+  parseCmdLine(argc, argv);
   initLogging("/tmp/ds-references.log", LOG_DEBUG);//FIXME:
   printLogo();
   try {

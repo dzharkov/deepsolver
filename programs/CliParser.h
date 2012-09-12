@@ -62,6 +62,7 @@ public:
   void init(int argc, char* argv[]);
   void parse();
   void printHelp(std::ostream& s) const;
+  bool wasKeyUsed(const std::string& keyName, std::string& arg);
   void addKey(const std::string& name, const std::string& descr);
   void addKey(const std::string& name, const std::string& argName, const std::string& descr);
   void addKeyDoubleName(const std::string& name1, const std::string& name2, const std::string& descr);
