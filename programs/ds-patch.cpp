@@ -31,16 +31,18 @@ public:
   virtual ~IndexConstructionListener() {}
 
 public:
-  void onReferenceCollecting(const std::string& path)
+  void onReferenceCollecting(const std::string& path) {}
+  void onPackageCollecting(const std::string& path) {}
+  void onProvidesCleaning() {}
+
+  void onChecksumWriting()
   {
+    std::cout << "Writing checksum file" << std::endl;
   }
 
-  void onPackageCollecting(const std::string& path)
+  void onChecksumVerifying() 
   {
-  }
-
-  void onProvidesCleaning()
-  {
+    std::cout << "Verifying checksums" << std::endl;
   }
 
   void onPatchingFile(const std::string& fileName)

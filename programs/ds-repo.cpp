@@ -54,6 +54,14 @@ public:
     std::cout << "Provides filtering" << std::endl;
   }
 
+  void onChecksumWriting()
+  {
+    if (m_suppress)
+      return;
+    std::cout << "Writing checksum file" << std::endl;
+  }
+
+  void onChecksumVerifying() {}
   void onPatchingFile(const std::string& fileName) {}
   void onNoTwiceAdding(const std::string& fileName) {}
 

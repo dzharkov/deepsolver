@@ -39,6 +39,16 @@ public:
   void onPackageCollecting(const std::string& path) {}
   void onProvidesCleaning() {}
 
+  void onChecksumWriting()
+  {
+    std::cout << "Writing checksum file" << std::endl;
+  }
+
+  void onChecksumVerifying() 
+  {
+    std::cout << "Verifying checksums" << std::endl;
+  }
+
   void onPatchingFile(const std::string& fileName)
   {
     std::cout << "Fixing references in  " << fileName << std::endl;

@@ -151,13 +151,11 @@ void IndexCore::buildIndex(const RepoParams& params)
   const std::string srcFileName = Directory::mixNameComponents(params.indexPath, REPO_INDEX_SOURCES_FILE + compressionExtension(params.compressionType));
   const std::string srcDescrFileName = Directory::mixNameComponents(params.indexPath, REPO_INDEX_SOURCES_DESCR_FILE + compressionExtension(params.compressionType));
   const std::string pkgFileListFileName = Directory::mixNameComponents(params.indexPath, REPO_INDEX_PACKAGES_FILELIST_FILE + compressionExtension(params.compressionType));
-  const std::string tmpFileName = Directory::mixNameComponents(params.indexPath, TMP_FILE_NAME);
-  std::auto_ptr<UnifiedOutput> pkgFile, pkgDescrFile, pkgFileListFile, srcFile, srcDescrFile;
+  const std::string pkgCompleteFileName = Directory::mixNameComponents(params.indexPath, REPO_INDEX_PACKAGES_COMPLETE_FILE);
+  std::auto_ptr<UnifiedOutput> pkgFile, pkgDescrFile, pkgFileListFile, pkgCompleteFile, srcFile, srcDescrFile;
   if (params.compressionType == RepoParams::CompressionTypeGzip)
     {
-      if (params.filterProvidesByRefs)//That means additional phase is required;
-	pkgFile = std::auto_ptr<UnifiedOutput>(new StdOutput(tmpFileName)); else
-	pkgFile = std::auto_ptr<UnifiedOutput>(new GzipOutput(pkgFileName));
+      pkgFile = std::auto_ptr<UnifiedOutput>(new GzipOutput(pkgFileName));
       pkgDescrFile = std::auto_ptr<UnifiedOutput>(new GzipOutput(pkgDescrFileName));
       pkgFileListFile = std::auto_ptr<UnifiedOutput>(new GzipOutput(pkgFileListFileName));
       srcFile = std::auto_ptr<UnifiedOutput>(new GzipOutput(srcFileName));
@@ -165,14 +163,13 @@ void IndexCore::buildIndex(const RepoParams& params)
     } else 
     {
       assert(params.compressionType == RepoParams::CompressionTypeNone);
-      if (params.filterProvidesByRefs)//That means additional phase is required;
-	pkgFile = std::auto_ptr<UnifiedOutput>(new StdOutput(tmpFileName)); else
-	pkgFile = std::auto_ptr<UnifiedOutput>(new StdOutput(pkgFileName));
+      pkgFile = std::auto_ptr<UnifiedOutput>(new StdOutput(pkgFileName));
       pkgDescrFile = std::auto_ptr<UnifiedOutput>(new StdOutput(pkgDescrFileName));
       pkgFileListFile = std::auto_ptr<UnifiedOutput>(new StdOutput(pkgFileListFileName));
       srcFile = std::auto_ptr<UnifiedOutput>(new StdOutput(srcFileName));
       srcDescrFile = std::auto_ptr<UnifiedOutput>(new StdOutput(srcDescrFileName));
     }
+      pkgCompleteFile = std::auto_ptr<UnifiedOutput>(new StdOutput(pkgCompleteFileName));
   logMsg(LOG_DEBUG, "All files were created");
   std::auto_ptr<AbstractPackageBackEnd> backend = CREATE_PACKAGE_BACKEND;
   logMsg(LOG_DEBUG, "Package backend was created");
@@ -203,9 +200,11 @@ void IndexCore::buildIndex(const RepoParams& params)
 	  if (!pkg.isSource)
 	    {
 	      countBinary++;
-	      pkgFile->writeData(PkgSection::saveBaseInfo(pkg, params.filterProvidesByRefs?StringVector():params.filterProvidesByDirs));
+	      if (!params.filterProvidesByRefs)
+		pkgFile->writeData(PkgSection::saveBaseInfo(pkg, params.filterProvidesByRefs?StringVector():params.filterProvidesByDirs));
 	      pkgDescrFile->writeData(PkgSection::saveDescr(pkg, params.changeLogBinary));
 	      pkgFileListFile->writeData(PkgSection::saveFileList(pkg));
+	      pkgCompleteFile->writeData(PkgSection::saveBaseInfo(pkg, StringVector()));
 	    } else
 	    {
 	      countSource++;
@@ -215,9 +214,11 @@ void IndexCore::buildIndex(const RepoParams& params)
 	} //for package files;
       logMsg(LOG_DEBUG, "Directory reading completed, picked up %zu binary packages and %zu source packages so far", countBinary, countSource);
     } //for listed directories;
-  pkgFile->close();
+  if (!params.filterProvidesByRefs)
+    pkgFile->close();
   pkgDescrFile->close();
   pkgFileListFile->close();
+  pkgCompleteFile->close();
   srcFile->close();
   srcDescrFile->close();
   //Additional phase for provides filtering if needed;
@@ -225,12 +226,9 @@ void IndexCore::buildIndex(const RepoParams& params)
     {
     logMsg(LOG_INFO, "Performing additional phase for provides cleaning, has %zu internal provides references and %zu external provides references", internalProvidesRefs.size(), externalProvidesRefs.size());
       m_listener.onProvidesCleaning();
-      std::ifstream is(tmpFileName.c_str());
+      std::ifstream is(pkgCompleteFileName.c_str());
       if (!is.is_open())
 	throw IndexCoreException(IndexErrorInternalIOProblem);
-      if (params.compressionType == RepoParams::CompressionTypeGzip)
-	pkgFile = std::auto_ptr<UnifiedOutput>(new GzipOutput(pkgFileName)); else
-	pkgFile = std::auto_ptr<UnifiedOutput>(new StdOutput(pkgFileName));
       while(1)
 	{
 	  std::string line;
@@ -249,11 +247,11 @@ void IndexCore::buildIndex(const RepoParams& params)
 	pkgFile->writeData(line);
 	} //for(lines);
       pkgFile->close();
-      //FIXME:  File::unlink(tmpFileName);
       logMsg(LOG_DEBUG, "Provides filtering completed");
     } else 
     logMsg(LOG_DEBUG, "Skipping additional phase for provides filtering");
   logMsg(LOG_DEBUG, "Preparing md5-checksum file");
+  m_listener.onChecksumWriting();
   Md5File md5;
   logMsg(LOG_DEBUG, "Registering \'%s\'", Directory::mixNameComponents(params.indexPath, REPO_INDEX_INFO_FILE).c_str());
   md5.addItemFromFile(REPO_INDEX_INFO_FILE, Directory::mixNameComponents(params.indexPath, REPO_INDEX_INFO_FILE));
@@ -269,7 +267,7 @@ void IndexCore::buildIndex(const RepoParams& params)
   md5.addItemFromFile(File::baseName(srcDescrFileName), srcDescrFileName);
   logMsg(LOG_INFO, "Writing md5-checksum file");
   md5.saveToFile(Directory::mixNameComponents(params.indexPath, REPO_INDEX_MD5SUM_FILE));
-  logMsg(LOG_DEBUG, "Exiting index building procedure");
+  logMsg(LOG_DEBUG, "Exiting index building procedure, everything done successfully");
 }
 
 void IndexCore::rebuildIndex(const RepoParams& params, const StringVector& toAdd, const StringVector& toRemove)
