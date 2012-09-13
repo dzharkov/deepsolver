@@ -238,7 +238,7 @@ void IndexCore::buildIndex(const RepoParams& params)
 	  std::string pkgName;
 	  if (!PkgSection::isProvidesLine(line, pkgName))
 	    {
-	      pkgFile->writeData(line);
+	      pkgFile->writeData(line + "\n");
 	      continue;
 	    }
 	  if (internalProvidesRefs.find(pkgName) != internalProvidesRefs.end() || 
