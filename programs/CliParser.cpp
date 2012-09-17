@@ -222,12 +222,10 @@ bool CliParser::hasKeyArgument(const std::string& name) const
 
 void CliParser::stopNoPrgName() const
 {
-  std::cerr << m_prefix << "Command line arguments list too short, it must contain at least one item (program name)" << std::endl;
-  exit(EXIT_FAILURE);
+  throw CliParserException(CliParserException::NoPrgName);
 }
 
 void CliParser::stopMissedArgument(const std::string& keyName) const
 {
-  std::cerr << m_prefix << "Command line key \'" << keyName << "\' requires an argument, but it is the last parameter" << std::endl;
-  exit(EXIT_FAILURE);
+  throw CliParserException(CliParserException::MissedArgument, keyName);
 }
