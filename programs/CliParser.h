@@ -39,7 +39,7 @@ public:
    *
    * \param [in code The error code
 \param [in] arg The string argument
-   */]
+   */
   CliParserException(int code, const std::string& arg)
     : m_code(code), m_arg(arg) {}
 
@@ -149,7 +149,7 @@ private:
 
 public:
   /**\brief The default constructor*/
-  CliParser()
+  CliParser() {}
 
   /**\brief The destructor*/
   virtual ~CliParser() {}

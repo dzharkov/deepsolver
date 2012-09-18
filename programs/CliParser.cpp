@@ -169,7 +169,7 @@ size_t CliParser::recognizeCluster(const StringVector& params, int& mode) const
       mode = 1;
       return 0;
     }
-  if (!hasKeyArgument(params[0]))
+  if (!hasKeyArgument(params[0]))//Safe even if params[0] is not a known key;
     return 0;
   if (params.size() < 2)
     stopMissedArgument(params[0]);

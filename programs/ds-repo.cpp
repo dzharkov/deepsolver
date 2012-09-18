@@ -22,7 +22,7 @@
 #define PREFIX "ds-repo:"
 
 static RepoParams params;
-static CliParser cliParser(PREFIX);
+static CliParser cliParser;
 
 class IndexConstructionListener: public AbstractIndexConstructionListener
 {
@@ -164,7 +164,7 @@ void initCliParser()
 
 void printLogo()
 {
-  std::cout << "ds-repo: utility to create Deepsolver repository index" << std::endl;
+  std::cout << "ds-repo: the utility to create Deepsolver repository index" << std::endl;
     std::cout << "Version: " << PACKAGE_VERSION << std::endl;
   std::cout << std::endl;
 }

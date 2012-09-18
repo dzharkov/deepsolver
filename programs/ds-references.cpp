@@ -22,7 +22,7 @@
 #define PREFIX "ds-references:"
 
 static RepoParams params;
-static CliParser cliParser(PREFIX);
+static CliParser cliParser;
 
 class IndexReconstructionListener: public AbstractIndexConstructionListener
 {
