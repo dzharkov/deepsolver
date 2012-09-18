@@ -52,6 +52,7 @@ public:
  * Use this method to get the error code of exception.
  *
  * \return The error code
+ */
   int getCode() const
   {
     return m_code;

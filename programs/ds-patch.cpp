@@ -24,7 +24,9 @@
 class IndexReconstructionListener: public AbstractIndexConstructionListener
 {
 public:
-  IndexReconstructionListener() {}
+  IndexReconstructionListener(bool suppress)
+  : m_suppress(suppress) {}
+
   virtual ~IndexReconstructionListener() {}
 
 public:
@@ -34,24 +36,35 @@ public:
 
   void onChecksumWriting()
   {
+    if (m_suppress)
+      return;
     std::cout << "Writing checksum file" << std::endl;
   }
 
   void onChecksumVerifying() 
   {
+    if (m_suppress)
+      return;
     std::cout << "Verifying checksums" << std::endl;
   }
 
   void onPatchingFile(const std::string& fileName)
   {
+    if (m_suppress)
+      return;
     std::cout << "Patching file " << fileName << std::endl;
   }
 
   void onNoTwiceAdding(const std::string& fileName)
   {
+    if (m_suppress)
+      return;
     std::cerr << "WARNING! File \'" << fileName << "\' already included in index, no second adding" << std::endl;
   }
-}; //class IndexConstructionListener;
+
+private:
+  bool m_suppress;
+}; //class IndexReconstructionListener;
 
 class DsPatchCliParser: public CliParser
 {
@@ -80,7 +93,11 @@ protected:
   if (params[0] != "--add" && params[0] != "--del")
     return CliParser::recognizeCluster(params, mode);
   size_t ending = 1;
-  while (ending < params.size() && params[ending] != "--add" && params[ending] != "--del" && findKey(params[ending]) == (KeyVector::size_type)-1)
+  while (ending < params.size() &&
+	 params[ending] != "--add" &&
+	 params[ending] != "--del" &&
+	 params[ending] != "--" &&
+	 findKey(params[ending]) == (KeyVector::size_type)-1)
     ending++;
   ending--;
   if (ending < 1)
@@ -137,28 +154,52 @@ void printHelp()
   printLogo();
   printf("%s", 
 	 "Usage:\n"
-	 "\tds-patch [-OPTIONS] INDEX_DIR [--add FILE1 [FILE2 [...]]] [--del FILE1 [FILE2 [...]]]\n"
+	 "\tds-patch [OPTIONS] INDEX_DIR [--add FILE1 [FILE2 [...]]] [--del FILE1 [FILE2 [...]]]\n"
 	 "Where:\n"
-	 "\tINDEX_DIR - directory with index to patch\n"
+	 "\tINDEX_DIR       - directory with index to patch\n"
 	 "\tFILE1, FILE2... - files to add or delete; files to add must be mentioned by their absolute path, file to delete - just by file names\n"
 "\n"
 	 "Valid command line options are:\n");
   cliParser.printHelp(std::cout);
+  std::cout << std::endl;
   std::cout << "NOTE: New packages are added to index without any provides filtering, use ds-references utility for consequent provides filtering." << std::endl;
 }
 
 void parseCmdLine(int argc, char* argv[])
 {
-  cliParser.init(argc, argv);
-  cliParser.parse();//FIXME:
+  try {
+    cliParser.init(argc, argv);
+    cliParser.parse();//FIXME:
+  }
+  catch (const CliParserException& e)
+    {
+      switch (e.getCode())
+	{
+	case CliParserException::NoPrgName:
+	  std::cerr << PREFIX << "Command line has no program name" << std::endl;
+	  exit(EXIT_FAILURE);
+	case CliParserException::MissedArgument:
+	  std::cerr << PREFIX << "Command line argument \'" << e.getArg() << "\' requires additional parameter" << std::endl;exit(EXIT_FAILURE);
+	default:
+	  assert(0);
+	} //switch();
+    }
   if (cliParser.wasKeyUsed("--help"))
     {
       printHelp();
       exit(EXIT_SUCCESS);
     }
+  if (cliParser.files.empty())
+    cliParser.files.push_back(".");
+  if (cliParser.files.size() > 1)
+    {
+      std::cerr << PREFIX << "Extra command line argument \'" << cliParser.files[1] << "\'" << std::endl;
+      exit(EXIT_FAILURE);
+    }
+  params.indexPath = cliParser.files[0];
   if (cliParser.filesToAdd.empty() && cliParser.filesToRemove.empty())
     {
-      std::cout << "Nothing to add and nothing to remove!" << std::endl;
+      std::cout << PREFIX << "Nothing to add and nothing to remove!" << std::endl;
       exit(EXIT_SUCCESS);
     }
 }
@@ -169,12 +210,11 @@ int main(int argc, char* argv[])
   initCliParser();
   parseCmdLine(argc, argv);
   initLogging(cliParser.wasKeyUsed("--debug")?LOG_DEBUG:LOG_INFO, cliParser.wasKeyUsed("--log"));
-  return 0;//FIXME:
   try {
     if (!cliParser.wasKeyUsed("--log"))
       printLogo();
     params.readInfoFile(Directory::mixNameComponents(params.indexPath, REPO_INDEX_INFO_FILE));
-    IndexReconstructionListener listener;
+    IndexReconstructionListener listener(cliParser.wasKeyUsed("--log"));
     IndexCore indexCore(listener);
     indexCore.rebuildIndex(params, cliParser.filesToAdd, cliParser.filesToRemove);
   }

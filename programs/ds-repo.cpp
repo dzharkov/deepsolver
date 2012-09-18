@@ -182,8 +182,23 @@ void printHelp()
 
 void parseCmdLine(int argc, char* argv[])
 {
-  cliParser.init(argc, argv);
-  cliParser.parse();
+  try {
+    cliParser.init(argc, argv);
+    cliParser.parse();
+  }
+  catch (const CliParserException& e)
+    {
+      switch (e.getCode())
+	{
+	case CliParserException::NoPrgName:
+	  std::cerr << PREFIX << "Command line has no program name" << std::endl;
+	  exit(EXIT_FAILURE);
+	case CliParserException::MissedArgument:
+	  std::cerr << PREFIX << "Command line argument \'" << e.getArg() << "\' requires additional parameter" << std::endl;exit(EXIT_FAILURE);
+	default:
+	  assert(0);
+	} //switch();
+    }
   std::string arg;
   if (cliParser.wasKeyUsed("--compression", arg))
     {
