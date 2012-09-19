@@ -27,12 +27,16 @@ static CliParser cliParser;
 class IndexReconstructionListener: public AbstractIndexConstructionListener
 {
 public:
-  IndexReconstructionListener() {}
+  IndexReconstructionListener(bool suppress)
+    : m_suppress(suppress) {}
+
   virtual ~IndexReconstructionListener() {}
 
 public:
   void onReferenceCollecting(const std::string& path)
   {
+    if (m_suppress)
+      return;
     std::cout << "Reading references in " << path << std::endl;
   }
 
@@ -41,24 +45,34 @@ public:
 
   void onChecksumWriting()
   {
+    if (m_suppress)
+      return;
     std::cout << "Writing checksum file" << std::endl;
   }
 
   void onChecksumVerifying() 
   {
+    if (m_suppress)
+      return;
     std::cout << "Verifying checksums" << std::endl;
   }
 
   void onPatchingFile(const std::string& fileName)
   {
+    if (m_suppress)
+      return;
     std::cout << "Fixing references in  " << fileName << std::endl;
   }
 
   void onNoTwiceAdding(const std::string& fileName) {}
+
+private:
+  bool m_suppress;
 }; //class IndexReconstructionListener;
 
 void initCliParser()
 {
+  cliParser.addKeyDoubleName("-s", "--ref-sources", "LIST", "take additional requires/conflicts for provides filtering in listed directories (list should be colon-delimited)");
   cliParser.addKeyDoubleName("-h", "--help", "print this help screen and exit");
   cliParser.addKey("--log", "print log to console instead of user progress information");
   cliParser.addKey("--debug", "relax filtering level for log output");
@@ -66,7 +80,7 @@ void initCliParser()
 
 void printLogo()
 {
-  std::cout << "ds-references: utility to fix provides references in Deepsolver repository" << std::endl;
+  std::cout << "ds-references: the utility to fix provides references in Deepsolver repository" << std::endl;
     std::cout << "Version: " << PACKAGE_VERSION << std::endl;
   std::cout << std::endl;
 }
@@ -76,11 +90,10 @@ void printHelp()
   printLogo();
   printf("%s", 
 	 "Usage:\n"
-	 "\tds-references [OPTIONS] INDEX_DIR [REFERENCES_SOURCES]\n"
+	 "\tds-references [OPTIONS] INDEX_DIR\n"
 	 "\n"
 	 "Where:\n"
-	 "\tINDEX_DIR          - directory with indices to fix references in\n"
-	 "\tREFERENCES_SOURCES - list of colon-delimited directories to take requires/conflicts from, directory can contain either the repo index or packages files\n"
+	 "INDEX_DIR          - directory with indices to fix references in\n"
 	 "\n"
 	 "Valid options are:\n");
   cliParser.printHelp(std::cout);
@@ -107,21 +120,42 @@ void splitColonDelimitedList(const std::string& str, StringVector& res)
 
 void parseCmdLine(int argc, char* argv[])
 {
-  cliParser.init(argc, argv);
-  cliParser.parse();
+  try {
+    cliParser.init(argc, argv);
+    cliParser.parse();
+  }
+  catch (const CliParserException& e)
+    {
+      switch (e.getCode())
+	{
+	case CliParserException::NoPrgName:
+	  std::cerr << PREFIX << "Command line has no program name" << std::endl;
+	  exit(EXIT_FAILURE);
+	case CliParserException::MissedArgument:
+	  std::cerr << PREFIX << "Command line argument \'" << e.getArg() << "\' requires additional parameter" << std::endl;exit(EXIT_FAILURE);
+	default:
+	  assert(0);
+	} //switch();
+    }
+  if (cliParser.wasKeyUsed("--help"))
+    {
+      printHelp();
+	exit(EXIT_SUCCESS);
+    }
   if (cliParser.files.empty())
     {
       std::cerr << PREFIX << "index directory was not mentioned" << std::endl;
       exit(EXIT_FAILURE);
     }
-  if (cliParser.files.size() > 2)
+  if (cliParser.files.size() > 1)
     {
-      std::cerr << PREFIX << "unparsable command line argument \'" << cliParser.files[2] << "\'" << std::endl;
+      std::cerr << PREFIX << "Extra command line argument \'" << cliParser.files[1] << "\'" << std::endl;
       exit(EXIT_FAILURE);
     }
   params.indexPath = cliParser.files[0];
-  if (cliParser.files.size() == 2)
-    splitColonDelimitedList(cliParser.files[1], params.providesRefsSources);
+  std::string arg;
+  if (cliParser.wasKeyUsed("--ref-sources", arg))
+    splitColonDelimitedList(arg, params.providesRefsSources);
 }
 
 int main(int argc, char* argv[])
@@ -129,20 +163,12 @@ int main(int argc, char* argv[])
   setlocale(LC_ALL, "");
   initCliParser();
   parseCmdLine(argc, argv);
-  if (cliParser.wasKeyUsed("--help"))
-    {
-      printHelp();
-      return 0;
-    }
-  if (cliParser.wasKeyUsed("--log"))
-    std::cout << "log" << std::endl;
-  if (cliParser.wasKeyUsed("--debug"))
-    std::cout << "debug" << std::endl;
-  //  initLogging("/tmp/ds-references.log", LOG_DEBUG);//FIXME:
-  printLogo();
+  initLogging(cliParser.wasKeyUsed("--debug")?LOG_DEBUG:LOG_INFO, cliParser.wasKeyUsed("--log"));
   try {
+    if (!cliParser.wasKeyUsed("--log"))
+      printLogo();
     params.readInfoFile(Directory::mixNameComponents(params.indexPath, REPO_INDEX_INFO_FILE));
-    IndexReconstructionListener listener;
+    IndexReconstructionListener listener(cliParser.wasKeyUsed("--log"));
     IndexCore indexCore(listener);
     indexCore.fixReferences(params);
   }

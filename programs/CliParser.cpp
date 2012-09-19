@@ -115,6 +115,7 @@ bool CliParser::wasKeyUsed(const std::string& keyName, std::string& arg) const
     return 0;
   if (!keys[index].argName.empty())
     arg = keys[index].argValue;
+  return 1;
 }
 
 bool CliParser::wasKeyUsed(const std::string& keyName) const
