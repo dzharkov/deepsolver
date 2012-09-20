@@ -1,0 +1,68 @@
+\documentclass[a4paper]{article}
+
+\usepackage[russian]{babel}
+\usepackage[utf8]{inputenc}
+\usepackage{cmap}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{xspace}
+\usepackage{graphicx}
+\usepackage{sectsty}
+\usepackage{fancyhdr}
+
+\newcommand{\EN}[1]{{\it #1}}
+\newcommand{\CODE}[1]{{\ttfamily #1}}
+\newcommand{\PATH}[1]{{\it #1}}
+
+\newcommand{\provides}{{\it provides}}
+\newcommand{\Provides}{{\it Provides}}
+\newcommand{\requires}{{\it requires}}
+\newcommand{\Requires}{{\it Requires}}
+\newcommand{\conflicts}{{\it conflicts}}
+\newcommand{\Conflicts}{{\it Conflicts}}
+
+\fancyhf{}
+\fancyfoot[C]{\Large ---~\thepage~---}
+\renewcommand{\headrulewidth}{0pt}
+\renewcommand{\footrulewidth}{0pt}
+
+%%Modifying captions for figures and tables:
+\makeatletter
+\long\def\@makecaption#1#2{%
+\vspace{\abovecaptionskip}%
+\sbox{\@tempboxa}{\Large #1.~#2}
+\ifdim \wd\@tempboxa >\hsize
+{\Large #1.~#2}\par
+\else
+\global\@minipagefalse
+\hbox to \hsize {\hfill {\Large #1.~#2}\hfill}%
+\fi
+\vspace{\belowcaptionskip}}
+
+\renewcommand{\baselinestretch}{1.2}
+\sectionfont{\LARGE}
+\subsectionfont{\Large}
+\subsubsectionfont{\Large}
+\setlength{\belowcaptionskip}{6pt}
+\makeatletter \renewcommand{\@biblabel}[1]{#1.\hfill}
+
+\textwidth = 17cm
+\oddsidemargin= 0 pt
+\topmargin = -1cm
+\headheight = 0cm
+\headsep = 0cm
+\textheight = 26.5cm
+
+\begin{document}
+\sloppy
+\input{title}
+\newpage
+\Large
+\pagestyle{fancy}
+\tableofcontents
+\newpage
+%%\input{intro}
+%%\newpage
+\input{admin}
+
+\end{document}
