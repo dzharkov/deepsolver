@@ -228,7 +228,7 @@ void IndexCore::buildIndex(const RepoParams& params)
       m_listener.onProvidesCleaning();
       std::ifstream is(pkgCompleteFileName.c_str());
       if (!is.is_open())
-	throw IndexCoreException(IndexErrorInternalIOProblem);
+	throw IndexCoreException(IndexCoreException::InternalIOProblem);
       while(1)
 	{
 	  std::string line;
@@ -273,6 +273,18 @@ void IndexCore::buildIndex(const RepoParams& params)
 void IndexCore::rebuildIndex(const RepoParams& params, const StringVector& toAdd, const StringVector& toRemove)
 {
   logMsg(LOG_DEBUG, "starting index patching process with %zu items to add and %zu items to remove", toAdd.size(), toRemove.size());
+  m_listener.onChecksumVerifying();
+  if (params.md5sumFileName.empty())
+    throw IndexCoreException(IndexCoreException::MissedChecksumFileName);
+  Md5File md5File;
+  md5File.loadFromFile(Directory::mixNameComponents(params.indexPath, params.md5sumFileName));
+  for(Md5File::ItemVector::size_type i = 0;i < md5File.items.size();i++)
+    {
+      logMsg(LOG_DEBUG, "Verifying checksum for \'%s\'", Directory::mixNameComponents(params.indexPath, md5File.items[i].fileName).c_str());
+      if (!md5File.verifyItem(i, Directory::mixNameComponents(params.indexPath, md5File.items[i].fileName)))
+	throw IndexCoreException(IndexCoreException::CorruptedFile, Directory::mixNameComponents(params.indexPath, md5File.items[i].fileName));
+    }
+  return;
   std::auto_ptr<AbstractPackageBackEnd> backend = CREATE_PACKAGE_BACKEND;
   PkgFileVector pkgs;
   pkgs.resize(toAdd.size());
@@ -452,6 +464,18 @@ void IndexCore::rebuildIndex(const RepoParams& params, const StringVector& toAdd
 
 void IndexCore::fixReferences(const RepoParams& params)
 {
+  m_listener.onChecksumVerifying();
+  if (params.md5sumFileName.empty())
+    throw IndexCoreException(IndexCoreException::MissedChecksumFileName);
+  Md5File md5File;
+  md5File.loadFromFile(Directory::mixNameComponents(params.indexPath, params.md5sumFileName));
+  for(Md5File::ItemVector::size_type i = 0;i < md5File.items.size();i++)
+    {
+      logMsg(LOG_DEBUG, "Verifying checksum for \'%s\'", Directory::mixNameComponents(params.indexPath, md5File.items[i].fileName).c_str());
+      if (!md5File.verifyItem(i, Directory::mixNameComponents(params.indexPath, md5File.items[i].fileName)))
+	throw IndexCoreException(IndexCoreException::CorruptedFile, Directory::mixNameComponents(params.indexPath, md5File.items[i].fileName));
+    }
+
   /*
   const std::string pkgFileName = Directory::mixNameComponents(params.indexPath, REPO_INDEX_PACKAGES_FILE + compressionExtension(params.compressionType));
   StringSet references;

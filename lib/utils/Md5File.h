@@ -128,7 +128,6 @@ private:
   const std::string m_line;
 }; //class Md5FileException;
 
-
 class Md5File
 {
 public:
@@ -144,7 +143,10 @@ public:
   typedef std::list<Item> ItemList;
 
 public:
+  /**\brief The default constructor*/
   Md5File() {}
+
+  /**\brief The destructor*/
   virtual ~Md5File() {}
 
 public:

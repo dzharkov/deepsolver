@@ -172,6 +172,7 @@ void RepoParams::writeInfoFile(const std::string& fileName) const
   params.insert(StringToStringMap::value_type(INFO_FILE_EXCLUDE_REQUIRES, saveStringVector(excludeRequiresRegExp)));
   params.insert(StringToStringMap::value_type(INFO_FILE_CHANGELOG_BINARY, booleanValue(changeLogBinary)));
   params.insert(StringToStringMap::value_type(INFO_FILE_CHANGELOG_SOURCES, booleanValue(changeLogSources)));
+  params.insert(StringToStringMap::value_type(INFO_FILE_MD5SUM, REPO_INDEX_MD5SUM_FILE));
   for(StringToStringMap::const_iterator it = userParams.begin();it != userParams.end();it++)
     params.insert(*it);
   writeInfoFileParamsToDisk(fileName, params);

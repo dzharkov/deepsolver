@@ -46,6 +46,7 @@ void Md5File::addItemFromFile(const std::string& fileName, const std::string& re
 
 void Md5File::loadFromFile(const std::string& fileName)
 {
+  logMsg(LOG_DEBUG, "Reading \'%s\' md5file in read-only mode", fileName.c_str());
   File f;
   f.openReadOnly(fileName);
   StringVector lines;
@@ -62,7 +63,7 @@ void Md5File::loadFromFile(const std::string& fileName)
       for(std::string::size_type k = 0;k < 32;k++)
 	item.checksum += line[k];
       for(std::string::size_type k = 34;k < line.length();k++)
-	item.fileName = line[k];
+	item.fileName += line[k];
       for(std::string::size_type k = 0;k < item.checksum.length();k++)
 	{
 	  if (item.checksum[k] >= 'A' && item.checksum[k] <= 'F')

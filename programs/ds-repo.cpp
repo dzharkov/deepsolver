@@ -259,15 +259,17 @@ int main(int argc, char* argv[])
   }
   catch(const DeepsolverException& e)
     {
-      std::cerr << std::endl;
-      std::cerr << PREFIX << e.getType() << " error:" << e.getMessage() << std::endl;
-      return 1;
+      logMsg(LOG_CRIT, "%s error:%s", e.getType().c_str(), e.getMessage().c_str());
+      if (!cliParser.wasKeyUsed("--log"))
+	std::cerr << "ERROR:" << e.getMessage() << std::endl;
+      return EXIT_FAILURE;
     }
   catch(std::bad_alloc)
     {
-      std::cerr << std::endl;
-      std::cerr << PREFIX << "no enough free memory to complete operation" << std::endl;
-      return 1;
+      logMsg(LOG_CRIT, "No enough memory");
+      if (!cliParser.wasKeyUsed("--log"))
+	std::cerr << "ERROR:No enough memory" << std::endl;
+	  return EXIT_FAILURE;
     }
-  return 0;
+  return EXIT_SUCCESS;
 }

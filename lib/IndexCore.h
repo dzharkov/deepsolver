@@ -20,19 +20,68 @@
 
 #include"repo/RepoParams.h"
 
-enum {
-  IndexErrorInternalIOProblem = 0
-};
-
+/**\brief Indicates repository index manipulation problem
+ *
+ * The instance of this exception is thrown on some index creation or
+ * patching problems such as corrupted file, not empty target directory
+ * etc. This exception created in addition to general exception classes
+ * like SystemException, RpmException and so on which can be also thrown
+ * during index operations.
+ *
+ * \sa IndexCore SystemException RpmException Md5FileException
+ */
 class IndexCoreException: public DeepsolverException 
 {
 public:
+  enum {
+    InternalIOProblem = 0,
+    DirectoryNotEmpty = 1,
+    CorruptedFile = 2,
+MissedChecksumFileName = 3
+  };
+
+public:
+  /**\brief The constructor with error code specification
+   *
+   * \param [in] code The error code of error occurred
+   */
   IndexCoreException(int code)
     : m_code(code) {}
 
+  /**\brief The constructor with error code and string argument specification
+   *
+   * \param [in] code The error code of problem occurred
+   * \param [in] arg The string argument for problem type
+   */
+  IndexCoreException(int code, const std::string& arg)
+    : m_code(code), m_arg(arg) {}
+
+  /**\brief The destructor*/
   virtual ~IndexCoreException() {}
 
 public:
+  /**\brief Returns the error code
+   *
+   * Use this method to get error code value.
+   *
+   * \return The error code value
+   */
+  int getCode() const
+  {
+    return m_code;
+  }
+
+  /**\brief Returns the additional string argument
+   *
+   * Use this method to get additional string argument of the problem occurred.
+   *
+   * \return The additional string argument
+   */
+  const std::string& getArg() const
+  {
+    return m_arg;
+  }
+
   std::string getType() const
   {
     return "index core";
@@ -40,11 +89,25 @@ public:
 
   std::string getMessage() const
   {
-    return "FIXME";
+    switch(m_code)
+      {
+      case InternalIOProblem:
+	return "Internal I/O problem";
+      case DirectoryNotEmpty:
+	return "Directory \'" + m_arg + "\' is not empty";
+      case CorruptedFile:
+	return "File \'" + m_arg + "\' is corrupted";
+      case MissedChecksumFileName:
+	return "No checksum file name in repository parameters";
+      default:
+	assert(0);
+      } //switch(m_code);
+    return "";
   }
 
 private:
   const int m_code;
+  const std::string m_arg;
 }; //class IndexCoreException;
 
 class AbstractIndexConstructionListener
