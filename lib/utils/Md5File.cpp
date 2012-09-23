@@ -105,3 +105,16 @@ bool Md5File::verifyItem(size_t itemIndex, const std::string& fileName) const
   f.close();
   return items[itemIndex].checksum == md5.commit();
 }
+
+void Md5File::removeItem(const std::string& fileName)
+{
+  if (items.empty())
+    return;
+  ItemVector::size_type index = 0;
+  while(index < items.size() && items[index].fileName != fileName)
+    index++;
+  if (index >= items.size())
+    return;
+  items[index] = items[items.size() - 1];
+  items.pop_back();
+}

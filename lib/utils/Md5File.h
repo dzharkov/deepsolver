@@ -154,6 +154,7 @@ public:
   void loadFromFile(const std::string& fileName);
   void saveToFile(const std::string& fileName) const;
   bool verifyItem(size_t itemIndex, const std::string& fileName) const;
+  void removeItem(const std::string& fileName);
 
 public:
   ItemVector items;

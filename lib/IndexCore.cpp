@@ -244,7 +244,7 @@ void IndexCore::buildIndex(const RepoParams& params)
 	  if (internalProvidesRefs.find(pkgName) != internalProvidesRefs.end() || 
 	  externalProvidesRefs.find(pkgName) != externalProvidesRefs.end() ||
 	  (!params.filterProvidesByDirs.empty() && fileFromDirs(pkgName, params.filterProvidesByDirs)))
-	pkgFile->writeData(line);
+	pkgFile->writeData(line + "\n");
 	} //for(lines);
       pkgFile->close();
       logMsg(LOG_DEBUG, "Provides filtering completed");
@@ -505,9 +505,10 @@ void IndexCore::fixReferences(const RepoParams& params)
       reader->close();
       logMsg(LOG_DEBUG, "%zu internal references collected in %zu package records", internalReferences.size(), count);
     }
-
-
-
+  logMsg(LOG_DEBUG, "Performing unlink() for \'%s\'", pkgFileName.c_str());
+  File::unlink(pkgFileName);
+  logMsg(LOG_DEBUG, "Creating new \'%s\'", pkgFileName.c_str());
+  std::auto_ptr<UnifiedOutput> pkgFile = createRebuildWriter(pkgFileName, params);
   std::ifstream is(pkgCompleteFileName.c_str());
   if (!is.is_open())
     throw IndexCoreException(IndexCoreException::InternalIOProblem);
@@ -523,35 +524,26 @@ void IndexCore::fixReferences(const RepoParams& params)
 	  pkgFile->writeData(line + "\n");
 	  continue;
 	}
-      if (internalProvidesRefs.find(pkgName) != internalProvidesRefs.end() || 
-	  externalProvidesRefs.find(pkgName) != externalProvidesRefs.end() ||
-	  (!params.filterProvidesByDirs.empty() && fileFromDirs(pkgName, params.filterProvidesByDirs)))
-	pkgFile->writeData(line);
-    } //for(lines);
+      if (params.filterProvidesByRefs)
+	{
+	  if (internalReferences.find(pkgName) != internalReferences.end() || 
+	      externalReferences.find(pkgName) != externalReferences.end() ||
+	      (!params.filterProvidesByDirs.empty() && fileFromDirs(pkgName, params.filterProvidesByDirs)))
+	    pkgFile->writeData(line + "\n");
+	} else
+	{
+	  if (params.filterProvidesByDirs.empty() || fileFromDirs(pkgName, params.filterProvidesByDirs))
+	    pkgFile->writeData(line + "\n");
+	}
+    }
   pkgFile->close();
   logMsg(LOG_DEBUG, "New packages file writing completed");
-  logMsg(LOG_DEBUG, "Writing new md5-checksums");
   m_listener.onChecksumWriting();
-
-  logMsg(LOG_DEBUG, "Registering \'%s\'", Directory::mixNameComponents(params.indexPath, REPO_INDEX_INFO_FILE).c_str());
-  md5.addItemFromFile(REPO_INDEX_INFO_FILE, Directory::mixNameComponents(params.indexPath, REPO_INDEX_INFO_FILE));
-  logMsg(LOG_DEBUG, "Registering \'%s\'", pkgFileName.c_str());
-  md5.addItemFromFile(File::baseName(pkgFileName), pkgFileName);
-  logMsg(LOG_DEBUG, "Registering \'%s\'", pkgDescrFileName.c_str());
-  md5.addItemFromFile(File::baseName(pkgDescrFileName), pkgDescrFileName);
-  logMsg(LOG_DEBUG, "Registering \'%s\'", pkgFileListFileName.c_str());
-  md5.addItemFromFile(File::baseName(pkgFileListFileName), pkgFileListFileName);
-  logMsg(LOG_DEBUG, "Registering \'%s\'", srcFileName.c_str());
-  md5.addItemFromFile(File::baseName(srcFileName), srcFileName);
-  logMsg(LOG_DEBUG, "Registering \'%s\'", srcDescrFileName.c_str());
-  md5.addItemFromFile(File::baseName(srcDescrFileName), srcDescrFileName);
-  logMsg(LOG_INFO, "Writing md5-checksum file");
-  md5.saveToFile(Directory::mixNameComponents(params.indexPath, REPO_INDEX_MD5SUM_FILE));
-  logMsg(LOG_DEBUG, "Exiting index building procedure, everything done successfully");
-
-
-
-
+  logMsg(LOG_DEBUG, "Updating md5sum for \'%s\' and writing new file", pkgFileName.c_str());
+  md5File.removeItem(File::baseName(pkgFileName));
+  md5File.addItemFromFile(File::baseName(pkgFileName), pkgFileName);
+  md5File.saveToFile(Directory::mixNameComponents(params.indexPath, REPO_INDEX_MD5SUM_FILE));
+  logMsg(LOG_DEBUG, "Exiting references fixing procedure, everything done successfully");
 }
 
 void IndexCore::collectRefs(const std::string& dirName, StringSet& res) 
