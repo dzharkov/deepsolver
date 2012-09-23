@@ -51,7 +51,7 @@ public:
   {
     if (m_suppress)
       return;
-    std::cout << "Provides filtering" << std::endl;
+    std::cout << "Performing provides filtering" << std::endl;
   }
 
   void onChecksumWriting()

@@ -96,7 +96,7 @@ public:
       case DirectoryNotEmpty:
 	return "Directory \'" + m_arg + "\' is not empty";
       case CorruptedFile:
-	return "File \'" + m_arg + "\' is corrupted";
+	return "File \'" + m_arg + "\' is corrupted (wrong checksum)";
       case MissedChecksumFileName:
 	return "No checksum file name in repository parameters";
       default:
