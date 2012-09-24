@@ -182,14 +182,14 @@ void IndexCore::buildIndex(const RepoParams& params)
       std::auto_ptr<Directory::Iterator> it = Directory::enumerate(params.pkgSources[i]);
       while(it->moveNext())
 	{
-	  if (it->getName() == "." || it->getName() == "..")
+	  if (it->name() == "." || it->name() == "..")
 	    continue;
-	  if (!backend->validPkgFileName(it->getName()))
+	  if (!backend->validPkgFileName(it->name()))
 	    continue;
 	  PkgFile pkg;
-	  backend->readPackageFile(it->getFullPath(), pkg);
-	  pkg.fileName = it->getName();
-	  pkg.isSource = backend->validSourcePkgFileName(it->getName());
+	  backend->readPackageFile(it->fullPath(), pkg);
+	  pkg.fileName = it->name();
+	  pkg.isSource = backend->validSourcePkgFileName(it->name());
 	  if (params.filterProvidesByRefs)
 	    {
 	      for(NamedPkgRelVector::size_type k = 0;k < pkg.requires.size();k++)
@@ -575,12 +575,12 @@ void IndexCore::collectRefs(const std::string& dirName, StringSet& res)
   std::auto_ptr<Directory::Iterator> it = Directory::enumerate(dirName);
   while(it->moveNext())
     {
-      if (it->getName() == "." || it->getName() == "..")
+      if (it->name() == "." || it->name() == "..")
 	continue;
-      if (!backend->validPkgFileName(it->getName()))
+      if (!backend->validPkgFileName(it->name()))
 	continue;
       PkgFile pkgFile;
-      backend->readPackageFile(it->getFullPath(), pkgFile);
+      backend->readPackageFile(it->fullPath(), pkgFile);
       for(NamedPkgRelVector::size_type i =0; i < pkgFile.requires.size();i++)
 	res.insert(pkgFile.requires[i].pkgName);
       for(NamedPkgRelVector::size_type i = 0;i < pkgFile.conflicts.size();i++)

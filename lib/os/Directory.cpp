@@ -56,22 +56,20 @@ bool Directory::ensureExistsAndEmpty(const std::string& name, bool needEraseCont
   assert(!name.empty());
   ensureExists(name);
   if (!needEraseContent)
-    {
-      std::auto_ptr<Iterator> it = enumerate(name);
-      return !it->moveNext();
-    }
+      return !empty(name);
   eraseContent(name);
   return 1;
 }
 
 void Directory::eraseContent(const std::string& name)
 {
+  assert(!name.empty());
   std::auto_ptr<Iterator> it = enumerate(name);
   while(it->moveNext())
     {
-      if (it->getName() == "." || it->getName() == "..")
+      if (it->name() == "." || it->name() == "..")
 	continue;
-      const std::string& path = it->getFullPath();
+      const std::string& path = it->fullPath();
       if (File::isDir(path))
 	{
 	  eraseContent(path);
@@ -101,13 +99,13 @@ bool Directory::Iterator::moveNext()
   return 0;
 }
 
-std::string Directory::Iterator::getName() const
+std::string Directory::Iterator::name() const
 {
   assert(m_dir);//m_currentName has a valid value;
   return m_currentName;
 }
 
-std::string Directory::Iterator::getFullPath() const
+std::string Directory::Iterator::fullPath() const
 {
   assert(m_dir);//m_currentName has a valid value;
   return Directory::mixNameComponents(m_path, m_currentName);//FIXME:
@@ -138,4 +136,17 @@ std::string Directory::mixNameComponents(const std::string& part1, const std::st
   std::string res = part1;
   res.resize(res.length() - 1);
   return res + part2;
+}
+
+bool Directory::empty(const std::string& path)
+{
+  assert(!path.empty());
+  std::auto_ptr<Iterator> it = enumerate(path);
+  while (it->moveNext())
+    {
+      if (it->name() != "." && it->name() != "..")
+	return 0;
+      continue;
+    }
+  return 1;
 }

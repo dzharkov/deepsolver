@@ -84,7 +84,7 @@ public:
      *
      * \return The name of item the iterator is pointing to without parent directory
      */
-    std::string getName() const;
+    std::string name() const;
 
     /**\brief Returns the name of directory item this iterator is pointing to with parent directory
      *
@@ -95,7 +95,7 @@ public:
      *
      * \return The name of item the iterator is pointing to with parent directory
      */
-    std::string getFullPath() const;
+    std::string fullPath() const;
 
   private:
     std::string m_path;
@@ -131,6 +131,9 @@ public:
   static bool ensureExistsAndEmpty(const std::string& name, bool needEraseContent = 0);
 
   static void eraseContent(const std::string& name);
+
+  /**\brief FIXME*/
+  static bool empty(const std::string& path);
 
   /**\brief Removes an empty directory
    *
