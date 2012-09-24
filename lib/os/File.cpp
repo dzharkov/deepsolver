@@ -141,7 +141,7 @@ void File::create(const std::string& fileName)
   if (m_fd < 0)
     {
       m_fd = -1;
-      SYS_STOP("open(" + fileName + "\', O_RDONLY");
+      SYS_STOP("open(" + fileName + "\', O_RDWR | O_CREAT | O_TRUNC");
     }
 }
 

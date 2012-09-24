@@ -57,7 +57,8 @@ public:
     assert(!m_stream.is_open());
     assert(!fileName.empty());
     m_stream.open(fileName.c_str());
-    assert(m_stream.is_open());//FIXME:Must be an exception;
+    if (!m_stream.is_open())
+      throw IndexCoreException(IndexCoreException::InternalIOProblem);
   }
 
   void writeData(const std::string& str)
@@ -124,10 +125,11 @@ static std::auto_ptr<UnifiedOutput> createRebuildWriter(const std::string& fileN
 
 void IndexCore::buildIndex(const RepoParams& params)
 {
-  //FIXME:Check target directory is empty;
   assert(!params.indexPath.empty());
   assert(!params.pkgSources.empty());
   Directory::ensureExists(params.indexPath);
+  if (!Directory::empty(params.indexPath))
+    throw IndexCoreException(IndexCoreException::DirectoryNotEmpty, params.indexPath);
   logMsg(LOG_DEBUG, "Starting index creation in \'%s\', target directory exists and empty", params.indexPath.c_str());
   params.writeInfoFile(Directory::mixNameComponents(params.indexPath, REPO_INDEX_INFO_FILE));
   StringSet internalProvidesRefs, externalProvidesRefs;
