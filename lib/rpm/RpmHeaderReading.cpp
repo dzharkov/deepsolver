@@ -46,6 +46,7 @@ void rpmFillMainData(Header& header, PkgBase& pkg)
   rpmGetStringTagValueRelaxed(header, RPMTAG_URL, pkg.url);
   pkg.packager.erase();
   rpmGetStringTagValueRelaxed(header, RPMTAG_PACKAGER, pkg.packager);
+  rpmGetStringTagValueRelaxed(header, RPMTAG_GROUP, pkg.group);
   pkg.license.erase();
   rpmGetStringTagValueRelaxed(header, RPMTAG_LICENSE, pkg.license);
   pkg.srcRpm.erase();

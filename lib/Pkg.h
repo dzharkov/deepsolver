@@ -127,6 +127,7 @@ public:
   std::string release;
   std::string arch;
   std::string packager;
+  std::string group;
   std::string url;
   std::string license;
   std::string srcRpm;

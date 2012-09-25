@@ -26,6 +26,7 @@
 #define URL_STR "URL="
 #define LICENSE_STR "lic="
 #define PACKAGER_STR "pckgr="
+#define GROUP_STR "g="
 #define SUMMARY_STr "summ="
 #define DESCRIPTION_STR "descr="
 #define SRCRPM_STR "src="
@@ -77,6 +78,7 @@ std::string PkgSection::saveDescr(const PkgFile& pkgFile, bool saveChangeLog)
   ss << URL_STR << pkgFile.url << std::endl;
   ss << LICENSE_STR << pkgFile.license << std::endl;
   ss << PACKAGER_STR << pkgFile.packager << std::endl;
+  ss << GROUP_STR << pkgFile.group << std::endl;
   ss << SUMMARY_STr << pkgFile.summary << std::endl;
   ss << DESCRIPTION_STR << encodeMultiline(pkgFile.description) << std::endl;
   ss << SRCRPM_STR << pkgFile.srcRpm << std::endl;
