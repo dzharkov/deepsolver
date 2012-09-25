@@ -18,11 +18,6 @@
 #ifndef DEEPSOLVER_MD5FILE_H
 #define DEEPSOLVER_MD5FILE_H
 
-enum {
-  Md5FileErrorTooShortLine = 0,
-  Md5FileErrorInvalidChecksumFormat = 2
-};
-
 /**\brief The exception class for md5file syntax errors
  *
  * This class instance is thrown when md5file syntax error isCon
@@ -34,6 +29,13 @@ enum {
  */
 class Md5FileException: public DeepsolverException
 {
+public:
+
+  enum {
+    TooShortLine = 0,
+    InvalidChecksumFormat = 2
+  };
+
 public:
   /**\brief The constructor
    *
@@ -99,26 +101,28 @@ public:
     return m_line;
   }
 
-  /**\brief Returns the error type
-   *
-   * This method always returns "md5file" string.
-   *
-   * \return The type of the an error (always "md5file")
-   */
   std::string getType() const
   {
     return "md5file";
   }
 
-  /**\brief Returns the single-line description of the error
-   *
-   * Use this method to get single-line description (recommended only for debug purposes).
-   *
-   * \return The single-line error description
-   */
   std::string getMessage() const
   {
-    return "FIXME:";
+    std::string msg;
+    switch(m_code)
+      {
+      case TooShortLine:
+	msg = "too short line";;
+	break;
+      case InvalidChecksumFormat:
+	msg = "invalid checksum format";
+	break;
+      default:
+	assert(0);
+      };
+    std::ostringstream ss;
+    ss << m_fileName << "(" << (m_lineNumber + 1) << "):" << msg << ":" << m_line;
+    return ss.str();
   }
 
 private:
