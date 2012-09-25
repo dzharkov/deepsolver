@@ -173,7 +173,16 @@ size_t File::write(const void* buf, size_t bufSize)
 
 void File::unlink(const std::string& fileName)
 {
+  assert(!fileName.empty());
+  logMsg(LOG_DEBUG, "Unlinking file \'%s\'", fileName.c_str());
   TRY_SYS_CALL(::unlink(fileName.c_str()) == 0, "unlink(" + fileName + ")");
+}
+
+void File::move(const std::string& oldFileName, const std::string& newFileName)
+{
+  assert(!oldFileName.empty() && !newFileName.empty());
+  logMsg(LOG_DEBUG, "Moving file \'%s\' to \'%s\'", oldFileName.c_str(), newFileName.c_str());
+  TRY_SYS_CALL(::rename(oldFileName.c_str(), newFileName.c_str()) == 0, "rename(" + oldFileName + ", " + newFileName + ")");
 }
 
 

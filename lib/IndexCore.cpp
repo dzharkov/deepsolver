@@ -118,6 +118,7 @@ private:
 static std::string compressionExtension(char compressionType);
 static bool fileFromDirs(const std::string& fileName, const StringVector& dirs);
 static std::auto_ptr<AbstractTextFormatSectionReader> createRebuildReader(const std::string& fileName, const RepoParams& params);
+static std::auto_ptr<AbstractTextFormatSectionReader> createRebuildReaderNoCompression(const std::string& fileName);
 static std::auto_ptr<UnifiedOutput> createRebuildWriter(const std::string& fileName, const RepoParams& params);
 
 
@@ -286,7 +287,6 @@ void IndexCore::rebuildIndex(const RepoParams& params, const StringVector& toAdd
       if (!md5File.verifyItem(i, Directory::mixNameComponents(params.indexPath, md5File.items[i].fileName)))
 	throw IndexCoreException(IndexCoreException::CorruptedFile, Directory::mixNameComponents(params.indexPath, md5File.items[i].fileName));
     }
-  return;
   std::auto_ptr<AbstractPackageBackEnd> backend = CREATE_PACKAGE_BACKEND;
   PkgFileVector pkgs;
   pkgs.resize(toAdd.size());
@@ -306,8 +306,8 @@ void IndexCore::rebuildIndex(const RepoParams& params, const StringVector& toAdd
     //Packages file;
   for(BoolVector::size_type i = 0;i < skipToAdd.size();i++)
     skipToAdd[i] = 0;
-    inputFileName = REPO_INDEX_PACKAGES_FILE + compressionExtension(params.compressionType);
-  outputFileName = TMP_FILE_NAME + compressionExtension(params.compressionType);
+  inputFileName = Directory::mixNameComponents(params.indexPath, REPO_INDEX_PACKAGES_FILE + compressionExtension(params.compressionType));
+  outputFileName = Directory::mixNameComponents(params.indexPath, TMP_FILE_NAME + compressionExtension(params.compressionType));
   logMsg(LOG_DEBUG, "Patching \'%s\' to \'%s\'", inputFileName.c_str(), outputFileName.c_str());
   m_listener.onPatchingFile(inputFileName);
   reader = createRebuildReader(inputFileName, params);
@@ -342,12 +342,14 @@ void IndexCore::rebuildIndex(const RepoParams& params, const StringVector& toAdd
 	}
   reader->close();
   writer->close();
+  File::unlink(inputFileName);
+  File::move(outputFileName, inputFileName);
 
     //Packages descriptions file;
   for(BoolVector::size_type i = 0;i < skipToAdd.size();i++)
     skipToAdd[i] = 0;
-    inputFileName = REPO_INDEX_PACKAGES_DESCR_FILE + compressionExtension(params.compressionType);
-  outputFileName = TMP_FILE_NAME + compressionExtension(params.compressionType);
+  inputFileName = Directory::mixNameComponents(params.indexPath, REPO_INDEX_PACKAGES_DESCR_FILE + compressionExtension(params.compressionType));
+  outputFileName = Directory::mixNameComponents(params.indexPath, TMP_FILE_NAME + compressionExtension(params.compressionType));
   logMsg(LOG_DEBUG, "Patching \'%s\' to \'%s\'", inputFileName.c_str(), outputFileName.c_str());
   m_listener.onPatchingFile(inputFileName);
   reader = createRebuildReader(inputFileName, params);
@@ -382,12 +384,14 @@ void IndexCore::rebuildIndex(const RepoParams& params, const StringVector& toAdd
 	}
   reader->close();
   writer->close();
+  File::unlink(inputFileName);
+  File::move(outputFileName, inputFileName);
 
     //Sources file;
   for(BoolVector::size_type i = 0;i < skipToAdd.size();i++)
     skipToAdd[i] = 0;
-    inputFileName = REPO_INDEX_SOURCES_FILE + compressionExtension(params.compressionType);
-  outputFileName = TMP_FILE_NAME + compressionExtension(params.compressionType);
+  inputFileName = Directory::mixNameComponents(params.indexPath, REPO_INDEX_SOURCES_FILE + compressionExtension(params.compressionType));
+  outputFileName = Directory::mixNameComponents(params.indexPath, TMP_FILE_NAME + compressionExtension(params.compressionType));
   logMsg(LOG_DEBUG, "Patching \'%s\' to \'%s\'", inputFileName.c_str(), outputFileName.c_str());
   m_listener.onPatchingFile(inputFileName);
   reader = createRebuildReader(inputFileName, params);
@@ -422,12 +426,99 @@ void IndexCore::rebuildIndex(const RepoParams& params, const StringVector& toAdd
 	}
   reader->close();
   writer->close();
+  File::unlink(inputFileName);
+  File::move(outputFileName, inputFileName);
 
     //Sources descriptions file;
   for(BoolVector::size_type i = 0;i < skipToAdd.size();i++)
     skipToAdd[i] = 0;
-    inputFileName = REPO_INDEX_SOURCES_DESCR_FILE + compressionExtension(params.compressionType);
-  outputFileName = TMP_FILE_NAME + compressionExtension(params.compressionType);
+  inputFileName = Directory::mixNameComponents(params.indexPath, REPO_INDEX_SOURCES_DESCR_FILE + compressionExtension(params.compressionType));
+  outputFileName = Directory::mixNameComponents(params.indexPath, TMP_FILE_NAME + compressionExtension(params.compressionType));
+  logMsg(LOG_DEBUG, "Patching \'%s\' to \'%s\'", inputFileName.c_str(), outputFileName.c_str());
+  m_listener.onPatchingFile(inputFileName);
+  reader = createRebuildReader(inputFileName, params);
+  writer = createRebuildWriter(outputFileName, params);
+  reader->init();
+  while(reader->readNext(sect))
+    {
+      const std::string fileName = PkgSection::getPkgFileName(sect);
+      assert(!fileName.empty());//FIXME:
+      for(PkgFileVector::size_type i = 0;i < pkgs.size();i++)
+	{
+	  if (fileName != pkgs[i].fileName)
+	    continue;
+	  skipToAdd[i] = 1;
+	  logMsg(LOG_WARNING, "File \'%s\' already present in index \'%s\', skipping adding", fileName.c_str(), inputFileName.c_str());
+	  m_listener.onNoTwiceAdding(fileName);
+	}
+      StringVector::size_type i = 0;
+      for(i = 0;i < toRemove.size();i++)
+	if (fileName == toRemove[i])
+	  break;
+      if (i >= toRemove.size())
+	writer->writeData(sect); else
+	logMsg(LOG_DEBUG, "Found package to exclude: \'%s\'", fileName.c_str());
+    }
+  for(PkgFileVector::size_type i = 0;i < pkgs.size();i++)
+    if (pkgs[i].isSource)
+      if (!skipToAdd[i])
+	{
+	  writer->writeData(PkgSection::saveDescr(pkgs[i], params.changeLogSources));
+	  logMsg(LOG_DEBUG, "File \'%s\' added to index", pkgs[i].fileName.c_str());
+	}
+  reader->close();
+  writer->close();
+  File::unlink(inputFileName);
+  File::move(outputFileName, inputFileName);
+
+
+    //Complete packages file;
+  for(BoolVector::size_type i = 0;i < skipToAdd.size();i++)
+    skipToAdd[i] = 0;
+ inputFileName = Directory::mixNameComponents(params.indexPath, REPO_INDEX_PACKAGES_COMPLETE_FILE);
+  outputFileName = Directory::mixNameComponents(params.indexPath, TMP_FILE_NAME);
+  logMsg(LOG_DEBUG, "Patching \'%s\' to \'%s\'", inputFileName.c_str(), outputFileName.c_str());
+  m_listener.onPatchingFile(inputFileName);
+  reader = createRebuildReaderNoCompression(inputFileName);
+  writer = std::auto_ptr<UnifiedOutput>(new StdOutput(outputFileName));
+  reader->init();
+  while(reader->readNext(sect))
+    {
+      const std::string fileName = PkgSection::getPkgFileName(sect);
+      assert(!fileName.empty());//FIXME:
+      for(PkgFileVector::size_type i = 0;i < pkgs.size();i++)
+	{
+	  if (fileName != pkgs[i].fileName)
+	    continue;
+	  skipToAdd[i] = 1;
+	  logMsg(LOG_WARNING, "File \'%s\' already present in index \'%s\', skipping adding", fileName.c_str(), inputFileName.c_str());
+	  m_listener.onNoTwiceAdding(fileName);
+	}
+      StringVector::size_type i = 0;
+      for(i = 0;i < toRemove.size();i++)
+	if (fileName == toRemove[i])
+	  break;
+      if (i >= toRemove.size())
+	writer->writeData(sect); else
+	logMsg(LOG_DEBUG, "Found package to exclude: \'%s\'", fileName.c_str());
+    }
+  for(PkgFileVector::size_type i = 0;i < pkgs.size();i++)
+    if (!pkgs[i].isSource)
+      if (!skipToAdd[i])
+	{
+	  writer->writeData(PkgSection::saveBaseInfo(pkgs[i], StringVector()));
+	  logMsg(LOG_DEBUG, "File \'%s\' added to index", pkgs[i].fileName.c_str());
+	}
+  reader->close();
+  writer->close();
+  File::unlink(inputFileName);
+  File::move(outputFileName, inputFileName);
+
+    //File list;
+  for(BoolVector::size_type i = 0;i < skipToAdd.size();i++)
+    skipToAdd[i] = 0;
+  inputFileName = Directory::mixNameComponents(params.indexPath, REPO_INDEX_PACKAGES_FILELIST_FILE + compressionExtension(params.compressionType));
+  outputFileName = Directory::mixNameComponents(params.indexPath, TMP_FILE_NAME + compressionExtension(params.compressionType));
   logMsg(LOG_DEBUG, "Patching \'%s\' to \'%s\'", inputFileName.c_str(), outputFileName.c_str());
   m_listener.onPatchingFile(inputFileName);
   reader = createRebuildReader(inputFileName, params);
@@ -457,11 +548,15 @@ void IndexCore::rebuildIndex(const RepoParams& params, const StringVector& toAdd
     if (!pkgs[i].isSource)
       if (!skipToAdd[i])
 	{
-	  writer->writeData(PkgSection::saveDescr(pkgs[i], params.changeLogSources));
+	  writer->writeData(PkgSection::saveFileList(pkgs[i]));
 	  logMsg(LOG_DEBUG, "File \'%s\' added to index", pkgs[i].fileName.c_str());
 	}
   reader->close();
   writer->close();
+  File::unlink(inputFileName);
+  File::move(outputFileName, inputFileName);
+
+  logMsg(LOG_INFO, "Repository index in \'%s\' fixing completed successfully", params.indexPath.c_str());
 }
 
 void IndexCore::fixReferences(const RepoParams& params)
@@ -623,6 +718,13 @@ std::auto_ptr<AbstractTextFormatSectionReader> createRebuildReader(const std::st
     }
   assert(0);
   return std::auto_ptr<AbstractTextFormatSectionReader>();
+}
+
+std::auto_ptr<AbstractTextFormatSectionReader> createRebuildReaderNoCompression(const std::string& fileName)
+{
+  std::auto_ptr<TextFormatSectionReader> reader(new TextFormatSectionReader());
+  reader->open(fileName);
+  return std::auto_ptr<AbstractTextFormatSectionReader>(reader.release());
 }
 
 std::auto_ptr<UnifiedOutput> createRebuildWriter(const std::string& fileName, const RepoParams& params)

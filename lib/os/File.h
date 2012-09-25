@@ -159,6 +159,9 @@ public:
    */
   static void unlink(const std::string& fileName);
 
+  /**\brief FIXME*/
+  static void move(const std::string& oldFileName, const std::string& newFileName);
+
   /**\brief Checks if file is a regular file
    *
    * FIXME
