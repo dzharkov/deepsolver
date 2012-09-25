@@ -2,6 +2,7 @@
 AM_CXXFLAGS = $(DEEPSOLVER_CXXFLAGS) $(DEEPSOLVER_INCLUDES)
 LIBS += -lrpm -lcurl
 LIBdir=${libdir}
+LDFLAGS=-version-info ${LT_CURRENT}:$(LT_REVISION):$(LT_AGE) -release $(LT_RELEASE)
 
 LIB_LTLIBRARIES = libdeepsolver.la
 
