@@ -39,7 +39,7 @@ public:
 
   std::string getMessage() const
   {
-    return m_message;
+    return "Invalid regular expression:" + m_message;
   }
 
 private:
