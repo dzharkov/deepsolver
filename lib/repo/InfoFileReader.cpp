@@ -88,7 +88,7 @@ void InfoFileReader::parseLine(const std::string& line, std::string& name, std::
 	      name += c;
 	      continue;
 	    }
-	  throw InfoFileSyntaxException(InfoFileSyntaxErrorUnexpectedCharacter, m_currentLineNumber, line);
+	  throw InfoFileSyntaxException(InfoFileSyntaxException::UnexpectedCharacter, m_currentLineNumber, line);
 	}//Beginning;
       //Name;
       if (state == STATE_NAME)
@@ -109,8 +109,8 @@ void InfoFileReader::parseLine(const std::string& line, std::string& name, std::
 	      continue;
 	    }
 	  if (c == '#')
-	    throw InfoFileSyntaxException(InfoFileSyntaxErrorIncompleteLine, m_currentLineNumber, line);
-	  throw InfoFileSyntaxException(InfoFileSyntaxErrorUnexpectedCharacter, m_currentLineNumber, line);
+	    throw InfoFileSyntaxException(InfoFileSyntaxException::IncompleteLine, m_currentLineNumber, line);
+	  throw InfoFileSyntaxException(InfoFileSyntaxException::UnexpectedCharacter, m_currentLineNumber, line);
 	}//Name;
       if (state == STATE_BEFORE_EQUALS)
 	{
@@ -122,8 +122,8 @@ void InfoFileReader::parseLine(const std::string& line, std::string& name, std::
 	      continue;
 	    }
 	  if (c == '#')
-	    throw InfoFileSyntaxException(InfoFileSyntaxErrorIncompleteLine, m_currentLineNumber, line);
-	  throw InfoFileSyntaxException(InfoFileSyntaxErrorUnexpectedCharacter, m_currentLineNumber, line);
+	    throw InfoFileSyntaxException(InfoFileSyntaxException::IncompleteLine, m_currentLineNumber, line);
+	  throw InfoFileSyntaxException(InfoFileSyntaxException::UnexpectedCharacter, m_currentLineNumber, line);
 	} //Before equals;
       if (state == STATE_VALUE)
 	{
@@ -136,14 +136,14 @@ void InfoFileReader::parseLine(const std::string& line, std::string& name, std::
 	    return;
 	  assert(c == '\\');
 	  if (i + 1>= line.length())
-	    throw InfoFileSyntaxException(InfoFileSyntaxErrorIncompleteLine, m_currentLineNumber, line);
+	    throw InfoFileSyntaxException(InfoFileSyntaxException::IncompleteLine, m_currentLineNumber, line);
 	  i++;
 	  if (line[i] != '#')
-	    throw InfoFileSyntaxException(InfoFileSyntaxErrorUnexpectedCharacter, m_currentLineNumber, line);
+	    throw InfoFileSyntaxException(InfoFileSyntaxException::UnexpectedCharacter, m_currentLineNumber, line);
 	  value += '#';
 	  continue;
 	}//Value;
     }
   if (state != STATE_INIT && state != STATE_VALUE)
-    throw InfoFileSyntaxException(InfoFileSyntaxErrorIncompleteLine, m_currentLineNumber, line);
+    throw InfoFileSyntaxException(InfoFileSyntaxException::IncompleteLine, m_currentLineNumber, line);
 }

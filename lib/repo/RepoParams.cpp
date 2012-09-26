@@ -38,7 +38,7 @@ bool parseBooleanValue(const std::string& str, const std::string& paramName)
     return 0;
   if (str == "0")
     return 0;
-  throw InfoFileValueException(InfoFileValueErrorInvalidBooleanValue, paramName);
+  throw InfoFileValueException(InfoFileValueException::InvalidBooleanValue, paramName);
 }
 
 static std::string doubleQuotes(const std::string& str)
@@ -200,7 +200,7 @@ void RepoParams::readInfoFile(const std::string& fileName)
 	    formatType = FormatTypeText; else
 	    if (trim(value) == INFO_FILE_FORMAT_TYPE_BINARY)
 	      formatType = FormatTypeBinary; else
-	      throw InfoFileValueException(InfoFileValueErrorInvalidFormatType, trim(value));
+	      throw InfoFileValueException(InfoFileValueException::InvalidFormatType, trim(value));
 	  continue;
 	} //Format type;
       //Compression type;
@@ -210,7 +210,7 @@ void RepoParams::readInfoFile(const std::string& fileName)
 	    compressionType = CompressionTypeNone; else
 	    if (trim(value) == INFO_FILE_COMPRESSION_TYPE_GZIP)
 	      compressionType = CompressionTypeGzip; else
-	      throw InfoFileValueException(InfoFileValueErrorInvalidCompressionType, trim(value));
+	      throw InfoFileValueException(InfoFileValueException::InvalidCompressionType, trim(value));
 	  continue;
 	} //Compression type;
       //Version;

@@ -18,16 +18,6 @@
 #ifndef DEEPSOLVER_INFO_FILE_EXCEPTION_H
 #define DEEPSOLVER_INFO_FILE_EXCEPTION_H
 
-enum {
-  InfoFileSyntaxErrorUnexpectedCharacter = 0,
-  InfoFileSyntaxErrorIncompleteLine = 1
-};
-
-enum {
-  InfoFileValueErrorInvalidFormatType = 0,
-  InfoFileValueErrorInvalidCompressionType = 1,
-  InfoFileValueErrorInvalidBooleanValue = 2
-};
 
 /**\brief The general info file error
  * FIXME
@@ -54,6 +44,12 @@ public:
  */
 class InfoFileSyntaxException: public InfoFileException
 {
+public:
+  enum {
+    UnexpectedCharacter = 0,
+    IncompleteLine = 1
+  };
+
 public:
   /**\brief The constructor
    *
@@ -105,39 +101,27 @@ public:
     return m_line;
   }
 
-  /**\brief Returns the string type of exception
-   *
-   * This method always returns "info file syntax" string.
-   *
-   * \return The type of exception (always "info file")
-   */
   std::string getType() const
   {
     return "info file syntax";
   }
 
-  /**\brief Returns the single-line configuration error description
-   *
-   * Using of these method is recommended only for debug purposes.
-   *
-   * \return The single-line error description
-   */
   std::string getMessage() const
   {
     std::ostringstream ss;
+    ss << "Info file syntax error at line " << m_lineNumber + 1 << ":";
     switch(m_code)
       {
-      case InfoFileSyntaxErrorUnexpectedCharacter:
-	ss << "unexpected character at line ";
+      case UnexpectedCharacter:
+	ss << "unexpected character";
 	  break;
-      case InfoFileSyntaxErrorIncompleteLine:
-	ss << "incomplete line ";
+      case IncompleteLine:
+	ss << "incomplete line";
 	break;
       default:
 	assert(0);
       } //switch(m_code);
-    ss << m_lineNumber << ": " << m_line;
-    return ss.str();
+    ss << ":" << m_line;
   }
 
 private:
@@ -153,6 +137,13 @@ private:
  */
 class InfoFileValueException: public InfoFileException
 {
+public:
+  enum {
+    InvalidFormatType = 0,
+    InvalidCompressionType = 1,
+    InvalidBooleanValue = 2
+  };
+
 public:
   /**\brief The constructor
    *
@@ -200,27 +191,21 @@ public:
     return "info file value";
   }
 
-  /**\brief Returns the single line error description
-   *
-   * You should use this method only in debug purposes.
-   *
-   * \return The single line error description
-   */
   std::string getMessage() const
   {
-
+    std::string s = "Info file value error:";
     switch(m_code)
       {
-      case InfoFileValueErrorInvalidFormatType:
-	return "invalid format type: \'" + m_arg + "\'";
-      case InfoFileValueErrorInvalidCompressionType:
-	return "invalid compression type: \'" + m_arg + "\'";
-      case InfoFileValueErrorInvalidBooleanValue:
-	return "parameter \'" + m_arg + "\' has an invalid boolean value";
+      case InvalidFormatType:
+	return s + "invalid format type: \'" + m_arg + "\'";
+      case InvalidCompressionType:
+	return s + "invalid compression type: \'" + m_arg + "\'";
+      case InvalidBooleanValue:
+	return s + "parameter \'" + m_arg + "\' has an invalid boolean value";
       default:
 	assert(0);
       }
-    return "";//Just to reduce warning messages;
+    return "";
   }
 
 private:
