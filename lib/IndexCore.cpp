@@ -556,6 +556,17 @@ void IndexCore::rebuildIndex(const RepoParams& params, const StringVector& toAdd
   File::unlink(inputFileName);
   File::move(outputFileName, inputFileName);
 
+  m_listener.onChecksumWriting();
+  StringVector files;
+  for(Md5File::ItemVector::size_type i = 0;i < md5File.items.size();i++)
+    if (md5File.items[i].fileName != REPO_INDEX_INFO_FILE)
+      files.push_back(md5File.items[i].fileName);
+  for(StringVector::size_type i = 0;i < files.size();i++)
+    md5File.removeItem(files[i]);
+  for(StringVector::size_type i = 0;i < files.size();i++)
+    md5File.addItemFromFile(files[i], Directory::mixNameComponents(params.indexPath, files[i]));
+  md5File.saveToFile(Directory::mixNameComponents(params.indexPath, params.md5sumFileName));
+
   logMsg(LOG_INFO, "Repository index in \'%s\' fixing completed successfully", params.indexPath.c_str());
 }
 
