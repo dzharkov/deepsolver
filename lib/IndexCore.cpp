@@ -22,6 +22,7 @@
 #include"repo/TextFormatSectionReader.h"
 #include"utils/Md5File.h"
 #include"utils/GzipInterface.h"
+#include"utils/RegExp.h"
 
 #define TMP_FILE_NAME "tmp_data"
 
@@ -115,6 +116,36 @@ private:
   GzipOutputFile m_file;
 }; //class GzipOutput;
 
+class RegExpCollection
+{
+public:
+  RegExpCollection() {}
+  virtual ~RegExpCollection() {}
+
+public:
+  void fill(const StringVector& exps)
+  {
+    m_regExps.clear();
+    m_regExps.resize(exps.size());
+    for(StringVector::size_type i = 0;i < exps.size();i++)
+      {
+	assert(!exps[i].empty());
+	m_regExps[i].compile(exps[i]);
+      }
+  }
+
+  bool matchAtLeastOne(const std::string& line) const
+  {
+    for(RegExpVector::size_type i = 0;i < m_regExps.size();i++)
+      if (m_regExps[i].match(line))
+	return 1;
+    return 0;
+  }
+
+private:
+  RegExpVector m_regExps;
+}; //class RegExpCollection;
+
 static std::string compressionExtension(char compressionType);
 static bool fileFromDirs(const std::string& fileName, const StringVector& dirs);
 static std::auto_ptr<AbstractTextFormatSectionReader> createRebuildReader(const std::string& fileName, const RepoParams& params);
@@ -132,6 +163,8 @@ void IndexCore::buildIndex(const RepoParams& params)
   if (!Directory::empty(params.indexPath))
     throw IndexCoreException(IndexCoreException::DirectoryNotEmpty, params.indexPath);
   logMsg(LOG_DEBUG, "Starting index creation in \'%s\', target directory exists and empty", params.indexPath.c_str());
+  RegExpCollection regExps;
+  regExps.fill(params.excludeRequiresRegExp);
   params.writeInfoFile(Directory::mixNameComponents(params.indexPath, REPO_INDEX_INFO_FILE));
   StringSet internalProvidesRefs, externalProvidesRefs;
   if (params.filterProvidesByRefs)
@@ -193,6 +226,11 @@ void IndexCore::buildIndex(const RepoParams& params)
 	  backend->readPackageFile(it->fullPath(), pkg);
 	  pkg.fileName = it->name();
 	  pkg.isSource = backend->validSourcePkgFileName(it->name());
+	  NamedPkgRelVector requires = pkg.requires;
+	  pkg.requires.clear();
+	  for(NamedPkgRelVector::size_type i = 0;i < requires.size();i++)
+	    if (!regExps.matchAtLeastOne(requires[i].pkgName))
+	      pkg.requires.push_back(requires[i]);
 	  if (params.filterProvidesByRefs)
 	    {
 	      for(NamedPkgRelVector::size_type k = 0;k < pkg.requires.size();k++)

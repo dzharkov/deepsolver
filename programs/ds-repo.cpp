@@ -156,7 +156,7 @@ void initCliParser()
   cliParser.addKeyDoubleName("-r", "--references", "write only provides with known corresponding requires/conflicts");
   cliParser.addKeyDoubleName("-s", "--ref-sources", "LIST", "take additional requires/conflicts for provides filtering in listed directories (list should be colon-delimited)");
   cliParser.addKeyDoubleName("-d", "--dirs", "LIST", "write only file provides  from listed directories (list should be colon-delimited)");
-  cliParser.addKeyDoubleName("-nr", "--no-requires", "FILENAME", "skip requires listed in FILENAME");
+  cliParser.addKeyDoubleName("-nr", "--no-requires", "FILENAME", "skip requires listed by regexp in FILENAME");
   cliParser.addKeyDoubleName("-h", "--help", "print this help screen and exit");
   cliParser.addKey("--log", "print log to console instead of user progress information");
   cliParser.addKey("--debug", "relax filtering level for log output");
@@ -222,26 +222,25 @@ void parseCmdLine(int argc, char* argv[])
   params.filterProvidesByRefs = cliParser.wasKeyUsed("--references");
   if (cliParser.wasKeyUsed("--ref-sources", arg))
     splitColonDelimitedList(arg, params.providesRefsSources);
-    if (cliParser.wasKeyUsed("--help"))
-      {
-	printHelp();
-	exit(EXIT_SUCCESS);
-      }
-    if (cliParser.wasKeyUsed("--dirs", arg))
-      splitColonDelimitedList(arg, params.filterProvidesByDirs);
-    //FIXME:exclude provides;
-    if (cliParser.files.empty() || cliParser.files[0].empty())
-      {
-	std::cerr << PREFIX << "index directory was not mentioned" << std::endl;
-	exit(EXIT_FAILURE);
-      }
-    params.indexPath = cliParser.files[0];
-    for(StringVector::size_type i = 1;i < cliParser.files.size();i++)
-      params.pkgSources.push_back(cliParser.files[i]);
-    if (params.pkgSources.empty())
-      params.pkgSources.push_back(".");
-    if (!params.filterProvidesByRefs)
-      params.providesRefsSources.clear();
+  if (cliParser.wasKeyUsed("--help"))
+    {
+      printHelp();
+      exit(EXIT_SUCCESS);
+    }
+  if (cliParser.wasKeyUsed("--dirs", arg))
+    splitColonDelimitedList(arg, params.filterProvidesByDirs);
+  if (cliParser.files.empty() || cliParser.files[0].empty())
+    {
+      std::cerr << PREFIX << "index directory was not mentioned" << std::endl;
+      exit(EXIT_FAILURE);
+    }
+  params.indexPath = cliParser.files[0];
+  for(StringVector::size_type i = 1;i < cliParser.files.size();i++)
+    params.pkgSources.push_back(cliParser.files[i]);
+  if (params.pkgSources.empty())
+    params.pkgSources.push_back(".");
+  if (!params.filterProvidesByRefs)
+    params.providesRefsSources.clear();
 }
 
 int main(int argc, char* argv[])
@@ -253,6 +252,21 @@ int main(int argc, char* argv[])
   try {
     if (!cliParser.wasKeyUsed("--log"))
       printLogo();
+    std::string arg;
+    if (cliParser.wasKeyUsed("--no-requires", arg))
+      {
+	File f;
+	f.openReadOnly(arg);
+	StringVector lines;
+	f.readTextFile(lines);
+	for(StringVector::size_type i = 0;i < lines.size();i++)
+	  {
+	    const std::string line = trim(lines[i]);
+	    if (line.empty())
+	      continue;
+	    params.excludeRequiresRegExp.push_back(line);
+	  }
+      }
     IndexConstructionListener listener(cliParser.wasKeyUsed("--log"));
     IndexCore indexCore(listener);
     indexCore.buildIndex(params);

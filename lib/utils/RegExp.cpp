@@ -33,7 +33,7 @@ void RegExp::compile(const std::string& exp)
     }
 }
 
-bool RegExp::match(const std::string& line)
+bool RegExp::match(const std::string& line) const
 {
   return regexec(m_re, line.c_str(), 0, NULL, 0) != REG_NOMATCH;
 }

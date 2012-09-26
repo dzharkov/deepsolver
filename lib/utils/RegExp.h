@@ -56,11 +56,14 @@ public:
 
 public:
   void compile(const std::string& exp);
-  bool match(const std::string& line);
+  bool match(const std::string& line) const;
   void close();
 
 private:
   regex_t* m_re;
 }; //class RegExp;
+
+typedef std::vector<RegExp> RegExpVector;
+typedef std::list<RegExp> RegExpList;
 
 #endif //DEEPSOLVER_REG_EXP_H;
