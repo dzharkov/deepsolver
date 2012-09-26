@@ -109,7 +109,7 @@ public:
   std::string getMessage() const
   {
     std::ostringstream ss;
-    ss << "Info file syntax error at line " << m_lineNumber + 1 << ":";
+    ss << "Info file syntax error at line " << m_lineNumber << ":";
     switch(m_code)
       {
       case UnexpectedCharacter:
@@ -122,6 +122,7 @@ public:
 	assert(0);
       } //switch(m_code);
     ss << ":" << m_line;
+    return ss.str();
   }
 
 private:

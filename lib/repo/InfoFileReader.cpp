@@ -69,6 +69,7 @@ void InfoFileReader::read(const std::string& text, StringToStringMap& res)
 
 void InfoFileReader::parseLine(const std::string& line, std::string& name, std::string& value)
 {
+  logMsg(LOG_DEBUG, "Parsing info file line \'%s\'", line.c_str());
   int state = STATE_INIT;
   name.erase();
   value.erase();

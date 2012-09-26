@@ -121,7 +121,7 @@ public:
 	assert(0);
       };
     std::ostringstream ss;
-    ss << m_fileName << "(" << (m_lineNumber + 1) << "):" << msg << ":" << m_line;
+    ss << m_fileName << "(" << m_lineNumber << "):" << msg << ":" << m_line;
     return ss.str();
   }
 

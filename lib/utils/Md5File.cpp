@@ -58,7 +58,7 @@ void Md5File::loadFromFile(const std::string& fileName)
       if (line.empty())
 	continue;
       if (line.length() < 35)
-	throw Md5FileException(Md5FileException::TooShortLine, fileName, i, line);
+	throw Md5FileException(Md5FileException::TooShortLine, fileName, i + 1, line);
       Item item;
       for(std::string::size_type k = 0;k < 32;k++)
 	item.checksum += line[k];
@@ -70,7 +70,7 @@ void Md5File::loadFromFile(const std::string& fileName)
 	    item.checksum[k] = 'a' + (item.checksum[k] - 'A');
 	  if ((item.checksum [k] >= 'a' && item.checksum[k] <= 'f') || (item.checksum[k] >= '0' && item.checksum [k] <= '9'))
 	    continue;
-	  throw Md5FileException(Md5FileException::InvalidChecksumFormat, fileName, i, line);
+	  throw Md5FileException(Md5FileException::InvalidChecksumFormat, fileName, i + 1, line);
 	}
       items.push_back(item);
     }
