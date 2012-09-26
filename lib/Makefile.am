@@ -45,6 +45,7 @@ utils/CurlInterface.cpp \
 utils/GzipInterface.cpp \
 utils/Md5.cpp \
 utils/Md5File.cpp \
+utils/RegExp.cpp \
 utils/string-utils.cpp \
 utils/TinyFileDownload.cpp \
 version.cpp
@@ -98,6 +99,7 @@ utils/CurlInterface.h \
 utils/DateTime.h \
 utils/GzipInterface.h \
 utils/Md5.h \
+utils/Md5File.h \
 utils/Md5File.h \
 utils/string-utils.h \
 utils/TinyFileDownload.h \
