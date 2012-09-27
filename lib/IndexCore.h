@@ -138,7 +138,7 @@ public:
 public:
   void buildIndex(const RepoParams& params);
   void rebuildIndex(const RepoParams& params, const StringVector& toAdd, const StringVector& toRemove);
-  void fixReferences(const RepoParams& params);
+  void refilterProvides(const RepoParams& params);
 
 private:
   void collectRefs(const std::string& dirName, StringSet& res);

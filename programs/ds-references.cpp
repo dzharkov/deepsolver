@@ -170,7 +170,7 @@ int main(int argc, char* argv[])
     params.readInfoFile(Directory::mixNameComponents(params.indexPath, REPO_INDEX_INFO_FILE));
     IndexReconstructionListener listener(cliParser.wasKeyUsed("--log"));
     IndexCore indexCore(listener);
-    indexCore.fixReferences(params);
+    indexCore.refilterProvides(params);
   }
   catch(const DeepsolverException& e)
     {

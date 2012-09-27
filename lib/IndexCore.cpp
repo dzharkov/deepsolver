@@ -608,7 +608,7 @@ void IndexCore::rebuildIndex(const RepoParams& params, const StringVector& toAdd
   logMsg(LOG_INFO, "Repository index in \'%s\' fixing completed successfully", params.indexPath.c_str());
 }
 
-void IndexCore::fixReferences(const RepoParams& params)
+void IndexCore::refilterProvides(const RepoParams& params)
 {
   assert(!params.indexPath.empty());
   logMsg(LOG_DEBUG, "Starting reference fixing in \'%s\'", params.indexPath.c_str());
