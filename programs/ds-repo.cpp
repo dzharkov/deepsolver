@@ -152,7 +152,7 @@ void initCliParser()
   cliParser.addKeyDoubleName("-c", "--compression", "TYPE", "set compression method");
   cliParser.addKeyDoubleName("-lb", "--changelog-binary", "include changelog for binary packages");
   cliParser.addKeyDoubleName("-ls", "--changelog-source", "include changelog for source packages");
-  cliParser.addKeyDoubleName("-u", "--user", "NAME=VALUE", "add custom user parameter to information file");
+  cliParser.addKeyDoubleName("-u", "--user", "NAME=VALUE[:...]", "add custom user parameters to information file");
   cliParser.addKeyDoubleName("-r", "--references", "write only provides with known corresponding requires/conflicts");
   cliParser.addKeyDoubleName("-s", "--ref-sources", "LIST", "take additional requires/conflicts for provides filtering in listed directories (list should be colon-delimited)");
   cliParser.addKeyDoubleName("-d", "--dirs", "LIST", "write only file provides  from listed directories (list should be colon-delimited)");
@@ -213,11 +213,14 @@ void parseCmdLine(int argc, char* argv[])
   params.changeLogSources = cliParser.wasKeyUsed("--changelog-source");
   if (cliParser.wasKeyUsed("--user", arg))
     {
-      if (!processUserParam(arg))
-	{
-	  std::cerr << PREFIX << "invalid user parameter specification \'" << arg << "\'" << std::endl;
-	  exit(EXIT_FAILURE);
-	}
+      StringVector userParams;
+      splitColonDelimitedList(arg, userParams);
+      for(StringVector::size_type i = 0;i < userParams.size();i++)
+	if (!processUserParam(userParams[i]))
+	  {
+	    std::cerr << PREFIX << "invalid user parameter specification \'" << arg << "\'" << std::endl;
+	    exit(EXIT_FAILURE);
+	  }
     }
   params.filterProvidesByRefs = cliParser.wasKeyUsed("--references");
   if (cliParser.wasKeyUsed("--ref-sources", arg))
