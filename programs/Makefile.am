@@ -1,7 +1,7 @@
 
 AM_CXXFLAGS = $(DEEPSOLVER_CXXFLAGS) $(DEEPSOLVER_INCLUDES)
 
-bin_PROGRAMS = ds ds-repo ds-patch ds-references
+bin_PROGRAMS = ds ds-repo ds-patch ds-provides
 
 ds_LDADD = \
 $(top_srcdir)/lib/libdeepsolver.la
@@ -30,10 +30,10 @@ ds_patch_SOURCES=\
 CliParser.cpp \
 ds-patch.cpp
 
-ds_references_LDADD = \
+ds_provides_LDADD = \
 $(top_srcdir)/lib/libdeepsolver.la
-ds_references_DEPENDENCIES = $(ds_references_LDADD)
+ds_provides_DEPENDENCIES = $(ds_provides_LDADD)
 
-ds_references_SOURCES=\
+ds_provides_SOURCES=\
 CliParser.cpp \
 ds-references.cpp
