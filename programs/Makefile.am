@@ -36,4 +36,4 @@ ds_provides_DEPENDENCIES = $(ds_provides_LDADD)
 
 ds_provides_SOURCES=\
 CliParser.cpp \
-ds-references.cpp
+ds-provides.cpp

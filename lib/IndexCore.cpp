@@ -667,6 +667,7 @@ void IndexCore::refilterProvides(const RepoParams& params)
     }
   logMsg(LOG_DEBUG, "Performing unlink() for \'%s\'", pkgFileName.c_str());
   File::unlink(pkgFileName);
+  m_listener.onProvidesCleaning();
   logMsg(LOG_DEBUG, "Creating new \'%s\'", pkgFileName.c_str());
   std::auto_ptr<UnifiedOutput> pkgFile = createRebuildWriter(pkgFileName, params);
   std::ifstream is(pkgCompleteFileName.c_str());
