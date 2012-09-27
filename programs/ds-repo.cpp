@@ -210,7 +210,7 @@ void parseCmdLine(int argc, char* argv[])
 	}
     }
   params.changeLogBinary = cliParser.wasKeyUsed("--changelog-binary");
-  params.changeLogSources = cliParser.wasKeyUsed("--changelog-bsource");
+  params.changeLogSources = cliParser.wasKeyUsed("--changelog-source");
   if (cliParser.wasKeyUsed("--user", arg))
     {
       if (!processUserParam(arg))

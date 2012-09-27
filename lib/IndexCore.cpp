@@ -72,7 +72,6 @@ public:
   {
     if (!m_stream.is_open())
       return;
-    m_stream << std::endl;
     m_stream.flush();
     m_stream.close();
   }
@@ -291,7 +290,7 @@ void IndexCore::buildIndex(const RepoParams& params)
       logMsg(LOG_DEBUG, "Provides filtering completed");
     } else 
     logMsg(LOG_DEBUG, "Skipping additional phase for provides filtering");
-  logMsg(LOG_DEBUG, "Preparing md5-checksum file");
+  logMsg(LOG_DEBUG, "Preparing md5sum file");
   m_listener.onChecksumWriting();
   Md5File md5;
   logMsg(LOG_DEBUG, "Registering \'%s\'", Directory::mixNameComponents(params.indexPath, REPO_INDEX_INFO_FILE).c_str());
@@ -306,7 +305,7 @@ void IndexCore::buildIndex(const RepoParams& params)
   md5.addItemFromFile(File::baseName(srcFileName), srcFileName);
   logMsg(LOG_DEBUG, "Registering \'%s\'", srcDescrFileName.c_str());
   md5.addItemFromFile(File::baseName(srcDescrFileName), srcDescrFileName);
-  logMsg(LOG_INFO, "Writing md5-checksum file");
+  logMsg(LOG_INFO, "Writing md5sum file");
   md5.saveToFile(Directory::mixNameComponents(params.indexPath, REPO_INDEX_MD5SUM_FILE));
   logMsg(LOG_DEBUG, "Exiting index building procedure, everything done successfully");
 }
@@ -314,6 +313,8 @@ void IndexCore::buildIndex(const RepoParams& params)
 void IndexCore::rebuildIndex(const RepoParams& params, const StringVector& toAdd, const StringVector& toRemove)
 {
   logMsg(LOG_DEBUG, "starting index patching process with %zu items to add and %zu items to remove", toAdd.size(), toRemove.size());
+  RegExpCollection regExps;
+  regExps.fill(params.excludeRequiresRegExp);
   m_listener.onChecksumVerifying();
   if (params.md5sumFileName.empty())
     throw IndexCoreException(IndexCoreException::MissedChecksumFileName);
@@ -333,6 +334,11 @@ void IndexCore::rebuildIndex(const RepoParams& params, const StringVector& toAdd
       backend->readPackageFile(toAdd[i], pkgs[i]);
       pkgs[i].fileName = File::baseName(toAdd[i]);
       pkgs[i].isSource = backend->validSourcePkgFileName(toAdd[i]);
+      NamedPkgRelVector requires = pkgs[i].requires;
+      pkgs[i].requires.clear();
+      for(NamedPkgRelVector::size_type i = 0;i < requires.size();i++)
+	if (!regExps.matchAtLeastOne(requires[i].pkgName))
+	  pkgs[i].requires.push_back(requires[i]);
     }
   BoolVector skipToAdd;
   skipToAdd.resize(toAdd.size());
@@ -354,7 +360,8 @@ void IndexCore::rebuildIndex(const RepoParams& params, const StringVector& toAdd
   while(reader->readNext(sect))
     {
       const std::string fileName = PkgSection::getPkgFileName(sect);
-      assert(!fileName.empty());//FIXME:
+          if(fileName.empty())
+	    throw IndexCoreException(IndexCoreException::InternalIOProblem);
       for(PkgFileVector::size_type i = 0;i < pkgs.size();i++)
 	{
 	  if (fileName != pkgs[i].fileName)
@@ -396,7 +403,8 @@ void IndexCore::rebuildIndex(const RepoParams& params, const StringVector& toAdd
   while(reader->readNext(sect))
     {
       const std::string fileName = PkgSection::getPkgFileName(sect);
-      assert(!fileName.empty());//FIXME:
+      if(fileName.empty())
+	throw IndexCoreException(IndexCoreException::InternalIOProblem);
       for(PkgFileVector::size_type i = 0;i < pkgs.size();i++)
 	{
 	  if (fileName != pkgs[i].fileName)
@@ -438,7 +446,8 @@ void IndexCore::rebuildIndex(const RepoParams& params, const StringVector& toAdd
   while(reader->readNext(sect))
     {
       const std::string fileName = PkgSection::getPkgFileName(sect);
-      assert(!fileName.empty());//FIXME:
+      if(fileName.empty())
+	throw IndexCoreException(IndexCoreException::InternalIOProblem);
       for(PkgFileVector::size_type i = 0;i < pkgs.size();i++)
 	{
 	  if (fileName != pkgs[i].fileName)
@@ -480,7 +489,8 @@ void IndexCore::rebuildIndex(const RepoParams& params, const StringVector& toAdd
   while(reader->readNext(sect))
     {
       const std::string fileName = PkgSection::getPkgFileName(sect);
-      assert(!fileName.empty());//FIXME:
+      if(fileName.empty());
+      throw IndexCoreException(IndexCoreException::InternalIOProblem);
       for(PkgFileVector::size_type i = 0;i < pkgs.size();i++)
 	{
 	  if (fileName != pkgs[i].fileName)
@@ -523,7 +533,8 @@ void IndexCore::rebuildIndex(const RepoParams& params, const StringVector& toAdd
   while(reader->readNext(sect))
     {
       const std::string fileName = PkgSection::getPkgFileName(sect);
-      assert(!fileName.empty());//FIXME:
+      if(fileName.empty());
+      throw IndexCoreException(IndexCoreException::InternalIOProblem);
       for(PkgFileVector::size_type i = 0;i < pkgs.size();i++)
 	{
 	  if (fileName != pkgs[i].fileName)
@@ -565,7 +576,8 @@ void IndexCore::rebuildIndex(const RepoParams& params, const StringVector& toAdd
   while(reader->readNext(sect))
     {
       const std::string fileName = PkgSection::getPkgFileName(sect);
-      assert(!fileName.empty());//FIXME:
+      if(fileName.empty());
+      throw IndexCoreException(IndexCoreException::InternalIOProblem);
       for(PkgFileVector::size_type i = 0;i < pkgs.size();i++)
 	{
 	  if (fileName != pkgs[i].fileName)
@@ -694,7 +706,7 @@ void IndexCore::refilterProvides(const RepoParams& params)
 
 void IndexCore::collectRefs(const std::string& dirName, StringSet& res) 
 {
-  logMsg(LOG_DEBUG, "Collecting references in \'%s\'", dirName.c_str());
+  logMsg(LOG_INFO, "Collecting references in \'%s\'", dirName.c_str());
   //First of all checking if there is already created repo index;
   try {
     logMsg(LOG_DEBUG, "Checking is there repo index");
@@ -714,9 +726,9 @@ void IndexCore::collectRefs(const std::string& dirName, StringSet& res)
   catch (const DeepsolverException& e)
     {
       //Repository index reading failed, nothing sad, just making the log report;
-      logMsg(LOG_DEBUG, "Directory \'%s\' does not contains a valid repo index:%s error:%s", dirName.c_str(), e.getType().c_str(), e.getMessage().c_str());
+      logMsg(LOG_INFO, "Directory \'%s\' does not contain a valid repo index:%s error:%s", dirName.c_str(), e.getType().c_str(), e.getMessage().c_str());
     }
-  logMsg(LOG_DEBUG, "Since repository index failed  we are looking for packages files");
+  logMsg(LOG_INFO, "Since repository index reading failed  we are looking for just packages itself");
   std::auto_ptr<AbstractPackageBackEnd> backend = CREATE_PACKAGE_BACKEND;
   std::auto_ptr<Directory::Iterator> it = Directory::enumerate(dirName);
   while(it->moveNext())
