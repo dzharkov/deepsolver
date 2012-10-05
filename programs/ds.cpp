@@ -21,6 +21,72 @@
 #include"Messages.h"
 #include"IndexFetchProgress.h"
 
+class DsPatchCliParser: public CliParser
+{
+public:
+  /**\brief The default constructor*/
+  DsPatchCliParser() {}
+
+  /**\brief The destructor*/
+  virtual ~DsPatchCliParser() {}
+
+protected:
+  /**\brief Recognizes cluster of command line arguments
+   *
+   * This is a custom implementation recognizing "--add" and "--del" sequences.
+   *
+   * \param [in] params The list of all arguments potentially included into cluster
+   * \param [in/out] mode The additional mode variable with user-defined purpose
+   *
+   * \return The number of additional (excluding first) items in provided vector making the cluster
+   */
+  size_t recognizeCluster(const StringVector& params, int& mode) const
+  {
+  assert(!params.empty());
+  if (mode != 0)//We are already after "--" key;
+    return 0;
+  if (params[0] != "--add" && params[0] != "--del")
+    return CliParser::recognizeCluster(params, mode);
+  size_t ending = 1;
+  while (ending < params.size() &&
+	 params[ending] != "--add" &&
+	 params[ending] != "--del" &&
+	 params[ending] != "--" &&
+	 findKey(params[ending]) == (KeyVector::size_type)-1)
+    ending++;
+  ending--;
+  if (ending < 1)
+    throw CliParserException(CliParserException::MissedArgument, params[0]);
+  return ending;
+  }
+
+  /**\brief Parses one cluster
+   *
+   * The This implementation of this method parses arguments according to user-defined table and takes into account "--add" and "--del" sequences.
+   *
+   * \param [in] cluster The arguments of one cluster to parse
+   * \param [in/out] mode The additional mode variable with user-defined purpose
+   */
+  void parseCluster(const StringVector& cluster, int& mode)
+  {
+    if (mode != 0 || (cluster[0] != "--add" && cluster[0] != "--del"))
+      {
+	CliParser::parseCluster(cluster, mode);
+	return;
+      }
+    assert(cluster.size() > 1);
+    assert(cluster[0] == "--add" || cluster[0] == "--del");
+    if (cluster[0] == "--add")
+      for(StringVector::size_type i = 1;i < cluster.size();i++)
+	filesToAdd.push_back(cluster[i]); else 
+      for(StringVector::size_type i = 1;i < cluster.size();i++)
+	filesToRemove.push_back(cluster[i]);
+  }
+
+public:
+  StringVector filesToAdd, filesToRemove;
+}; //class DsPatchCliParser;
+
 class AlwaysTrueContinueRequest: public AbstractOperationContinueRequest
 {
 public:
