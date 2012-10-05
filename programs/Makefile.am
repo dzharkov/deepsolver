@@ -1,17 +1,26 @@
 
 AM_CXXFLAGS = $(DEEPSOLVER_CXXFLAGS) $(DEEPSOLVER_INCLUDES)
 
-bin_PROGRAMS = ds ds-repo ds-patch ds-provides
+bin_PROGRAMS = ds-install ds-update ds-repo ds-patch ds-provides
 
-ds_LDADD = \
+ds_install_LDADD = \
 $(top_srcdir)/lib/libdeepsolver.la
-ds_DEPENDENCIES = $(ds_LDADD)
+ds_install_DEPENDENCIES = $(ds_install_LDADD)
 
-ds_SOURCES=\
+ds_install_SOURCES=\
+CliParser.cpp \
+Messages.cpp \
+ds-install.cpp
+
+ds_update_LDADD = \
+$(top_srcdir)/lib/libdeepsolver.la
+ds_update_DEPENDENCIES = $(ds_update_LDADD)
+
+ds_update_SOURCES=\
 CliParser.cpp \
 Messages.cpp \
 IndexFetchProgress.cpp \
-ds.cpp
+ds-update.cpp
 
 ds_repo_LDADD = \
 $(top_srcdir)/lib/libdeepsolver.la
