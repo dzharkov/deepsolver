@@ -9,7 +9,6 @@ ds_DEPENDENCIES = $(ds_LDADD)
 
 ds_SOURCES=\
 CliParser.cpp \
-CmdLineParser.cpp \
 Messages.cpp \
 IndexFetchProgress.cpp \
 ds.cpp

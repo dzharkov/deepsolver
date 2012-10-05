@@ -16,15 +16,15 @@
 \begin{enumerate}  
 
 \item {
-\CODE{base.имя} --- каталог для~индексов компоненты репозитория;
+\PATH{base.имя} --- каталог для~индексов компоненты репозитория;
 }
 
 \item {
-\CODE{RPMS.имя} --- каталог для~бинарных пакетов;
+\PATH{RPMS.имя} --- каталог для~бинарных пакетов;
 }
 
 \item {
-\CODE{SRPMS.имя} --- каталог для~пакетов с~исходными текстами.
+\PATH{SRPMS.имя} --- каталог для~пакетов с~исходными текстами.
 }
 
 \end{enumerate}
@@ -35,17 +35,31 @@
 
 \begin{itemize}
 
-\item{\CODE{i586/base.main};}
-\item{\CODE{i586/base.debuginfo};}
-\item{\CODE{i586/RPMS.main};}
-\item{\CODE{i586/RPMS.debuginfo};}
-\item{\CODE{i586/SRPMS.main};}
-\item{\CODE{i586/SRPMS.debuginfo};}
-\item{\CODE{noarch/base.main};}
-\item{\CODE{noarch/base.debuginfo};}
-\item{\CODE{noarch/RPMS.main};}
-\item{\CODE{noarch/RPMS.debuginfo};}
-\item{\CODE{noarch/SRPMS.main};}
-\item{\CODE{noarch/SRPMS.debuginfo}.}
+\item{\PATH{i586/base.main};}
+\item{\PATH{i586/base.debuginfo};}
+\item{\PATH{i586/RPMS.main};}
+\item{\PATH{i586/RPMS.debuginfo};}
+\item{\PATH{i586/SRPMS.main};}
+\item{\PATH{i586/SRPMS.debuginfo};}
+\item{\PATH{noarch/base.main};}
+\item{\PATH{noarch/base.debuginfo};}
+\item{\PATH{noarch/RPMS.main};}
+\item{\PATH{noarch/RPMS.debuginfo};}
+\item{\PATH{noarch/SRPMS.main};}
+\item{\PATH{noarch/SRPMS.debuginfo}.}
+
+\end{itemize}
+
+Каталог \PATH{base.*}, предназначенный для~хранения индекса, должен содержать следующие файлы:
+
+\begin{itemize}
+
+\item{\PATH{info} --- информационный файл с~параметрами индекса;}
+\item{\PATH{.rpms.complete.data} --- вспомогательный файл, не~предназначенный для~загрузки пользователями, с~информацией для~повторной фильтрации \provides;}
+\item{\PATH{rpms.data} --- основной список пакетов с~информацией о~зависимостях между ними;}
+\item{\PATH{rpms.descr.data} --- список пакетов с~расширенными описаниями;}
+\item{\PATH{rpms.filelist.data} --- списки файлов для~каждого бинарного пакета;}
+\item{\PATH{srpms.data} --- основная информация о~пакетах с~исходными текстами;}
+\item{\PATH{srpms.descr.data} --- список пакетов с~исходными текстами, содержащий расширенную информацию.}
 
 \end{itemize}

@@ -16,7 +16,6 @@
 */
 
 #include"deepsolver.h"
-#include"CmdLineParser.h"
 #include"OperationCore.h"
 #include"InfoCore.h"
 #include"Messages.h"
@@ -37,7 +36,7 @@ public:
 
 static AlwaysTrueContinueRequest alwaysTrueContinueRequest;
 static ConfigCenter conf;
-static CmdLineParser cmdLineParser;
+//FIXME:static CmdLineParser cmdLineParser;
 
 bool loadConfiguration()
 {
@@ -95,7 +94,7 @@ int install(int argc, char* argv[])
   logMsg(LOG_DEBUG, "recognized user request to install packages");
   UserTask userTask;
   StringVector params;
-  cmdLineParser.parseInstallArgs(argc, argv, 2, userTask.itemsToInstall, params);
+  //  cmdLineParser.parseInstallArgs(argc, argv, 2, userTask.itemsToInstall, params);
   //FIXME:URLs must be filtered out;
   assert(!userTask.itemsToInstall.empty());
   logMsg(LOG_DEBUG, "Recognized %zu items to install:", userTask.itemsToInstall.size());
