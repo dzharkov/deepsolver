@@ -30,10 +30,17 @@ struct ConfDir
 struct ConfRepo
 {
   ConfRepo()
-    : enabled(1) {}
+    : enabled(1),
+      takeDescr(0),
+      takeFileList(0),
+      take-sources(0) {}
 
   ConfRepo(const std::string& n)
-    : name(n), enabled(1) {}
+    : name(n),
+      enabled(1),
+      takeDescr(0),
+      takeFileList(0),
+      take-sources(0) {}
 
   std::string name;
   bool enabled;
@@ -41,6 +48,9 @@ struct ConfRepo
   StringVector arch;
   StringVector components; 
   std::string vendor;
+  bool takeDescr;
+  bool takeFileList;
+  bool take-sources;
 }; //struct ConfRepo;
 
 typedef std::vector<ConfRepo> ConfRepoVector;

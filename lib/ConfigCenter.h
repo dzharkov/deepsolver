@@ -239,25 +239,28 @@ public:
   }
 
 private:
-    void onCoreConfigValue(const StringVector&path,
-			   const std::string& sectArg,
-			   const std::string& value,
-			   bool adding, 
-			   const ConfigFilePosInfo& pos);
+  enum {
+    ValueTypeUnknownParam = 0,
+    ValueTypeString = 1,
+    ValueTypeStringList = 2,
+    ValueTypeBoolean = 3
+  };
 
-    void onCoreDirConfigValue(const StringVector&path,
-			   const std::string& sectArg,
-			   const std::string& value,
-			   bool adding, 
-			   const ConfigFilePosInfo& pos);
-
-    void onRepoConfigValue(const StringVector&path,
-			   const std::string& sectArg,
-			   const std::string& value,
-			   bool adding, 
-			   const ConfigFilePosInfo& pos);
-
+private:
+  int getParamType(const StringVector& path, const std::string& arg) const;
   ConfRepo& findRepo(const std::string& name);
+
+private:
+  void processStringValue(const StringVector& path, 
+			 const std::string& sectArg,
+			 const std::string& value,
+			 bool adding,
+			 const ConfigFilePosInfo& pos);
+
+  void findStringValue(const StringVector& path, 
+			 const std::string& sectArg,
+StringValue& stringValue);
+
 
 private://AbstractConfigFileHandler;
   void onConfigFileValue(const StringVector& path, 

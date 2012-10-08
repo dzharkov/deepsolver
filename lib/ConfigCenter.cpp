@@ -18,32 +18,21 @@
 #include"deepsolver.h"
 #include"ConfigCenter.h"
 
-static std::string buildConfigParamTitle(const StringVector& path, const std::string& sectArg)
-{
-  assert(!path.empty());
-  std::string value = path[0];
-  if (!sectArg.empty())
-    value += " \"" + sectArg + "\"";
-  for(StringVector::size_type i = 1;i < path.size();i++)
-    value += "." + path[i];
-  return value;
-}
+static std::string buildConfigParamTitle(const StringVector& path, const std::string& sectArg);
+//    throw ConfigException(ConfigErrorValueCannotBeEmpty, "core.dir.pkgdata", pos);
 
 void ConfigCenter::loadFromFile(const std::string& fileName)
 {
   logMsg(LOG_DEBUG, "Reading configuration data from \'%s\'", fileName.c_str());
   assert(!fileName.empty());
-  std::ifstream ifile(fileName.c_str());
-  assert(ifile);//FIXME:exception;
+  File f;
+  f.openReadOnly(fileName);
+  StringVector lines;
+  f.readTextFile(lines);
+  f.close();
   ConfigFile parser(*this, fileName);
-  std::string line;
-  while(1)
-    {
-      std::getline(ifile, line);
-      if (!ifile)
-	break;
-      parser.processLine(line);
-    }
+  for(StringVector::size_type i = 0;i < lines.length();i++)
+      parser.processLine(lines[i]);
 }
 
 void ConfigCenter::commit()
@@ -81,126 +70,25 @@ void ConfigCenter::onConfigFileValue(const StringVector& path,
 				     const ConfigFilePosInfo& pos)
 {
   assert(!path.empty());
-  if (path[0] == "core")
-    onCoreConfigValue(path, sectArg, value,adding, pos); else
-  if (path[0] == "repo")
-    onRepoConfigValue(path, sectArg, value,adding, pos); else
+  const int paramType = getParamType(path, arg);
+  if (paramType == ValueTypeUnknownParam)
     throw ConfigException(ConfigErrorUnknownParam, buildConfigParamTitle(path, sectArg), pos);
-}
-
-void ConfigCenter::onCoreConfigValue(const StringVector&path,
-				     const std::string& sectArg,
-				     const std::string& value,
-				     bool adding, 
-				     const ConfigFilePosInfo& pos)
-{
-  //FIXME:sectArg must be empty;
-  assert(sectArg.empty());
-  if (path.size() < 2)
-    throw ConfigException(ConfigErrorIncompletePath, buildConfigParamTitle(path, sectArg), pos);
-  if (path[1] == "dir")
-    onCoreDirConfigValue(path, sectArg, value,adding, pos); else
-  throw ConfigException(ConfigErrorUnknownParam, buildConfigParamTitle(path, sectArg), pos);
-}
-
-void ConfigCenter::onCoreDirConfigValue(const StringVector&path,
-				     const std::string& sectArg,
-				     const std::string& value,
-				     bool adding, 
-				     const ConfigFilePosInfo& pos)
-{
-  //FIXME:sectArg must be empty;
-  assert(sectArg.empty());
-  if (path.size() < 3)
-    throw ConfigException(ConfigErrorIncompletePath, buildConfigParamTitle(path, sectArg), pos);
-  if (path[2] == "pkgdata")
+  if (paramType == ValueTypeString)
     {
-      if (adding)
-    throw ConfigException(ConfigErrorAddingNotPermitted, buildConfigParamTitle(path, sectArg), pos);
-      m_root.dir.pkgData = trim(value);
-      if (m_root.dir.pkgData.empty())
-    throw ConfigException(ConfigErrorValueCannotBeEmpty, "core.dir.pkgdata", pos);
+      processStringValue(path, sectArg, value, adding, pos);
       return;
     }
-  throw ConfigException(ConfigErrorUnknownParam, buildConfigParamTitle(path, sectArg), pos);
+  assert(0);
 }
 
-void ConfigCenter::onRepoConfigValue(const StringVector&path,
-				     const std::string& sectArg,
-				     const std::string& value,
-				     bool adding, 
-				     const ConfigFilePosInfo& pos)
+void ConfigCenter::processStringValue(const StringVector& path, 
+				      const std::string& sectArg,
+				      const std::string& value,
+				      bool adding,
+				      const ConfigFilePosInfo& pos)
 {
-  if (path.size() < 2)
-    throw ConfigException(ConfigErrorIncompletePath, buildConfigParamTitle(path, sectArg), pos);
-  //URL;
-  if (path[1] == "url")
-    {
-      if (adding)
-    throw ConfigException(ConfigErrorAddingNotPermitted, buildConfigParamTitle(path, sectArg), pos);
-      if (trim(value).empty())
-	throw ConfigException(ConfigErrorValueCannotBeEmpty, buildConfigParamTitle(path, sectArg), pos);
-      if (sectArg.empty())
-	{
-	  for(ConfRepoVector::size_type i = 0;i < m_root.repo.size();i++)
-	    m_root.repo[i].url = trim(value);
-	} else
-	findRepo(sectArg).url = trim(value);
-      return;
-    } //URL;
-  //Arch;
-  if (path[1] == "arch")
-    {
-      StringVector values;
-      splitBySpaces(value, values);
-      if (sectArg.empty())
-	{
-	  for(ConfRepoVector::size_type i = 0;i < m_root.repo.size();i++)
-	    {
-	      if (!adding)
-		m_root.repo[i].arch = values; else 
-		for(StringVector::size_type k = 0;k < values.size();k++)
-		  m_root.repo[i].arch.push_back(values[k]);
-	    } //for(repos);
-	} else
-	{
-	  ConfRepo& repo = findRepo(sectArg);
-	  if (!adding)
-	    repo.arch = values; else
-	    for(StringVector::size_type k = 0;k < values.size();k++)
-	      repo.arch.push_back(values[k]);
-	}
-      return;
-    } //arch;
-
-
-  //Components;
-  if (path[1] == "components")
-    {
-      StringVector values;
-      splitBySpaces(value, values);
-      if (sectArg.empty())
-	{
-	  for(ConfRepoVector::size_type i = 0;i < m_root.repo.size();i++)
-	    {
-	      if (!adding)
-		m_root.repo[i].components = values; else 
-		for(StringVector::size_type k = 0;k < values.size();k++)
-		  m_root.repo[i].components.push_back(values[k]);
-	    } //for(repos);
-	} else
-	{
-	  ConfRepo& repo = findRepo(sectArg);
-	  if (!adding)
-	    repo.components = values; else
-	    for(StringVector::size_type k = 0;k < values.size();k++)
-	      repo.components.push_back(values[k]);
-	}
-      return;
-    } //Components;
-  //FIXME:enabled;
-  //FIXME:vendor;
-  throw ConfigException(ConfigErrorUnknownParam, buildConfigParamTitle(path, sectArg), pos);
+  StringValue stringValue;
+  findStringValue(path, sectArg, stringValue);
 }
 
 ConfRepo& ConfigCenter::findRepo(const std::string& name)
@@ -211,3 +99,25 @@ ConfRepo& ConfigCenter::findRepo(const std::string& name)
   m_root.repo.push_back(ConfRepo(name));
   return m_root.repo.back();
 }
+
+int ConfigCenter::getParamType(const StringVector& path, const std::string& arg) const
+{
+}
+
+void ConfigCenter::findStringValue(const StringVector& path, 
+				   const std::string& sectArg,
+				   StringValue& stringValue)
+{
+}
+
+std::string buildConfigParamTitle(const StringVector& path, const std::string& sectArg)
+{
+  assert(!path.empty());
+  std::string value = path[0];
+  if (!sectArg.empty())
+    value += " \"" + sectArg + "\"";
+  for(StringVector::size_type i = 1;i < path.size();i++)
+    value += "." + path[i];
+  return value;
+}
+
