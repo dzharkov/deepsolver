@@ -248,6 +248,10 @@ private:
   class StringValue
   {
   public:
+  StringValue()
+    : canBeEmpty(0),
+      value(NULL) {}
+
   StringValue(std::string& v)
     : canBeEmpty(0),
       value(&v) {}
@@ -276,11 +280,19 @@ private:
     std::string* value;
   }; //class StringValue;
 
-  typedef std::vector<StringValue> StringValueVector;
-  StringValueVector m_stringValues;
-
+private:
   void initValues();
   int getParamType(const StringVector& path, const std::string& sectArg, const ConfigFilePosInfo& pos) const;
+
+  void addStringParam3(const std::string& path1,
+			       const std::string& path2,
+			       const std::string& path3,
+		       std::string& value);
+
+  void addNonEmptyStringParam3(const std::string& path1,
+			       const std::string& path2,
+			       const std::string& path3,
+			       std::string& value);
 
 private:
   ConfRepo& findRepo(const std::string& name);
@@ -293,7 +305,7 @@ private:
 
   void findStringValue(const StringVector& path, 
 			 const std::string& sectArg,
-StringValue& stringValue);
+		       StringValue& stringValue);
 
 private://AbstractConfigFileHandler;
   void onConfigFileValue(const StringVector& path, 
@@ -303,7 +315,11 @@ private://AbstractConfigFileHandler;
 			 const ConfigFilePosInfo& pos);
 
 private:
+  typedef std::vector<StringValue> StringValueVector;
+
+private:
   ConfRoot m_root;
+  StringValueVector m_stringValues;
 }; //class ConfigCenter;
 
 #endif //DEEPSOLVER_CONFIG_CENTER_H;

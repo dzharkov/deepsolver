@@ -18,13 +18,37 @@
 #include"deepsolver.h"
 #include"ConfigCenter.h"
 
-  static std::string stringBung;
 static std::string buildConfigParamTitle(const StringVector& path, const std::string& sectArg);
-//    throw ConfigException(ConfigErrorValueCannotBeEmpty, "core.dir.pkgdata", pos);
-
 
 void ConfigCenter::initValues()
 {
+  addStringParam3("core", "dir", "pkg-data", m_root.dir.pkgData );
+}
+
+void ConfigCenter::  addStringParam3(const std::string& path1,
+				     const std::string& path2,
+				     const std::string& path3,
+				     std::string& value)
+{
+  assert(!path1.empty() && !path2.empty() && !path3.empty());
+  StringValue stringValue(value);
+  stringValue.canBeEmpty = 1;
+  stringValue.path.push_back(path1);
+  stringValue.path.push_back(path2);
+  stringValue.path.push_back(path3);
+}
+
+void ConfigCenter::  addNonEmptyStringParam3(const std::string& path1,
+				     const std::string& path2,
+				     const std::string& path3,
+				     std::string& value)
+{
+  assert(!path1.empty() && !path2.empty() && !path3.empty());
+  StringValue stringValue(value);
+  stringValue.canBeEmpty = 0;
+  stringValue.path.push_back(path1);
+  stringValue.path.push_back(path2);
+  stringValue.path.push_back(path3);
 }
 
 void ConfigCenter::loadFromFile(const std::string& fileName)
@@ -72,8 +96,9 @@ void ConfigCenter::processStringValue(const StringVector& path,
 				      bool adding,
 				      const ConfigFilePosInfo& pos)
 {
-  StringValue stringValue(stringBung);
+  StringValue stringValue;
   findStringValue(path, sectArg, stringValue);
+  assert(stringValue.value != NULL);
 }
 
 ConfRepo& ConfigCenter::findRepo(const std::string& name)
