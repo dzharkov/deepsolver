@@ -18,8 +18,14 @@
 #include"deepsolver.h"
 #include"ConfigCenter.h"
 
+  static std::string stringBung;
 static std::string buildConfigParamTitle(const StringVector& path, const std::string& sectArg);
 //    throw ConfigException(ConfigErrorValueCannotBeEmpty, "core.dir.pkgdata", pos);
+
+
+void ConfigCenter::initValues()
+{
+}
 
 void ConfigCenter::loadFromFile(const std::string& fileName)
 {
@@ -31,36 +37,17 @@ void ConfigCenter::loadFromFile(const std::string& fileName)
   f.readTextFile(lines);
   f.close();
   ConfigFile parser(*this, fileName);
-  for(StringVector::size_type i = 0;i < lines.length();i++)
+  for(StringVector::size_type i = 0;i < lines.size();i++)
       parser.processLine(lines[i]);
 }
 
 void ConfigCenter::commit()
 {
   logMsg(LOG_DEBUG, "Committing loaded configuration data");
-  if (m_root.dir.pkgData.empty())
-    throw ConfigException(ConfigErrorValueCannotBeEmpty, "core.dir.pkgdata");
+  for(StringValueVector::size_type i = 0;i < m_stringValues.size();i++)
+    if (!m_stringValues[i].canBeEmpty && m_stringValues[i].value->empty())
+      throw ConfigException(ConfigErrorValueCannotBeEmpty, m_stringValues[i].pathToString());
   m_root.dir.tmpPkgDataFetch = Directory::mixNameComponents(m_root.dir.pkgData, PKG_DATA_FETCH_DIR);//Real constant can be found in DefaultValues.h;
-  //Repositories;
-  for(ConfRepoVector::size_type i = 0;i < m_root.repo.size();i++)
-    {
-      const ConfRepo& repo = m_root.repo[i];
-      assert(!repo.name.empty());
-      if (repo.url.empty())
-	throw ConfigException(ConfigErrorValueCannotBeEmpty, "repo \"" + repo.name + "\".url");
-      if (repo.arch.empty())
-	throw ConfigException(ConfigErrorValueCannotBeEmpty, "repo \"" + repo.name + "\".arch");
-      if (repo.components.empty())
-	throw ConfigException(ConfigErrorValueCannotBeEmpty, "repo \"" + repo.name + "\".components");
-      for(StringVector::size_type k = 0;k < repo.arch.size();k++)
-	{
-	  assert(!trim(repo.arch[k]).empty());
-	}
-      for(StringVector::size_type k = 0;k < repo.components.size();k++)
-	{
-	  assert(!trim(repo.components[k]).empty());
-	}
-    }
 }
 
 void ConfigCenter::onConfigFileValue(const StringVector& path, 
@@ -70,9 +57,7 @@ void ConfigCenter::onConfigFileValue(const StringVector& path,
 				     const ConfigFilePosInfo& pos)
 {
   assert(!path.empty());
-  const int paramType = getParamType(path, arg);
-  if (paramType == ValueTypeUnknownParam)
-    throw ConfigException(ConfigErrorUnknownParam, buildConfigParamTitle(path, sectArg), pos);
+  const int paramType = getParamType(path, sectArg, pos);
   if (paramType == ValueTypeString)
     {
       processStringValue(path, sectArg, value, adding, pos);
@@ -87,7 +72,7 @@ void ConfigCenter::processStringValue(const StringVector& path,
 				      bool adding,
 				      const ConfigFilePosInfo& pos)
 {
-  StringValue stringValue;
+  StringValue stringValue(stringBung);
   findStringValue(path, sectArg, stringValue);
 }
 
@@ -100,14 +85,22 @@ ConfRepo& ConfigCenter::findRepo(const std::string& name)
   return m_root.repo.back();
 }
 
-int ConfigCenter::getParamType(const StringVector& path, const std::string& arg) const
+int ConfigCenter::getParamType(const StringVector& path, const std::string& sectArg, const ConfigFilePosInfo& pos) const
 {
+  for(StringValueVector::size_type i = 0;i < m_stringValues.size();i++)
+    if (m_stringValues[i].pathMatches(path, sectArg))
+      return ValueTypeString;
+  throw ConfigException(ConfigErrorUnknownParam, buildConfigParamTitle(path, sectArg), pos);
 }
 
 void ConfigCenter::findStringValue(const StringVector& path, 
 				   const std::string& sectArg,
 				   StringValue& stringValue)
 {
+  for(StringValueVector::size_type i = 0;i < m_stringValues.size();i++)
+    if (m_stringValues[i].pathMatches(path, sectArg))
+      stringValue = m_stringValues[i];
+  assert(0);
 }
 
 std::string buildConfigParamTitle(const StringVector& path, const std::string& sectArg)
@@ -120,4 +113,3 @@ std::string buildConfigParamTitle(const StringVector& path, const std::string& s
     value += "." + path[i];
   return value;
 }
-

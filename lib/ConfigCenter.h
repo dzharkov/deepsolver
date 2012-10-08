@@ -240,17 +240,51 @@ public:
 
 private:
   enum {
-    ValueTypeUnknownParam = 0,
     ValueTypeString = 1,
     ValueTypeStringList = 2,
     ValueTypeBoolean = 3
   };
 
-private:
-  int getParamType(const StringVector& path, const std::string& arg) const;
-  ConfRepo& findRepo(const std::string& name);
+  class StringValue
+  {
+  public:
+  StringValue(std::string& v)
+    : canBeEmpty(0),
+      value(&v) {}
+
+  public:
+    bool pathMatches(const StringVector& p, const std::string& a) const 
+      {
+	if (path.size() != p.size())
+	  return 0;
+	for(StringVector::size_type i = 0;i < path.size();i++)
+	  if (path[i] != p[i])
+	    return 0;
+	//FIXME:arg;
+	return 1;
+      }
+
+  public:
+    std::string pathToString()
+      {
+	return "FIXME";
+      }
+
+  public:
+    StringVector path;
+    bool canBeEmpty;
+    std::string* value;
+  }; //class StringValue;
+
+  typedef std::vector<StringValue> StringValueVector;
+  StringValueVector m_stringValues;
+
+  void initValues();
+  int getParamType(const StringVector& path, const std::string& sectArg, const ConfigFilePosInfo& pos) const;
 
 private:
+  ConfRepo& findRepo(const std::string& name);
+
   void processStringValue(const StringVector& path, 
 			 const std::string& sectArg,
 			 const std::string& value,
@@ -260,7 +294,6 @@ private:
   void findStringValue(const StringVector& path, 
 			 const std::string& sectArg,
 StringValue& stringValue);
-
 
 private://AbstractConfigFileHandler;
   void onConfigFileValue(const StringVector& path, 
