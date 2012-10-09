@@ -43,6 +43,8 @@ int main(int argc, char* argv[])
     ConfigCenter conf;
     conf.loadFromFile("/tmp/ds.ini");
     conf.commit();
+    std::cout << conf.root().dir.pkgData << std::endl;
+      exit(EXIT_SUCCESS);
     OperationCore core(conf);
     IndexFetchProgress progress(std::cout);
     core.fetchIndices(progress, alwaysTrueContinueRequest);

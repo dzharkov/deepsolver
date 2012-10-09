@@ -22,13 +22,35 @@ static std::string buildConfigParamTitle(const StringVector& path, const std::st
 
 void ConfigCenter::initValues()
 {
-  addStringParam3("core", "dir", "pkg-data", m_root.dir.pkgData );
+  addNonEmptyStringParam3("core", "dir", "pkg-data", m_root.dir.pkgData );
 }
 
-void ConfigCenter::  addStringParam3(const std::string& path1,
-				     const std::string& path2,
-				     const std::string& path3,
-				     std::string& value)
+void ConfigCenter::reinitRepoValues()
+{
+  m_repoStringValues.clear();
+  for(ConfRepoVector::size_type i = 0;i < m_root.repo.size();i++)
+    {
+      ConfRepo& repo = m_root.repo[i];
+      StringValue stringValue;
+      stringValue.path.push_back("repo");
+      stringValue.sectArg = repo.name;
+      //URL;
+      stringValue.path.push_back("url");
+      stringValue.value = &repo.url;
+      stringValue.canBeEmpty = 0;
+      m_repoStringValues.push_back(stringValue);
+      //Vendor;
+      stringValue.path[1] = "vendor";
+      stringValue.value = &repo.vendor;
+      stringValue.canBeEmpty = 1;
+      m_repoStringValues.push_back(stringValue);
+    }
+}
+
+void ConfigCenter::addStringParam3(const std::string& path1,
+				   const std::string& path2,
+				   const std::string& path3,
+				   std::string& value)
 {
   assert(!path1.empty() && !path2.empty() && !path3.empty());
   StringValue stringValue(value);
@@ -36,12 +58,13 @@ void ConfigCenter::  addStringParam3(const std::string& path1,
   stringValue.path.push_back(path1);
   stringValue.path.push_back(path2);
   stringValue.path.push_back(path3);
+  m_stringValues.push_back(stringValue);
 }
 
-void ConfigCenter::  addNonEmptyStringParam3(const std::string& path1,
-				     const std::string& path2,
-				     const std::string& path3,
-				     std::string& value)
+void ConfigCenter::addNonEmptyStringParam3(const std::string& path1,
+					   const std::string& path2,
+					   const std::string& path3,
+					   std::string& value)
 {
   assert(!path1.empty() && !path2.empty() && !path3.empty());
   StringValue stringValue(value);
@@ -49,6 +72,7 @@ void ConfigCenter::  addNonEmptyStringParam3(const std::string& path1,
   stringValue.path.push_back(path1);
   stringValue.path.push_back(path2);
   stringValue.path.push_back(path3);
+  m_stringValues.push_back(stringValue);
 }
 
 void ConfigCenter::loadFromFile(const std::string& fileName)
@@ -81,6 +105,15 @@ void ConfigCenter::onConfigFileValue(const StringVector& path,
 				     const ConfigFilePosInfo& pos)
 {
   assert(!path.empty());
+  if (path[0] == "repo")
+    {
+      assert(!sectArg.empty());//FIXME:
+      ConfRepoVector::size_type i = 0;
+      while(i < m_root.repo.size() && m_root.repo[i].name == sectArg)
+	i++;
+      if (i >= m_root.repo.size())
+	m_root.repo.push_back(ConfRepo(sectArg));
+    }
   const int paramType = getParamType(path, sectArg, pos);
   if (paramType == ValueTypeString)
     {
@@ -99,21 +132,18 @@ void ConfigCenter::processStringValue(const StringVector& path,
   StringValue stringValue;
   findStringValue(path, sectArg, stringValue);
   assert(stringValue.value != NULL);
-}
-
-ConfRepo& ConfigCenter::findRepo(const std::string& name)
-{
-  for(ConfRepoVector::size_type i = 0;i < m_root.repo.size();i++)
-    if (m_root.repo[i].name == name)
-      return m_root.repo[i];
-  m_root.repo.push_back(ConfRepo(name));
-  return m_root.repo.back();
+  if (!adding)
+    (*stringValue.value) = trim(value); else
+    (*stringValue.value) += trim(value);
 }
 
 int ConfigCenter::getParamType(const StringVector& path, const std::string& sectArg, const ConfigFilePosInfo& pos) const
 {
   for(StringValueVector::size_type i = 0;i < m_stringValues.size();i++)
     if (m_stringValues[i].pathMatches(path, sectArg))
+      return ValueTypeString;
+  for(StringValueVector::size_type i = 0;i < m_repoStringValues.size();i++)
+    if (m_repoStringValues[i].pathMatches(path, sectArg))
       return ValueTypeString;
   throw ConfigException(ConfigErrorUnknownParam, buildConfigParamTitle(path, sectArg), pos);
 }
@@ -124,7 +154,16 @@ void ConfigCenter::findStringValue(const StringVector& path,
 {
   for(StringValueVector::size_type i = 0;i < m_stringValues.size();i++)
     if (m_stringValues[i].pathMatches(path, sectArg))
-      stringValue = m_stringValues[i];
+      {
+	stringValue = m_stringValues[i];
+	return;
+      }
+  for(StringValueVector::size_type i = 0;i < m_repoStringValues.size();i++)
+    if (m_repoStringValues[i].pathMatches(path, sectArg))
+      {
+	stringValue = m_repoStringValues[i];
+	return;
+      }
   assert(0);
 }
 

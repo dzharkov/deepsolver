@@ -192,7 +192,7 @@ class ConfigCenter: private AbstractConfigFileHandler
 {
 public:
   /**\brief The default constructor*/
-  ConfigCenter() {}
+  ConfigCenter() {initValues();}
 
   /**\brief The destructor*/
   virtual ~ConfigCenter() {}
@@ -264,29 +264,38 @@ private:
 	for(StringVector::size_type i = 0;i < path.size();i++)
 	  if (path[i] != p[i])
 	    return 0;
-	//FIXME:arg;
+	if (!sectArg.empty() && sectArg != a)
+	  return 0;
 	return 1;
       }
 
   public:
     std::string pathToString()
-      {
-	return "FIXME";
-      }
+    {
+      assert(!path.empty());
+      std::string value = path[0];
+      if (!sectArg.empty())
+	value += " \"" + sectArg + "\"";
+      for(StringVector::size_type i = 1;i < path.size();i++)
+	value += "." + path[i];
+      return value;
+    }
 
   public:
     StringVector path;
+    std::string sectArg;
     bool canBeEmpty;
     std::string* value;
   }; //class StringValue;
 
 private:
   void initValues();
+  void reinitRepoValues();
   int getParamType(const StringVector& path, const std::string& sectArg, const ConfigFilePosInfo& pos) const;
 
   void addStringParam3(const std::string& path1,
-			       const std::string& path2,
-			       const std::string& path3,
+		       const std::string& path2,
+		       const std::string& path3,
 		       std::string& value);
 
   void addNonEmptyStringParam3(const std::string& path1,
@@ -295,8 +304,6 @@ private:
 			       std::string& value);
 
 private:
-  ConfRepo& findRepo(const std::string& name);
-
   void processStringValue(const StringVector& path, 
 			 const std::string& sectArg,
 			 const std::string& value,
@@ -320,6 +327,7 @@ private:
 private:
   ConfRoot m_root;
   StringValueVector m_stringValues;
+  StringValueVector m_repoStringValues;
 }; //class ConfigCenter;
 
 #endif //DEEPSOLVER_CONFIG_CENTER_H;
