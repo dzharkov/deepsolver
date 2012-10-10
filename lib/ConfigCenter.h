@@ -245,7 +245,7 @@ private:
     ValueTypeBoolean = 3
   };
 
-  class StringValue
+  class StringValue//FIXME:General parent;
   {
   public:
   StringValue()

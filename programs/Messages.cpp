@@ -74,6 +74,9 @@ void Messages::onConfigError(const ConfigException& e)
     case ConfigErrorAddingNotPermitted:
       m_stream << "adding not permitted" << std::endl;
   break;
+    case ConfigErrorInvalidBooleanValue:
+      m_stream << "invalid boolean valuepermitted" << std::endl;
+  break;
     default:
       assert(0);
       return;
@@ -119,7 +122,7 @@ void Messages::introduceRepoSet(const ConfigCenter& conf) const
       std::cout << "Repo: " << repo.name << " (" << repo.url << ")" << std::endl;
       std::cout << "Arch:";
       for(StringVector::size_type k = 0;k < repo.arch.size();k++)
-	std::cout << " " << repo.arch[k] << std::endl;
+	std::cout << " " << repo.arch[k];
       std::cout << std::endl;
       std::cout << "Components:";
       for(StringVector::size_type k = 0;k < repo.components.size();k++)

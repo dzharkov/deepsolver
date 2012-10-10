@@ -65,13 +65,26 @@ void ConfigCenter::reinitRepoValues()
       stringListValue.path[1] = "components";
       stringListValue.value = &repo.components;
       m_repoStringListValues.push_back(stringListValue);
+      //FIXME:take-*;
     }
 }
 
 void ConfigCenter::commit()
 {
-  logMsg(LOG_DEBUG, "Committing loaded configuration data");
-  //General commit;
+  //Adjusting;
+  m_root.dir.pkgData = trim(m_root.dir.pkgData);
+  for(ConfRepoVector::size_type i = 0;i < m_root.repo.size();i++)
+    {
+      ConfRepo& repo = m_root.repo[i];
+      repo.name = trim(repo.name);
+      repo.url = trim(repo.url);
+      repo.vendor = trim(repo.vendor);
+      for(StringVector::size_type k = 0;k < repo.arch.size();k++)
+	repo.arch[k] = trim(repo.arch[k]);
+      for(StringVector::size_type k = 0;k < repo.components.size();k++)
+	repo.components[k] = trim(repo.components[k]);
+    }
+      //General checking;
   for(StringValueVector::size_type i = 0;i < m_stringValues.size();i++)
     if (!m_stringValues[i].canBeEmpty && trim(*m_stringValues[i].value).empty())
       throw ConfigException(ConfigErrorValueCannotBeEmpty, m_stringValues[i].pathToString());
@@ -135,10 +148,11 @@ void ConfigCenter::onConfigFileValue(const StringVector& path,
     {
       assert(!sectArg.empty());//FIXME:
       ConfRepoVector::size_type i = 0;
-      while(i < m_root.repo.size() && m_root.repo[i].name == sectArg)
+      while(i < m_root.repo.size() && m_root.repo[i].name != sectArg)
 	i++;
       if (i >= m_root.repo.size())
 	m_root.repo.push_back(ConfRepo(sectArg));
+      reinitRepoValues();
     }
   const int paramType = getParamType(path, sectArg, pos);
   if (paramType == ValueTypeString)
