@@ -21,6 +21,10 @@
 #define DELIMITERS ",;"
 
 static std::string buildConfigParamTitle(const StringVector& path, const std::string& sectArg);
+static bool parseBooleanValue(const stringVector& path,
+		       const std::string& sectArg,
+		       const std::string& str,
+		       const ConfigFilePosInfo& pos);
 
 void ConfigCenter::initValues()
 {
@@ -31,6 +35,7 @@ void ConfigCenter::reinitRepoValues()
 {
   m_repoStringValues.clear();
   m_repoStringListValues.clear();
+  m_repoBooleanValues;
   for(ConfRepoVector::size_type i = 0;i < m_root.repo.size();i++)
     {
       ConfRepo& repo = m_root.repo[i];
@@ -47,7 +52,34 @@ void ConfigCenter::reinitRepoValues()
       stringValue.value = &repo.vendor;
       stringValue.canBeEmpty = 1;
       m_repoStringValues.push_back(stringValue);
+      //Arch;
+      StringListValue stringListValue;
+      stringListValue.sectArg = repo.name;
+      stringListValue.path.push_back("repo");
+      stringListValue.path.push_back("arch");
+      stringListValue.delimiters = DELIMITERS;
+      stringListValue.canContainEmptyItem = 0;
+      stringListValue.value = &repo.arch;
+      m_repoStringListValues.push_back(stringListValue);
+      //Components;
+      stringListValue.path[1] = "components";
+      stringListValue.value = &repo.components;
+      m_repoStringListValues.push_back(stringListValue);
     }
+}
+
+void ConfigCenter::commit()
+{
+  logMsg(LOG_DEBUG, "Committing loaded configuration data");
+  //General commit;
+  for(StringValueVector::size_type i = 0;i < m_stringValues.size();i++)
+    if (!m_stringValues[i].canBeEmpty && trim(*m_stringValues[i].value).empty())
+      throw ConfigException(ConfigErrorValueCannotBeEmpty, m_stringValues[i].pathToString());
+  for(StringValueVector::size_type i = 0;i < m_repoStringValues.size();i++)
+    if (!m_stringValues[i].canBeEmpty && trim(*m_repoStringValues[i].value).empty())
+      throw ConfigException(ConfigErrorValueCannotBeEmpty, m_stringValues[i].pathToString());
+  //Custom commit;
+  m_root.dir.tmpPkgDataFetch = Directory::mixNameComponents(m_root.dir.pkgData, PKG_DATA_FETCH_DIR);//Real constant can be found in DefaultValues.h;
 }
 
 void ConfigCenter::addStringParam3(const std::string& path1,
@@ -92,15 +124,6 @@ void ConfigCenter::loadFromFile(const std::string& fileName)
       parser.processLine(lines[i]);
 }
 
-void ConfigCenter::commit()
-{
-  logMsg(LOG_DEBUG, "Committing loaded configuration data");
-  for(StringValueVector::size_type i = 0;i < m_stringValues.size();i++)
-    if (!m_stringValues[i].canBeEmpty && m_stringValues[i].value->empty())
-      throw ConfigException(ConfigErrorValueCannotBeEmpty, m_stringValues[i].pathToString());
-  m_root.dir.tmpPkgDataFetch = Directory::mixNameComponents(m_root.dir.pkgData, PKG_DATA_FETCH_DIR);//Real constant can be found in DefaultValues.h;
-}
-
 void ConfigCenter::onConfigFileValue(const StringVector& path, 
 		       const std::string& sectArg,
 		       const std::string& value,
@@ -128,6 +151,11 @@ void ConfigCenter::onConfigFileValue(const StringVector& path,
       processStringListValue(path, sectArg, value, adding, pos);
       return;
     }
+  if (paramType == ValueTypeBoolean)
+    {
+      processBooleanValue(path, sectArg, value, adding, pos);
+      return;
+    }
   assert(0);
 }
 
@@ -141,8 +169,8 @@ void ConfigCenter::processStringValue(const StringVector& path,
   findStringValue(path, sectArg, stringValue);
   assert(stringValue.value != NULL);
   if (!adding)
-    (*stringValue.value) = trim(value); else
-    (*stringValue.value) += trim(value);
+    (*stringValue.value) = value; else
+    (*stringValue.value) += value;
 }
 
 void ConfigCenter::processStringListValue(const StringVector& path, 
@@ -158,9 +186,9 @@ void ConfigCenter::processStringListValue(const StringVector& path,
   if (adding)
     v.clear();
   std::string item;
-  for(std:;string::size_type i = 0;i < value.size();i++)
+  for(std::string::size_type i = 0;i < value.size();i++)
     {
-      std;:string::size_type p = 0;
+      std::string::size_type p = 0;
       while(p < stringListValue.delimiters.size() && value[i] != stringListValue.delimiters[p])
 	p++;
       if (p >= stringListValue.delimiters.size())
@@ -170,29 +198,52 @@ void ConfigCenter::processStringListValue(const StringVector& path,
 	}
       if (!stringListValue.canContainEmptyItem && trim(item).empty())
 	throw ConfigException(ConfigErrorValueCannotBeEmpty, buildConfigParamTitle(path, sectArg), pos);
-      v.push_back();
+      v.push_back(item);
       item.erase();
     }
   if (!stringListValue.canContainEmptyItem && trim(item).empty())
     throw ConfigException(ConfigErrorValueCannotBeEmpty, buildConfigParamTitle(path, sectArg), pos);
-  v.push_back();
+  v.push_back(item);
+}
+
+void ConfigCenter::processBooleanValue(const StringVector& path, 
+				      const std::string& sectArg,
+				      const std::string& value,
+				      bool adding,
+				      const ConfigFilePosInfo& pos)
+{
+  StringListValue stringListValue;
+  findStringListValue(path, sectArg, stringListValue);
+  assert(stringListValue.value != NULL);
+  bool& v = *(stringListValue.value);
+  if (adding)
+	throw ConfigException(ConfigErrorAddingNotPermitted, buildConfigParamTitle(path, sectArg), pos);
+  v = parseBooleanValue(path, sectArg, value, pos);
 }
 
 int ConfigCenter::getParamType(const StringVector& path, const std::string& sectArg, const ConfigFilePosInfo& pos) const
 {
+  //String;
   for(StringValueVector::size_type i = 0;i < m_stringValues.size();i++)
     if (m_stringValues[i].pathMatches(path, sectArg))
       return ValueTypeString;
   for(StringValueVector::size_type i = 0;i < m_repoStringValues.size();i++)
     if (m_repoStringValues[i].pathMatches(path, sectArg))
       return ValueTypeString;
+  //StringList;
   for(StringListValueVector::size_type i = 0;i < m_stringListValues.size();i++)
     if (m_stringListValues[i].pathMatches(path, sectArg))
       return ValueTypeStringList;
   for(StringListValueVector::size_type i = 0;i < m_repoStringListValues.size();i++)
     if (m_repoStringListValues[i].pathMatches(path, sectArg))
       return ValueTypeStringList;
-
+  //Boolean;
+  for(BooleanValueVector::size_type i = 0;i < m_booleanValues.size();i++)
+    if (m_booleanValues[i].pathMatches(path, sectArg))
+      return ValueTypeBoolean;
+  for(BooleanValueVector::size_type i = 0;i < m_repoBooleanValues.size();i++)
+    if (m_repoBooleanValues[i].pathMatches(path, sectArg))
+      return ValueTypeBoolean;
   throw ConfigException(ConfigErrorUnknownParam, buildConfigParamTitle(path, sectArg), pos);
 }
 
@@ -217,18 +268,37 @@ void ConfigCenter::findStringValue(const StringVector& path,
 
 void ConfigCenter::findStringListValue(const StringVector& path, 
 				   const std::string& sectArg,
-				   StringValue& stringValue)
+				   StringListValue& stringListValue)
 {
   for(StringListValueVector::size_type i = 0;i < m_stringListValues.size();i++)
     if (m_stringListValues[i].pathMatches(path, sectArg))
       {
-	stringValue = m_stringListValues[i];
+	stringListValue = m_stringListValues[i];
 	return;
       }
   for(StringListValueVector::size_type i = 0;i < m_repoStringValues.size();i++)
     if (m_repoStringListValues[i].pathMatches(path, sectArg))
       {
-	stringValue = m_repoStringListValues[i];
+	stringListValue = m_repoStringListValues[i];
+	return;
+      }
+  assert(0);
+}
+
+void ConfigCenter::findBooleanValue(const StringVector& path, 
+				   const std::string& sectArg,
+				   StringListValue& stringValue)
+{
+  for(BooleanValueVector::size_type i = 0;i < m_booleanValues.size();i++)
+    if (m_booleanValues[i].pathMatches(path, sectArg))
+      {
+	booleanValue = m_booleanValues[i];
+	return;
+      }
+  for(BooleanValueVector::size_type i = 0;i < m_repoBooleanValues.size();i++)
+    if (m_repoBooleanValues[i].pathMatches(path, sectArg))
+      {
+	booleanValue = m_repoBooleanValues[i];
 	return;
       }
   assert(0);
@@ -244,3 +314,24 @@ std::string buildConfigParamTitle(const StringVector& path, const std::string& s
     value += "." + path[i];
   return value;
 }
+
+bool parseBooleanValue(const stringVector& path,
+		       const std::string& sectArg,
+		       const std::string& str,
+		       const ConfigFilePosInfo& pos)
+{
+  if (str == "YES" || str == "Yes" || str == "yes")
+    return 1;
+  if (str == "TRUE" || str == "True" || str == "true")
+    return 1;
+  if (str == "1")
+    return 1;
+  if (str == "NO" || str == "No" || str == "no")
+    return 0;
+  if (str == "FALSE" || str == "False" || str == "false")
+    return 0;
+  if (str == "0")
+    return 0;
+  throw ConfigException(ConfigErrorInvalidBooleanValue, buildConfigParamTitle(path, sectArg), pos);
+}
+

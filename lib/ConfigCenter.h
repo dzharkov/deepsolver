@@ -24,9 +24,9 @@
 
 enum {
   ConfigErrorUnknownParam = 0,
-  ConfigErrorIncompletePath = 1,
-  ConfigErrorValueCannotBeEmpty = 2,
-  ConfigErrorAddingNotPermitted = 3 
+  ConfigErrorValueCannotBeEmpty = 1,
+  ConfigErrorAddingNotPermitted = 2,
+ConfigErrorInvalidBooleanValue = 3
 };
 
 /**\brief Indicates the error in configuration data
@@ -292,10 +292,10 @@ private:
   {
   public:
   StringListValue()
-    : canCotainEmptyItem(0),
+    : canContainEmptyItem(0),
       value(NULL) {}
 
-  StringValue(std::string& v)
+  StringListValue(StringVector& v)
     : canContainEmptyItem(0),
       value(&v) {}
 
@@ -332,6 +332,46 @@ private:
     StringVector* value;
   }; //class StringListValue;
 
+  class BooleanValue
+  {
+  public:
+  BooleanValue()
+    : value(NULL) {}
+
+  BooleanValue(bool& v)
+    : value(&v) {}
+
+  public:
+    bool pathMatches(const StringVector& p, const std::string& a) const 
+      {
+	if (path.size() != p.size())
+	  return 0;
+	for(StringVector::size_type i = 0;i < path.size();i++)
+	  if (path[i] != p[i])
+	    return 0;
+	if (!sectArg.empty() && sectArg != a)
+	  return 0;
+	return 1;
+      }
+
+  public:
+    std::string pathToString()
+    {
+      assert(!path.empty());
+      std::string value = path[0];
+      if (!sectArg.empty())
+	value += " \"" + sectArg + "\"";
+      for(StringVector::size_type i = 1;i < path.size();i++)
+	value += "." + path[i];
+      return value;
+    }
+
+  public:
+    StringVector path;
+    std::string sectArg;
+    bool* value;
+  }; //class BooleanValue;
+
 private:
   void initValues();
   void reinitRepoValues();
@@ -366,8 +406,17 @@ private:
 
   void findStringListValue(const StringVector& path, 
 			 const std::string& sectArg,
-		       StringValue& stringValue);
+		       StringListValue& stringListValue);
 
+  void processBooleanValue(const StringVector& path, 
+			 const std::string& sectArg,
+			 const std::string& value,
+			 bool adding,
+			 const ConfigFilePosInfo& pos);
+
+  void findBooleanValue(const StringVector& path, 
+			 const std::string& sectArg,
+		       BooleanValue& booleanValue);
 
 private://AbstractConfigFileHandler;
   void onConfigFileValue(const StringVector& path, 
@@ -379,11 +428,13 @@ private://AbstractConfigFileHandler;
 private:
   typedef std::vector<StringValue> StringValueVector;
   typedef std::vector<StringListValue> StringListValueVector;
+  typedef std::vector<BooleanValue> BooleanValueVector;
 
 private:
   ConfRoot m_root;
   StringValueVector m_stringValues, m_repoStringValues;
   StringListValueVector m_stringListValues, m_repoStringListValues;
+  BooleanValueVector m_booleanValues, m_repoBooleanValues;
 }; //class ConfigCenter;
 
 #endif //DEEPSOLVER_CONFIG_CENTER_H;
