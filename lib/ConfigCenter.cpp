@@ -18,6 +18,8 @@
 #include"deepsolver.h"
 #include"ConfigCenter.h"
 
+#define DELIMITERS ",;"
+
 static std::string buildConfigParamTitle(const StringVector& path, const std::string& sectArg);
 
 void ConfigCenter::initValues()
@@ -28,6 +30,7 @@ void ConfigCenter::initValues()
 void ConfigCenter::reinitRepoValues()
 {
   m_repoStringValues.clear();
+  m_repoStringListValues.clear();
   for(ConfRepoVector::size_type i = 0;i < m_root.repo.size();i++)
     {
       ConfRepo& repo = m_root.repo[i];
@@ -120,6 +123,11 @@ void ConfigCenter::onConfigFileValue(const StringVector& path,
       processStringValue(path, sectArg, value, adding, pos);
       return;
     }
+  if (paramType == ValueTypeStringList)
+    {
+      processStringListValue(path, sectArg, value, adding, pos);
+      return;
+    }
   assert(0);
 }
 
@@ -137,6 +145,39 @@ void ConfigCenter::processStringValue(const StringVector& path,
     (*stringValue.value) += trim(value);
 }
 
+void ConfigCenter::processStringListValue(const StringVector& path, 
+				      const std::string& sectArg,
+				      const std::string& value,
+				      bool adding,
+				      const ConfigFilePosInfo& pos)
+{
+  StringListValue stringListValue;
+  findStringListValue(path, sectArg, stringListValue);
+  assert(stringListValue.value != NULL);
+  StringVector& v = *(stringListValue.value);
+  if (adding)
+    v.clear();
+  std::string item;
+  for(std:;string::size_type i = 0;i < value.size();i++)
+    {
+      std;:string::size_type p = 0;
+      while(p < stringListValue.delimiters.size() && value[i] != stringListValue.delimiters[p])
+	p++;
+      if (p >= stringListValue.delimiters.size())
+	{
+	  item += value[i];
+	  continue;
+	}
+      if (!stringListValue.canContainEmptyItem && trim(item).empty())
+	throw ConfigException(ConfigErrorValueCannotBeEmpty, buildConfigParamTitle(path, sectArg), pos);
+      v.push_back();
+      item.erase();
+    }
+  if (!stringListValue.canContainEmptyItem && trim(item).empty())
+    throw ConfigException(ConfigErrorValueCannotBeEmpty, buildConfigParamTitle(path, sectArg), pos);
+  v.push_back();
+}
+
 int ConfigCenter::getParamType(const StringVector& path, const std::string& sectArg, const ConfigFilePosInfo& pos) const
 {
   for(StringValueVector::size_type i = 0;i < m_stringValues.size();i++)
@@ -145,6 +186,13 @@ int ConfigCenter::getParamType(const StringVector& path, const std::string& sect
   for(StringValueVector::size_type i = 0;i < m_repoStringValues.size();i++)
     if (m_repoStringValues[i].pathMatches(path, sectArg))
       return ValueTypeString;
+  for(StringListValueVector::size_type i = 0;i < m_stringListValues.size();i++)
+    if (m_stringListValues[i].pathMatches(path, sectArg))
+      return ValueTypeStringList;
+  for(StringListValueVector::size_type i = 0;i < m_repoStringListValues.size();i++)
+    if (m_repoStringListValues[i].pathMatches(path, sectArg))
+      return ValueTypeStringList;
+
   throw ConfigException(ConfigErrorUnknownParam, buildConfigParamTitle(path, sectArg), pos);
 }
 
@@ -162,6 +210,25 @@ void ConfigCenter::findStringValue(const StringVector& path,
     if (m_repoStringValues[i].pathMatches(path, sectArg))
       {
 	stringValue = m_repoStringValues[i];
+	return;
+      }
+  assert(0);
+}
+
+void ConfigCenter::findStringListValue(const StringVector& path, 
+				   const std::string& sectArg,
+				   StringValue& stringValue)
+{
+  for(StringListValueVector::size_type i = 0;i < m_stringListValues.size();i++)
+    if (m_stringListValues[i].pathMatches(path, sectArg))
+      {
+	stringValue = m_stringListValues[i];
+	return;
+      }
+  for(StringListValueVector::size_type i = 0;i < m_repoStringValues.size();i++)
+    if (m_repoStringListValues[i].pathMatches(path, sectArg))
+      {
+	stringValue = m_repoStringListValues[i];
 	return;
       }
   assert(0);

@@ -288,6 +288,50 @@ private:
     std::string* value;
   }; //class StringValue;
 
+  class StringListValue
+  {
+  public:
+  StringListValue()
+    : canCotainEmptyItem(0),
+      value(NULL) {}
+
+  StringValue(std::string& v)
+    : canContainEmptyItem(0),
+      value(&v) {}
+
+  public:
+    bool pathMatches(const StringVector& p, const std::string& a) const 
+      {
+	if (path.size() != p.size())
+	  return 0;
+	for(StringVector::size_type i = 0;i < path.size();i++)
+	  if (path[i] != p[i])
+	    return 0;
+	if (!sectArg.empty() && sectArg != a)
+	  return 0;
+	return 1;
+      }
+
+  public:
+    std::string pathToString()
+    {
+      assert(!path.empty());
+      std::string value = path[0];
+      if (!sectArg.empty())
+	value += " \"" + sectArg + "\"";
+      for(StringVector::size_type i = 1;i < path.size();i++)
+	value += "." + path[i];
+      return value;
+    }
+
+  public:
+    StringVector path;
+    std::string sectArg;
+    bool canContainEmptyItem;
+    std::string delimiters;
+    StringVector* value;
+  }; //class StringListValue;
+
 private:
   void initValues();
   void reinitRepoValues();
@@ -314,6 +358,17 @@ private:
 			 const std::string& sectArg,
 		       StringValue& stringValue);
 
+  void processStringListValue(const StringVector& path, 
+			 const std::string& sectArg,
+			 const std::string& value,
+			 bool adding,
+			 const ConfigFilePosInfo& pos);
+
+  void findStringListValue(const StringVector& path, 
+			 const std::string& sectArg,
+		       StringValue& stringValue);
+
+
 private://AbstractConfigFileHandler;
   void onConfigFileValue(const StringVector& path, 
 			 const std::string& sectArg,
@@ -323,11 +378,12 @@ private://AbstractConfigFileHandler;
 
 private:
   typedef std::vector<StringValue> StringValueVector;
+  typedef std::vector<StringListValue> StringListValueVector;
 
 private:
   ConfRoot m_root;
-  StringValueVector m_stringValues;
-  StringValueVector m_repoStringValues;
+  StringValueVector m_stringValues, m_repoStringValues;
+  StringListValueVector m_stringListValues, m_repoStringListValues;
 }; //class ConfigCenter;
 
 #endif //DEEPSOLVER_CONFIG_CENTER_H;
