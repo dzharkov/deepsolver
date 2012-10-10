@@ -21,6 +21,7 @@ public:
   void onConfigError(const ConfigException& e);
   void onCurlError(const CurlException& e);
   void onOperationError(const OperationException& e);
+  void introduceRepoSet(const ConfigCenter& conf) const;
 
 private:
   std::ostream& m_stream;

@@ -43,6 +43,7 @@ int main(int argc, char* argv[])
     ConfigCenter conf;
     conf.loadFromFile("/tmp/ds.ini");
     conf.commit();
+    Messages(std::cout).introduceRepoSet(conf);
     std::cout << conf.root().dir.pkgData << std::endl;
       exit(EXIT_SUCCESS);
     OperationCore core(conf);

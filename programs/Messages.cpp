@@ -68,9 +68,6 @@ void Messages::onConfigError(const ConfigException& e)
     case ConfigErrorUnknownParam:
       m_stream << "unknown parameter: " << e.getArg() << std::endl;
   break;
-    case ConfigErrorIncompletePath:
-      m_stream << "incomplete path: " << e.getArg() << std::endl;
-  break;
     case ConfigErrorValueCannotBeEmpty:
       m_stream << "value of parameter \'" << e.getArg() << "\' cannot be empty" << std::endl;
   break;
@@ -112,4 +109,22 @@ void Messages::onOperationError(const OperationException& e)
     default:
       assert(0);
     } //switch(e.getCode());
+}
+
+void Messages::introduceRepoSet(const ConfigCenter& conf) const
+{
+  for(ConfRepoVector::size_type i = 0;i < conf.root().repo.size();i++)
+    {
+      const ConfRepo& repo = conf.root().repo[i];
+      std::cout << "Repo: " << repo.name << " (" << repo.url << ")" << std::endl;
+      std::cout << "Arch:";
+      for(StringVector::size_type k = 0;k < repo.arch.size();k++)
+	std::cout << " " << repo.arch[k] << std::endl;
+      std::cout << std::endl;
+      std::cout << "Components:";
+      for(StringVector::size_type k = 0;k < repo.components.size();k++)
+	std::cout << " " << repo.components[k];
+      std::cout << std::endl;
+      std::cout << std::endl;
+    }
 }

@@ -21,7 +21,7 @@
 #define DELIMITERS ",;"
 
 static std::string buildConfigParamTitle(const StringVector& path, const std::string& sectArg);
-static bool parseBooleanValue(const stringVector& path,
+static bool parseBooleanValue(const StringVector& path,
 		       const std::string& sectArg,
 		       const std::string& str,
 		       const ConfigFilePosInfo& pos);
@@ -212,10 +212,10 @@ void ConfigCenter::processBooleanValue(const StringVector& path,
 				      bool adding,
 				      const ConfigFilePosInfo& pos)
 {
-  StringListValue stringListValue;
-  findStringListValue(path, sectArg, stringListValue);
-  assert(stringListValue.value != NULL);
-  bool& v = *(stringListValue.value);
+  BooleanValue booleanValue;
+  findBooleanValue(path, sectArg, booleanValue);
+  assert(booleanValue.value != NULL);
+  bool& v = *(booleanValue.value);
   if (adding)
 	throw ConfigException(ConfigErrorAddingNotPermitted, buildConfigParamTitle(path, sectArg), pos);
   v = parseBooleanValue(path, sectArg, value, pos);
@@ -287,7 +287,7 @@ void ConfigCenter::findStringListValue(const StringVector& path,
 
 void ConfigCenter::findBooleanValue(const StringVector& path, 
 				   const std::string& sectArg,
-				   StringListValue& stringValue)
+				   BooleanValue& booleanValue)
 {
   for(BooleanValueVector::size_type i = 0;i < m_booleanValues.size();i++)
     if (m_booleanValues[i].pathMatches(path, sectArg))
@@ -315,7 +315,7 @@ std::string buildConfigParamTitle(const StringVector& path, const std::string& s
   return value;
 }
 
-bool parseBooleanValue(const stringVector& path,
+bool parseBooleanValue(const StringVector& path,
 		       const std::string& sectArg,
 		       const std::string& str,
 		       const ConfigFilePosInfo& pos)
