@@ -21,6 +21,8 @@
 #include"Messages.h"
 #include"IndexFetchProgress.h"
 
+static CliParser cliParser;
+
 class AlwaysTrueContinueRequest: public AbstractOperationContinueRequest
 {
 public:
@@ -34,18 +36,46 @@ public:
   }
 }; //class AlwaysTrueContinueRequest; 
 
+void parseCmdLine(int argc, char* argv[])
+{
+  Messages(std::cout).dsUpdateInitCliParser(cliParser);
+  try {
+    cliParser.init(argc, argv);
+    cliParser.parse();
+  }
+  catch (const CliParserException& e)
+    {
+      switch (e.getCode())
+	{
+	case CliParserException::NoPrgName:
+	  Messages(std::cerr).onMissedProgramName();
+	  exit(EXIT_FAILURE);
+	case CliParserException::MissedArgument:
+	  Messages(std::cout).onMissedCommandLineArgument(e.getArg());
+	  exit(EXIT_FAILURE);
+	default:
+	  assert(0);
+	} //switch();
+    }
+  if (cliParser.wasKeyUsed("--help"))
+    {
+      Messages(std::cout).dsUpdateHelp(cliParser);
+      exit(EXIT_SUCCESS);
+    }
+}
+
 int main(int argc, char* argv[])
 {
   setlocale(LC_ALL, "");
-  initLogging(LOG_DEBUG, 0);
+  parseCmdLine(argc, argv);
+  messagesProgramName = "ds-update";
+  initLogging(cliParser.wasKeyUsed("--debug")?LOG_DEBUG:LOG_INFO, cliParser.wasKeyUsed("--log"));
   try{
     AlwaysTrueContinueRequest alwaysTrueContinueRequest;
     ConfigCenter conf;
     conf.loadFromFile("/tmp/ds.ini");
     conf.commit();
     Messages(std::cout).introduceRepoSet(conf);
-    std::cout << conf.root().dir.pkgData << std::endl;
-      exit(EXIT_SUCCESS);
     OperationCore core(conf);
     IndexFetchProgress progress(std::cout);
     core.fetchIndices(progress, alwaysTrueContinueRequest);

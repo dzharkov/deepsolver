@@ -6,7 +6,7 @@
 #include"deepsolver.h"
 #include"Messages.h"
 
-#define PREFIX "ds:"
+std::string messagesProgramName;
 
 struct ConfigSyntaxErrorMessage 
 {
@@ -50,7 +50,7 @@ void Messages::onSystemError(const SystemException& e)
 
 void Messages::onConfigSyntaxError(const ConfigFileException& e)
 {
-  m_stream << PREFIX << "configuration file syntax error:" << getConfigSyntaxErrorText(e.getCode()) << std::endl;
+  m_stream << messagesProgramName << ":Configuration file syntax error:" << getConfigSyntaxErrorText(e.getCode()) << std::endl;
   std::ostringstream ss;
   ss << e.getFileName() << "(" << e.getLineNumber() << "):";
   const size_t pos = ss.str().length() + e.getPos();//FIXME:UTF-8 character make this value incorrect;
@@ -62,7 +62,7 @@ void Messages::onConfigSyntaxError(const ConfigFileException& e)
 
 void Messages::onConfigError(const ConfigException& e)
 {
-  m_stream << PREFIX << "configuration file error:";
+  m_stream << messagesProgramName << ":Configuration file error:";
   switch(e.getCode())
     {
     case ConfigErrorUnknownParam:
@@ -87,7 +87,7 @@ void Messages::onConfigError(const ConfigException& e)
 
 void Messages::onCurlError(const CurlException& e)
 {
-  m_stream << PREFIX << e.getUrl() << ":curl error " << e.getCode() << ":" << e.getText() << std::endl;
+  m_stream << messagesProgramName << ":" << e.getUrl() << ":curl error " << e.getCode() << ":" << e.getText() << std::endl;
 }
 
 void Messages::onOperationError(const OperationException& e)
@@ -112,6 +112,43 @@ void Messages::onOperationError(const OperationException& e)
     default:
       assert(0);
     } //switch(e.getCode());
+}
+
+//Command line errors;
+
+void Messages::onMissedProgramName() const
+{
+  m_stream << messagesProgramName << ":The command line doesn\'t contain program name" << std::endl;
+}
+
+void Messages::onMissedCommandLineArgument(const std::string& arg) const
+{
+  m_stream << messagesProgramName << ":The command line argument \'" << arg << "\' requires additional parameter" << std::endl;
+}
+
+//ds-update;
+
+void Messages::dsUpdateLogo() const
+{
+  m_stream << "ds-update: The utility to fetch repository headers" << std::endl;
+  m_stream << "Version: " << PACKAGE_VERSION << std::endl;
+  m_stream << std::endl;
+}
+
+void Messages::dsUpdateInitCliParser(CliParser& cliParser) const
+{
+  cliParser.addKeyDoubleName("-h", "--help", "print this help screen and exit");
+  cliParser.addKey("--log", "print log to console instead of user progress information");
+  cliParser.addKey("--debug", "relax filtering level for log output");
+}
+
+void Messages::dsUpdateHelp(const CliParser& cliParser) const
+{
+  dsUpdateLogo();
+  m_stream << "Usage: ds-update [OPTIONS]" << std::endl;
+  m_stream << std::endl;
+  m_stream << "Valid command line options are:" << std::endl;
+  cliParser.printHelp(m_stream);
 }
 
 void Messages::introduceRepoSet(const ConfigCenter& conf) const

@@ -6,6 +6,9 @@
 #include"ConfigCenter.h"
 #include"utils/CurlInterface.h"
 #include"OperationCore.h"
+#include"CliParser.h"
+
+extern std::string messagesProgramName;
 
 class Messages
 {
@@ -21,6 +24,15 @@ public:
   void onConfigError(const ConfigException& e);
   void onCurlError(const CurlException& e);
   void onOperationError(const OperationException& e);
+
+  //Command line errors;
+  void onMissedProgramName() const;
+  void onMissedCommandLineArgument(const std::string& arg) const;
+
+  //ds-update;
+  void dsUpdateLogo() const;
+  void dsUpdateInitCliParser(CliParser& cliParser) const;
+  void dsUpdateHelp(const CliParser& cliParser) const;
   void introduceRepoSet(const ConfigCenter& conf) const;
 
 private:
