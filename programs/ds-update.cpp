@@ -66,11 +66,12 @@ void parseCmdLine(int argc, char* argv[])
 
 int main(int argc, char* argv[])
 {
+  messagesProgramName = "ds-update";
   setlocale(LC_ALL, "");
   parseCmdLine(argc, argv);
-  messagesProgramName = "ds-update";
   initLogging(cliParser.wasKeyUsed("--debug")?LOG_DEBUG:LOG_INFO, cliParser.wasKeyUsed("--log"));
   try{
+    logMsg(LOG_INFO, "Starting repo index updating");
     AlwaysTrueContinueRequest alwaysTrueContinueRequest;
     ConfigCenter conf;
     conf.loadFromFile("/tmp/ds.ini");

@@ -1,5 +1,125 @@
-2012-04
-	- New source code layout.
-	- Added config files implementation.
-	- Added libtool support. 
-	
+
+  Deepsolver changes log
+
+	0.1.1 (2012-10-16)
+
+ds-patch utility:
+- --add-list and --del-list command line options support added.
+
+0.1.0 (2012-10-11)
+
+IndexCore changes:
+- IndexCore::fixReferences() method renamed to refilterProvides();;
+- Regular expressions support added for requires filtering.
+
+Utilities:
+- ds-references utility renamed to ds-provides.
+
+General:
+- Info file error messages fixed;
+- Initial template for Russian user manual added;
+- Large number of various bug fixes during testing process.
+
+0.0.9 (2012-09-20)
+
+New utilities in programs/ directory:
+- ds-patch for adding/removing packages in index;
+- ds-references - for provides references fixing.
+
+IndexCore changes:
+- External references collecting can be made from index files
+in addition to package files reading;
+- Index patching algorithm implemented;
+- Provide reference fixing algorithm implemented;
+- Various improvements in text format index processing reflecting changes mentioned above.
+
+Utilities:
+- New command line parser with arguments clustering support;
+- Md5-files processing improvements;
+- Gzip interface naming fixing.
+
+(2012-08-20)
+
+Implementation of repo index patching in progress
+
+Obsolete classes removed:
+- AbstractWarningHandler;
+- RepoIndexTextFormatWriter;
+- TaskPreprocessor.
+
+New classes added:
+- PkgSection;
+- TextFormatSectionReader.
+
+New values in repository info file:
+- filter_provides_by_dirs;
+- filter_provides_by_refs;
+- exclude_requires;
+- changelog_binary;
+- changelog_sources.
+
+General:
+- General reorganization of IndexCore;
+- genbasedir utility renamed to ds-repo;
+- RepoIndexParams renamed to RepoParams;
+- Text files interface removed.
+
+(2012-06-26)
+
+StrictSolver:
+- cascade package removing implemented;
+- conflicts processing for packages in repo implemented;
+- search for conflicts among installed packages implemented;
+- first stage task checking implemented.
+
+OperationCore:
+- building the structures for search dependent and conflicted packages among installed.
+
+PackageScope:
+- new methods to provide required data for new StrictSolver code;
+- clean up.
+
+General:
+- IdPkgRel class added.
+
+(2012-06-14)
+
+New components:
+- first configuration file parser;
+- configuration information center;
+- repository index fetching.
+
+Transaction processing:
+- package scope content optimized to increase search speed;
+- the algorithm for adding list of installed packages to list of available packages;
+- optimized structure for searching dependent and conflicted packages among installed;
+- rpmdb reading code;
+- first code for strict solver based on previous dependencies closure processor.
+
+Information utilities and user interface:
+- initial information core added;
+- function to get list of installed and available by repo packages;
+- classes for user messages construction;
+- command line parser.
+
+Behaviour changes:
+- repository index reading code now handles repository components;
+- 'ds update' command now reads configuration file and fetches files by their URL.
+
+Auxiliary components:
+- directory erasing implementation;
+- readahead() interface;
+- libcurl support added.
+
+General:
+- libtool support added;
+- source files inside of lib/ moved to several directories: repo/, io/, transact/, utils/;
+- regressions tests temporarily disabled.
+
+Compilation scripts changes:
+- depcomp, install-sh, missing removed;
+- autogen.sh added.
+
+0.0.1 (2012-03-11)
+
+First alpha release

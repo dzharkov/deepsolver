@@ -35,7 +35,7 @@ void ConfigCenter::reinitRepoValues()
 {
   m_repoStringValues.clear();
   m_repoStringListValues.clear();
-  m_repoBooleanValues;
+  m_repoBooleanValues.clear();
   for(ConfRepoVector::size_type i = 0;i < m_root.repo.size();i++)
     {
       ConfRepo& repo = m_root.repo[i];
@@ -71,6 +71,8 @@ void ConfigCenter::reinitRepoValues()
 
 void ConfigCenter::commit()
 {
+  logMsg(LOG_DEBUG, "Committing configuration");
+  logMsg(LOG_DEBUG, "Adjusting values");
   //Adjusting;
   m_root.dir.pkgData = trim(m_root.dir.pkgData);
   for(ConfRepoVector::size_type i = 0;i < m_root.repo.size();i++)
@@ -84,15 +86,18 @@ void ConfigCenter::commit()
       for(StringVector::size_type k = 0;k < repo.components.size();k++)
 	repo.components[k] = trim(repo.components[k]);
     }
-      //General checking;
+      //Common checking;
+  logMsg(LOG_DEBUG, "Common values checking");
   for(StringValueVector::size_type i = 0;i < m_stringValues.size();i++)
     if (!m_stringValues[i].canBeEmpty && trim(*m_stringValues[i].value).empty())
       throw ConfigException(ConfigErrorValueCannotBeEmpty, m_stringValues[i].pathToString());
   for(StringValueVector::size_type i = 0;i < m_repoStringValues.size();i++)
-    if (!m_stringValues[i].canBeEmpty && trim(*m_repoStringValues[i].value).empty())
+    if (!m_repoStringValues[i].canBeEmpty && trim(*m_repoStringValues[i].value).empty())
       throw ConfigException(ConfigErrorValueCannotBeEmpty, m_stringValues[i].pathToString());
   //Custom commit;
+  logMsg(LOG_DEBUG, "Custom commit");
   m_root.dir.tmpPkgDataFetch = Directory::mixNameComponents(m_root.dir.pkgData, PKG_DATA_FETCH_DIR);//Real constant can be found in DefaultValues.h;
+  logMsg(LOG_DEBUG, "Configuration data commit completed");
 }
 
 void ConfigCenter::addStringParam3(const std::string& path1,
@@ -125,7 +130,7 @@ void ConfigCenter::addNonEmptyStringParam3(const std::string& path1,
 
 void ConfigCenter::loadFromFile(const std::string& fileName)
 {
-  logMsg(LOG_DEBUG, "Reading configuration data from \'%s\'", fileName.c_str());
+  logMsg(LOG_DEBUG, "Reading configuration from \'%s\'", fileName.c_str());
   assert(!fileName.empty());
   File f;
   f.openReadOnly(fileName);

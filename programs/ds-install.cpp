@@ -17,18 +17,16 @@
 
 #include"deepsolver.h"
 #include"OperationCore.h"
-#include"InfoCore.h"
 #include"Messages.h"
-#include"IndexFetchProgress.h"
 
-class DsPatchCliParser: public CliParser
+class DsInstallCliParser: public CliParser
 {
 public:
   /**\brief The default constructor*/
-  DsPatchCliParser() {}
+  DsInstallCliParser() {}
 
   /**\brief The destructor*/
-  virtual ~DsPatchCliParser() {}
+  virtual ~DsInstallCliParser() {}
 
 protected:
   /**\brief Recognizes cluster of command line arguments
@@ -76,168 +74,77 @@ protected:
       }
     assert(cluster.size() > 1);
     assert(cluster[0] == "--add" || cluster[0] == "--del");
-    if (cluster[0] == "--add")
-      for(StringVector::size_type i = 1;i < cluster.size();i++)
-	filesToAdd.push_back(cluster[i]); else 
-      for(StringVector::size_type i = 1;i < cluster.size();i++)
-	filesToRemove.push_back(cluster[i]);
+    //    if (cluster[0] == "--add")
+      //      for(StringVector::size_type i = 1;i < cluster.size();i++)
+	//	filesToAdd.push_back(cluster[i]); else 
+	//      for(StringVector::size_type i = 1;i < cluster.size();i++)
+	//	filesToRemove.push_back(cluster[i]);
   }
 
 public:
-  StringVector filesToAdd, filesToRemove;
-}; //class DsPatchCliParser;
-
-class AlwaysTrueContinueRequest: public AbstractOperationContinueRequest
-{
-public:
-  AlwaysTrueContinueRequest() {}
-  virtual ~AlwaysTrueContinueRequest() {}
-
-public:
-  bool onContinueOperationRequest() const
-  {
-    return 1;
-  }
-}; //class AlwaysTrueContinueRequest; 
-
-static AlwaysTrueContinueRequest alwaysTrueContinueRequest;
-static ConfigCenter conf;
-//FIXME:static CmdLineParser cmdLineParser;
-
-bool loadConfiguration()
-{
-  try{
-  conf.loadFromFile("/tmp/ds.ini");
-  conf.commit();
-  }
-  catch (const ConfigFileException& e)
-    {
-      Messages(std::cerr).onConfigSyntaxError(e);
-      return 0;
-    }
-  catch (const ConfigException& e)
-    {
-      Messages(std::cerr).onConfigError(e);
-      return 0;
-    }
-  catch(const SystemException& e)
-    {
-      Messages(std::cerr).onSystemError(e);
-      return 0;
-    }
-  return 1;
-}
-
-int fetchIndices()
-{
-  logMsg(LOG_DEBUG, "recognized user request to update package indices");
-  OperationCore core(conf);
-  try {
-    IndexFetchProgress progress(std::cout);
-    core.fetchIndices(progress, alwaysTrueContinueRequest);
-  }
-  catch (const OperationException& e)
-    {
-      Messages(std::cerr).onOperationError(e);
-      return 1;
-    }
-  catch(const SystemException& e)
-    {
-      Messages(std::cerr).onSystemError(e);
-      return 1;
-    }
-  catch(const CurlException& e)
-    {
-      Messages(std::cerr).onCurlError(e);
-      return 1;
-    }
-  return 0;
-}
-
-int install(int argc, char* argv[])
-{
-  assert(argc > 2);
-  logMsg(LOG_DEBUG, "recognized user request to install packages");
   UserTask userTask;
-  StringVector params;
-  //  cmdLineParser.parseInstallArgs(argc, argv, 2, userTask.itemsToInstall, params);
-  //FIXME:URLs must be filtered out;
-  assert(!userTask.itemsToInstall.empty());
-  logMsg(LOG_DEBUG, "Recognized %zu items to install:", userTask.itemsToInstall.size());
-  for(UserTaskItemToInstallVector::size_type i = 0;i < userTask.itemsToInstall.size();i++)
-    logMsg(LOG_DEBUG, "%s", userTask.itemsToInstall[i].toString().c_str());
-  OperationCore core(conf);
-  try {
-    core.doInstallRemove(userTask);
-  }
-  catch (const OperationException& e)
-    {
-      Messages(std::cerr).onOperationError(e);
-      return 1;
-    }
-  catch(const SystemException& e)
-    {
-      Messages(std::cerr).onSystemError(e);
-      return 1;
-    }
-  catch(const CurlException& e)
-    {
-      Messages(std::cerr).onCurlError(e);
-      return 1;
-    }
-  return 0;
-}
+}; //class DsPInstallCliParser;
 
-int listAvailablePackages(int argc, char* argv[])
+static DsInstallCliParser cliParser;
+
+void parseCmdLine(int argc, char* argv[])
 {
-  logMsg(LOG_DEBUG, "Recognized request to list known packages");
-  bool noInstalled = 0, noRepoAvailable = 0, printBuildTime = 0;
-  assert(argc >= 2);
-  for(int i = 2;i < argc;i++)
+  Messages(std::cout).dsInstallInitCliParser(cliParser);
+  try {
+    cliParser.init(argc, argv);
+    cliParser.parse();
+  }
+  catch (const CliParserException& e)
     {
-      const std::string value(argv[i]);
-	if (value == "--no-installed")
-	  noInstalled = 1;
-	if (value == "--no-repo")
-	  noRepoAvailable = 1;
-	if (value == "--buildtime")
-printBuildTime = 1;
+      switch (e.getCode())
+	{
+	case CliParserException::NoPrgName:
+	  Messages(std::cerr).onMissedProgramName();
+	  exit(EXIT_FAILURE);
+	case CliParserException::MissedArgument:
+	  Messages(std::cout).onMissedCommandLineArgument(e.getArg());
+	  exit(EXIT_FAILURE);
+	default:
+	  assert(0);
+	} //switch();
     }
-  InfoCore core(conf);
-  PkgVector pkgs;
-  core.listKnownPackages(pkgs, noInstalled, noRepoAvailable);
-  StringVector s;
-  s.resize(pkgs.size());
-  for(PkgVector::size_type i = 0;i < pkgs.size();i++)
+  if (cliParser.wasKeyUsed("--help"))
     {
-      std::ostringstream ss;
-      ss << pkgs[i].name << "-";
-      //      if (pkgs[i].epoch > 0)
-      //	ss << pkgs[i].epoch << ":";
-      ss << pkgs[i].version << "-" << pkgs[i].release;
-if (printBuildTime)
-ss << " (" << pkgs[i].buildTime << ")";
-      s[i] = ss.str();
+      Messages(std::cout).dsInstallHelp(cliParser);
+      exit(EXIT_SUCCESS);
     }
-  std::sort(s.begin(), s.end());
-  for(StringVector::size_type i = 0;i < s.size();i++)
-    std::cout << s[i] << std::endl;
-  return 0;
 }
 
 int main(int argc, char* argv[])
 {
-  //  initLogging("/tmp/ds.log", LOG_DEBUG);//FIXME:
-  if (!loadConfiguration())
-    return 1;
-  if (argc < 2)
-    return 0;
-  if (std::string(argv[1]) == "update")
-    return fetchIndices();
-  if (std::string(argv[1]) == "install")
-    return install(argc, argv);
-  if (std::string(argv[1]) == "ls")
-    return listAvailablePackages(argc, argv);
-  return 1;
+  messagesProgramName = "ds-install";
+  setlocale(LC_ALL, "");
+  parseCmdLine(argc, argv);
+  initLogging(cliParser.wasKeyUsed("--debug")?LOG_DEBUG:LOG_INFO, cliParser.wasKeyUsed("--log"));
+  try{
+    ConfigCenter conf;
+    conf.loadFromFile("/tmp/ds.ini");
+    conf.commit();
+    OperationCore core(conf);
+  logMsg(LOG_DEBUG, "Recognized %zu items to install:", cliParser.userTask.itemsToInstall.size());
+  for(UserTaskItemToInstallVector::size_type i = 0;i < cliParser.userTask.itemsToInstall.size();i++)
+    logMsg(LOG_DEBUG, "%s", cliParser.userTask.itemsToInstall[i].toString().c_str());
+    core.doInstallRemove(cliParser.userTask);
+  }
+  catch (const ConfigFileException& e)
+    {
+      Messages(std::cerr).onConfigSyntaxError(e);
+      return EXIT_FAILURE;
+    }
+  catch (const ConfigException& e)
+    {
+      Messages(std::cerr).onConfigError(e);
+      return EXIT_FAILURE;
+    }
+  catch(const SystemException& e)
+    {
+      Messages(std::cerr).onSystemError(e);
+      return EXIT_FAILURE;
+    }
+  return EXIT_SUCCESS;
 }
-

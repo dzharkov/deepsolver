@@ -90,12 +90,17 @@ protected:
   assert(!params.empty());
   if (mode != 0)//We are already after "--" key;
     return 0;
-  if (params[0] != "--add" && params[0] != "--del")
+  if (params[0] != "--add" && 
+      params[0] != "--del" &&
+params[0] != "--add-list" &&
+params[0] != "--del-list")
     return CliParser::recognizeCluster(params, mode);
   size_t ending = 1;
   while (ending < params.size() &&
 	 params[ending] != "--add" &&
 	 params[ending] != "--del" &&
+	 params[ending] != "--add-list" &&
+	 params[ending] != "--del-list" &&
 	 params[ending] != "--" &&
 	 findKey(params[ending]) == (KeyVector::size_type)-1)
     ending++;
@@ -114,18 +119,68 @@ protected:
    */
   void parseCluster(const StringVector& cluster, int& mode)
   {
-    if (mode != 0 || (cluster[0] != "--add" && cluster[0] != "--del"))
+    if (mode != 0 || 
+	(cluster[0] != "--add" && 
+	 cluster[0] != "--del" &&
+	 cluster[0] != "--add-list" && 
+	 cluster[0] != "--del-list"))
       {
 	CliParser::parseCluster(cluster, mode);
 	return;
       }
     assert(cluster.size() > 1);
-    assert(cluster[0] == "--add" || cluster[0] == "--del");
+    assert(cluster[0] == "--add" || 
+	   cluster[0] == "--del" ||
+	   cluster[0] == "--add-list" || 
+	   cluster[0] == "--del-list");
     if (cluster[0] == "--add")
-      for(StringVector::size_type i = 1;i < cluster.size();i++)
-	filesToAdd.push_back(cluster[i]); else 
-      for(StringVector::size_type i = 1;i < cluster.size();i++)
-	filesToRemove.push_back(cluster[i]);
+      {
+	for(StringVector::size_type i = 1;i < cluster.size();i++)
+	  filesToAdd.push_back(cluster[i]);
+	return;
+      }
+    if (cluster[0] == "--add-list")
+      {
+	for(StringVector::size_type i = 1;i < cluster.size();i++)
+	  {
+	    StringVector items;
+	    readListFromFile(cluster[i], items);
+	    for(StringVector::size_type k = 0;k < items.size();k++)
+	      filesToAdd.push_back(items[k]);
+	  }
+	return;
+      }
+    if (cluster[0] == "--del")
+      {
+	for(StringVector::size_type i = 1;i < cluster.size();i++)
+	  filesToRemove.push_back(cluster[i]);
+	return;
+      }
+    if (cluster[0] == "--del-list")
+      {
+	for(StringVector::size_type i = 1;i < cluster.size();i++)
+	  {
+	    StringVector items;
+	    readListFromFile(cluster[i], items);
+	    for(StringVector::size_type k = 0;k < items.size();k++)
+	      filesToRemove.push_back(items[k]);
+	  }
+	return;
+      }
+  }
+
+private:
+  void readListFromFile(const std::string& fileName, StringVector& items) const
+  {
+    File f;
+    f.openReadOnly(fileName);
+    StringVector lines;
+    f.readTextFile(lines);
+    f.close();
+    items.clear(); 
+    for(StringVector::size_type i = 0;i < lines.size();i++)
+      if (!trim(lines[i]).empty())
+	items.push_back(trim(lines[i]));
   }
 
 public:
@@ -144,7 +199,7 @@ void initCliParser()
 
 void printLogo()
 {
-  std::cout << "ds-patch: the utility to patch Deepsolver repository index" << std::endl;
+  std::cout << "ds-patch: The utility to patch Deepsolver repository index" << std::endl;
     std::cout << "Version: " << PACKAGE_VERSION << std::endl;
   std::cout << std::endl;
 }
@@ -154,7 +209,7 @@ void printHelp()
   printLogo();
   printf("%s", 
 	 "Usage:\n"
-	 "\tds-patch [OPTIONS] INDEX_DIR [--add FILE1 [FILE2 [...]]] [--del FILE1 [FILE2 [...]]]\n"
+	 "\tds-patch [OPTIONS] INDEX_DIR [--add FILE1 [FILE2 [...]]] [--del FILE1 [FILE2 [...]]] [--add-list LIST1 [LIST2 [...]]] [--del-list LIST1 [LIST2 [...]]]\n"
 	 "Where:\n"
 	 "\tINDEX_DIR       - directory with index to patch\n"
 	 "\tFILE1, FILE2... - files to add or delete; files to add must be mentioned by their absolute path, file to delete - just by file names\n"
@@ -184,6 +239,11 @@ void parseCmdLine(int argc, char* argv[])
 	default:
 	  assert(0);
 	} //switch();
+    }
+  catch(const DeepsolverException& e)
+    {
+      std::cerr << "ERROR:" << e.getMessage() << std::endl;
+      exit(EXIT_FAILURE);
     }
   if (cliParser.wasKeyUsed("--help"))
     {

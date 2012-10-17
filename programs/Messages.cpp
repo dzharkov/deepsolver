@@ -168,3 +168,26 @@ void Messages::introduceRepoSet(const ConfigCenter& conf) const
       std::cout << std::endl;
     }
 }
+
+void Messages::dsInstallLogo() const
+{
+  m_stream << "ds-install: The Deepsolver utility for package installation" << std::endl;
+  m_stream << "Version: " << PACKAGE_VERSION << std::endl;
+  m_stream << std::endl;
+}
+
+void Messages::dsInstallInitCliParser(CliParser& cliParser) const
+{
+  cliParser.addKeyDoubleName("-h", "--help", "print this help screen and exit");
+  cliParser.addKey("--log", "print log to console instead of user progress information");
+  cliParser.addKey("--debug", "relax filtering level for log output");
+}
+
+void Messages::dsInstallHelp(const CliParser& cliParser) const
+{
+  dsUpdateLogo();
+  m_stream << "Usage: ds-install [OPTIONS] [PKG1 [(<|<=|=|>=|>) VERSION] [...]]" << std::endl;
+  m_stream << std::endl;
+  m_stream << "Valid command line options are:" << std::endl;
+  cliParser.printHelp(m_stream);
+}

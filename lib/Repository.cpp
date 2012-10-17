@@ -25,7 +25,7 @@
 void Repository::fetchInfoAndChecksum()
 {
   const std::string infoFileUrl = buildInfoFileUrl();
-  logMsg(LOG_DEBUG, "Fetching tiny file \'%s\'", infoFileUrl.c_str());
+  logMsg(LOG_DEBUG, "Constructed info file URL is \'%s\'", infoFileUrl.c_str());
   TinyFileDownload download;//FIXME:max file size limit;
   download.fetch(infoFileUrl);
   const std::string info = download.getContent();
@@ -37,7 +37,7 @@ void Repository::fetchInfoAndChecksum()
   catch(const InfoFileException& e)
     {
       logMsg(LOG_ERR, "info file parsing problem:%s", e.getMessage().c_str());
-      throw OperationException(OperationErrorInvalidInfoFile);
+      throw OperationException(OperationErrorInvalidInfoFile);//FIXME:Info file URL;
     }
   logMsg(LOG_DEBUG, "Info file downloaded and parsed, list of values:");
   for(StringToStringMap::const_iterator it = infoValues.begin();it != infoValues.end();it++)
@@ -47,19 +47,23 @@ void Repository::fetchInfoAndChecksum()
       logMsg(LOG_ERR, "Info file does not contain the \'%s\' key", INFO_FILE_FORMAT_TYPE);
       throw OperationException(OperationErrorInvalidInfoFile);
     }
-  if (infoValues.find(INFO_FILE_COMPRESSION_TYPE) == infoValues.end())
-    {
-      logMsg(LOG_ERR, "Info file does not contain the \'%s\' key", INFO_FILE_COMPRESSION_TYPE);
-      throw OperationException(OperationErrorInvalidInfoFile);
-    }
   if (infoValues.find(INFO_FILE_MD5SUM) == infoValues.end())
     {
       logMsg(LOG_ERR, "Info file does not contain the \'%s\' key", INFO_FILE_MD5SUM);
       throw OperationException(OperationErrorInvalidInfoFile);
     }
+  m_checksumFileName = trim(infoValues.find(INFO_FILE_MD5SUM)->second);
+  //FIXME:Checksum;
+  if (infoValues.find(INFO_FILE_COMPRESSION_TYPE) == infoValues.end())
+    {
+      logMsg(LOG_ERR, "Info file does not contain the \'%s\' key", INFO_FILE_COMPRESSION_TYPE);
+      throw OperationException(OperationErrorInvalidInfoFile);
+    }
   const std::string formatType = trim(infoValues.find(INFO_FILE_FORMAT_TYPE)->second);
   const std::string compressionType = trim(infoValues.find(INFO_FILE_COMPRESSION_TYPE)->second);
-  m_checksumFileName = trim(infoValues.find(INFO_FILE_MD5SUM)->second);
+  logMsg(LOG_DEBUG, "Checksum file name is \'%s\'", m_checksumFileName.c_str());
+  logMsg(LOG_DEBUG, "Format type is \'%s\'", formatType.c_str());
+  logMsg(LOG_DEBUG, "Compression type is \'%s\'", compressionType.c_str());
   if (formatType == INFO_FILE_FORMAT_TYPE_TEXT)
     m_formatType = FormatTypeText; else
     if (formatType == INFO_FILE_FORMAT_TYPE_BINARY)
@@ -90,16 +94,22 @@ void Repository::addIndexFilesForFetch(StringToStringMap& files)
     dir += '/';
   dir += m_arch + "/";
   dir += REPO_INDEX_DIR_PREFIX + m_component + "/";
-  m_mainPkgFileUrl = dir + REPO_INDEX_PACKAGES_FILE;
-  //FIXME:  m_providesFileUrl = dir + REPO_INDEX_PROVIDES_DATA_FILE;
+  logMsg(LOG_DEBUG, "Constructing list of files to download, basic URL is \'%s\'", dir.c_str());
+  m_pkgFileUrl = dir + REPO_INDEX_PACKAGES_FILE;
+  m_pkgDescrFileUrl = dir + REPO_INDEX_PACKAGES_DESCR_FILE;
+m_srcFileUrl = dir + REPO_INDEX_SOURCES_FILE;
+m_srcDescrFileUrl = dir + REPO_INDEX_SOURCES_DESCR_FILE;
   if (m_compressionType == CompressionTypeGzip)
     {
-      m_mainPkgFileUrl += COMPRESSION_SUFFIX_GZIP;
-      m_providesFileUrl += COMPRESSION_SUFFIX_GZIP;
+      m_pkgFileUrl += COMPRESSION_SUFFIX_GZIP;
+      m_pkgDescrFileUrl += COMPRESSION_SUFFIX_GZIP;
+      m_srcFileUrl += COMPRESSION_SUFFIX_GZIP;
+      m_srcDescrFileUrl += COMPRESSION_SUFFIX_GZIP;
     }
-  files.insert(StringToStringMap::value_type(m_mainPkgFileUrl, ""));
-  files.insert(StringToStringMap::value_type(m_providesFileUrl, ""));
-  //Here may be also sources index file but question about it must be considered later;
+  files.insert(StringToStringMap::value_type(m_pkgFileUrl, ""));
+  files.insert(StringToStringMap::value_type(m_pkgDescrFileUrl, ""));
+  files.insert(StringToStringMap::value_type(m_srcFileUrl, ""));
+  files.insert(StringToStringMap::value_type(m_srcDescrFileUrl, ""));
 }
 
 void Repository::addPackagesToScope(const StringToStringMap& files, PackageScopeContentBuilder& content)
@@ -113,7 +123,6 @@ void Repository::addPackagesToScope(const StringToStringMap& files, PackageScope
       {
 	assert(0);
       }
-  */
   StringToStringMap::const_iterator it = files.find(m_mainPkgFileUrl);
   assert(it != files.end());
   const std::string pkgFileName = it->second;
@@ -154,6 +163,7 @@ void Repository::addPackagesToScope(const StringToStringMap& files, PackageScope
       throw OperationException(OperationErrorBrokenIndexFile);
     }
   reader.close();
+  */
 }
 
 std::string Repository::buildInfoFileUrl() const

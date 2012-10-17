@@ -164,7 +164,7 @@ void initCliParser()
 
 void printLogo()
 {
-  std::cout << "ds-repo: the utility to create Deepsolver repository index" << std::endl;
+  std::cout << "ds-repo: The utility to create Deepsolver repository index" << std::endl;
     std::cout << "Version: " << PACKAGE_VERSION << std::endl;
   std::cout << std::endl;
 }

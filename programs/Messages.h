@@ -35,6 +35,11 @@ public:
   void dsUpdateHelp(const CliParser& cliParser) const;
   void introduceRepoSet(const ConfigCenter& conf) const;
 
+  //ds-install;
+  void dsInstallLogo() const;
+  void dsInstallInitCliParser(CliParser& cliParser) const;
+  void dsInstallHelp(const CliParser& cliParser) const;
+
 private:
   std::ostream& m_stream;
 }; //class Messages;
