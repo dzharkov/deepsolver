@@ -30,7 +30,9 @@ void IndexFetchProgress::onIndexFetchBegin()
 
 void IndexFetchProgress::onIndexFilesReading()
 {
-  m_stream << std::endl;
+  for(std::string::size_type i = 0;i < m_prevStrLen;i++)
+    m_stream << "\b";
+  m_prevStrLen = 0;
   m_stream << "Reading downloaded data" << std::endl;
 }
 

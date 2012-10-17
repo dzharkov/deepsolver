@@ -73,6 +73,7 @@ int main(int argc, char* argv[])
   try{
     logMsg(LOG_INFO, "Starting repo index updating");
     AlwaysTrueContinueRequest alwaysTrueContinueRequest;
+    Messages(std::cout).dsUpdateLogo();
     ConfigCenter conf;
     conf.loadFromFile("/tmp/ds.ini");
     conf.commit();
