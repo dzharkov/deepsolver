@@ -65,17 +65,17 @@ void Repository::fetchInfoAndChecksum()
   logMsg(LOG_DEBUG, "Format type is \'%s\'", formatType.c_str());
   logMsg(LOG_DEBUG, "Compression type is \'%s\'", compressionType.c_str());
   if (formatType == INFO_FILE_FORMAT_TYPE_TEXT)
-    m_formatType = FormatTypeText; else
+    m_formatType = RepoParams::FormatTypeText; else
     if (formatType == INFO_FILE_FORMAT_TYPE_BINARY)
-      m_formatType = FormatTypeBinary; else
+      m_formatType = RepoParams::FormatTypeBinary; else
       {
 	logMsg(LOG_ERR, "Unsupported format type in info file: \'%s\'", formatType.c_str());
 	throw OperationException(OperationErrorInvalidInfoFile);
       }
   if (compressionType == INFO_FILE_COMPRESSION_TYPE_NONE)
-    m_compressionType = CompressionTypeNone; else
+    m_compressionType = RepoParams::CompressionTypeNone; else
     if (compressionType == INFO_FILE_COMPRESSION_TYPE_GZIP)
-      m_compressionType = CompressionTypeGzip; else
+      m_compressionType = RepoParams::CompressionTypeGzip; else
       {
 	logMsg(LOG_ERR, "Unsupported compression type in info file: \'%s\'", compressionType.c_str());
 	throw OperationException(OperationErrorInvalidInfoFile);
@@ -84,8 +84,8 @@ void Repository::fetchInfoAndChecksum()
 
 void Repository::addIndexFilesForFetch(StringToStringMap& files)
 {
-  assert(m_formatType == FormatTypeText || m_formatType == FormatTypeBinary);
-  assert(m_compressionType == CompressionTypeNone || m_compressionType == CompressionTypeGzip);
+  assert(m_formatType == RepoParams::FormatTypeText || m_formatType == RepoParams::FormatTypeBinary);
+  assert(m_compressionType == RepoParams::CompressionTypeNone || m_compressionType == RepoParams::CompressionTypeGzip);
   assert(!m_url.empty());
   assert(!m_arch.empty());
   assert(!m_component.empty());
@@ -99,7 +99,7 @@ void Repository::addIndexFilesForFetch(StringToStringMap& files)
   m_pkgDescrFileUrl = dir + REPO_INDEX_PACKAGES_DESCR_FILE;
 m_srcFileUrl = dir + REPO_INDEX_SOURCES_FILE;
 m_srcDescrFileUrl = dir + REPO_INDEX_SOURCES_DESCR_FILE;
-  if (m_compressionType == CompressionTypeGzip)
+ if (m_compressionType == RepoParams::CompressionTypeGzip)
     {
       m_pkgFileUrl += COMPRESSION_SUFFIX_GZIP;
       m_pkgDescrFileUrl += COMPRESSION_SUFFIX_GZIP;
@@ -112,58 +112,26 @@ m_srcDescrFileUrl = dir + REPO_INDEX_SOURCES_DESCR_FILE;
   files.insert(StringToStringMap::value_type(m_srcDescrFileUrl, ""));
 }
 
-void Repository::addPackagesToScope(const StringToStringMap& files, PackageScopeContentBuilder& content)
+void Repository::loadPackageData(const StringToStringMap& files, 
+		     AbstractPackageRecipient& transactData,
+		     AbstractPackageRecipient& pkgInfoData)
 {
-  //FIXME:  int textFileType;
-  /*FIXME:
-  if (m_compressionType == CompressionTypeNone)
-    textFileType = TextFileStd; else 
-    if (m_compressionType == CompressionTypeGzip)
-      textFileType = TextFileGZip; else
-      {
-	assert(0);
-      }
-  StringToStringMap::const_iterator it = files.find(m_mainPkgFileUrl);
+  StringToStringMap::const_iterator it = files.find(m_pkgFileUrl);
   assert(it != files.end());
   const std::string pkgFileName = it->second;
-  it = files.find(m_providesFileUrl);
-  assert (it != files.end());
-  const std::string providesFileName = it->second;
-  //FIXME:checksum processing;
-  TextFormatReader reader;
-  logMsg(LOG_DEBUG, "Reading packages information from \'%s\' for repository \'%s\'", pkgFileName.c_str(), m_name.c_str());
-  try {
-    reader.openFile(pkgFileName, 1);//FIXME:textFileType
-    PkgFile pkgFile;
-    while(reader.readPackage(pkgFile))
-      content.addPkg(pkgFile);
-  }
-  catch(const TextFormatReaderException& e)
-    {
-      logMsg(LOG_ERR, "Repo \'%s\':package data in text format error:%s", m_name.c_str(), e.getMessage().c_str());
-      throw OperationException(OperationErrorBrokenIndexFile);
-    }
-  reader.close();
-  logMsg(LOG_DEBUG, "Package data from \'%s\' was loaded successfully", pkgFileName.c_str());
-  logMsg(LOG_DEBUG, "Reading provides information from \'%s\' for repository \'%s\'", providesFileName.c_str(), m_name.c_str());
-  try {
-    reader.openFile(providesFileName, 1);//FIXME:textFileType;
-    std::string provideName;
-    StringVector providers;
-    while(1)//FIXME:reader.readProvides(provideName, providers);
-      {
-	assert(!provideName.empty());
-	for(StringVector::size_type i = 0;i < providers.size();i++ )
-	  content.addProvideMapItem(provideName, providers[i]);
-      }
-  }
-  catch (const TextFormatReaderException& e)
-    {
-      logMsg(LOG_ERR, "Repo \'%s\':provides data in text format error:%s", m_name.c_str(), e.getMessage().c_str());
-      throw OperationException(OperationErrorBrokenIndexFile);
-    }
-  reader.close();
-  */
+  it = files.find(m_pkgDescrFileUrl);
+  assert(it != files.end());
+  const std::string pkgDescrFileName = it->second;
+  it = files.find(m_srcFileUrl);
+  assert(it != files.end());
+  const std::string srcFileName = it->second;
+  it = files.find(m_srcDescrFileUrl);
+  assert(it != files.end());
+  const std::string srcDescrFileName = it->second;
+  logMsg(LOG_DEBUG, "pkgFileName = \'%s\'", pkgFileName.c_str());
+  logMsg(LOG_DEBUG, "pkgDescrFileName = \'%s\'", pkgDescrFileName.c_str());
+  logMsg(LOG_DEBUG, "srcFileName = \'%s\'", srcFileName.c_str());
+  logMsg(LOG_DEBUG, "srcDescrFileName = \'%s\'", srcDescrFileName.c_str());
 }
 
 std::string Repository::buildInfoFileUrl() const

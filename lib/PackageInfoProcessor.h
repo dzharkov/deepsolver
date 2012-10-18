@@ -15,27 +15,19 @@
    General Public License for more details.
 */
 
-#ifndef DEEPSOLVER_ABSTRACT_PACKAGE_RECIPIENT_H
-#define DEEPSOLVER_ABSTRACT_PACKAGE_RECIPIENT_H
+#ifndef DEEPSOLVER_PACKAGE_INFO_PROCESSOR_H
+#define DEEPSOLVER_PACKAGE_INFO_PROCESSOR_H
 
-#include"Pkg.h"
+#include"AbstractPackageRecipient.h"
 
-/**\brief The interface for handling sequences of package records
- *
- * This abstract class declares unified interface for any object purposed
- * for accepting series of package entries. Basically it was created for
- * various package information loading tasks.
- *
- * \sa Repository PackageScopeContentBuilder
- */
-class AbstractPackageRecipient
+class PackageInfoProcessor: public AbstractPackageRecipient
 {
 public:
   /**\brief The default constructor*/
-  AbstractPackageRecipient() {}
+  PackageInfoProcessor() {}
 
   /**\brief The destructor*/
-  virtual ~AbstractPackageRecipient() {}
+  virtual ~PackageInfoProcessor() {}
 
 public:
   /**\brief Accepts new package file entry
@@ -44,7 +36,7 @@ public:
    *
    * \param [in] pkgFile The newly available package file entry
    */
-  virtual void onNewPkgFile(const PkgFile& pkgFile) = 0;
-}; //class AbstractPackageRecipient;
+  void onNewPkgFile(const PkgFile& pkgFile) {}//FIXME:
+}; //class PackageInfoProcessor;
 
-#endif //DEEPSOLVER_ABSTRACT_PACKAGE_RECIPIENT_H;
+#endif //DEEPSOLVER_PACKAGE_INFO_PROCESSOR_H;

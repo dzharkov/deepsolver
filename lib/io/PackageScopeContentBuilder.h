@@ -19,8 +19,9 @@
 #define DEEPSOLVER_PACKAGE_SCOPE_CONTENT_BUILDER_H
 
 #include"Pkg.h"
+#include"AbstractPackageRecipient.h"
 
-class PackageScopeContentBuilder
+class PackageScopeContentBuilder: public AbstractPackageRecipient
 {
 public:
   PackageScopeContentBuilder() {}
@@ -42,7 +43,7 @@ public:
    */
   void saveToFile(const std::string& fileName) const;
 
-  void addPkg(const PkgFile& pkgFile);
+  void onNewPkgFile(const PkgFile& pkgFile);
   void addProvideMapItem(const std::string& provideName, const std::string& packageName);
   void commit();
 

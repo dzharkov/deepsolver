@@ -18,10 +18,12 @@
 #include"deepsolver.h"
 #include"OperationCore.h"
 #include"Repository.h"
+#include"PackageInfoProcessor.h"
 #include"IndexFetch.h"
 #include"AbstractPackageBackEnd.h"
 #include"AbstractTaskSolver.h"
 #include"io/PackageScopeContentLoader.h"
+#include"io/PackageScopeContentBuilder.h"
 #include"PkgUtils.h"
 
 static std::string urlToFileName(const std::string& url)
@@ -84,8 +86,9 @@ void OperationCore::fetchIndices(AbstractIndexFetchListener& listener,
   indexFetch.fetch(files);
   listener.onIndexFilesReading();
   PackageScopeContentBuilder scope;
+  PackageInfoProcessor infoProcessor;
   for(RepositoryVector::size_type i = 0; i < repo.size();i++)
-    repo[i].addPackagesToScope(files, scope);
+    repo[i].loadPackageData(files, scope, infoProcessor);
   logMsg(LOG_DEBUG, "Committing loaded packages data");
   scope.commit();
   const std::string outputFileName = Directory::mixNameComponents(root.dir.pkgData, PKG_DATA_FILE_NAME);

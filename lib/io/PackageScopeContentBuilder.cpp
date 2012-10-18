@@ -118,7 +118,7 @@ void PackageScopeContentBuilder::saveToFile(const std::string& fileName) const
   s.flush();
 }
 
-void PackageScopeContentBuilder::addPkg(const PkgFile& pkgFile)
+void PackageScopeContentBuilder::onNewPkgFile(const PkgFile& pkgFile)
 {
   //We are interested only in name, epoch, version, release, and all relations;
   PkgInfo pkg;
