@@ -52,6 +52,7 @@ version.cpp
 
 libdeepsolver_la_HEADERS = \
 AbstractPackageBackEnd.h \
+AbstractPackageRecipient.h \
 AbstractTaskSolver.h \
 ConfigCenter.h \
 ConfigData.h \
@@ -71,6 +72,7 @@ os/Directory.h \
 os/File.h \
 os/SystemException.h \
 os/system.h \
+PackageInfoProcessor.h \
 Pkg.h \
 PkgUtils.h \
 ProvidePriorityList.h \
@@ -99,7 +101,6 @@ utils/CurlInterface.h \
 utils/DateTime.h \
 utils/GzipInterface.h \
 utils/Md5.h \
-utils/Md5File.h \
 utils/Md5File.h \
 utils/string-utils.h \
 utils/TinyFileDownload.h \

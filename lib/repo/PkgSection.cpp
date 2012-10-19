@@ -37,6 +37,16 @@
 #define OBSOLETES_STR "o:"
 #define CHANGELOG_STR "cl:"
 
+static std::string encodeMultiline(const std::string& s);
+static std::string encodeChangeLogEntry(const ChangeLogEntry& entry);
+static std::string saveNamedPkgRel(const NamedPkgRel& r);
+static std::string saveFileName(const std::string& fileName);
+static bool fileFromDirs(const std::string& fileName, const StringVector& dirs);
+static std::string extractPkgRelName(const std::string& line);
+
+static bool translateRelType(const std::string& str, NamedPkgRel& rel);
+static bool parsePkgRel(const std::string& str, NamedPkgRel& rel);
+
 std::string PkgSection::saveBaseInfo(const PkgFile& pkgFile, const StringVector& filterProvidesByDirs)
 {
   std::ostringstream ss;
@@ -152,7 +162,119 @@ void PkgSection::extractProvidesReferences(const std::string& section, StringSet
     refs.insert(extractPkgRelName(tail));
 }
 
-std::string PkgSection::encodeMultiline(const std::string& s)
+bool PkgSection::parsePkgFileSection(const StringVector& sect, PkgFile& pkgFile, size_t& invalidLineNum, std::string& invalidLineValue)
+{
+  assert(!sect.empty());
+  pkgFile.fileName = sect[0];
+  if (pkgFile.fileName.length() <= 2)//FIXME:must be exception;
+    {
+      invalidLineNum = 0;
+      invalidLineValue = sect[0];
+      return 0;
+    }
+  for(std::string::size_type k = 1;k < pkgFile.fileName.length();k++)
+    pkgFile.fileName[k - 1] = pkgFile.fileName[k];
+  pkgFile.fileName.resize(pkgFile.fileName.size() - 2);
+  for(StringVector::size_type i = 0;i < sect.size();i++)
+    {
+      const std::string& line = sect[i];
+      if(line.empty())
+	{
+	  invalidLineNum = i;
+	  invalidLineValue.erase();
+	  return 0;
+	}
+      std::string tail;
+      if (stringBegins(line, NAME_STR, tail))
+	{
+	pkgFile.name = tail;
+	continue;
+	}
+      if (stringBegins(line, EPOCH_STR, tail))
+	{
+	  std::istringstream ss(tail);
+	  if (!(ss >> pkgFile.epoch))
+	    {
+	      invalidLineNum = i;
+	      invalidLineValue = line;
+	      return 0;
+	    }
+	  continue;
+	}
+      if (stringBegins(line, VERSION_STR, tail))
+	{
+	  pkgFile.version = tail;
+	  continue;
+	}
+      if (stringBegins(line, RELEASE_STR, tail))
+	{
+	  pkgFile.release = tail;
+	  continue;
+	}
+      if (stringBegins(line, BUILDTIME_STR, tail))
+	{
+	  std::istringstream ss(tail);
+	  if (!(ss >> pkgFile.buildTime))
+	    {
+	      invalidLineNum = i;
+	      invalidLineValue = line;
+	      return 0;
+	    }
+	  continue;
+	}
+      if (stringBegins(line, REQUIRES_STR, tail))
+	{
+	  NamedPkgRel r;
+	  if (!parsePkgRel(tail, r))
+	    {
+	      invalidLineNum = i;
+	      invalidLineValue = line;
+	      return 0;
+	    }
+	  pkgFile.requires.push_back(r);
+	  continue;
+	}
+      if (stringBegins(line, CONFLICTS_STR, tail))
+	{
+	  NamedPkgRel r;
+	  if (!parsePkgRel(tail, r))
+	    {
+	      invalidLineNum = i;
+	      invalidLineValue = line;
+	      return 0;
+	    }
+	  pkgFile.conflicts.push_back(r);
+	  continue;
+	}
+      if (stringBegins(line, PROVIDES_STR, tail))
+	{
+	  NamedPkgRel r;
+	  if (!parsePkgRel(tail, r))
+	    {
+	      invalidLineNum = i;
+	      invalidLineValue = line;
+	      return 0;
+	    }
+	  pkgFile.provides.push_back(r);
+	  continue;
+	}
+      if (stringBegins(line, OBSOLETES_STR, tail))
+	{
+	  NamedPkgRel r;
+	  if (!parsePkgRel(tail, r))
+	    {
+	      invalidLineNum = i;
+	      invalidLineValue = line;
+	      return 0;
+	    }
+	  pkgFile.obsoletes.push_back(r);
+	  continue;
+	}
+    }
+  return 1;
+}
+
+std::string encodeMultiline(const std::string& s)
 {
   std::string r;
   for(std::string::size_type i = 0;i < s.length();i++)
@@ -174,7 +296,7 @@ std::string PkgSection::encodeMultiline(const std::string& s)
   return r;
 }
 
-std::string PkgSection::encodeChangeLogEntry(const ChangeLogEntry& entry)
+std::string encodeChangeLogEntry(const ChangeLogEntry& entry)
 {
   struct tm brTime;
   gmtime_r(&entry.time, &brTime);
@@ -191,7 +313,7 @@ std::string PkgSection::encodeChangeLogEntry(const ChangeLogEntry& entry)
   return encodeMultiline(s.str());
 }
 
-std::string PkgSection::saveNamedPkgRel(const NamedPkgRel& r)
+std::string saveNamedPkgRel(const NamedPkgRel& r)
 {
   std::string name;
   for(std::string::size_type i = 0;i < r.pkgName.length();i++)
@@ -217,7 +339,7 @@ std::string PkgSection::saveNamedPkgRel(const NamedPkgRel& r)
   return s.str();
 }
 
-std::string PkgSection::saveFileName(const std::string& fileName)
+std::string saveFileName(const std::string& fileName)
 {
   std::string s;
   for(std::string::size_type i = 0;i < fileName.length();i++)
@@ -229,7 +351,7 @@ std::string PkgSection::saveFileName(const std::string& fileName)
   return s;
 }
 
-bool PkgSection::fileFromDirs(const std::string& fileName, const StringVector& dirs)
+bool fileFromDirs(const std::string& fileName, const StringVector& dirs)
 {
   std::string tail;
   for(StringVector::const_iterator it = dirs.begin();it != dirs.end();it++)
@@ -238,7 +360,7 @@ bool PkgSection::fileFromDirs(const std::string& fileName, const StringVector& d
   return 0;
 }
 
-std::string PkgSection::extractPkgRelName(const std::string& line)
+std::string extractPkgRelName(const std::string& line)
 {
   //Name is stored at the beginning of line until first space without previously used backslash;
   std::string res;
@@ -261,3 +383,72 @@ std::string PkgSection::extractPkgRelName(const std::string& line)
     } //for();
   return res;
 }
+
+
+bool translateRelType(const std::string& str, NamedPkgRel& rel)
+{
+  if(str != "<" &&
+     str != ">" &&
+     str != "=" &&
+     str != "<=" &&
+     str != ">=")
+    return 0;
+  rel.type = 0;
+  if (str == "<" || str == "<=")
+    rel.type |= VerLess;
+  if (str == "<=" ||
+      str == "=" ||
+      str == ">=")
+    rel.type |= VerEquals;
+  if (str == ">" || str == ">=")
+    rel.type |= VerGreater;
+  return 0;
+}
+
+bool parsePkgRel(const std::string& str, NamedPkgRel& rel)
+{
+  rel = NamedPkgRel();
+  std::string::size_type i = 0;
+  //Extracting package name;
+  while(i < str.length() && str[i] != ' ')
+    {
+      if (str[i] == '\\')
+	{
+	  if (i + 1 >= str.length())
+	    {
+	      rel.pkgName += "\\";
+	      return 1;
+	    }
+	  assert(i + 1 < str.length());
+	  rel.pkgName += str[i + 1];
+	  i += 2;
+	  continue;
+	} //backslash;
+      rel.pkgName += str[i++];
+    }
+  if (i >= str.length())
+    return 1;
+  assert(str[i] == ' ');
+  i++;
+  //Here must be <, =, > or any their combination;
+  if (i + 1 >= str.length())
+    return 0;
+  std::string r;
+  r += str[i];
+  if (str[i + 1] != ' ')
+    {
+      r += str[i + 1];
+      i++;
+    }
+  i++;
+  if (!translateRelType(r, rel))
+    return 0;
+  if (i >= str.length() || str[i] != ' ');//FIXME:must be an exception
+  return 0;
+  i++;
+  //Here we expect package version;
+  rel.ver.erase();
+  while(i < str.length())
+    rel.ver += str[i++];
+}
+

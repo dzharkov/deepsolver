@@ -20,7 +20,9 @@
 #include"Repository.h"
 #include"utils/TinyFileDownload.h"
 #include"repo/InfoFileReader.h"
-#include"repo/TextFormatReader.h"
+#include"repo/TextFormatSectionReader.h"
+
+static std::auto_ptr<AbstractTextFormatSectionReader> createReader(const std::string& fileName, char compressionType);
 
 void Repository::fetchInfoAndChecksum()
 {
@@ -132,6 +134,51 @@ void Repository::loadPackageData(const StringToStringMap& files,
   logMsg(LOG_DEBUG, "pkgDescrFileName = \'%s\'", pkgDescrFileName.c_str());
   logMsg(LOG_DEBUG, "srcFileName = \'%s\'", srcFileName.c_str());
   logMsg(LOG_DEBUG, "srcDescrFileName = \'%s\'", srcDescrFileName.c_str());
+  std::string sect;
+  logMsg(LOG_DEBUG, "Reading transact data");
+  std::auto_ptr<AbstractTextFormatSectionReader> reader = createReader(pkgFileName, m_compressionType);
+  reader->init();
+  while(reader->readNext(sect))
+    {
+      PkgFile pkgFile;
+      //FIXME:Parse;
+      pkgFile.isSource = 0;
+      //      transactData.onNewPkgFile(pkgFile);
+    }
+  reader->close();
+  logMsg(LOG_DEBUG, "Reading binary packages descriptions");
+  reader = createReader(pkgDescrFileName, m_compressionType);
+  reader->init();
+  while(reader->readNext(sect))
+    {
+      PkgFile pkgFile;
+      //FIXME:Parse;
+      pkgFile.isSource = 0;
+      pkgInfoData.onNewPkgFile(pkgFile);
+    }
+  reader->close();
+  logMsg(LOG_DEBUG, "Reading source packages list");
+  reader = createReader(srcFileName, m_compressionType);
+  reader->init();
+  while(reader->readNext(sect))
+    {
+      PkgFile pkgFile;
+      //FIXME:Parse;
+      pkgFile.isSource = 0;
+      pkgInfoData.onNewPkgFile(pkgFile);
+    }
+  reader->close();
+  logMsg(LOG_DEBUG, "Reading source packages descriptions");
+  reader = createReader(srcDescrFileName, m_compressionType);
+  reader->init();
+  while(reader->readNext(sect))
+    {
+      PkgFile pkgFile;
+      //FIXME:Parse;
+      pkgFile.isSource = 0;
+      pkgInfoData.onNewPkgFile(pkgFile);
+    }
+  reader->close();
 }
 
 std::string Repository::buildInfoFileUrl() const
@@ -146,4 +193,22 @@ std::string Repository::buildInfoFileUrl() const
   value += REPO_INDEX_DIR_PREFIX + m_component + "/";
   value += REPO_INDEX_INFO_FILE;
   return value;
+}
+
+std::auto_ptr<AbstractTextFormatSectionReader> createReader(const std::string& fileName, char compressionType)
+{
+  if (compressionType == RepoParams::CompressionTypeNone)
+    {
+      std::auto_ptr<TextFormatSectionReader> reader(new TextFormatSectionReader());
+      reader->open(fileName);
+      return std::auto_ptr<AbstractTextFormatSectionReader>(reader.release());
+    }
+  if (compressionType == RepoParams::CompressionTypeGzip)
+    {
+      std::auto_ptr<TextFormatSectionReaderGzip> reader(new TextFormatSectionReaderGzip());
+      reader->open(fileName);
+      return std::auto_ptr<AbstractTextFormatSectionReader>(reader.release());
+    }
+  assert(0);
+  return std::auto_ptr<AbstractTextFormatSectionReader>();
 }
