@@ -64,12 +64,6 @@ public:
     return m_code;
   }
 
-  /**\brief Returns the type of exception
-   *
-   * Use this method to get type of exception (always "operation" by this class). 
-   *
-   * \return The type of exception (always "operation")
-   */
   std::string getType() const
   {
     return "operation";

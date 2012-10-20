@@ -165,8 +165,8 @@ void PkgSection::extractProvidesReferences(const std::string& section, StringSet
 bool PkgSection::parsePkgFileSection(const StringVector& sect, PkgFile& pkgFile, size_t& invalidLineNum, std::string& invalidLineValue)
 {
   assert(!sect.empty());
-  pkgFile.fileName = sect[0];
-  if (pkgFile.fileName.length() <= 2)//FIXME:must be exception;
+  pkgFile.fileName = trim(sect[0]);
+  if (pkgFile.fileName.length() <= 2 || pkgFile.fileName[0] != '[' || pkgFile.fileName[pkgFile.fileName.length() - 1] != ']')
     {
       invalidLineNum = 0;
       invalidLineValue = sect[0];
@@ -402,7 +402,7 @@ bool translateRelType(const std::string& str, NamedPkgRel& rel)
     rel.type |= VerEquals;
   if (str == ">" || str == ">=")
     rel.type |= VerGreater;
-  return 0;
+  return 1;
 }
 
 bool parsePkgRel(const std::string& str, NamedPkgRel& rel)
@@ -437,18 +437,19 @@ bool parsePkgRel(const std::string& str, NamedPkgRel& rel)
   r += str[i];
   if (str[i + 1] != ' ')
     {
-      r += str[i + 1];
       i++;
+      r += str[i];
     }
   i++;
   if (!translateRelType(r, rel))
     return 0;
-  if (i >= str.length() || str[i] != ' ');//FIXME:must be an exception
-  return 0;
+  if (i >= str.length() || str[i] != ' ')
+    return 0;
   i++;
   //Here we expect package version;
   rel.ver.erase();
   while(i < str.length())
     rel.ver += str[i++];
+  return 1;
 }
 

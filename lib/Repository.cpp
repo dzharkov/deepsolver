@@ -21,8 +21,10 @@
 #include"utils/TinyFileDownload.h"
 #include"repo/InfoFileReader.h"
 #include"repo/TextFormatSectionReader.h"
+#include"repo/PkgSection.h"
 
 static std::auto_ptr<AbstractTextFormatSectionReader> createReader(const std::string& fileName, char compressionType);
+static void splitSectionLines(const std::string& sect, StringVector& lines);
 
 void Repository::fetchInfoAndChecksum()
 {
@@ -134,16 +136,24 @@ void Repository::loadPackageData(const StringToStringMap& files,
   logMsg(LOG_DEBUG, "pkgDescrFileName = \'%s\'", pkgDescrFileName.c_str());
   logMsg(LOG_DEBUG, "srcFileName = \'%s\'", srcFileName.c_str());
   logMsg(LOG_DEBUG, "srcDescrFileName = \'%s\'", srcDescrFileName.c_str());
+  size_t invalidLineNum;
+  std::string invalidLineValue;
   std::string sect;
+  StringVector lines;
   logMsg(LOG_DEBUG, "Reading transact data");
   std::auto_ptr<AbstractTextFormatSectionReader> reader = createReader(pkgFileName, m_compressionType);
   reader->init();
   while(reader->readNext(sect))
     {
       PkgFile pkgFile;
-      //FIXME:Parse;
+      splitSectionLines(sect, lines);
+      if (!PkgSection::parsePkgFileSection(lines, pkgFile, invalidLineNum, invalidLineValue))
+	{
+	  logMsg(LOG_ERR, "Broken index file \'%s\', invalid line %zu in section \'%s\': \'%s\'", m_pkgFileUrl.c_str(), invalidLineNum, pkgFile.fileName.c_str(), invalidLineValue.c_str());
+	  throw OperationException(OperationErrorBrokenIndexFile);
+	}
       pkgFile.isSource = 0;
-      //      transactData.onNewPkgFile(pkgFile);
+      transactData.onNewPkgFile(pkgFile);
     }
   reader->close();
   logMsg(LOG_DEBUG, "Reading binary packages descriptions");
@@ -152,7 +162,12 @@ void Repository::loadPackageData(const StringToStringMap& files,
   while(reader->readNext(sect))
     {
       PkgFile pkgFile;
-      //FIXME:Parse;
+      splitSectionLines(sect, lines);
+      if (!PkgSection::parsePkgFileSection(lines, pkgFile, invalidLineNum, invalidLineValue))
+	{
+	  logMsg(LOG_ERR, "Broken index file \'%s\', invalid line %zu in section \'%s\': \'%s\'", m_pkgDescrFileUrl.c_str(), invalidLineNum, pkgFile.fileName.c_str(), invalidLineValue.c_str());
+	  throw OperationException(OperationErrorBrokenIndexFile);
+	}
       pkgFile.isSource = 0;
       pkgInfoData.onNewPkgFile(pkgFile);
     }
@@ -163,8 +178,13 @@ void Repository::loadPackageData(const StringToStringMap& files,
   while(reader->readNext(sect))
     {
       PkgFile pkgFile;
-      //FIXME:Parse;
-      pkgFile.isSource = 0;
+      splitSectionLines(sect, lines);
+      if (!PkgSection::parsePkgFileSection(lines, pkgFile, invalidLineNum, invalidLineValue))
+	{
+	  logMsg(LOG_ERR, "Broken index file \'%s\', invalid line %zu in section \'%s\': \'%s\'", m_srcFileUrl.c_str(), invalidLineNum, pkgFile.fileName.c_str(), invalidLineValue.c_str());
+	  throw OperationException(OperationErrorBrokenIndexFile);
+	}
+      pkgFile.isSource = 1;
       pkgInfoData.onNewPkgFile(pkgFile);
     }
   reader->close();
@@ -174,8 +194,13 @@ void Repository::loadPackageData(const StringToStringMap& files,
   while(reader->readNext(sect))
     {
       PkgFile pkgFile;
-      //FIXME:Parse;
-      pkgFile.isSource = 0;
+      splitSectionLines(sect, lines);
+      if (!PkgSection::parsePkgFileSection(lines, pkgFile, invalidLineNum, invalidLineValue))
+	{
+	  logMsg(LOG_ERR, "Broken index file \'%s\', invalid line %zu in section \'%s\': \'%s\'", m_srcDescrFileUrl.c_str(), invalidLineNum, pkgFile.fileName.c_str(), invalidLineValue.c_str());
+	  throw OperationException(OperationErrorBrokenIndexFile);
+	}
+      pkgFile.isSource = 1;
       pkgInfoData.onNewPkgFile(pkgFile);
     }
   reader->close();
@@ -211,4 +236,27 @@ std::auto_ptr<AbstractTextFormatSectionReader> createReader(const std::string& f
     }
   assert(0);
   return std::auto_ptr<AbstractTextFormatSectionReader>();
+}
+
+void splitSectionLines(const std::string& sect, StringVector& lines)
+{
+  lines.clear();
+  std::string line;
+  for(std::string::size_type i = 0;i < sect.length();i++)
+    {
+      if (sect[i] == '\r')
+	continue;
+      if (sect[i] == '\n')
+	{
+	  line = trim(line);
+	  if (!line.empty())
+	    lines.push_back(line);
+	  line.erase();
+	  continue;
+	}
+      line += sect[i];
+    }
+  line = trim(line);
+  if (!line.empty())
+    lines.push_back(line);
 }

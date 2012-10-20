@@ -27,7 +27,6 @@ repo/InfoFileReader.cpp \
 repo/PkgSection.cpp \
 repo/RepoParams.cpp \
 Repository.cpp \
-repo/TextFormatReader.cpp \
 repo/TextFormatSectionReader.cpp \
 RequireFilter.cpp \
 RpmBackEnd.cpp \
@@ -81,7 +80,6 @@ repo/InfoFileReader.h \
 repo/PkgSection.h \
 repo/RepoParams.h \
 Repository.h \
-repo/TextFormatReader.h \
 repo/TextFormatSectionReader.h \
 RequireFilter.h \
 rpm/Rpmdb.h \
