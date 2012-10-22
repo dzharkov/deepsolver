@@ -35,9 +35,11 @@ public:
 
 private:
   void readNames(std::ifstream& s, size_t namesBufSize);
+  void onNewName(const char* name, bool complete);
 
 private:
   PackageScopeContent& m_c;
+  std::string m_nameChunk;
 }; //class PackageScopeContentLoader;
 
 #endif //DEEPSOLVER_PACKAGE_SCOPE_CONTENT_LOADER_H;

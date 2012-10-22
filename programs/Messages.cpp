@@ -6,6 +6,8 @@
 #include"deepsolver.h"
 #include"Messages.h"
 
+//TODO:OperationErrorInvalidIOProblem;
+
 std::string messagesProgramName;
 
 struct ConfigSyntaxErrorMessage 

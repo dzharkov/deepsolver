@@ -106,14 +106,17 @@ void OperationCore::fetchIndices(AbstractIndexFetchListener& listener,
 void OperationCore::doInstallRemove(const UserTask& userTask)
 {
   File::readAhead("/var/lib/rpm/Packages");//FIXME:take the value from configuration;
-  std::auto_ptr<AbstractPackageBackEnd> backEnd = createRpmBackEnd();
+  std::auto_ptr<AbstractPackageBackEnd> backEnd = CREATE_PACKAGE_BACKEND;
   PackageScopeContent content;
   PackageScopeContentLoader loader(content);
   loader.loadFromFile(Directory::mixNameComponents(m_conf.root().dir.pkgData, PKG_DATA_FILE_NAME));
+  logMsg(LOG_DEBUG, "Index package list loaded");
   fillWithhInstalledPackages(*backEnd.get(), content);
+  logMsg(LOG_DEBUG, "Merged list of installed packages");
   ProvideMap provideMap;
   InstalledReferences requiresReferences, conflictsReferences;
   provideMap.fillWith(content);
+  logMsg(LOG_DEBUG, "Provide map filled");
   const PackageScopeContent::PkgInfoVector& pkgs = content.pkgInfoVector;
   const PackageScopeContent::RelInfoVector& rels = content.relInfoVector; 
   for(PackageScopeContent::PkgInfoVector::size_type i = 0;i < pkgs.size();i++)
@@ -136,6 +139,7 @@ void OperationCore::doInstallRemove(const UserTask& userTask)
       }
   requiresReferences.commit();
   conflictsReferences.commit();
+  logMsg(LOG_DEBUG, "Requires and Conflicts references filled");
   std::auto_ptr<AbstractTaskSolver> solver = createStrictTaskSolver(content, provideMap, requiresReferences, conflictsReferences);
   VarIdVector toInstall, toRemove;
   VarIdToVarIdMap toUpgrade;

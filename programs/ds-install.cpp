@@ -141,6 +141,11 @@ int main(int argc, char* argv[])
       Messages(std::cerr).onConfigError(e);
       return EXIT_FAILURE;
     }
+  catch(const OperationException& e)
+    {
+      Messages(std::cerr).onOperationError(e);
+      return EXIT_FAILURE;
+    }
   catch(const SystemException& e)
     {
       Messages(std::cerr).onSystemError(e);

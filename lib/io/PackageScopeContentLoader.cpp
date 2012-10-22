@@ -17,8 +17,10 @@
 
 #include"deepsolver.h"
 #include"PackageScopeContentLoader.h"
+#include"OperationCore.h"
 
-#define BLOCK_SIZE 512
+#define IO_BLOCK_SIZE 512
+#define THROW_INTERNAL_ERROR throw OperationException(OperationErrorInternalIOProblem)
 
 inline size_t readSizeValue(std::ifstream& s)
 {
@@ -50,7 +52,7 @@ static void   readBuf(std::ifstream& s, char* buf, size_t bufSize)
   size_t count = 0;
   while(count < bufSize)
     {
-      const size_t toRead = (bufSize - count) > BLOCK_SIZE?BLOCK_SIZE:(bufSize - count);
+      const size_t toRead = (bufSize - count) > IO_BLOCK_SIZE?IO_BLOCK_SIZE:(bufSize - count);
       s.read(buf + count, toRead);
       assert(s);//FIXME:must be an exception;
       count += toRead;
@@ -85,7 +87,12 @@ void PackageScopeContentLoader::loadFromFile(const std::string& fileName)
   readBuf(s, stringBuf, stringBufSize );
   //Reading names of packages and provides;
   m_c.names.reserve(nameCount);
-    readNames(s, namesBufSize);
+  readNames(s, namesBufSize);
+  if (!m_nameChunk.empty())
+    {
+      logMsg(LOG_ERR, "Non-empty name chunk after names reading \'%s\'", m_nameChunk.c_str());
+      THROW_INTERNAL_ERROR;
+    }
   assert(m_c.names.size() == nameCount);
   //Reading package list;
   for(PackageScopeContent::PkgInfoVector::size_type i = 0;i < m_c.pkgInfoVector.size();i++)
@@ -128,51 +135,41 @@ void PackageScopeContentLoader::loadFromFile(const std::string& fileName)
 
 void PackageScopeContentLoader::readNames(std::ifstream& s, size_t namesBufSize)
 {
+  logMsg(LOG_DEBUG, "Reading names, namesBufSize=%zu", namesBufSize);
   size_t count = 0;
-  char buf[BLOCK_SIZE];
-  std::string prev;
+  char buf[IO_BLOCK_SIZE + 1];
+  buf[IO_BLOCK_SIZE] = '\0';
   while(count < namesBufSize)
     {
-      const size_t toRead = (namesBufSize - count) > BLOCK_SIZE?BLOCK_SIZE:(namesBufSize - count);
+      const size_t toRead = (namesBufSize - count) > IO_BLOCK_SIZE?IO_BLOCK_SIZE:(namesBufSize - count);
       s.read(buf, toRead);
   assert(s);//FIXME:must be an exception;
-  size_t i = 0;
-  if (!prev.empty())//We have chunk of incomplete string from previous reading attempt;
-    {
-      while(i < toRead && buf[i] != '\0')
-	i++;
-      if (i >= toRead)
+  buf[toRead] = '\0';
+  size_t fromPos = 0;
+      for(size_t i = 0;i < toRead;i++)
 	{
-	  for(size_t k = 0;k < toRead;k++) 
-	    prev += buf[k];
-	  continue;
-	}
-      //OK, we have at least one '\0' in buf, so can safely add the string until '\0' to 'prev' variable;
-      prev += buf;
-      m_c.names.push_back(prev);
-	      prev.erase();
-	      //OK, incomplete string was successfully processed;
-	      i++;
-    } //If we have incomplete string chunk;
-  size_t fromPos = i;
-      for(;i < toRead;i++)
-	{
-	  assert(fromPos < toRead && i < toRead);
+	  assert(fromPos < toRead && i < toRead && fromPos <= i);
 	  if (buf[i] != '\0')
 	    continue;
-	      m_c.names.push_back(buf + fromPos);
+	  onNewName(buf + fromPos, 1);//1 means it is complete value;
 	      fromPos = i + 1;
 	} //for(buf);
-      assert(fromPos <= i);
-      assert(prev.empty());
-      if (fromPos < i)
-	for(size_t k = fromPos;k < i;k++)
-	  {
-	    assert(k < toRead);
-	    prev += buf[k];
-	  }
+      assert(fromPos <= toRead);
+      if (fromPos < toRead)//We have incomplete value;
+	onNewName(buf + fromPos, 0);//0 means it is incomplete value;
       count += toRead;
     }
   assert(count == namesBufSize);
-  assert(prev.empty());//FIXME:must be an exception;
+}
+
+void PackageScopeContentLoader::onNewName(const char* name, bool complete)
+{
+  assert(name);
+  if (!complete)
+    {
+      m_nameChunk += name;
+      return;
+    }
+  m_c.names.push_back(m_nameChunk + name);
+  m_nameChunk.erase();
 }
