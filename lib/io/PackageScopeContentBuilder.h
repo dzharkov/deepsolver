@@ -44,7 +44,6 @@ public:
   void saveToFile(const std::string& fileName) const;
 
   void onNewPkgFile(const PkgFile& pkgFile);
-  void addProvideMapItem(const std::string& provideName, const std::string& packageName);
   void commit();
 
 private:
@@ -99,29 +98,6 @@ private:
   typedef std::list<PkgInfo> PkgInfoList;
   typedef std::vector<PkgInfo> PkgInfoVector;
 
-  struct ProvideMapItem
-  {
-    ProvideMapItem()
-      : provideId(BAD_PACKAGE_ID), pkgId(BAD_PACKAGE_ID) {}
-
-    ProvideMapItem(PackageId prId, PackageId pkId)
-      : provideId(prId), pkgId(pkId) {}
-
-    bool operator <(const ProvideMapItem& item) const
-    {
-      return provideId < item.provideId;
-    }
-
-    bool operator >(const ProvideMapItem& item) const
-    {
-      return provideId > item.provideId;
-    }
-
-    PackageId provideId, pkgId;
-  }; //struct ProvideMapItem;
-
-  typedef std::vector<ProvideMapItem> ProvideMapItemVector;
-  typedef std::list<ProvideMapItem> ProvideMapItemList;
 
 private:
   void processRels(const NamedPkgRelVector& rels, size_t& pos, size_t& count);
@@ -139,7 +115,6 @@ private:
   NameToPackageIdMap m_namesToId;
   PkgInfoVector m_pkgInfoVector;
   RelInfoVector m_relInfoVector;
-  ProvideMapItemVector m_provideMap;
   //Just for saving;
   StringValueVector m_stringValues;
     SizeVector m_relVerIndices;

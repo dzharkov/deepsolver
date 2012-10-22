@@ -17,6 +17,9 @@
 
 #include"deepsolver.h"
 #include"PackageScopeContentBuilder.h"
+#include"OperationCore.h"
+
+#define THROW_INTERNAL_ERROR throw OperationException(OperationErrorInternalIOProblem)
 
 inline void writeSizeValue(std::ofstream& s, size_t value)
 {
@@ -41,7 +44,7 @@ inline void writeStringValue(std::ofstream& s, const char* value)
 
 void PackageScopeContentBuilder::saveToFile(const std::string& fileName) const
 {
-  logMsg(LOG_DEBUG, "Starting saving to binary file \'%s\'", fileName.c_str());
+  logMsg(LOG_DEBUG, "Starting saving prepared package scope content to binary file \'%s\'", fileName.c_str());
   assert(!fileName.empty());
   SizeVector stringOffsets;
   stringOffsets.resize(m_stringValues.size());
@@ -53,28 +56,43 @@ void PackageScopeContentBuilder::saveToFile(const std::string& fileName) const
       k += (strlen(m_stringValues[i]) + 1);
     }
   std::ofstream s(fileName.c_str());
-  assert(s.is_open());//FIXME:error checking;
+  if (!s.is_open())
+    {
+      logMsg(LOG_ERR, "An error occurred while opening \'%s\' for writing", fileName.c_str());
+      THROW_INTERNAL_ERROR;
+    }
   assert(m_stringValues.size() == stringOffsets.size());
   //Saving string buffer length;
+  size_t controlValue = 0;
   writeSizeValue(s, k);//we must have the total length of all strings;
   logMsg(LOG_DEBUG, "%zu bytes in all string constants with trailing zeroes", k);
+  controlValue += k;
   writeSizeValue(s, m_names.size());
   logMsg(LOG_DEBUG, "%zu package names", m_names.size());
+  controlValue += m_names.size();
   size_t totalNamesLen = 0;
   for(StringVector::size_type i = 0;i < m_names.size();i++)
     totalNamesLen += (m_names[i].length() + 1);
   writeSizeValue(s, totalNamesLen);
   logMsg(LOG_DEBUG, "%zu bytes in all package names with trailing zeroes", totalNamesLen);
+  controlValue += totalNamesLen;
   writeSizeValue(s, m_pkgInfoVector.size());
   logMsg(LOG_DEBUG, "%zu packages", m_pkgInfoVector.size());
+  controlValue += m_pkgInfoVector.size();
   writeSizeValue(s, m_relInfoVector.size());
   logMsg(LOG_DEBUG, "%zu package relations", m_relInfoVector.size());
-  writeSizeValue(s, m_provideMap.size());
-  logMsg(LOG_DEBUG, "%zu provide map items", m_provideMap.size());
+  controlValue += m_relInfoVector.size();
+  writeSizeValue(s, controlValue);
+  logMsg(LOG_DEBUG, "Saved control value %zu", controlValue);
+  if (m_pkgInfoVector.empty())
+    {
+      logMsg(LOG_DEBUG, "There are no packages, nothing to save");
+      return;
+    }
   //Saving all version and release strings;
   for(StringValueVector::size_type i = 0;i < m_stringValues.size();i++)
     writeStringValue(s, m_stringValues[i]);
-  //Saving names of packages and provides;
+  //Saving names of packages;
   for(StringVector::size_type i = 0;i < m_names.size();i++)
     writeStringValue(s, m_names[i].c_str());
   //Saving package list;
@@ -109,12 +127,6 @@ void PackageScopeContentBuilder::saveToFile(const std::string& fileName) const
 	writeSizeValue(s, stringOffsets[m_relVerIndices[i]]); else
 	writeSizeValue(s, (size_t)-1);
     }
-  //Saving provide map;
-  for(ProvideMapItemVector::size_type i = 0;i < m_provideMap.size();i++)
-    {
-      writeSizeValue(s, m_provideMap[i].provideId);
-      writeSizeValue(s, m_provideMap[i].pkgId);
-    }
   s.flush();
 }
 
@@ -139,17 +151,6 @@ void PackageScopeContentBuilder::onNewPkgFile(const PkgFile& pkgFile)
   processRels(pkgFile.provides, pkg.providesPos, pkg.providesCount);
   processRels(pkgFile.obsoletes, pkg.obsoletesPos, pkg.obsoletesCount);
     m_pkgInfoVector.push_back(pkg);
-}
-
-void PackageScopeContentBuilder::addProvideMapItem(const std::string& provideName, const std::string& packageName)
-{
-  NameToPackageIdMap::const_iterator it = m_namesToId.find(provideName);
-  assert(it != m_namesToId.end());//FIXME:must be an exception;
-  const PackageId provideId = it->second;
-  it = m_namesToId.find(packageName);
-  assert(it != m_namesToId.end());//FIXME:must be an exception;
-  const PackageId packageId = it->second;
-  m_provideMap.push_back(ProvideMapItem(provideId, packageId));
 }
 
 void PackageScopeContentBuilder::commit()
@@ -190,16 +191,8 @@ void PackageScopeContentBuilder::commit()
       assert(m_relInfoVector[i].pkgId < newPlaces.size());
       m_relInfoVector[i].pkgId = newPlaces[m_relInfoVector[i].pkgId];
     }
-  for(ProvideMapItemVector::size_type i = 0;i < m_provideMap.size();i++)
-    {
-      assert(m_provideMap[i].provideId < newPlaces.size());
-      assert(m_provideMap[i].pkgId < newPlaces.size());
-      m_provideMap[i].provideId = newPlaces[m_provideMap[i].provideId];
-      m_provideMap[i].pkgId = newPlaces[m_provideMap[i].pkgId];
-    }
   m_names = names;
   std::sort(m_pkgInfoVector.begin(), m_pkgInfoVector.end());
-  std::sort(m_provideMap.begin(), m_provideMap.end());
 }
 
 void PackageScopeContentBuilder::processRels(const NamedPkgRelVector& rels, size_t& pos, size_t& count)
@@ -250,4 +243,3 @@ void PackageScopeContentBuilder::freeStringValues()
     delete[] m_stringValues[i];
   m_stringValues.clear();
 }
-

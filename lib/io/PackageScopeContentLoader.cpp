@@ -62,14 +62,17 @@ static void   readBuf(std::ifstream& s, char* buf, size_t bufSize)
 
 void PackageScopeContentLoader::loadFromFile(const std::string& fileName)
 {
-  logMsg(LOG_DEBUG, "Starting reading from binary file \'%s\'", fileName.c_str());
+  logMsg(LOG_INFO, "Starting reading package scope content from binary file \'%s\'", fileName.c_str());
   assert(!fileName.empty());
   assert(m_c.names.empty());
   assert(m_c.pkgInfoVector.empty());
   assert(m_c.relInfoVector.empty());
-  //FIXME:  assert(m_stringBuf == NULL);
   std::ifstream s(fileName.c_str());
-  assert(s.is_open());//FIXME:error checking;
+  if (!s.is_open())
+    {
+      logMsg(LOG_ERR, "An error occurred opening \'%s\' for reading", fileName.c_str());
+    THROW_INTERNAL_ERROR;
+    }
   //Reading numbers of records;
   const size_t stringBufSize = readSizeValue(s);
   logMsg(LOG_DEBUG, "%zu bytes in all string constants with trailing zeroes", stringBufSize);
@@ -81,6 +84,19 @@ void PackageScopeContentLoader::loadFromFile(const std::string& fileName)
   logMsg(LOG_DEBUG, "%zu packages", m_c.pkgInfoVector.size());
   m_c.relInfoVector.resize(readSizeValue(s));
   logMsg(LOG_DEBUG, "%zu package relations", m_c.relInfoVector.size());
+  const size_t controlValueHave = readSizeValue(s);
+  const size_t controlValueShouldBe = stringBufSize + nameCount + namesBufSize + m_c.pkgInfoVector.size() + m_c.relInfoVector.size();
+  if (controlValueShouldBe != controlValueHave)
+    {
+      logMsg(LOG_ERR, "Control value does not match: %zu have but %zu should be", controlValueHave, controlValueShouldBe);
+      THROW_INTERNAL_ERROR;
+    } else
+    logMsg(LOG_DEBUG, "Control value correct (%zu)", controlValueHave);
+  if (m_c.pkgInfoVector.empty())
+    {
+      logMsg(LOG_DEBUG, "There are no packages, leaving package scope empty");
+      return;
+    }
   //Reading all version and release strings;
   char* stringBuf = new char[stringBufSize];
   m_c.addStringToAutoRelease(stringBuf);
@@ -90,10 +106,14 @@ void PackageScopeContentLoader::loadFromFile(const std::string& fileName)
   readNames(s, namesBufSize);
   if (!m_nameChunk.empty())
     {
-      logMsg(LOG_ERR, "Non-empty name chunk after names reading \'%s\'", m_nameChunk.c_str());
+      logMsg(LOG_ERR, "Non-empty name chunk after names reading \'%s\', already have %zu complete names", m_nameChunk.c_str(), m_c.names.size());
       THROW_INTERNAL_ERROR;
     }
-  assert(m_c.names.size() == nameCount);
+  if(m_c.names.size() != nameCount)
+    {
+      logMsg(LOG_ERR, "Number of read names does not match expected value, read %zu but expected %zu", m_c.names.size(), nameCount);
+      THROW_INTERNAL_ERROR;
+    }
   //Reading package list;
   for(PackageScopeContent::PkgInfoVector::size_type i = 0;i < m_c.pkgInfoVector.size();i++)
     {
