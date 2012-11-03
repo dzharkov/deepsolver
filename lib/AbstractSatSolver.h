@@ -36,6 +36,13 @@ struct Lit
 typedef std::vector<Lit> Clause;
 typedef std::vector<Clause> Sat;
 
+inline Clause unitClause(const Lit& lit)
+{
+  Clause c;
+  c.push_back(lit);
+  return c;
+}
+
 class AbstractSatSolver
 {
 public:

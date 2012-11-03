@@ -22,7 +22,6 @@
 #include"version.h"
 
 #define NAME_S(x) m_scope.constructPackageName(x)
-#define REL_S(x) (m_scope.packageIdToStr((x).pkgId) + (x).verString())
 
 static void printSat(const PackageScope& scope, const Sat& sat);
 static void printSolution(const PackageScope& scope,
@@ -82,6 +81,7 @@ public:
   void solve(const UserTask& task, VarIdVector& toInstall, VarIdVector& toRemove, VarIdToVarIdMap& toUpgrade);
 
 private:
+  Sat m_sat;
   void translateUserTask(const UserTask& userTask);
   VarId translateItemToInstall(const UserTaskItemToInstall& item);
   VarId satisfyRequire(const IdPkgRel& rel);
@@ -89,7 +89,10 @@ private:
   VarId satisfyRequire(PackageId pkgId, const VersionCond& version);
   VarId processPriorityList(const VarIdVector& vars, PackageId provideEntry) const;
   VarId processPriorityBySorting(const VarIdVector& vars) const;
-  void handleDependentBreaks(VarId seed);
+  void handleDependenceBreaks(VarId seed);
+
+private://Utilities;
+  std::string relToString(const IdPkgRel& rel);
 
 private:
   const PackageScopeContent& m_content;
@@ -115,24 +118,31 @@ void GeneralSolver::solve(const UserTask& task, VarIdVector& toInstall, VarIdVec
   translateUserTask(task);
   logMsg(LOG_DEBUG, "User task translated: %zu to install, %zu to remove, %zu to upgrade", m_userTaskInstall.size(), m_userTaskRemove.size(), m_userTaskUpgrade.size());
   for(VarIdVector::size_type i = 0;i < m_userTaskInstall.size();i++)
+    {
     logMsg(LOG_DEBUG, "install: %s", m_scope.constructPackageName(m_userTaskInstall[i]).c_str());
+    m_sat.push_back(unitClause(Lit(m_userTaskInstall[i])));
+    }
   for(VarIdVector::size_type i = 0;i < m_userTaskRemove.size();i++)
+    {
     logMsg(LOG_DEBUG, "remove: %s", m_scope.constructPackageName(m_userTaskRemove[i]).c_str());
+    m_sat.push_back(unitClause(Lit(m_userTaskRemove[i], 1)));
+    }
   for(VarIdToVarIdMap::const_iterator it = m_userTaskUpgrade.begin();it != m_userTaskUpgrade.end();it++)
     logMsg(LOG_DEBUG, "upgrade: %s -> %s", m_scope.constructPackageName(it->first).c_str(), m_scope.constructPackageName(it->second).c_str());
 
   for(VarIdVector::size_type i = 0;i < m_userTaskRemove.size();i++)
     {
       std::cout << std::endl << NAME_S(m_userTaskRemove[i]) << std::endl << std::endl;
-      handleDependentBreaks(m_userTaskRemove[i]);
+      handleDependenceBreaks(m_userTaskRemove[i]);
     }
   //      walkThroughRequires(m_userTaskInstall[i], must, may);
   //      notToInstallButToUpgrade(must, m_anywayInstall, m_anywayUpgrade);
   //      findAllConflictedVars(m_anywayInstall[i], m_anywayRemove);
   //      findAllConflictedVars(it->first, m_anywayRemove);
   //  firstStageValidTask();
-  //  handleDependentBreaks(moreInstall, moreRemove);
+  //  handleDependenceBreaks(moreInstall, moreRemove);
   //  assert(moreInstall.empty());
+  printSat(m_scope, m_sat);
 }
 
 void GeneralSolver::translateUserTask(const UserTask& userTask)
@@ -332,21 +342,38 @@ VarId GeneralSolver::satisfyRequire(PackageId pkgId, const VersionCond& version)
   return processPriorityBySorting(vars);
 }
 
-void GeneralSolver::handleDependentBreaks(VarId seed)
+void GeneralSolver::handleDependenceBreaks(VarId seed)
 {
+  logMsg(LOG_DEBUG, "Processing dependence breaks for \'%s\' removing", m_scope.constructPackageName(seed).c_str());
   VarIdVector deps;
   IdPkgRelVector rels;
       m_scope.whatDependsAmongInstalled(seed, deps, rels);
       assert(deps.size() == rels.size());
       for(VarIdVector::size_type i = 0;i < deps.size();i++)
 	{
-	std::cout << NAME_S(deps[i]) << "/";
-      std::cout << REL_S(rels[i]) << std::endl;
-      VarId replacement;
-      if (rels[i].hasVer())
-	replacement = satisfyRequire(rels[i].pkgId); else
-	replacement = satisfyRequire(rels[i].pkgId, rels[i].extractVersionCond());
-      std::cout << NAME_S(replacement) << std::endl;
+	  logMsg(LOG_DEBUG, "Processing dependent package \'%s\' with require entry \'%s\'", m_scope.constructPackageName(deps[i]).c_str(), relToString(rels[i]).c_str());
+	  Clause clause;
+	  clause.push_back(Lit(seed));
+      const VarId replacement = satisfyRequire(rels[i]);
+      //FIXME:Is there any problem at all?;
+      if (replacement == seed)
+	{
+	  logMsg(LOG_DEBUG, "Replacement found but but it is the same package as breaking seed (%s)", m_scope.constructPackageName(replacement).c_str());
+	  clause.push_back(Lit(deps[i], 1));
+	  m_sat.push_back(clause);
+	  continue;
+	}
+      if (m_scope.isInstalled(replacement))
+	{
+	  logMsg(LOG_DEBUG, "Replacement found as \'%s\' but it is already installed", m_scope.constructPackageName(replacement).c_str());
+	  clause.push_back(Lit(deps[i], 1));
+	  m_sat.push_back(clause);
+	  continue;
+	}
+      logMsg(LOG_DEBUG, "Using possible replacement \'%s\'", m_scope.constructPackageName(replacement).c_str());
+	  clause.push_back(Lit(deps[i], 1));
+	  clause.push_back(Lit(replacement));
+	  m_sat.push_back(clause);
 	}
 	//	if (!m_scope.variableSatisfies(it->second, rels[i]))
 }
@@ -386,6 +413,11 @@ VarId GeneralSolver::processPriorityBySorting(const VarIdVector& vars) const
   return items[items.size() - 1].varId;
 }
 
+std::string GeneralSolver::relToString(const IdPkgRel& rel)
+{
+  return m_scope.packageIdToStr(rel.pkgId) + rel.verString();
+}
+
 //Static functions;
 
 void printSat(const PackageScope& scope, const Sat& sat)
@@ -406,7 +438,7 @@ void printSat(const PackageScope& scope, const Sat& sat)
 	    std::cout << std::endl;
 	  }
 	std::cout << ")" << std::endl;
-	if (i + 1 <= sat.size())
+	if (i + 1 < sat.size())
 	  {
 	    std::cout << std::endl;
 	    std::cout << "&&" << std::endl;
