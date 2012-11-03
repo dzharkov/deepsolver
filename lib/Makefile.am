@@ -1,6 +1,6 @@
 
 AM_CXXFLAGS = $(DEEPSOLVER_CXXFLAGS) $(DEEPSOLVER_INCLUDES)
-LIBS += -lrpm -lcurl
+LIBS += -lrpm -lcurl -lminisat
 LIBdir=${libdir}
 LDFLAGS=-version-info ${LT_CURRENT}:$(LT_REVISION):$(LT_AGE) -release $(LT_RELEASE)
 
@@ -34,7 +34,9 @@ rpm/Rpmdb.cpp \
 rpm/RpmFileHeaderReader.cpp \
 rpm/RpmHeaderReading.cpp \
 rpm/vercmp.cpp \
+transact/GeneralSolver.cpp \
 transact/InstalledReferences.cpp \
+transact/LibMinisatSolver.cpp \
 transact/PackageScopeContent.cpp \
 transact/PackageScope.cpp \
 transact/ProvideMap.cpp \
@@ -52,6 +54,7 @@ version.cpp
 libdeepsolver_la_HEADERS = \
 AbstractPackageBackEnd.h \
 AbstractPackageRecipient.h \
+AbstractSatSolver.h \
 AbstractTaskSolver.h \
 ConfigCenter.h \
 ConfigData.h \

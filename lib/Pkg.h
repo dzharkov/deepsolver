@@ -85,6 +85,26 @@ public:
     return 1;
   }
 
+  std::string verString() const
+  {
+    if (!hasVer())
+      return "";
+    std::string s;
+    if (verDir & VerLess)
+      s += "<";
+    if (verDir & VerGreater)
+      s += ">";
+    if (verDir & VerEquals)
+      s += "=";
+    s += " " + ver;
+    return s;
+  }
+
+  VersionCond extractVersionCond() const
+  {
+    return VersionCond(ver, verDir);
+  }
+
 public:
   PackageId pkgId;
   VerDirection verDir;

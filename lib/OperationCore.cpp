@@ -140,8 +140,13 @@ void OperationCore::doInstallRemove(const UserTask& userTask)
   requiresReferences.commit();
   conflictsReferences.commit();
   logMsg(LOG_DEBUG, "Requires and Conflicts references filled");
-  std::auto_ptr<AbstractTaskSolver> solver = createStrictTaskSolver(content, provideMap, requiresReferences, conflictsReferences);
+  std::auto_ptr<AbstractTaskSolver> solver = createGeneralTaskSolver(content, provideMap, requiresReferences, conflictsReferences);
   VarIdVector toInstall, toRemove;
   VarIdToVarIdMap toUpgrade;
-  solver->solve(userTask, toInstall, toRemove, toUpgrade);
+
+  UserTask t;
+  t.namesToRemove.insert("voiceman");
+  t.namesToRemove.insert("gcc4.3");
+  t.namesToRemove.insert("dbus");
+  solver->solve(t, toInstall, toRemove, toUpgrade);//FIXME:userTask;
 }

@@ -39,4 +39,9 @@ std::auto_ptr<AbstractTaskSolver> createStrictTaskSolver(const PackageScopeConte
 							 const InstalledReferences& requiresReferences,
 							 const InstalledReferences& conflictsReferences);
 
+std::auto_ptr<AbstractTaskSolver> createGeneralTaskSolver(const PackageScopeContent& content,
+							 const ProvideMap& provideMap,
+							 const InstalledReferences& requiresReferences,
+							 const InstalledReferences& conflictsReferences);
+
 #endif //DEEPSOLVER_ABSTRACT_TASK_SOLVER_H;

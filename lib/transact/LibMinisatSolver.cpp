@@ -22,7 +22,7 @@
 class LibMinisatSolver: public AbstractSatSolver
 {
 public:
-  LibMinisatSSolver() {}
+  LibMinisatSolver() {}
   virtual ~LibMinisatSolver() {reset();}
 
 public:
@@ -50,5 +50,6 @@ bool LibMinisatSolver::solve(BoolVector& res)
 
 std::auto_ptr<AbstractSatSolver> createLibMinisatSolver()
 {
-  return auto_ptr<AbstractSatSolver>(new LibMinisatSolver());
+  //FIXME:  return auto_ptr<AbstractSatSolver>(new LibMinisatSolver());
+  return std::auto_ptr<AbstractSatSolver>();
 }

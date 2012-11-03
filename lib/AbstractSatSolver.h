@@ -34,6 +34,7 @@ struct Lit
 }; //struct Lit;
 
 typedef std::vector<Lit> Clause;
+typedef std::vector<Clause> Sat;
 
 class AbstractSatSolver
 {
