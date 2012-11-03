@@ -148,5 +148,10 @@ void OperationCore::doInstallRemove(const UserTask& userTask)
   t.namesToRemove.insert("voiceman");
   t.namesToRemove.insert("gcc4.3");
   t.namesToRemove.insert("dbus");
+
+  const clock_t solverStart = clock();
   solver->solve(t, toInstall, toRemove, toUpgrade);//FIXME:userTask;
+  const double solverDuration = ((double)clock() - solverStart) / CLOCKS_PER_SEC;
+  logMsg(LOG_DEBUG, "Solver takes %f seconds", solverDuration);
+
 }

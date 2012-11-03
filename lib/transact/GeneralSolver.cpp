@@ -131,10 +131,8 @@ void GeneralSolver::solve(const UserTask& task, VarIdVector& toInstall, VarIdVec
     logMsg(LOG_DEBUG, "upgrade: %s -> %s", m_scope.constructPackageName(it->first).c_str(), m_scope.constructPackageName(it->second).c_str());
 
   for(VarIdVector::size_type i = 0;i < m_userTaskRemove.size();i++)
-    {
-      std::cout << std::endl << NAME_S(m_userTaskRemove[i]) << std::endl << std::endl;
+    if (m_scope.isInstalled(m_userTaskRemove[i]))
       handleDependenceBreaks(m_userTaskRemove[i]);
-    }
   //      walkThroughRequires(m_userTaskInstall[i], must, may);
   //      notToInstallButToUpgrade(must, m_anywayInstall, m_anywayUpgrade);
   //      findAllConflictedVars(m_anywayInstall[i], m_anywayRemove);
@@ -162,20 +160,13 @@ void GeneralSolver::translateUserTask(const UserTask& userTask)
       const PackageId pkgId = m_scope.strToPackageId(*it);
       if (pkgId == BAD_PACKAGE_ID)
 	{
-	  std::cout << "requested to remove package \'" << *it << "\' is not installed" << std::endl;//FIXME:proper user notification;
+	  //FIXME:Notice;
 	  logMsg(LOG_DEBUG, "Request contains ask to remove unknown package \'%s\', skipping", it->c_str());
 	  continue;
 	}
       VarIdVector vars;
-      m_scope.selectInstalledNoProvides(pkgId, vars);
-      if (vars.empty())
-	{
-	  std::cout << "requested to remove package \'" << *it << "\' is not installed" << std::endl;//FIXME:proper user notification;
-	  logMsg(LOG_DEBUG, "Request contains ask to remove not installed package \'%s\', skipping", it->c_str());
-	  continue;
-	}
-      if (vars.size() > 1)
-	logMsg(LOG_WARNING, "The package \'%s\' is installed %zu times", it->c_str(), vars.size());
+      m_scope.selectMatchingVarsNoProvides(pkgId, vars);
+      //FIXME:Checking if anything is installed;
       for(VarIdVector::size_type k = 0;k < vars.size();k++)
 	m_userTaskRemove.push_back(vars[k]);
     }
@@ -347,35 +338,37 @@ void GeneralSolver::handleDependenceBreaks(VarId seed)
   logMsg(LOG_DEBUG, "Processing dependence breaks for \'%s\' removing", m_scope.constructPackageName(seed).c_str());
   VarIdVector deps;
   IdPkgRelVector rels;
-      m_scope.whatDependsAmongInstalled(seed, deps, rels);
-      assert(deps.size() == rels.size());
-      for(VarIdVector::size_type i = 0;i < deps.size();i++)
+  m_scope.whatDependsAmongInstalled(seed, deps, rels);
+  assert(deps.size() == rels.size());
+  for(VarIdVector::size_type i = 0;i < deps.size();i++)
+    {
+      logMsg(LOG_DEBUG, "Processing dependent package \'%s\' with require entry \'%s\'", m_scope.constructPackageName(deps[i]).c_str(), relToString(rels[i]).c_str());
+      Clause clause;
+      clause.push_back(Lit(seed));
+      clause.push_back(Lit(deps[i], 1));
+      VarIdVector installed;
+      m_scope.whatSatisfiesAmongInstalled(rels[i], installed);
+      logMsg(LOG_DEBUG, "%zu packages satisfy among installed", installed.size());
+      for(VarIdVector::size_type k = 0;k < installed.size();k++)
 	{
-	  logMsg(LOG_DEBUG, "Processing dependent package \'%s\' with require entry \'%s\'", m_scope.constructPackageName(deps[i]).c_str(), relToString(rels[i]).c_str());
-	  Clause clause;
-	  clause.push_back(Lit(seed));
+	  logMsg(LOG_DEBUG, "\'%s\' satisfies and installed", m_scope.constructPackageName(installed[k]).c_str());
+	  clause.push_back(Lit(installed[k]));
+	}
       const VarId replacement = satisfyRequire(rels[i]);
-      //FIXME:Is there any problem at all?;
-      if (replacement == seed)
+      assert(replacement != BAD_VAR_ID);
+      logMsg(LOG_DEBUG, "Found default replacement  \'%s\'", m_scope.constructPackageName(replacement).c_str());
+      VarIdVector::size_type k;
+      for(k = 0;k < installed.size();k++)
+	if (replacement == installed[k])
+	  break;
+      if (k >= installed.size())
 	{
-	  logMsg(LOG_DEBUG, "Replacement found but but it is the same package as breaking seed (%s)", m_scope.constructPackageName(replacement).c_str());
-	  clause.push_back(Lit(deps[i], 1));
-	  m_sat.push_back(clause);
-	  continue;
-	}
-      if (m_scope.isInstalled(replacement))
-	{
-	  logMsg(LOG_DEBUG, "Replacement found as \'%s\' but it is already installed", m_scope.constructPackageName(replacement).c_str());
-	  clause.push_back(Lit(deps[i], 1));
-	  m_sat.push_back(clause);
-	  continue;
-	}
-      logMsg(LOG_DEBUG, "Using possible replacement \'%s\'", m_scope.constructPackageName(replacement).c_str());
-	  clause.push_back(Lit(deps[i], 1));
+	  logMsg(LOG_DEBUG, "Default replacement \'%s\' is not installed, using it", m_scope.constructPackageName(replacement).c_str());
 	  clause.push_back(Lit(replacement));
-	  m_sat.push_back(clause);
-	}
-	//	if (!m_scope.variableSatisfies(it->second, rels[i]))
+	} else
+	logMsg(LOG_DEBUG, "Default replacement \'%s\' is already installed, ignoring it", m_scope.constructPackageName(replacement).c_str());
+      m_sat.push_back(clause);
+    }
 }
 
 VarId GeneralSolver::processPriorityList(const VarIdVector& vars, PackageId provideEntry) const
