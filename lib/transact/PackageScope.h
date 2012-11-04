@@ -67,7 +67,7 @@ public:
   void selectMatchingVarsAmongProvides(PackageId packageId, const VersionCond& ver, VarIdVector& vars);
 
   bool isInstalled(VarId varId) const;
-  bool isInstalledWithMatchingAlternatives(VarId varId) const;
+  bool isInstalledWithMatchingAlternatives(VarId varId) const;//FIXME:Give new name;;
   void selectInstalledNoProvides(PackageId pkgId, VarIdVector& vars) const;
 
   void selectTheNewest(VarIdVector& vars);

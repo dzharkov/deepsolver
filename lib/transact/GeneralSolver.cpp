@@ -30,7 +30,7 @@ static void printSolution(const PackageScope& scope,
 			  const VarIdToVarIdMap& upgrade);
 
 template<typename T>
-void removeDublications(std::vector<T>& v)
+void rmDub(std::vector<T>& v)
 {
   //Be careful: only for items with operator < and operator >;
   std::set<T> s;
@@ -81,15 +81,24 @@ public:
   void solve(const UserTask& task, VarIdVector& toInstall, VarIdVector& toRemove, VarIdToVarIdMap& toUpgrade);
 
 private:
-  Sat m_sat;
   void translateUserTask(const UserTask& userTask);
+
+  //May not return BAD_VAR_ID;
   VarId translateItemToInstall(const UserTaskItemToInstall& item);
+
+  //May not return BAD_VAR_ID;
   VarId satisfyRequire(const IdPkgRel& rel);
+
+  //May not return BAD_VAR_ID;
   VarId satisfyRequire(PackageId pkgId);
+
+  //May not return BAD_VAR_ID;
   VarId satisfyRequire(PackageId pkgId, const VersionCond& version);
   VarId processPriorityList(const VarIdVector& vars, PackageId provideEntry) const;
   VarId processPriorityBySorting(const VarIdVector& vars) const;
-  void handleDependenceBreaks(VarId seed);
+  void handleDependenceBreaks(VarId seed,
+			      VarIdVector& involvedInstalled,
+			      VarIdVector& involvedRemoved);
 
 private://Utilities;
   std::string relToString(const IdPkgRel& rel);
@@ -97,8 +106,13 @@ private://Utilities;
 private:
   const PackageScopeContent& m_content;
   PackageScope m_scope; 
-  VarIdVector m_userTaskInstall, m_userTaskRemove;
+  Sat m_sat;
+  VarIdVector m_userTaskPresent, m_userTaskAbsent;
+  VarIdVector m_pendingInstalled, m_pendingRemoved;
+  VarIdSet processedDeleted, m_m_processedInstalled;
+
   VarIdToVarIdMap m_userTaskUpgrade, m_anywayUpgrade;
+
 }; //class GeneralSolver;
 
 std::auto_ptr<AbstractTaskSolver> createGeneralTaskSolver(const PackageScopeContent& content,
@@ -112,48 +126,41 @@ std::auto_ptr<AbstractTaskSolver> createGeneralTaskSolver(const PackageScopeCont
 
 void GeneralSolver::solve(const UserTask& task, VarIdVector& toInstall, VarIdVector& toRemove, VarIdToVarIdMap& toUpgrade)
 {
-  m_userTaskInstall.clear();
-  m_userTaskRemove.clear();
-  m_userTaskUpgrade.clear();
+  m_userTaskPresent.clear();
+  m_userTaskAbsent.clear();
   translateUserTask(task);
-  logMsg(LOG_DEBUG, "User task translated: %zu to install, %zu to remove, %zu to upgrade", m_userTaskInstall.size(), m_userTaskRemove.size(), m_userTaskUpgrade.size());
-  for(VarIdVector::size_type i = 0;i < m_userTaskInstall.size();i++)
-    {
-    logMsg(LOG_DEBUG, "install: %s", m_scope.constructPackageName(m_userTaskInstall[i]).c_str());
-    m_sat.push_back(unitClause(Lit(m_userTaskInstall[i])));
-    }
-  for(VarIdVector::size_type i = 0;i < m_userTaskRemove.size();i++)
-    {
-    logMsg(LOG_DEBUG, "remove: %s", m_scope.constructPackageName(m_userTaskRemove[i]).c_str());
-    m_sat.push_back(unitClause(Lit(m_userTaskRemove[i], 1)));
-    }
-  for(VarIdToVarIdMap::const_iterator it = m_userTaskUpgrade.begin();it != m_userTaskUpgrade.end();it++)
-    logMsg(LOG_DEBUG, "upgrade: %s -> %s", m_scope.constructPackageName(it->first).c_str(), m_scope.constructPackageName(it->second).c_str());
+  logMsg(LOG_DEBUG, "User task translated: %zu to be present, %zu to be absent", m_userTaskPresent.size(), m_userTaskAbsent.size());
+  for(VarIdVector::size_type i = 0;i < m_userTaskPresent.size();i++)
+    logMsg(LOG_DEBUG, "Present: %s", m_scope.constructPackageName(m_userTaskPresent[i]).c_str());
+  for(VarIdVector::size_type i = 0;i < m_userTaskAbsent.size();i++)
+    logMsg(LOG_DEBUG, "Absent: %s", m_scope.constructPackageName(m_userTaskAbsent[i]).c_str());
+  for(VarIdVector::size_type i = 0;i < m_userTaskPresent.size();i++)
+    m_sat.push_back(unitClause(Lit(m_userTaskPresent[i])));
+  for(VarIdVector::size_type i = 0;i < m_userTaskAbsent.size();i++)
+    m_sat.push_back(unitClause(Lit(m_userTaskAbsent[i], 1)));
 
-  for(VarIdVector::size_type i = 0;i < m_userTaskRemove.size();i++)
-    if (m_scope.isInstalled(m_userTaskRemove[i]))
-      handleDependenceBreaks(m_userTaskRemove[i]);
-  //      walkThroughRequires(m_userTaskInstall[i], must, may);
-  //      notToInstallButToUpgrade(must, m_anywayInstall, m_anywayUpgrade);
-  //      findAllConflictedVars(m_anywayInstall[i], m_anywayRemove);
-  //      findAllConflictedVars(it->first, m_anywayRemove);
-  //  firstStageValidTask();
-  //  handleDependenceBreaks(moreInstall, moreRemove);
-  //  assert(moreInstall.empty());
+  for(VarIdVector::size_type i = 0;i < m_userTaskAbsent.size();i++)
+    if (m_scope.isInstalled(m_userTaskAbsent[i]))
+      handleDependenceBreaks(m_userTaskAbsent[i], m_pendingInstalled, m_pendingRemoved);
+
   printSat(m_scope, m_sat);
 }
 
 void GeneralSolver::translateUserTask(const UserTask& userTask)
 {
-  m_userTaskInstall.clear();
-  m_userTaskRemove.clear();
-  m_userTaskUpgrade.clear();
+  m_userTaskPresent.clear();
+  m_userTaskAbsent.clear();
   for(UserTaskItemToInstallVector::size_type i = 0;i < userTask.itemsToInstall.size();i++)
     {
       //The following line checks the entire package scope including installed packages, so it can return also the installed package if it matches the user request;
       const VarId varId = translateItemToInstall(userTask.itemsToInstall[i]);
       assert(varId != BAD_VAR_ID);
-      m_userTaskInstall.push_back(varId);
+      m_userTaskPresent.push_back(varId);
+      VarIdVector otherVersions;
+      m_scope.selectMatchingVarsNoProvides(m_scope.packageIdOfVarId(varId), otherVersions);
+      for(VarIdVector::size_type k = 0;k < otherVersions.size();k++)
+	if (otherVersions[k] != varId)
+	  m_userTaskAbsent.push_back(otherVersions[k]);
     }
   for(StringSet::const_iterator it = userTask.namesToRemove.begin() ;it != userTask.namesToRemove.end();it++)
     {
@@ -168,42 +175,15 @@ void GeneralSolver::translateUserTask(const UserTask& userTask)
       m_scope.selectMatchingVarsNoProvides(pkgId, vars);
       //FIXME:Checking if anything is installed;
       for(VarIdVector::size_type k = 0;k < vars.size();k++)
-	m_userTaskRemove.push_back(vars[k]);
+	m_userTaskAbsent.push_back(vars[k]);
     }
-  VarIdVector v;
-  for(VarIdVector::size_type i = 0;i < m_userTaskInstall.size();i++)
-    {
-      if (m_scope.isInstalledWithMatchingAlternatives(m_userTaskInstall[i]))
-	{
-	  std::cout << m_scope.constructPackageName(m_userTaskInstall[i]) << " is the newest version" << std::endl;//FIXME:Proper user notification;
-	  logMsg(LOG_DEBUG, "Accepted to install variable %zu is already installed, skipping", m_userTaskInstall[i]);
-	  continue;
-	}
-      v.push_back(m_userTaskInstall[i]);
-    }
-  m_userTaskInstall.clear();
-  for(VarIdVector::size_type i = 0;i < v.size();i++)//FIXME:This for was extracted to separate method and here must be just its call;
-    {
-      const VarId varId = v[i];
-      const PackageId pkgId = m_scope.packageIdOfVarId(varId);
-      assert(pkgId != BAD_PACKAGE_ID);
-      VarIdVector installed;
-      m_scope.selectInstalledNoProvides(pkgId, installed);
-      if (installed.size() > 1)
-	logMsg(LOG_WARNING, "Package \'%s\' is installed more than once", m_scope.packageIdToStr(pkgId).c_str());
-      if (installed.size() >= 1)
-	{
-	  assert(m_userTaskUpgrade.find(installed[0]) == m_userTaskUpgrade.end());//FIXME:Actually we should handle it more carefully;
-	  m_userTaskUpgrade.insert(VarIdToVarIdMap::value_type(installed[0], varId));
-	} else
-	m_userTaskInstall.push_back(varId);
-    }
-  removeDublications(m_userTaskInstall);
-  removeDublications(m_userTaskRemove);
+  rmDub(m_userTaskPresent);
+  rmDub(m_userTaskAbsent);
 }
 
 VarId GeneralSolver::translateItemToInstall(const UserTaskItemToInstall& item) 
 {
+  //FIXME:Obsoletes;
   assert(!item.pkgName.empty());
   const bool hasVersion = item.verDir != VerNone;
   assert(!hasVersion || !item.version.empty());
@@ -333,7 +313,9 @@ VarId GeneralSolver::satisfyRequire(PackageId pkgId, const VersionCond& version)
   return processPriorityBySorting(vars);
 }
 
-void GeneralSolver::handleDependenceBreaks(VarId seed)
+void GeneralSolver::handleDependenceBreaks(VarId seed,
+					   VarIdVector& involvedInstalled,
+					   VarIdVector& involvedRemove)
 {
   logMsg(LOG_DEBUG, "Processing dependence breaks for \'%s\' removing", m_scope.constructPackageName(seed).c_str());
   VarIdVector deps;
@@ -346,6 +328,7 @@ void GeneralSolver::handleDependenceBreaks(VarId seed)
       Clause clause;
       clause.push_back(Lit(seed));
       clause.push_back(Lit(deps[i], 1));
+      involvedRemoved.push_back(deps[i]);
       VarIdVector installed;
       m_scope.whatSatisfiesAmongInstalled(rels[i], installed);
       logMsg(LOG_DEBUG, "%zu packages satisfy among installed", installed.size());
@@ -365,6 +348,7 @@ void GeneralSolver::handleDependenceBreaks(VarId seed)
 	{
 	  logMsg(LOG_DEBUG, "Default replacement \'%s\' is not installed, using it", m_scope.constructPackageName(replacement).c_str());
 	  clause.push_back(Lit(replacement));
+	  involvedINstalled.push_back(replacement);
 	} else
 	logMsg(LOG_DEBUG, "Default replacement \'%s\' is already installed, ignoring it", m_scope.constructPackageName(replacement).c_str());
       m_sat.push_back(clause);
@@ -548,65 +532,5 @@ void GeneralSolver::findAllConflictedVars(VarId varId, VarIdVector& res)
     res.push_back(vars[i]);
 }
  */
-
-
-/*
-void GeneralSolver::firstStageValidTask() const
-{
-  //FIXME:	  throw TaskException(TaskErrorBothInstallRemove, pkgName);
-  for(VarIdVector::size_type i = 0;i < m_anywayRemove.size();i++)
-    {
-      VarIdVector::size_type j;
-      for(j = 0;j < m_anywayInstall.size();j++)
-	if (m_anywayInstall[j] == m_anywayRemove[i])
-	  break;
-      if (j < m_anywayInstall.size())
-	{
-	  //FIXME:user exception;
-	  logMsg(LOG_ERR, "Package \'%s\' selected is presented in anyway to install set and in anyway to remove set", m_scope.constructPackageName(m_anywayRemove[i]).c_str());
-	  assert(0);
-	}
-      if (m_anywayUpgrade.find (m_anywayRemove[i]) != m_anywayUpgrade.end())
-	{
-	  //FIXME:user exception;
-	  logMsg(LOG_ERR, "Package \'%s\' selected is presented in anyway to upgrade set and in anyway to remove set", m_scope.constructPackageName(m_anywayRemove[i]).c_str());
-	  assert(0);
-	}
-    }
-  for(VarIdToVarIdMap::const_iterator it = m_anywayUpgrade.begin();it != m_anywayUpgrade.end();it++)
-    {
-      assert(m_scope.packageIdOfVarId(it->first) == m_scope.packageIdOfVarId(it->second));
-      for(VarIdVector::size_type i = 0;i < m_anywayInstall.size();i++)
-	{
-	  assert(m_scope.packageIdOfVarId(it->first) != m_scope.packageIdOfVarId(m_anywayInstall[i]));
-	}
-    }
-}
-*/
-
-
-      /*
-void GeneralSolver::notToInstallButToUpgrade(const VarIdVector& vars, VarIdVector& toInstall, VarIdToVarIdMap& toUpgrade)
-{
-  //Do not clear any of result structures here!!!
-  for(VarIdVector::size_type i = 0;i < vars.size();i++)
-    {
-      const VarId varId = vars[i];
-      const PackageId pkgId = m_scope.packageIdOfVarId(varId);
-      assert(pkgId != BAD_PACKAGE_ID);
-      VarIdVector installed;
-      m_scope.selectInstalledNoProvides(pkgId, installed);
-      if (installed.size() > 1)
-	logMsg(LOG_WARNING, "Package \'%s\' is installed more than once", m_scope.packageIdToStr(pkgId).c_str());
-      if (installed.size() >= 1)
-	{
-	  assert(toUpgrade.find(installed[0]) == toUpgrade.end());//FIXME:Actually we should handle it more carefully;
-	  toUpgrade.insert(VarIdToVarIdMap::value_type(installed[0], varId));
-	} else
-	toInstall.push_back(varId);
-    }
-}
-      */
-
 
 
