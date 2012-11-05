@@ -99,6 +99,7 @@ private:
   void handleDependenceBreaks(VarId seed,
 			      VarIdVector& involvedInstalled,
 			      VarIdVector& involvedRemoved);
+  void processPendings();
 
 private://Utilities;
   std::string relToString(const IdPkgRel& rel);
@@ -109,7 +110,7 @@ private:
   Sat m_sat;
   VarIdVector m_userTaskPresent, m_userTaskAbsent;
   VarIdVector m_pendingInstalled, m_pendingRemoved;
-  VarIdSet processedDeleted, m_m_processedInstalled;
+  VarIdSet m_processedInstalled, m_processedRemoved;
 
   VarIdToVarIdMap m_userTaskUpgrade, m_anywayUpgrade;
 
@@ -142,6 +143,8 @@ void GeneralSolver::solve(const UserTask& task, VarIdVector& toInstall, VarIdVec
   for(VarIdVector::size_type i = 0;i < m_userTaskAbsent.size();i++)
     if (m_scope.isInstalled(m_userTaskAbsent[i]))
       handleDependenceBreaks(m_userTaskAbsent[i], m_pendingInstalled, m_pendingRemoved);
+
+  processPendings();
 
   printSat(m_scope, m_sat);
 }
@@ -315,7 +318,7 @@ VarId GeneralSolver::satisfyRequire(PackageId pkgId, const VersionCond& version)
 
 void GeneralSolver::handleDependenceBreaks(VarId seed,
 					   VarIdVector& involvedInstalled,
-					   VarIdVector& involvedRemove)
+					   VarIdVector& involvedRemoved)
 {
   logMsg(LOG_DEBUG, "Processing dependence breaks for \'%s\' removing", m_scope.constructPackageName(seed).c_str());
   VarIdVector deps;
@@ -348,10 +351,44 @@ void GeneralSolver::handleDependenceBreaks(VarId seed,
 	{
 	  logMsg(LOG_DEBUG, "Default replacement \'%s\' is not installed, using it", m_scope.constructPackageName(replacement).c_str());
 	  clause.push_back(Lit(replacement));
-	  involvedINstalled.push_back(replacement);
+	  involvedInstalled.push_back(replacement);
 	} else
 	logMsg(LOG_DEBUG, "Default replacement \'%s\' is already installed, ignoring it", m_scope.constructPackageName(replacement).c_str());
       m_sat.push_back(clause);
+    }
+}
+
+void GeneralSolver::processPendings()
+{
+  while(!m_pendingInstalled.empty() || !m_pendingRemoved.empty())
+    {
+      logMsg(LOG_DEBUG, "Have pending entries: %zu to be installed and %zu to be removed", m_pendingInstalled.size(), m_pendingRemoved.size());
+      while(!m_pendingInstalled.empty())
+	{
+	  const VarId varId = m_pendingInstalled[m_pendingInstalled.size() - 1];
+	  m_pendingInstalled.pop_back();
+	  if (m_processedInstalled.find(varId) != m_processedInstalled.end())
+	    continue;
+	  m_processedInstalled.insert(varId);
+	  logMsg(LOG_DEBUG, "Processing pending entry to be installed \'%s\'", m_scope.constructPackageName(varId).c_str());
+	}
+      while(!m_pendingRemoved.empty())
+	{
+	  const VarId varId = m_pendingRemoved[m_pendingRemoved.size() - 1];
+	  m_pendingRemoved.pop_back();
+	  if (m_processedRemoved.find(varId) != m_processedRemoved.end())
+	    continue;
+	  m_processedRemoved.insert(varId);
+	  logMsg(LOG_DEBUG, "Processing pending entry to be removed \'%s\'", m_scope.constructPackageName(varId).c_str());
+	  VarIdVector involvedInstalled, involvedRemoved;
+	  handleDependenceBreaks(varId, involvedInstalled, involvedRemoved);
+	  for(VarIdVector::size_type i = 0;i < involvedInstalled.size();i++)
+	    if (m_processedInstalled.find(involvedInstalled[i]) == m_processedInstalled.end())
+	      m_pendingInstalled.push_back(involvedInstalled[i]);
+	  for(VarIdVector::size_type i = 0;i < involvedRemoved.size();i++)
+	    if (m_processedRemoved.find(involvedRemoved[i]) == m_processedRemoved.end())
+	      m_pendingRemoved.push_back(involvedRemoved[i]);
+	}
     }
 }
 
