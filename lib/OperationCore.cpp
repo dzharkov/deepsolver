@@ -147,7 +147,7 @@ void OperationCore::doInstallRemove(const UserTask& userTask)
   UserTask t;
   t.namesToRemove.insert("voiceman");
   t.namesToRemove.insert("gcc4.3");
-  t.namesToRemove.insert("dbus");
+  //  t.namesToRemove.insert("dbus");
 
   const clock_t solverStart = clock();
   solver->solve(t, toInstall, toRemove, toUpgrade);//FIXME:userTask;

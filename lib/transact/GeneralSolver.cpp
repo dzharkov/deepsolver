@@ -96,9 +96,15 @@ private:
   VarId satisfyRequire(PackageId pkgId, const VersionCond& version);
   VarId processPriorityList(const VarIdVector& vars, PackageId provideEntry) const;
   VarId processPriorityBySorting(const VarIdVector& vars) const;
+
   void handleDependenceBreaks(VarId seed,
 			      VarIdVector& involvedInstalled,
 			      VarIdVector& involvedRemoved);
+
+  void handleToBeNewlyInstalled(VarId varId,
+				VarIdVector& involvedInstalled,
+				VarIdVector& involvedRemoved)
+
   void processPendings();
 
 private://Utilities;
@@ -136,9 +142,15 @@ void GeneralSolver::solve(const UserTask& task, VarIdVector& toInstall, VarIdVec
   for(VarIdVector::size_type i = 0;i < m_userTaskAbsent.size();i++)
     logMsg(LOG_DEBUG, "Absent: %s", m_scope.constructPackageName(m_userTaskAbsent[i]).c_str());
   for(VarIdVector::size_type i = 0;i < m_userTaskPresent.size();i++)
+    {
     m_sat.push_back(unitClause(Lit(m_userTaskPresent[i])));
+    m_processedInstalled.insert(m_userTaskPresent[i]);
+    }
   for(VarIdVector::size_type i = 0;i < m_userTaskAbsent.size();i++)
-    m_sat.push_back(unitClause(Lit(m_userTaskAbsent[i], 1)));
+    {
+      m_sat.push_back(unitClause(Lit(m_userTaskAbsent[i], 1)));
+      m_processedRemoved.insert(m_userTaskAbsent[i]);
+    }
 
   for(VarIdVector::size_type i = 0;i < m_userTaskAbsent.size();i++)
     if (m_scope.isInstalled(m_userTaskAbsent[i]))
@@ -163,7 +175,7 @@ void GeneralSolver::translateUserTask(const UserTask& userTask)
       m_scope.selectMatchingVarsNoProvides(m_scope.packageIdOfVarId(varId), otherVersions);
       for(VarIdVector::size_type k = 0;k < otherVersions.size();k++)
 	if (otherVersions[k] != varId)
-	  m_userTaskAbsent.push_back(otherVersions[k]);
+	  m_userTaskAbsent.push_back(otherVersions[k]);//FIXME:Not every package require this;
     }
   for(StringSet::const_iterator it = userTask.namesToRemove.begin() ;it != userTask.namesToRemove.end();it++)
     {
@@ -316,6 +328,60 @@ VarId GeneralSolver::satisfyRequire(PackageId pkgId, const VersionCond& version)
   return processPriorityBySorting(vars);
 }
 
+void GeneralSolver::handleToBeNewlyInstalled(VarId varId,
+					 VarIdVector& involvedInstalled,
+					 VarIdVector& involvedRemoved)
+{
+  assert(varId != BAD_VAR_ID);
+  logMsg(LOG_DEBUG, "Processing possibility to be installed for \'%s\'", m_scope.constructPackageName(varId));
+  VarIdVector otherVersions;
+  m_scope.selectMatchingVarsNoProvides(m_scope.packageIdOfVarId(varId), otherVersions);
+  for(VarIdVector::size_type i = 0;i < otherVersions.size();i++)
+    if (otherVersions[i] != varId)
+      {
+	//FIXME:Not every package require this;
+	Clause clause;
+	clause.push_back(Lit(varId, 1));
+	clause.push_back(Lit(otherVersions[i], 1));
+	m_sat.push_back(clause);
+	involvedRemoved.push_back(otherVersions[i]);
+      }
+  IdPkgRelVector requires;
+  m_scope.getRequires(varId, requires);
+  logMsg(LOG_DEBUG, "\'%s\' has %zu requires", m_scope.constructPackageName(varId), requires.size());
+  for(IdPkgRelVector::size_type i = 0;i < requires.size();i++)
+    {
+      Clause clause;
+      clause.push_back(Lit(varId, 1));
+      VarIdVector installed;
+      m_scope.whatSatisfiesAmongInstalled(requires[i], installed);
+      logMsg(LOG_DEBUG, "%zu packages satisfy among installed", installed.size());
+      for(VarIdVector::size_type k = 0;k < installed.size();k++)
+	{
+	  logMsg(LOG_DEBUG, "\'%s\' satisfies and installed", m_scope.constructPackageName(installed[k]).c_str());
+	  clause.push_back(Lit(installed[k]));
+	  involvedRemoved.push_back(installed[k]);
+	}
+      const VarId def = satisfyRequire(requires[i]);
+      assert(def != BAD_VAR_ID);
+      logMsg(LOG_DEBUG, "Found default require solution \'%s\'", m_scope.constructPackageName(def).c_str());
+      VarIdVector::size_type k;
+      for(k = 0;k < installed.size();k++)
+	if (def == installed[k])
+	  break;
+      if (k >= installed.size())
+	{
+	  assert(!m_scope.isINstalled(def));
+	  logMsg(LOG_DEBUG, "Default require solution \'%s\' is not installed, using it", m_scope.constructPackageName(def).c_str());
+	  clause.push_back(Lit(def));
+	  involvedInstalled.push_back(default);
+	} else
+	logMsg(LOG_DEBUG, "Default require solution  \'%s\' is already installed, ignoring it", m_scope.constructPackageName(def).c_str());
+      assert(clause.size() >= 2);
+      m_sat.push_back(clause);
+    }
+}
+
 void GeneralSolver::handleDependenceBreaks(VarId seed,
 					   VarIdVector& involvedInstalled,
 					   VarIdVector& involvedRemoved)
@@ -379,6 +445,11 @@ void GeneralSolver::processPendings()
 	  if (m_processedRemoved.find(varId) != m_processedRemoved.end())
 	    continue;
 	  m_processedRemoved.insert(varId);
+	  if (!m_scope.isINstalled(varId))
+	    {
+	    logMsg(LOG_DEBUG, "\'%s\' is not installed, skipping corresponding pending entry to handle dependence breaks", m_scope.constructPackageName(varId).c_str());
+	    continue;
+	    }
 	  logMsg(LOG_DEBUG, "Processing pending entry to be removed \'%s\'", m_scope.constructPackageName(varId).c_str());
 	  VarIdVector involvedInstalled, involvedRemoved;
 	  handleDependenceBreaks(varId, involvedInstalled, involvedRemoved);
@@ -482,60 +553,6 @@ void printSolution(const PackageScope& scope,
 }
 
 //Needless methods;
-
-/*
-void GeneralSolver::walkThroughRequires(VarId startFrom, VarIdVector& mustBeInstalled, VarIdVector& mayBeInstalled)
-{
-  assert(startFrom != BAD_VAR_ID);
-  VarIdSet processed;
-  VarIdVector pending;
-  pending.push_back(startFrom);
-  while(!pending.empty())
-    {
-      const VarId varId = pending[pending.size() - 1];
-      pending.pop_back();
-      processed.insert(varId);
-      PackageIdVector depWithoutVersion, depWithVersion;
-      VersionCondVector versions;
-      m_scope.getRequires(startFrom, depWithoutVersion, depWithVersion, versions);
-      assert(depWithVersion.size() == versions.size());
-      for(PackageIdVector::size_type i = 0;i < depWithoutVersion.size();i++)
-	{
-	  const VarId dep = satisfyRequire(depWithoutVersion[i]);
-	  if (dep == startFrom)//explicit check to be sure, assuming startFrom must be installed anyway;
-	    continue;
-	  if (m_scope.isInstalledWithMatchingAlternatives(dep))//it is already installed, never mind;
-	    continue;
-	  if (!m_scope.canBeSatisfiedByInstalled(depWithoutVersion[i]))
-	    {
-	      //This package is strongly required, processing;
-	      if (processed.find(dep) != processed.end())
-		continue;
-	      mustBeInstalled.push_back(dep);
-	      pending.push_back(dep);
-	    } else 
-	    mayBeInstalled.push_back(dep);//This package is not strongly required to be installed, so marking it as just possible;
-	} //for(depWithoutVersion);
-      for(PackageIdVector::size_type i = 0;i < depWithVersion.size();i++)
-	{
-	  const VarId dep = satisfyRequire(depWithVersion[i], versions[i]);
-	  if (dep == startFrom)//explicit check to be sure, assuming startFrom must be installed anyway;
-	    continue;
-	  if (m_scope.isInstalledWithMatchingAlternatives(dep))//it is already installed, never mind;
-	    continue;
-	  if (!m_scope.canBeSatisfiedByInstalled(depWithVersion[i], versions[i]))
-	    {
-	      //This package is strongly required, processing;
-	      if (processed.find(dep) != processed.end())
-		continue;
-	      mustBeInstalled.push_back(dep);
-	      pending.push_back(dep);
-	    } else 
-	    mayBeInstalled.push_back(dep);//This package is not strongly required to be installed, so marking it as just possible;
-	} //for(depWithoutVersion);
-    } //while(pending);
-}
-*/
 
  /*
 void GeneralSolver::findAllConflictedVars(VarId varId, VarIdVector& res)
