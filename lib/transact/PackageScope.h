@@ -74,11 +74,22 @@ public:
   void selectTheNewestByProvide(VarIdVector& vars, PackageId provideEntry);
   bool allProvidesHaveTheVersion(const VarIdVector& vars, PackageId provideEntry);
 
-  void getRequires(VarId varId, PackageIdVector& depWithoutVersion, PackageIdVector& depWithVersion, VersionCondVector& versions) const;
-  void getConflicts(VarId varId, PackageIdVector& withoutVersion, PackageIdVector& withVersion, VersionCondVector& versions) const;
+  void getRequires(VarId varId, IdPkgRelVector& res) const;
+
+  void getRequires(VarId varId,
+		   PackageIdVector& depWithoutVersion,
+		   PackageIdVector& depWithVersion,
+		   VersionCondVector& versions) const;
+
+  void getConflicts(VarId varId,
+		    PackageIdVector& withoutVersion,
+		    PackageIdVector& withVersion,
+		    VersionCondVector& versions) const;
 
   bool canBeSatisfiedByInstalled(PackageId pkgId);
+
   bool canBeSatisfiedByInstalled(PackageId pkgId, const VersionCond& ver);
+
   void whatSatisfiesAmongInstalled(const IdPkgRel& rel, VarIdVector& res);
 
   void whatDependsAmongInstalled(VarId varId, VarIdVector& res, IdPkgRelVector& resRels);

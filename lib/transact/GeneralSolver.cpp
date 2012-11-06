@@ -103,7 +103,7 @@ private:
 
   void handleToBeNewlyInstalled(VarId varId,
 				VarIdVector& involvedInstalled,
-				VarIdVector& involvedRemoved)
+				VarIdVector& involvedRemoved);
 
   void processPendings();
 
@@ -155,6 +155,9 @@ void GeneralSolver::solve(const UserTask& task, VarIdVector& toInstall, VarIdVec
   for(VarIdVector::size_type i = 0;i < m_userTaskAbsent.size();i++)
     if (m_scope.isInstalled(m_userTaskAbsent[i]))
       handleDependenceBreaks(m_userTaskAbsent[i], m_pendingInstalled, m_pendingRemoved);
+  for(VarIdVector::size_type i = 0;i < m_userTaskPresent.size();i++)
+    if (!m_scope.isInstalled(m_userTaskPresent[i]))
+      handleToBeNewlyInstalled(m_userTaskPresent[i], m_pendingInstalled, m_pendingRemoved);
 
   processPendings();
 
@@ -333,7 +336,7 @@ void GeneralSolver::handleToBeNewlyInstalled(VarId varId,
 					 VarIdVector& involvedRemoved)
 {
   assert(varId != BAD_VAR_ID);
-  logMsg(LOG_DEBUG, "Processing possibility to be installed for \'%s\'", m_scope.constructPackageName(varId));
+  logMsg(LOG_DEBUG, "Processing possibility to be installed for \'%s\'", m_scope.constructPackageName(varId).c_str());
   VarIdVector otherVersions;
   m_scope.selectMatchingVarsNoProvides(m_scope.packageIdOfVarId(varId), otherVersions);
   for(VarIdVector::size_type i = 0;i < otherVersions.size();i++)
@@ -348,7 +351,7 @@ void GeneralSolver::handleToBeNewlyInstalled(VarId varId,
       }
   IdPkgRelVector requires;
   m_scope.getRequires(varId, requires);
-  logMsg(LOG_DEBUG, "\'%s\' has %zu requires", m_scope.constructPackageName(varId), requires.size());
+  logMsg(LOG_DEBUG, "\'%s\' has %zu requires", m_scope.constructPackageName(varId).c_str(), requires.size());
   for(IdPkgRelVector::size_type i = 0;i < requires.size();i++)
     {
       Clause clause;
@@ -371,10 +374,10 @@ void GeneralSolver::handleToBeNewlyInstalled(VarId varId,
 	  break;
       if (k >= installed.size())
 	{
-	  assert(!m_scope.isINstalled(def));
+	  assert(!m_scope.isInstalled(def));
 	  logMsg(LOG_DEBUG, "Default require solution \'%s\' is not installed, using it", m_scope.constructPackageName(def).c_str());
 	  clause.push_back(Lit(def));
-	  involvedInstalled.push_back(default);
+	  involvedInstalled.push_back(def);
 	} else
 	logMsg(LOG_DEBUG, "Default require solution  \'%s\' is already installed, ignoring it", m_scope.constructPackageName(def).c_str());
       assert(clause.size() >= 2);
@@ -437,6 +440,7 @@ void GeneralSolver::processPendings()
 	    continue;
 	  m_processedInstalled.insert(varId);
 	  logMsg(LOG_DEBUG, "Processing pending entry to be installed \'%s\'", m_scope.constructPackageName(varId).c_str());
+	  assert(!m_scope.isInstalled(varId));
 	}
       while(!m_pendingRemoved.empty())
 	{
@@ -445,7 +449,7 @@ void GeneralSolver::processPendings()
 	  if (m_processedRemoved.find(varId) != m_processedRemoved.end())
 	    continue;
 	  m_processedRemoved.insert(varId);
-	  if (!m_scope.isINstalled(varId))
+	  if (!m_scope.isInstalled(varId))
 	    {
 	    logMsg(LOG_DEBUG, "\'%s\' is not installed, skipping corresponding pending entry to handle dependence breaks", m_scope.constructPackageName(varId).c_str());
 	    continue;
