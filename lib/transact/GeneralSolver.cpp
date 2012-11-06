@@ -283,7 +283,10 @@ VarId GeneralSolver::satisfyRequire(PackageId pkgId)
    */
   m_scope.selectMatchingVarsAmongProvides(pkgId, vars);
   if (vars.empty())//No appropriate packages at all;
-    throw TaskException(TaskErrorNoInstallationCandidat, m_scope.packageIdToStr(pkgId));
+    {
+      logMsg(LOG_ERR, "No matching package for require entry \'%s\'", m_scope.packageIdToStr(pkgId).c_str());
+      throw TaskException(TaskErrorNoInstallationCandidat, m_scope.packageIdToStr(pkgId));
+    }
   if (m_scope.allProvidesHaveTheVersion(vars, pkgId))
     {
       const VarId res = processPriorityList(vars, pkgId);
@@ -320,7 +323,10 @@ VarId GeneralSolver::satisfyRequire(PackageId pkgId, const VersionCond& version)
    */
   m_scope.selectMatchingVarsAmongProvides(pkgId, version, vars);
   if (vars.empty())//No appropriate packages at all;
+    {
+      logMsg(LOG_ERR, "No matching package for require entry \'%s\'", relToString(IdPkgRel(pkgId, version)).c_str());
     throw TaskException(TaskErrorNoInstallationCandidat, m_scope.packageIdToStr(pkgId));
+    }
   const VarId res = processPriorityList(vars, pkgId);
   if (res != BAD_VAR_ID)
     return res;
@@ -408,6 +414,7 @@ void GeneralSolver::handleDependenceBreaks(VarId seed,
 	{
 	  logMsg(LOG_DEBUG, "\'%s\' satisfies and installed", m_scope.constructPackageName(installed[k]).c_str());
 	  clause.push_back(Lit(installed[k]));
+	  involvedRemoved.push_back(installed[k]);
 	}
       const VarId replacement = satisfyRequire(rels[i]);
       assert(replacement != BAD_VAR_ID);
