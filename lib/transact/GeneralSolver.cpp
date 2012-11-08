@@ -259,7 +259,7 @@ VarId GeneralSolver::translateItemToInstall(const UserTaskItemToInstall& item)
 
 VarId GeneralSolver::satisfyRequire(const IdPkgRel& rel)
 {
-  if (rel.hasVer())
+  if (!rel.hasVer())
     return satisfyRequire(rel.pkgId);
   return satisfyRequire(rel.pkgId, rel.extractVersionCond());
 }
@@ -306,6 +306,8 @@ VarId GeneralSolver::satisfyRequire(PackageId pkgId)
 
 VarId GeneralSolver::satisfyRequire(PackageId pkgId, const VersionCond& version)
 {
+  assert(version.type != VerNone);
+  assert(!version.version.empty());
   assert(pkgId != BAD_PACKAGE_ID);
   VarIdVector vars;
   //This line does not handle provides ;
