@@ -391,6 +391,37 @@ void GeneralSolver::handleToBeNewlyInstalled(VarId varId,
       assert(clause.size() >= 2);
       m_sat.push_back(clause);
     }
+
+  //Conflicts;
+  rels.clear();
+  m_scope.getConflicts(varId, rels);
+  for(IdPkgRelVector::size_type i = 0;i < rels.size();i++)
+    {
+      VarIdVector vars;
+      m_scope.selectMatchingVarsWithProvides(rels[i], vars);
+      for(VarIdVector::size_type k = 0;k < vars.size();k++)
+	if (vars[k] != varId)//Package cannot conflict with itself;
+	  {
+	    Clause clause;
+	    clause.push_back(Lit(varId, 1));
+	    clause.push_back(Lit(vars[k], 1));
+	    m_sat.push_back(clause);
+	  }
+    }
+
+  //Here we check are there any conflicts from the installed packages;
+  VarIdVector vars;
+  IdPkgRelVector rels;
+  m_scope.whatConflictsAmongInstalled(varId, vars, rels);
+  for(VarIdVector::size_type i = 0;i < vars.size();i++)
+    {
+      assert(m_scope.isInstalled(vars[i]));
+      Clause clause;
+      clause.push_back(Lit(varId, 1));
+      clause.push_back(Lit(vars[i], 1));
+      m_sat.push_back(clause);
+      involvedRemoved.push_back(vars[i]);
+    }
 }
 
 void GeneralSolver::handleDependenceBreaks(VarId seed,
@@ -564,40 +595,4 @@ void printSolution(const PackageScope& scope,
   for(VarIdToVarIdMap::const_iterator it = upgrade.begin();it != upgrade.end();it++)
     std::cout << scope.constructPackageName(it->first) << " -> " << scope.constructPackageName(it->second) << std::endl;
 }
-
-//Needless methods;
-
- /*
-void GeneralSolver::findAllConflictedVars(VarId varId, VarIdVector& res)
-{
-  //Do not clear res here!!!
-  PackageIdVector withoutVersion, withVersion;
-  VersionCondVector versions;
-  m_scope.getConflicts(varId, withoutVersion, withVersion, versions);
-  assert(withVersion.size() == versions.size());
-  for(PackageIdVector::size_type i = 0;i < withoutVersion.size();i++)
-    {
-      VarIdVector vars;
-      m_scope.selectMatchingVarsWithProvides(withoutVersion[i], vars);
-      for(VarIdVector::size_type i = 0;i < vars.size();i++)
-	if (vars[i] != varId)//Package cannot conflict with itself;
-	  res.push_back(vars[i]);
-    }
-  for(PackageIdVector::size_type i = 0;i < withVersion.size();i++)
-    {
-      VarIdVector vars;
-      m_scope.selectMatchingVarsWithProvides(withVersion[i], versions[i], vars);
-      for(VarIdVector::size_type i = 0;i < vars.size();i++)
-	if (vars[i] != varId)//Package cannot conflict with itself;
-	  res.push_back(vars[i]);
-    }
-  //Here we check are there any conflicts from the installed packages;
-  VarIdVector vars;
-  IdPkgRelVector rels;
-  m_scope.whatConflictsAmongInstalled(varId, vars, rels);
-  for(VarIdVector::size_type i = 0;i < vars.size();i++)
-    res.push_back(vars[i]);
-}
- */
-
 
