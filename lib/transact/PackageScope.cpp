@@ -78,6 +78,14 @@ void PackageScope::selectMatchingVarsNoProvides(PackageId packageId, const Versi
     }
 }
 
+void PackageScope::selectMatchingVarsWithProvides(IdPkgRel& rel, VarIdVector& vars)
+{
+  vars.clear();
+  if (rel.hasVer())
+    selectMatchingVarsWithProvides(rel.pkgId, rel.extractVersionCond(), vars); else
+    selectMatchingVarsWithProvides(rel.pkgId, vars);
+}
+
 void PackageScope::selectMatchingVarsWithProvides(PackageId pkgId, VarIdVector& vars)
 {
   //Package names and all their provides must be considered;
@@ -431,6 +439,20 @@ void PackageScope::getRequires(VarId varId, PackageIdVector& depWithoutVersion, 
 	  versions.push_back(VersionCond(rels[pos + i].ver, rels[pos + i].type));
 	}
     }
+}
+
+void PackageScope::getConflicts(VarId varId, IdPkgRelVector& res) const
+{
+  assert(varId != BAD_VAR_ID);
+  PackageIdVector withVersion, withoutVersion;
+  VersionCondVector versions;
+  getConflicts(varId, withoutVersion, withVersion, versions);
+  assert(withVersion.size() == versions.size());
+  res.clear();
+  for(PackageIdVector::size_type i = 0;i < withoutVersion.size();i++)
+    res.push_back(IdPkgRel(withoutVersion[i]));
+  for(PackageIdVector::size_type i = 0;i < withVersion.size();i++)
+    res.push_back(IdPkgRel(withoutVersion[i], versions[i]));
 }
 
 void PackageScope::getConflicts(VarId varId, PackageIdVector& withoutVersion, PackageIdVector& withVersion, VersionCondVector& versions) const

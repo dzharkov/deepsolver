@@ -162,6 +162,13 @@ void GeneralSolver::solve(const UserTask& task, VarIdVector& toInstall, VarIdVec
   processPendings();
 
   printSat(m_scope, m_sat);
+
+  std::auto_ptr<AbstractSatSolver> satSolver = createLibMinisatSolver();
+  for(Sat::size_type i = 0;i < m_sat.size();i++)
+    satSolver->addClause(m_sat[i]);
+  AbstractSatSolver::VarIdToBoolMap res;
+  satSolver->solve(res);
+
 }
 
 void GeneralSolver::translateUserTask(const UserTask& userTask)
@@ -393,12 +400,12 @@ void GeneralSolver::handleToBeNewlyInstalled(VarId varId,
     }
 
   //Conflicts;
-  rels.clear();
-  m_scope.getConflicts(varId, rels);
-  for(IdPkgRelVector::size_type i = 0;i < rels.size();i++)
+  IdPkgRelVector conflicts;
+  m_scope.getConflicts(varId, conflicts);
+  for(IdPkgRelVector::size_type i = 0;i < conflicts.size();i++)
     {
       VarIdVector vars;
-      m_scope.selectMatchingVarsWithProvides(rels[i], vars);
+      m_scope.selectMatchingVarsWithProvides(conflicts[i], vars);
       for(VarIdVector::size_type k = 0;k < vars.size();k++)
 	if (vars[k] != varId)//Package cannot conflict with itself;
 	  {

@@ -112,4 +112,36 @@ public:
 typedef std::list<VersionCond> VersionCondList;
 typedef std::vector<VersionCond> VersionCondVector;
 
+//Utils;
+
+template<typename T>
+class AutoArrayAdapter
+{
+public:
+  AutoArrayAdapter(T* p)
+    : m_p(p) 
+  {
+    assert(p != NULL);
+  }
+
+  ~AutoArrayAdapter()
+  {
+    delete[] m_p;
+  }
+
+public:
+  T* get()
+  {
+    return m_p;
+  }
+
+  const T* get() const
+  {
+    return m_p;
+  }
+
+private:
+  T* m_p;
+}; //class AutoArrayAdapter;
+
 #endif //DEEPSOLVER_TYPES_H;

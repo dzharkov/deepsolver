@@ -46,13 +46,15 @@ inline Clause unitClause(const Lit& lit)
 class AbstractSatSolver
 {
 public:
+  typedef std::map<VarId, bool> VarIdToBoolMap;
+public:
   AbstractSatSolver() {}
   virtual ~AbstractSatSolver() {}
 
 public:
   virtual void reset() = 0;
   virtual void addClause(const Clause& clause) = 0;
-  virtual bool solve(BoolVector& res) = 0;
+  virtual bool solve(VarIdToBoolMap& res) = 0;
 }; //class AbstractSatSolver;
 
 std::auto_ptr<AbstractSatSolver> createLibMinisatSolver();

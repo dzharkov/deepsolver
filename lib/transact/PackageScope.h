@@ -60,6 +60,7 @@ public:
   void selectMatchingVarsNoProvides(PackageId packageId, VarIdVector& vars);
   void selectMatchingVarsNoProvides(PackageId packageId, const VersionCond& ver, VarIdVector& vars);
 
+  void selectMatchingVarsWithProvides(IdPkgRel& rel, VarIdVector& vars);
   void selectMatchingVarsWithProvides(PackageId packageId, VarIdVector& vars);
   void selectMatchingVarsWithProvides(PackageId packageId, const VersionCond& ver, VarIdVector& vars);
 
@@ -80,6 +81,8 @@ public:
 		   PackageIdVector& depWithoutVersion,
 		   PackageIdVector& depWithVersion,
 		   VersionCondVector& versions) const;
+
+  void getConflicts(VarId varId, IdPkgRelVector& res) const;
 
   void getConflicts(VarId varId,
 		    PackageIdVector& withoutVersion,
