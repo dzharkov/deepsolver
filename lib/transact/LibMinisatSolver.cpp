@@ -63,6 +63,7 @@ void LibMinisatSolver::reset()
 
 void LibMinisatSolver::addClause(const Clause& clause)
 {
+  //  logMsg(LOG_DEBUG, "Adding clause");
   if (clause.empty())
     return;
   m_clauses.push_back(new int[clause.size()]);
@@ -91,7 +92,7 @@ bool LibMinisatSolver::solve(VarIdToBoolMap& res)
       usingEq[i] = m_clauses[i];
     }
   logMsg(LOG_DEBUG, "Calling libminisat to solve the task with %zu variables in %zu clauses", varCount, m_clauses.size());
-  if (!minisat_solve(m_clauses.size(), usingCounts, usingEq, usingSolution) != MINISAT_OK)
+  if (minisat_solve(m_clauses.size(), usingCounts, usingEq, usingSolution) != MINISAT_OK)
     {
       logMsg(LOG_DEBUG, "libminisat said no solution!");
       return 0;
@@ -124,7 +125,6 @@ int LibMinisatSolver::mapVarId(VarId varId)
 
 std::auto_ptr<AbstractSatSolver> createLibMinisatSolver()
 {
-  //FIXME:  return auto_ptr<AbstractSatSolver>(new LibMinisatSolver());
-  return std::auto_ptr<AbstractSatSolver>();
+  return std::auto_ptr<AbstractSatSolver>(new LibMinisatSolver());
 }
 

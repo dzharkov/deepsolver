@@ -97,11 +97,11 @@ private:
   VarId processPriorityList(const VarIdVector& vars, PackageId provideEntry) const;
   VarId processPriorityBySorting(const VarIdVector& vars) const;
 
-  void handleDependenceBreaks(VarId seed,
+  void handleChangeToFalse(VarId seed,
 			      VarIdVector& involvedInstalled,
 			      VarIdVector& involvedRemoved);
 
-  void handleToBeNewlyInstalled(VarId varId,
+  void handleChangeToTrue(VarId varId,
 				VarIdVector& involvedInstalled,
 				VarIdVector& involvedRemoved);
 
@@ -154,19 +154,21 @@ void GeneralSolver::solve(const UserTask& task, VarIdVector& toInstall, VarIdVec
 
   for(VarIdVector::size_type i = 0;i < m_userTaskAbsent.size();i++)
     if (m_scope.isInstalled(m_userTaskAbsent[i]))
-      handleDependenceBreaks(m_userTaskAbsent[i], m_pendingInstalled, m_pendingRemoved);
+      handleChangeToFalse(m_userTaskAbsent[i], m_pendingInstalled, m_pendingRemoved);
   for(VarIdVector::size_type i = 0;i < m_userTaskPresent.size();i++)
     if (!m_scope.isInstalled(m_userTaskPresent[i]))
-      handleToBeNewlyInstalled(m_userTaskPresent[i], m_pendingInstalled, m_pendingRemoved);
+      handleChangeToTrue(m_userTaskPresent[i], m_pendingInstalled, m_pendingRemoved);
 
   processPendings();
 
-  printSat(m_scope, m_sat);
+  //  printSat(m_scope, m_sat);
 
+  logMsg(LOG_DEBUG, "Creating libminisat SAT solver");
   std::auto_ptr<AbstractSatSolver> satSolver = createLibMinisatSolver();
   for(Sat::size_type i = 0;i < m_sat.size();i++)
     satSolver->addClause(m_sat[i]);
   AbstractSatSolver::VarIdToBoolMap res;
+    logMsg(LOG_DEBUG, "Launching minisat with %zu clauses", m_sat.size());
   satSolver->solve(res);
 
 }
@@ -346,7 +348,7 @@ VarId GeneralSolver::satisfyRequire(PackageId pkgId, const VersionCond& version)
   return processPriorityBySorting(vars);
 }
 
-void GeneralSolver::handleToBeNewlyInstalled(VarId varId,
+void GeneralSolver::handleChangeToTrue(VarId varId,
 					 VarIdVector& involvedInstalled,
 					 VarIdVector& involvedRemoved)
 {
@@ -366,23 +368,23 @@ void GeneralSolver::handleToBeNewlyInstalled(VarId varId,
       }
   IdPkgRelVector requires;
   m_scope.getRequires(varId, requires);
-  logMsg(LOG_DEBUG, "\'%s\' has %zu requires", m_scope.constructPackageName(varId).c_str(), requires.size());
+  //  logMsg(LOG_DEBUG, "\'%s\' has %zu requires", m_scope.constructPackageName(varId).c_str(), requires.size());
   for(IdPkgRelVector::size_type i = 0;i < requires.size();i++)
     {
       Clause clause;
       clause.push_back(Lit(varId, 1));
       VarIdVector installed;
       m_scope.whatSatisfiesAmongInstalled(requires[i], installed);
-      logMsg(LOG_DEBUG, "%zu packages satisfy among installed", installed.size());
+      //      logMsg(LOG_DEBUG, "%zu packages satisfy among installed", installed.size());
       for(VarIdVector::size_type k = 0;k < installed.size();k++)
 	{
-	  logMsg(LOG_DEBUG, "\'%s\' satisfies and installed", m_scope.constructPackageName(installed[k]).c_str());
+	  //	  logMsg(LOG_DEBUG, "\'%s\' satisfies and installed", m_scope.constructPackageName(installed[k]).c_str());
 	  clause.push_back(Lit(installed[k]));
 	  involvedRemoved.push_back(installed[k]);
 	}
       const VarId def = satisfyRequire(requires[i]);
       assert(def != BAD_VAR_ID);
-      logMsg(LOG_DEBUG, "Found default require solution \'%s\'", m_scope.constructPackageName(def).c_str());
+      //      logMsg(LOG_DEBUG, "Found default require solution \'%s\'", m_scope.constructPackageName(def).c_str());
       VarIdVector::size_type k;
       for(k = 0;k < installed.size();k++)
 	if (def == installed[k])
@@ -390,11 +392,11 @@ void GeneralSolver::handleToBeNewlyInstalled(VarId varId,
       if (k >= installed.size())
 	{
 	  assert(!m_scope.isInstalled(def));
-	  logMsg(LOG_DEBUG, "Default require solution \'%s\' is not installed, using it", m_scope.constructPackageName(def).c_str());
+	  //	  logMsg(LOG_DEBUG, "Default require solution \'%s\' is not installed, using it", m_scope.constructPackageName(def).c_str());
 	  clause.push_back(Lit(def));
 	  involvedInstalled.push_back(def);
 	} else
-	logMsg(LOG_DEBUG, "Default require solution  \'%s\' is already installed, ignoring it", m_scope.constructPackageName(def).c_str());
+	//	logMsg(LOG_DEBUG, "Default require solution  \'%s\' is already installed, ignoring it", m_scope.constructPackageName(def).c_str());
       assert(clause.size() >= 2);
       m_sat.push_back(clause);
     }
@@ -431,7 +433,7 @@ void GeneralSolver::handleToBeNewlyInstalled(VarId varId,
     }
 }
 
-void GeneralSolver::handleDependenceBreaks(VarId seed,
+void GeneralSolver::handleChangeToFalse(VarId seed,
 					   VarIdVector& involvedInstalled,
 					   VarIdVector& involvedRemoved)
 {
@@ -442,34 +444,34 @@ void GeneralSolver::handleDependenceBreaks(VarId seed,
   assert(deps.size() == rels.size());
   for(VarIdVector::size_type i = 0;i < deps.size();i++)
     {
-      logMsg(LOG_DEBUG, "Processing dependent package \'%s\' with require entry \'%s\'", m_scope.constructPackageName(deps[i]).c_str(), relToString(rels[i]).c_str());
+      //      logMsg(LOG_DEBUG, "Processing dependent package \'%s\' with require entry \'%s\'", m_scope.constructPackageName(deps[i]).c_str(), relToString(rels[i]).c_str());
       Clause clause;
       clause.push_back(Lit(seed));
       clause.push_back(Lit(deps[i], 1));
       involvedRemoved.push_back(deps[i]);
       VarIdVector installed;
       m_scope.whatSatisfiesAmongInstalled(rels[i], installed);
-      logMsg(LOG_DEBUG, "%zu packages satisfy among installed", installed.size());
+      //      logMsg(LOG_DEBUG, "%zu packages satisfy among installed", installed.size());
       for(VarIdVector::size_type k = 0;k < installed.size();k++)
 	{
-	  logMsg(LOG_DEBUG, "\'%s\' satisfies and installed", m_scope.constructPackageName(installed[k]).c_str());
+	  //	  logMsg(LOG_DEBUG, "\'%s\' satisfies and installed", m_scope.constructPackageName(installed[k]).c_str());
 	  clause.push_back(Lit(installed[k]));
 	  involvedRemoved.push_back(installed[k]);
 	}
       const VarId replacement = satisfyRequire(rels[i]);
       assert(replacement != BAD_VAR_ID);
-      logMsg(LOG_DEBUG, "Found default replacement  \'%s\'", m_scope.constructPackageName(replacement).c_str());
+      //      logMsg(LOG_DEBUG, "Found default replacement  \'%s\'", m_scope.constructPackageName(replacement).c_str());
       VarIdVector::size_type k;
       for(k = 0;k < installed.size();k++)
 	if (replacement == installed[k])
 	  break;
       if (k >= installed.size())
 	{
-	  logMsg(LOG_DEBUG, "Default replacement \'%s\' is not installed, using it", m_scope.constructPackageName(replacement).c_str());
+	  //	  logMsg(LOG_DEBUG, "Default replacement \'%s\' is not installed, using it", m_scope.constructPackageName(replacement).c_str());
 	  clause.push_back(Lit(replacement));
 	  involvedInstalled.push_back(replacement);
 	} else
-	logMsg(LOG_DEBUG, "Default replacement \'%s\' is already installed, ignoring it", m_scope.constructPackageName(replacement).c_str());
+	//	logMsg(LOG_DEBUG, "Default replacement \'%s\' is already installed, ignoring it", m_scope.constructPackageName(replacement).c_str());
       m_sat.push_back(clause);
     }
 }
@@ -503,7 +505,7 @@ void GeneralSolver::processPendings()
 	    }
 	  logMsg(LOG_DEBUG, "Processing pending entry to be removed \'%s\'", m_scope.constructPackageName(varId).c_str());
 	  VarIdVector involvedInstalled, involvedRemoved;
-	  handleDependenceBreaks(varId, involvedInstalled, involvedRemoved);
+	  handleChangeToFalse(varId, involvedInstalled, involvedRemoved);
 	  for(VarIdVector::size_type i = 0;i < involvedInstalled.size();i++)
 	    if (m_processedInstalled.find(involvedInstalled[i]) == m_processedInstalled.end())
 	      m_pendingInstalled.push_back(involvedInstalled[i]);
