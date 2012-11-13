@@ -23,7 +23,9 @@
 
 #define NAME_S(x) m_scope.constructPackageName(x)
 
-static void printSat(const PackageScope& scope, const Sat& sat);
+static void printSat(const PackageScope& scope,
+		     const Sat& sat,
+		     const StringVector& annotations);
 static void printSolution(const PackageScope& scope,
 			  const VarIdVector& install,
 			  const VarIdVector& remove,
@@ -73,7 +75,8 @@ public:
 	       const ProvideMap& provideMap,
 	       const InstalledReferences& requiresReferences,
 	       const InstalledReferences& conflictsReferences)
-    : m_content(content) , m_scope(content, provideMap, requiresReferences, conflictsReferences) {}
+    : m_annotating(1),
+      m_content(content) , m_scope(content, provideMap, requiresReferences, conflictsReferences) {}
 
   virtual ~GeneralSolver() {}
 
@@ -111,6 +114,8 @@ private://Utilities;
   std::string relToString(const IdPkgRel& rel);
 
 private:
+  bool m_annotating;
+  StringVector m_annotations;
   const PackageScopeContent& m_content;
   PackageScope m_scope; 
   Sat m_sat;
@@ -133,25 +138,8 @@ std::auto_ptr<AbstractTaskSolver> createGeneralTaskSolver(const PackageScopeCont
 
 void GeneralSolver::solve(const UserTask& task, VarIdVector& toInstall, VarIdVector& toRemove, VarIdToVarIdMap& toUpgrade)
 {
-  m_userTaskPresent.clear();
-  m_userTaskAbsent.clear();
   translateUserTask(task);
   logMsg(LOG_DEBUG, "User task translated: %zu to be present, %zu to be absent", m_userTaskPresent.size(), m_userTaskAbsent.size());
-  for(VarIdVector::size_type i = 0;i < m_userTaskPresent.size();i++)
-    logMsg(LOG_DEBUG, "Present: %s", m_scope.constructPackageName(m_userTaskPresent[i]).c_str());
-  for(VarIdVector::size_type i = 0;i < m_userTaskAbsent.size();i++)
-    logMsg(LOG_DEBUG, "Absent: %s", m_scope.constructPackageName(m_userTaskAbsent[i]).c_str());
-  for(VarIdVector::size_type i = 0;i < m_userTaskPresent.size();i++)
-    {
-    m_sat.push_back(unitClause(Lit(m_userTaskPresent[i])));
-    m_processedInstalled.insert(m_userTaskPresent[i]);
-    }
-  for(VarIdVector::size_type i = 0;i < m_userTaskAbsent.size();i++)
-    {
-      m_sat.push_back(unitClause(Lit(m_userTaskAbsent[i], 1)));
-      m_processedRemoved.insert(m_userTaskAbsent[i]);
-    }
-
   for(VarIdVector::size_type i = 0;i < m_userTaskAbsent.size();i++)
     if (m_scope.isInstalled(m_userTaskAbsent[i]))
       handleChangeToFalse(m_userTaskAbsent[i], m_pendingInstalled, m_pendingRemoved);
@@ -161,8 +149,8 @@ void GeneralSolver::solve(const UserTask& task, VarIdVector& toInstall, VarIdVec
 
   processPendings();
 
-  //  printSat(m_scope, m_sat);
-
+  printSat(m_scope, m_sat, m_annotations);
+  return;
   logMsg(LOG_DEBUG, "Creating libminisat SAT solver");
   std::auto_ptr<AbstractSatSolver> satSolver = createLibMinisatSolver();
   for(Sat::size_type i = 0;i < m_sat.size();i++)
@@ -177,18 +165,33 @@ void GeneralSolver::translateUserTask(const UserTask& userTask)
 {
   m_userTaskPresent.clear();
   m_userTaskAbsent.clear();
+
+  // To install;
   for(UserTaskItemToInstallVector::size_type i = 0;i < userTask.itemsToInstall.size();i++)
     {
       //The following line checks the entire package scope including installed packages, so it can return also the installed package if it matches the user request;
       const VarId varId = translateItemToInstall(userTask.itemsToInstall[i]);
       assert(varId != BAD_VAR_ID);
+      m_processedInstalled.insert(varId);
       m_userTaskPresent.push_back(varId);
+      m_sat.push_back(unitClause(Lit(varId)));
+      if (m_annotating)
+	m_annotations.push_back("# Buy user task to install \"" + userTask.itemsToInstall[i].toString() + "\"");
       VarIdVector otherVersions;
       m_scope.selectMatchingVarsNoProvides(m_scope.packageIdOfVarId(varId), otherVersions);
+      rmDub(otherVersions);
       for(VarIdVector::size_type k = 0;k < otherVersions.size();k++)
 	if (otherVersions[k] != varId)
-	  m_userTaskAbsent.push_back(otherVersions[k]);//FIXME:Not every package require this;
-    }
+	  {
+	    m_userTaskAbsent.push_back(otherVersions[k]);//FIXME:Not every package require this;
+	    m_processedRemoved.insert(otherVersions[k]);
+	    m_sat.push_back(unitClause(Lit(otherVersions[k], 1)));
+	    if (m_annotating)
+	      m_annotations.push_back("# Blocked by user task to install \"" + userTask.itemsToInstall[i].toString() + "\"");
+	  }
+    } //For items to install;
+
+  // To remove;
   for(StringSet::const_iterator it = userTask.namesToRemove.begin() ;it != userTask.namesToRemove.end();it++)
     {
       const PackageId pkgId = m_scope.strToPackageId(*it);
@@ -200,9 +203,15 @@ void GeneralSolver::translateUserTask(const UserTask& userTask)
 	}
       VarIdVector vars;
       m_scope.selectMatchingVarsNoProvides(pkgId, vars);
-      //FIXME:Checking if anything is installed;
+      rmDub(vars);
       for(VarIdVector::size_type k = 0;k < vars.size();k++)
-	m_userTaskAbsent.push_back(vars[k]);
+	{
+	  m_userTaskAbsent.push_back(vars[k]);
+	  m_processedRemoved.insert(vars[k]);
+	  m_sat.push_back(unitClause(Lit(vars[k], 1)));
+	  if (m_annotating)
+	    m_annotations.push_back("# By user task to remove \"" + *it + "\"");
+	}
     }
   rmDub(m_userTaskPresent);
   rmDub(m_userTaskAbsent);
@@ -558,11 +567,15 @@ std::string GeneralSolver::relToString(const IdPkgRel& rel)
 
 //Static functions;
 
-void printSat(const PackageScope& scope, const Sat& sat)
+void printSat(const PackageScope& scope, 
+	      const Sat& sat,
+	      const StringVector& annotations)
 {
   for(Sat::size_type i = 0;i < sat.size();i++)
     {
       const Clause& clause = sat[i];
+      if (i < annotations.size())
+	std::cout << annotations[i] << std::endl;
       std::cout << "(" << std::endl;
 	for(Clause::size_type k = 0;k < clause.size();k++)
 	  {
