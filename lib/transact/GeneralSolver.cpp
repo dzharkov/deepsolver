@@ -28,8 +28,7 @@ static void printSat(const PackageScope& scope,
 		     const StringVector& annotations);
 static void printSolution(const PackageScope& scope,
 			  const VarIdVector& install,
-			  const VarIdVector& remove,
-			  const VarIdToVarIdMap& upgrade);
+			  const VarIdVector& remove);
 
 template<typename T>
 void rmDub(std::vector<T>& v)
@@ -148,11 +147,9 @@ void GeneralSolver::solve(const UserTask& task, VarIdVector& toInstall, VarIdVec
     if (!m_scope.isInstalled(m_userTaskPresent[i]))
       handleChangeToTrue(m_userTaskPresent[i], m_pendingInstalled, m_pendingRemoved);
   processPendings();
-
   for(Sat::size_type i = 0;i < m_sat.size();i++)
     rmDub(m_sat[i]);
   printSat(m_scope, m_sat, m_annotations);
-
   logMsg(LOG_DEBUG, "Creating libminisat SAT solver");
   std::auto_ptr<AbstractSatSolver> satSolver = createLibMinisatSolver();
   for(Sat::size_type i = 0;i < m_sat.size();i++)
@@ -160,7 +157,20 @@ void GeneralSolver::solve(const UserTask& task, VarIdVector& toInstall, VarIdVec
   AbstractSatSolver::VarIdToBoolMap res;
     logMsg(LOG_DEBUG, "Launching minisat with %zu clauses", m_sat.size());
   satSolver->solve(res);
-
+  VarIdVector resInstall, resRemove;
+  for(AbstractSatSolver::VarIdToBoolMap::const_iterator it = res.begin();it != res.end();it++)
+    if (it->second)
+      {
+	if (m_scope.isInstalled(it->first))
+	  logMsg(LOG_WARNING, "\'%s\' is installed and selected for installation", m_scope.constructPackageNameWithBuildTime(it->first).c_str());
+	resInstall.push_back(it->first); 
+      }else
+      {
+	if (!m_scope.isInstalled(it->first))
+	  logMsg(LOG_WARNING, "\'%s\' is not installed and selected for removing", m_scope.constructPackageNameWithBuildTime(it->first).c_str());
+	resRemove.push_back(it->first);
+      }
+  printSolution(m_scope, resInstall, resRemove);
 }
 
 void GeneralSolver::translateUserTask(const UserTask& userTask)
@@ -379,9 +389,10 @@ void GeneralSolver::handleChangeToTrue(VarId varId,
       }
   IdPkgRelVector requires;
   m_scope.getRequires(varId, requires);
-  //  logMsg(LOG_DEBUG, "\'%s\' has %zu requires", m_scope.constructPackageName(varId).c_str(), requires.size());
+  logMsg(LOG_DEBUG, "\'%s\' has %zu requires", m_scope.constructPackageName(varId).c_str(), requires.size());
   for(IdPkgRelVector::size_type i = 0;i < requires.size();i++)
     {
+      logMsg(LOG_DEBUG, "Processing require entry \'%s\'", relToString(requires[i]).c_str());
       Clause clause;
       clause.push_back(Lit(varId, 1));
       VarIdVector installed;
@@ -564,7 +575,10 @@ VarId GeneralSolver::processPriorityBySorting(const VarIdVector& vars) const
 
 std::string GeneralSolver::relToString(const IdPkgRel& rel)
 {
-  return m_scope.packageIdToStr(rel.pkgId) + rel.verString();
+  const std::string ver = rel.verString();
+  if (ver.empty())
+      return m_scope.packageIdToStr(rel.pkgId);
+  return m_scope.packageIdToStr(rel.pkgId) + " " + ver;
 }
 
 //Static functions;
@@ -602,10 +616,9 @@ void printSat(const PackageScope& scope,
 
 void printSolution(const PackageScope& scope,
 		   const VarIdVector& install,
-		   const VarIdVector& remove,
-		   const VarIdToVarIdMap& upgrade)
+		   const VarIdVector& remove)
 {
-  std::cout << install.size() << " to install, " << remove.size() << " to remove, " << upgrade.size() << " to upgrade" << std::endl;
+  std::cout << install.size() << " to install, " << remove.size() << " to remove" << std::endl;
   std::cout << std::endl;
   std::cout << "The following packages must be installed:" << std::endl;
   for(size_t k = 0;k < install.size();k++)
@@ -615,8 +628,5 @@ void printSolution(const PackageScope& scope,
   for(size_t k = 0;k < remove.size();k++)
     std::cout << scope.constructPackageName(remove[k]) << std::endl;
   std::cout << std::endl;
-  std::cout << "The following packages must be upgraded:" << std::endl;
-  for(VarIdToVarIdMap::const_iterator it = upgrade.begin();it != upgrade.end();it++)
-    std::cout << scope.constructPackageName(it->first) << " -> " << scope.constructPackageName(it->second) << std::endl;
 }
 

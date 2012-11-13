@@ -415,7 +415,7 @@ void PackageScope::getRequires(VarId varId, IdPkgRelVector& res) const
   for(PackageIdVector::size_type i = 0;i < withoutVersion.size();i++)
     res.push_back(IdPkgRel(withoutVersion[i]));
   for(PackageIdVector::size_type i = 0;i < withVersion.size();i++)
-    res.push_back(IdPkgRel(withoutVersion[i], versions[i]));
+    res.push_back(IdPkgRel(withVersion[i], versions[i]));
 }
 
 void PackageScope::getRequires(VarId varId, PackageIdVector& depWithoutVersion, PackageIdVector& depWithVersion, VersionCondVector& versions) const
@@ -452,7 +452,7 @@ void PackageScope::getConflicts(VarId varId, IdPkgRelVector& res) const
   for(PackageIdVector::size_type i = 0;i < withoutVersion.size();i++)
     res.push_back(IdPkgRel(withoutVersion[i]));
   for(PackageIdVector::size_type i = 0;i < withVersion.size();i++)
-    res.push_back(IdPkgRel(withoutVersion[i], versions[i]));
+    res.push_back(IdPkgRel(withVersion[i], versions[i]));
 }
 
 void PackageScope::getConflicts(VarId varId, PackageIdVector& withoutVersion, PackageIdVector& withVersion, VersionCondVector& versions) const

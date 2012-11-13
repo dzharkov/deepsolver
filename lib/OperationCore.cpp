@@ -145,7 +145,8 @@ void OperationCore::doInstallRemove(const UserTask& userTask)
   VarIdToVarIdMap toUpgrade;
 
   UserTask t;
-  t.namesToRemove.insert("voiceman");
+  t.itemsToInstall.push_back(UserTaskItemToInstall("dovecot"));
+  //  t.namesToRemove.insert("voiceman");
   //  t.namesToRemove.insert("gcc4.3");
   //  t.namesToRemove.insert("dbus");
 
