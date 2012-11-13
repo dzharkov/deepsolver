@@ -34,6 +34,7 @@ static void printSolution(const PackageScope& scope,
 template<typename T>
 void rmDub(std::vector<T>& v)
 {
+  //FIXME:Small groups processing;
   //Be careful: only for items with operator < and operator >;
   std::set<T> s;
   for(size_t i = 0;i < v.size();i++)
@@ -146,11 +147,12 @@ void GeneralSolver::solve(const UserTask& task, VarIdVector& toInstall, VarIdVec
   for(VarIdVector::size_type i = 0;i < m_userTaskPresent.size();i++)
     if (!m_scope.isInstalled(m_userTaskPresent[i]))
       handleChangeToTrue(m_userTaskPresent[i], m_pendingInstalled, m_pendingRemoved);
-
   processPendings();
 
+  for(Sat::size_type i = 0;i < m_sat.size();i++)
+    rmDub(m_sat[i]);
   printSat(m_scope, m_sat, m_annotations);
-  return;
+
   logMsg(LOG_DEBUG, "Creating libminisat SAT solver");
   std::auto_ptr<AbstractSatSolver> satSolver = createLibMinisatSolver();
   for(Sat::size_type i = 0;i < m_sat.size();i++)
@@ -583,7 +585,7 @@ void printSat(const PackageScope& scope,
 	    if (lit.neg)
 	      std::cout << " !"; else 
 	      std::cout << "  ";
-	    std::cout << scope.constructPackageName(lit.varId);
+	    std::cout << scope.constructPackageNameWithBuildTime(lit.varId);
 	    if (k + 1 < clause.size())
 	      std::cout << " ||";
 	    std::cout << std::endl;

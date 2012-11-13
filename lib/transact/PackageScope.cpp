@@ -677,6 +677,19 @@ std::string PackageScope::constructPackageName(VarId varId) const
   return res;
 }
 
+std::string PackageScope::constructPackageNameWithBuildTime(VarId varId) const
+{
+  const PkgInfoVector& pkgs = m_content.pkgInfoVector;
+  assert(varId < pkgs.size());
+  const PackageScopeContent::PkgInfo& pkg = pkgs[varId];
+  std::ostringstream res;
+  res << packageIdToStr(pkg.pkgId);
+  assert(pkg.ver != NULL && pkg.release != NULL);
+  res << "-" << pkg.ver << "-" << pkg.release;
+  res << " (" << pkg.buildTime << ")";
+  return res.str();
+}
+
 std::string PackageScope::constructFullVersion(VarId varId) const
 {
   const PkgInfoVector& pkgs = m_content.pkgInfoVector;

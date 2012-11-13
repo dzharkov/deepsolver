@@ -42,6 +42,7 @@ public:
 public:
   PackageId packageIdOfVarId(VarId varId) const;
   std::string constructPackageName(VarId varId) const;
+  std::string constructPackageNameWithBuildTime(VarId varId) const;
   std::string constructFullVersion(VarId varId) const;
   bool checkName(const std::string& name) const;
 

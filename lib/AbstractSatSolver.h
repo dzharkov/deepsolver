@@ -29,6 +29,40 @@ struct Lit
   Lit(VarId v, bool n)
     : varId(v), neg(n) {}
 
+  bool operator ==(const Lit& lit) const
+  {
+    return varId == lit.varId && neg == lit.neg;
+  }
+
+  bool operator !=(const Lit& lit) const
+  {
+    return varId != lit.varId || neg != lit.neg;
+  }
+
+  bool operator <(const Lit& lit) const
+  {
+    if (neg != lit.neg)
+      return neg;
+    if (varId == lit.varId)
+      return 0;
+    bool res = varId < lit.varId;
+    if (neg)
+      return !res;
+    return res;
+  }
+
+  bool operator >(const Lit& lit) const
+  {
+    if (neg != lit.neg)
+      return !neg;
+    if (varId == lit.varId)
+      return 0;
+    bool res = varId > lit.varId;
+    if (neg)
+      return !res;
+    return res;
+  }
+
   VarId varId;
   bool neg;
 }; //struct Lit;
