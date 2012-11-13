@@ -98,7 +98,7 @@ bool LibMinisatSolver::solve(VarIdToBoolMap& res)
       return 0;
     }
   logMsg(LOG_DEBUG, "libminisat found a solution!");
-  for(size_t i = 0;i < varCount;i++)
+  for(size_t i = 1;i < varCount;i++)
     {
       IntToVarIdMap::const_iterator it = m_intToVarIdMap.find(i);
       assert(it != m_intToVarIdMap.end());
