@@ -406,7 +406,7 @@ void PackageScope::whatSatisfiesAmongInstalled(const IdPkgRel& rel, VarIdVector&
       if (!HAS_VERSION(rels[pos + j]))//Provide entry has no version;
 	continue;
       assert(rels[pos + j].type != VerNone);
-      if (VersionCond(rels[pos + j].ver, rels[pos + j].type), versionOverlap(VersionCond(rel.ver, rel.verDir)))
+      if (versionOverlap(VersionCond(rels[pos + j].ver, rels[pos + j].type), VersionCond(rel.ver, rel.verDir)))
 	res.push_back(vars[i]);
     }
 }
@@ -511,7 +511,7 @@ void PackageScope::whatDependsAmongInstalled(VarId varId, VarIdVector& res, IdPk
 	    resRels.push_back(IdPkgRel(withoutVersion[k]));
 	  }
       for(PackageIdVector::size_type k = 0;k < withVersion.size();k++)
-	if (withVersion[k] == pkg.pkgId && versionSatisfies(versions[k], pkg.epoch, pkg.ver, pkg.release))
+	if (withVersion[k] == pkg.pkgId && versionOverlap(constructVersionCondEquals(pkg.epoch, pkg.ver, pkg.release), versions[k]))
 	  {
 	    res.push_back(v[i]);
 	    resRels.push_back(IdPkgRel(withVersion[k], versions[k]));
@@ -546,7 +546,7 @@ void PackageScope::whatDependsAmongInstalled(VarId varId, VarIdVector& res, IdPk
 	    {
 	      assert(rel.type == VerEquals);//FIXME:Actually it shouldn't be an assert, we can silently skip this provide;
 	      for(PackageIdVector::size_type q = 0;q < withVersion.size();q++)
-		if (withVersion[q] == rel.pkgId && versionSatisfies(versions[q], rel.ver))
+		if (withVersion[q] == rel.pkgId && versionOverlap(VersionCond(rel.ver, VerEquals), versions[q]))
 		  {
 		    res.push_back(v[k]);
 		    resRels.push_back(IdPkgRel(withVersion[q], versions[q]));
@@ -582,7 +582,7 @@ void PackageScope::whatConflictsAmongInstalled(VarId varId, VarIdVector& res, Id
 	    resRels.push_back(IdPkgRel(withoutVersion[k]));
 	  }
       for(PackageIdVector::size_type k = 0;k < withVersion.size();k++)
-	if (withVersion[k] == pkg.pkgId && versionSatisfies(versions[k], pkg.epoch, pkg.ver, pkg.release))
+	if (withVersion[k] == pkg.pkgId && versionOverlap(constructVersionCondEquals(pkg.epoch, pkg.ver, pkg.release), versions[k]))
 	  {
 	    res.push_back(v[i]);
 	    resRels.push_back(IdPkgRel(withVersion[k], versions[k]));
@@ -617,7 +617,7 @@ void PackageScope::whatConflictsAmongInstalled(VarId varId, VarIdVector& res, Id
 	    {
 	      assert(rel.type == VerEquals);//FIXME:Actually it shouldn't be an assert, we can silently skip this provide;
 	      for(PackageIdVector::size_type q = 0;q < withVersion.size();q++)
-		if (withVersion[q] == rel.pkgId && versionSatisfies(versions[q], rel.ver))
+		if (withVersion[q] == rel.pkgId && versionOverlap(VersionCond(rel.ver, VerEquals), versions[q]))
 		  {
 		    res.push_back(v[k]);
 		    resRels.push_back(IdPkgRel(withVersion[q], versions[q]));
@@ -638,7 +638,7 @@ bool PackageScope::variableSatisfies(VarId varId, const IdPkgRel& rel)
     {
       if (!rel.hasVer())
 	return 1;
-      if (versionSatisfies(VersionCond(rel.ver, rel.verDir), pkg.epoch, pkg.ver, pkg.release))
+      if (versionOverlap(constructVersionCondEquals(pkg.epoch, pkg.ver, pkg.release), rel.extractVersionCond()))
 	return 1;
     }
   //The package itself does not match, checking its provides;

@@ -29,6 +29,7 @@ bool versionOverlap(const VersionCond& ver1, const VersionCond& ver2)
   return rpmVerOverlap(ver1, ver2);
 }
 
+/*
 bool versionSatisfies(const VersionCond& cond, Epoch epoch, const std::string& ver, const std::string& release)
 {
   std::ostringstream ss;
@@ -40,6 +41,7 @@ bool versionSatisfies(const VersionCond& cond, const std::string& ver)
 {
   return versionOverlap(VersionCond(ver), cond);
 }
+*/
 
 bool versionEqual(const std::string& ver1, const std::string& ver2)
 {
