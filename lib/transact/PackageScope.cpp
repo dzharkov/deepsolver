@@ -306,6 +306,7 @@ bool PackageScope::allProvidesHaveTheVersion(const VarIdVector& vars, PackageId 
   return 1;
 }
 
+/*
 bool PackageScope::canBeSatisfiedByInstalled(PackageId pkgId)
 {
   assert(pkgId != BAD_PACKAGE_ID);
@@ -321,7 +322,9 @@ bool PackageScope::canBeSatisfiedByInstalled(PackageId pkgId)
     }
   return 0;
 }
+*/
 
+/*
 bool PackageScope ::canBeSatisfiedByInstalled(PackageId pkgId, const VersionCond& ver)
 {
   assert(pkgId != BAD_PACKAGE_ID);
@@ -359,11 +362,15 @@ bool PackageScope ::canBeSatisfiedByInstalled(PackageId pkgId, const VersionCond
     }
   return 0;
 }
+*/
 
 void PackageScope::whatSatisfiesAmongInstalled(const IdPkgRel& rel, VarIdVector& res)
 {
   assert(rel.pkgId != BAD_PACKAGE_ID);
   res.clear();
+
+
+  //If there is no version restrictions;
   if (!rel.hasVer())
     {
       VarIdVector vars;
@@ -377,6 +384,8 @@ void PackageScope::whatSatisfiesAmongInstalled(const IdPkgRel& rel, VarIdVector&
 	}
       return;
     } //without version;
+
+  //If there is version restriction;
   VarIdVector vars;
   selectVarsToTry(m_content, m_provideMap, rel.pkgId, vars, 1);//1 means to include package itself;
   const PkgInfoVector& pkgs = m_content.pkgInfoVector;
@@ -389,7 +398,10 @@ void PackageScope::whatSatisfiesAmongInstalled(const IdPkgRel& rel, VarIdVector&
 	continue;
       if (pkg.pkgId == rel.pkgId &&
 	  versionOverlap(constructVersionCondEquals(pkg.epoch, pkg.ver, pkg.release), VersionCond(rel.ver, rel.verDir)))
-	res.push_back(vars[i]);
+	{
+	  res.push_back(vars[i]);
+	  continue;
+	}
       const size_t pos = pkg.providesPos;
       const size_t count = pkg.providesCount;
       if (count == 0)//There are no provides entries;
@@ -398,17 +410,17 @@ void PackageScope::whatSatisfiesAmongInstalled(const IdPkgRel& rel, VarIdVector&
       for(j = 0;j < count;j++)
 	{
 	  assert(pos + j < rels.size());
-	  if (rels[pos + j].pkgId == rel.pkgId)//Again assuming each package can have only one provide entry for every pkgId;
-	    break;
-	}
-      if (j >= count)//No corresponding provide entry at all;
-	continue;
-      if (!HAS_VERSION(rels[pos + j]))//Provide entry has no version;
-	continue;
-      assert(rels[pos + j].type != VerNone);
-      if (versionOverlap(VersionCond(rels[pos + j].ver, rels[pos + j].type), VersionCond(rel.ver, rel.verDir)))
-	res.push_back(vars[i]);
-    }
+	  if (rels[pos + j].pkgId != rel.pkgId ||
+	      !HAS_VERSION(rels[pos + j]))//Provide entry has no version;
+	    continue;
+	  assert(rels[pos + j].type != VerNone);
+	  if (versionOverlap(VersionCond(rels[pos + j].ver, rels[pos + j].type), VersionCond(rel.ver, rel.verDir)))
+	    {
+	      res.push_back(vars[i]);
+	      break;
+	    }
+	} //for(provides);
+    } //for(packages);
 }
 
 void PackageScope::getRequires(VarId varId, IdPkgRelVector& res) const

@@ -179,14 +179,12 @@ void GeneralSolver::solve(const UserTask& task, VarIdVector& toInstall, VarIdVec
   for(AbstractSatSolver::VarIdToBoolMap::const_iterator it = res.begin();it != res.end();it++)
     if (it->second)
       {
-	if (m_scope.isInstalled(it->first))
-	  logMsg(LOG_WARNING, "\'%s\' is installed and selected for installation", m_scope.constructPackageNameWithBuildTime(it->first).c_str());
-	resInstall.push_back(it->first); 
+	if (!m_scope.isInstalled(it->first))
+	  resInstall.push_back(it->first); 
       }else
       {
-	if (!m_scope.isInstalled(it->first))
-	  logMsg(LOG_WARNING, "\'%s\' is not installed and selected for removing", m_scope.constructPackageNameWithBuildTime(it->first).c_str());
-	resRemove.push_back(it->first);
+	if (m_scope.isInstalled(it->first))
+	  resRemove.push_back(it->first);
       }
   printSolution(m_scope, resInstall, resRemove);
 }
@@ -393,7 +391,7 @@ void GeneralSolver::handleChangeToTrue(VarId varId,
 {
   assert(varId != BAD_VAR_ID);
   assert(!m_scope.isInstalled(varId));
-  //  logMsg(LOG_DEBUG, "Processing possibility to be installed for \'%s\'", m_scope.constructPackageName(varId).c_str());
+  logMsg(LOG_DEBUG, "Processing possibility to be installed for \'%s\'", m_scope.constructPackageName(varId).c_str());
 
   //Blocking other versions of this package;
   VarIdVector otherVersions;
@@ -425,6 +423,7 @@ void GeneralSolver::handleChangeToTrue(VarId varId,
       std::string annotation;
       if (m_annotating)
 	annotation = "# By the require entry \"" + relToString(requires[i]) + "\" of \"" + m_scope.constructPackageNameWithBuildTime(varId) + "\":";
+      logMsg(LOG_DEBUG, "Require: %s", relToString(requires[i]).c_str());
       Clause clause;
       clause.push_back(Lit(varId, 1));
       VarIdVector installed;
@@ -442,7 +441,7 @@ void GeneralSolver::handleChangeToTrue(VarId varId,
 	}
       const VarId def = satisfyRequire(requires[i]);
       assert(def != BAD_VAR_ID);
-      //      logMsg(LOG_DEBUG, "Found default require solution \'%s\'", m_scope.constructPackageName(def).c_str());
+      logMsg(LOG_DEBUG, "Found default require solution \'%s\'", m_scope.constructPackageNameWithBuildTime(def).c_str());
       VarIdVector::size_type k;
       for(k = 0;k < installed.size();k++)
 	if (def == installed[k])
@@ -556,6 +555,7 @@ void GeneralSolver::processPendings()
   while(!m_pendingInstalled.empty() || !m_pendingRemoved.empty())
     {
       logMsg(LOG_DEBUG, "Have pending entries: %zu to be installed and %zu to be removed", m_pendingInstalled.size(), m_pendingRemoved.size());
+
       while(!m_pendingInstalled.empty())
 	{
 	  const VarId varId = m_pendingInstalled[m_pendingInstalled.size() - 1];
@@ -563,8 +563,15 @@ void GeneralSolver::processPendings()
 	  if (m_processedInstalled.find(varId) != m_processedInstalled.end())
 	    continue;
 	  m_processedInstalled.insert(varId);
-	  //	  logMsg(LOG_DEBUG, "Processing pending entry to be installed \'%s\'", m_scope.constructPackageName(varId).c_str());
-	  //	  assert(!m_scope.isInstalled(varId));
+	  //FIXME:assert no in processedRemoved;
+	  VarIdVector involvedInstalled, involvedRemoved;
+	  handleChangeToTrue(varId, involvedInstalled, involvedRemoved);
+	  for(VarIdVector::size_type i = 0;i < involvedInstalled.size();i++)
+	    if (m_processedInstalled.find(involvedInstalled[i]) == m_processedInstalled.end())
+	      m_pendingInstalled.push_back(involvedInstalled[i]);
+	  for(VarIdVector::size_type i = 0;i < involvedRemoved.size();i++)
+	    if (m_processedRemoved.find(involvedRemoved[i]) == m_processedRemoved.end())
+	      m_pendingRemoved.push_back(involvedRemoved[i]);
 	}
       while(!m_pendingRemoved.empty())
 	{
@@ -573,9 +580,9 @@ void GeneralSolver::processPendings()
 	  if (m_processedRemoved.find(varId) != m_processedRemoved.end())
 	    continue;
 	  m_processedRemoved.insert(varId);
+	  //FIXME:assert no in processedInstalled;
 	  if (!m_scope.isInstalled(varId))
 	    continue;
-	  //	  logMsg(LOG_DEBUG, "Processing pending entry to be removed \'%s\'", m_scope.constructPackageName(varId).c_str());
 	  VarIdVector involvedInstalled, involvedRemoved;
 	  handleChangeToFalse(varId, involvedInstalled, involvedRemoved);
 	  for(VarIdVector::size_type i = 0;i < involvedInstalled.size();i++)
