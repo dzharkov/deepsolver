@@ -111,7 +111,10 @@ void OperationCore::doInstallRemove(const UserTask& userTask)
   PackageScopeContentLoader loader(content);
   loader.loadFromFile(Directory::mixNameComponents(m_conf.root().dir.pkgData, PKG_DATA_FILE_NAME));
   logMsg(LOG_DEBUG, "Index package list loaded");
+  const clock_t fillingStart = clock();
   fillWithhInstalledPackages(*backEnd.get(), content);
+  const double fillingDuration = ((double)clock() - fillingStart) / CLOCKS_PER_SEC;
+  logMsg(LOG_DEBUG, "Installed packages adding takes %f sec", fillingDuration);
   logMsg(LOG_DEBUG, "Merged list of installed packages");
   ProvideMap provideMap;
   InstalledReferences requiresReferences, conflictsReferences;

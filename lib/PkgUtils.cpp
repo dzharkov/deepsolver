@@ -45,7 +45,9 @@ void fillWithhInstalledPackages(AbstractPackageBackEnd& backEnd, PackageScopeCon
 	  PackageScopeContent::PkgInfo& info = pkgs[varId];
 	  assert(info.pkgId == pkgId);
 	  //Extremely important place: the following line determines is installed package the same as one available from repository index;
-	  if (pkg.version == info.ver && pkg.release == info.release && pkg.buildTime == info.buildTime)
+	  if (pkg.version == info.ver &&
+	      pkg.release == info.release &&
+	      pkg.buildTime == info.buildTime)
 	    {
 	      info.flags |= PkgFlagInstalled;
 	      found = 1;
@@ -53,7 +55,10 @@ void fillWithhInstalledPackages(AbstractPackageBackEnd& backEnd, PackageScopeCon
 	}
       if (found)
 	continue;
+      for(StringVector::size_type l = 0;l < pkg.fileList.size();l++)
+	pkg.provides.push_back(NamedPkgRel(pkg.fileList[l]));
       toInhanceWith.push_back(pkg);
+
     } //while(installed packages);
   logMsg(LOG_DEBUG, "The system has %zu installed packages, %zu of them should be added to database since there are absent in attached repositories", installedCount, toInhanceWith.size());
   content.enhance(toInhanceWith, PkgFlagInstalled);

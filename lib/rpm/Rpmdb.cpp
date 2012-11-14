@@ -53,5 +53,6 @@ bool Rpmdb::moveNext(Pkg& pkg)
   rpmFillRequires(h, pkg.requires);
   rpmFillObsoletes(h, pkg.obsoletes);
   rpmFillConflicts(h, pkg.conflicts);
+  rpmFillFileList(h, pkg.fileList);
       return 1;
 }                                                                                                                                                              
