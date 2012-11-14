@@ -125,6 +125,7 @@ private:
 				VarIdVector& involvedRemoved);
 
   void processPendings();
+  void addClause(const Clause& clause);
 
 private://Utilities;
   std::string relToString(const IdPkgRel& rel);
@@ -138,6 +139,7 @@ private:
   VarIdVector m_userTaskPresent, m_userTaskAbsent;
   VarIdVector m_pendingInstalled, m_pendingRemoved;
   VarIdSet m_processedInstalled, m_processedRemoved;
+  VarIdSet m_decisionMadeTrue, m_decisionMadeFalse;
 
   VarIdToVarIdMap m_userTaskUpgrade, m_anywayUpgrade;
 
@@ -219,7 +221,7 @@ void GeneralSolver::translateUserTask(const UserTask& userTask)
       assert(varId != BAD_VAR_ID);
       m_processedInstalled.insert(varId);
       m_userTaskPresent.push_back(varId);
-      m_sat.push_back(unitClause(Lit(varId)));
+      addClause(unitClause(Lit(varId)));
       if (m_annotating)
 	m_annotations.push_back("# Buy user task to install \"" + userTask.itemsToInstall[i].toString() + "\"");
       VarIdVector otherVersions;
@@ -230,7 +232,7 @@ void GeneralSolver::translateUserTask(const UserTask& userTask)
 	  {
 	    m_userTaskAbsent.push_back(otherVersions[k]);//FIXME:Not every package require this;
 	    m_processedRemoved.insert(otherVersions[k]);
-	    m_sat.push_back(unitClause(Lit(otherVersions[k], 1)));
+	    addClause(unitClause(Lit(otherVersions[k], 1)));
 	    if (m_annotating)
 	      m_annotations.push_back("# Blocked by user task to install \"" + userTask.itemsToInstall[i].toString() + "\"");
 	  }
@@ -253,7 +255,7 @@ void GeneralSolver::translateUserTask(const UserTask& userTask)
 	{
 	  m_userTaskAbsent.push_back(vars[k]);
 	  m_processedRemoved.insert(vars[k]);
-	  m_sat.push_back(unitClause(Lit(vars[k], 1)));
+	  addClause(unitClause(Lit(vars[k], 1)));
 	  if (m_annotating)
 	    m_annotations.push_back("# By user task to remove \"" + *it + "\"");
 	}
@@ -421,7 +423,7 @@ void GeneralSolver::handleChangeToTrue(VarId varId,
 	if (includeItself)
 	  clause.push_back(Lit(varId, 1));
 	clause.push_back(Lit(otherVersions[i], 1));
-	m_sat.push_back(clause);
+	addClause(clause);
 	involvedRemoved.push_back(otherVersions[i]);
 	if (m_annotating)
 	  m_annotations.push_back("# \"" + m_scope.constructPackageNameWithBuildTime(otherVersions[i]) + "\" cannot be installed if \"" + m_scope.constructPackageNameWithBuildTime(varId) + "\" is present in the system");
@@ -472,7 +474,7 @@ void GeneralSolver::handleChangeToTrue(VarId varId,
 	      involvedInstalled.push_back(def);
 	    }
 	}
-      m_sat.push_back(clause);
+      addClause(clause);
       if (m_annotating)
 	m_annotations.push_back(annotation);
     }
@@ -497,7 +499,7 @@ void GeneralSolver::handleChangeToTrue(VarId varId,
 	    if (includeItself)
 	      clause.push_back(Lit(varId, 1));
 	    clause.push_back(Lit(vars[k], 1));
-	    m_sat.push_back(clause);
+	    addClause(clause);
 	    involvedRemoved.push_back(vars[k]);
 	    //FIXME:If vars[k] is never involved elsewhere it should be explicitly blocked for installation;
 	    if (m_annotating)
@@ -516,7 +518,7 @@ void GeneralSolver::handleChangeToTrue(VarId varId,
       if (includeItself)
 	clause.push_back(Lit(varId, 1));
       clause.push_back(Lit(vars[i], 1));
-      m_sat.push_back(clause);
+      addClause(clause);
       involvedRemoved.push_back(vars[i]);
       if (m_annotating)
 	m_annotations.push_back("# \"" + m_scope.constructPackageNameWithBuildTime(vars[i]) + "\" currently present in the system should be removed if \"" + m_scope.constructPackageNameWithBuildTime(varId) + "\" is considered for installation");
@@ -568,7 +570,7 @@ void GeneralSolver::handleChangeToFalse(VarId seed,
 		annotation += "\n# \"" + m_scope.constructPackageNameWithBuildTime(replacement) + "\" is considered as default replacement among non-installed";
 	    }
 	    }
-      m_sat.push_back(clause);
+      addClause(clause);
       if (m_annotating)
 	m_annotations.push_back(annotation);
     }
@@ -587,7 +589,8 @@ void GeneralSolver::processPendings()
 	  if (m_processedInstalled.find(varId) != m_processedInstalled.end())
 	    continue;
 	  m_processedInstalled.insert(varId);
-	  //FIXME:assert no in processedRemoved;
+	  if (m_decisionMadeFalse.find(varId) != m_decisionMadeFalse.end())//Installation of varId will never happen;
+	    continue;
 	  VarIdVector involvedInstalled, involvedRemoved;
 	  handleChangeToTrue(varId, 1, involvedInstalled, involvedRemoved);//1 means the package itself may be absent in system;
 	  for(VarIdVector::size_type i = 0;i < involvedInstalled.size();i++)
@@ -604,7 +607,8 @@ void GeneralSolver::processPendings()
 	  if (m_processedRemoved.find(varId) != m_processedRemoved.end())
 	    continue;
 	  m_processedRemoved.insert(varId);
-	  //FIXME:assert no in processedInstalled;
+	  if (m_decisionMadeTrue.find(varId) != m_decisionMadeTrue.end())//Removing of varId will never happen;
+	    continue;
 	  if (!m_scope.isInstalled(varId))
 	    continue;
 	  VarIdVector involvedInstalled, involvedRemoved;
@@ -652,6 +656,18 @@ VarId GeneralSolver::processPriorityBySorting(const VarIdVector& vars) const
   std::sort(items.begin(), items.end());
   assert(!items.empty());
   return items[items.size() - 1].varId;
+}
+
+void GeneralSolver::addClause(const Clause& clause)
+{
+  assert(!clause.empty());
+  m_sat.push_back(clause);
+  if (clause.size() != 1)
+    return;
+  const Lit& lit = clause[0];
+  if (lit.neg)
+    m_decisionMadeFalse.insert(lit.varId); else
+    m_decisionMadeTrue.insert(lit.varId);
 }
 
 std::string GeneralSolver::relToString(const IdPkgRel& rel)
