@@ -40,8 +40,6 @@ transact/LibMinisatSolver.cpp \
 transact/PackageScopeContent.cpp \
 transact/PackageScope.cpp \
 transact/ProvideMap.cpp \
-transact/sat.cpp \
-transact/StrictSolver.cpp \
 utils/CurlInterface.cpp \
 utils/GzipInterface.cpp \
 utils/Md5.cpp \
@@ -95,7 +93,6 @@ transact/InstalledReferences.h \
 transact/PackageScopeContent.h \
 transact/PackageScope.h \
 transact/ProvideMap.h \
-transact/sat.h \
 transact/TaskException.h \
 UserTask.h \
 utils/CurlInterface.h \
