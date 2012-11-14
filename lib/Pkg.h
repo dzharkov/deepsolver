@@ -74,6 +74,18 @@ public:
     : pkgId(id), verDir(cond.type), ver(cond.version) {}
 
 public:
+  bool operator ==(const IdPkgRel& rel) const
+  {
+    return pkgId == rel.pkgId && verDir == rel.verDir && ver == rel.ver;
+  }
+
+  bool operator !=(const IdPkgRel& rel) const
+  {
+    return pkgId != rel.pkgId || verDir != rel.verDir || ver == rel.ver;
+  }
+
+
+public:
   bool hasVer() const
   {
     if (verDir == VerNone)

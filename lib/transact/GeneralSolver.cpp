@@ -414,10 +414,14 @@ void GeneralSolver::handleChangeToTrue(VarId varId,
   //Requires;
   IdPkgRelVector requires;
   m_scope.getRequires(varId, requires);
-  //  logMsg(LOG_DEBUG, "\'%s\' has %zu requires", m_scope.constructPackageName(varId).c_str(), requires.size());
   for(IdPkgRelVector::size_type i = 0;i < requires.size();i++)
     {
-      //      logMsg(LOG_DEBUG, "Processing require entry \'%s\'", relToString(requires[i]).c_str());
+      IdPkgRelVector::size_type dub;
+      for(dub = 0;dub < i;dub++)
+	if (requires[dub] == requires[i])
+	  break;
+      if (dub < i)
+	continue;
       std::string annotation;
       if (m_annotating)
 	annotation = "# By the require entry \"" + relToString(requires[i]) + "\" of \"" + m_scope.constructPackageNameWithBuildTime(varId) + "\":";
@@ -464,6 +468,12 @@ void GeneralSolver::handleChangeToTrue(VarId varId,
   m_scope.getConflicts(varId, conflicts);
   for(IdPkgRelVector::size_type i = 0;i < conflicts.size();i++)
     {
+      IdPkgRelVector::size_type dub;
+      for(dub = 0;dub < i;dub++)
+	if (conflicts[dub] == conflicts[i])
+	  break;
+      if (dub < i)
+	continue;
       VarIdVector vars;
       m_scope.selectMatchingVarsWithProvides(conflicts[i], vars);
       for(VarIdVector::size_type k = 0;k < vars.size();k++)
