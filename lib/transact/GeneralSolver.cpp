@@ -120,6 +120,7 @@ private:
 			      VarIdVector& involvedRemoved);
 
   void handleChangeToTrue(VarId varId,
+			  bool includeItself,
 				VarIdVector& involvedInstalled,
 				VarIdVector& involvedRemoved);
 
@@ -161,7 +162,7 @@ void GeneralSolver::solve(const UserTask& task, VarIdVector& toInstall, VarIdVec
       handleChangeToFalse(m_userTaskAbsent[i], m_pendingInstalled, m_pendingRemoved);
   for(VarIdVector::size_type i = 0;i < m_userTaskPresent.size();i++)
     if (!m_scope.isInstalled(m_userTaskPresent[i]))
-      handleChangeToTrue(m_userTaskPresent[i], m_pendingInstalled, m_pendingRemoved);
+      handleChangeToTrue(m_userTaskPresent[i], 0, m_pendingInstalled, m_pendingRemoved);//0 means the package itself will be installed anyway;
   processPendings();
   const double satConstructDuration = ((double)clock() - satConstructStart) / CLOCKS_PER_SEC;
   logMsg(LOG_DEBUG, "SAT construction takes %f sec", satConstructDuration);
@@ -173,22 +174,36 @@ void GeneralSolver::solve(const UserTask& task, VarIdVector& toInstall, VarIdVec
   std::auto_ptr<AbstractSatSolver> satSolver = createLibMinisatSolver();
   for(Sat::size_type i = 0;i < m_sat.size();i++)
     satSolver->addClause(m_sat[i]);
-  AbstractSatSolver::VarIdToBoolMap res;
-    logMsg(LOG_DEBUG, "Launching minisat with %zu clauses", m_sat.size());
-    if (!satSolver->solve(res))
-      return;
-  VarIdVector resInstall, resRemove;
-  for(AbstractSatSolver::VarIdToBoolMap::const_iterator it = res.begin();it != res.end();it++)
-    if (it->second)
-      {
-	if (!m_scope.isInstalled(it->first))
-	  resInstall.push_back(it->first); 
-      }else
-      {
-	if (m_scope.isInstalled(it->first))
-	  resRemove.push_back(it->first);
-      }
-  printSolution(m_scope, resInstall, resRemove);
+
+  //  while(1)
+  //    {
+      AbstractSatSolver::VarIdToBoolMap res;
+      logMsg(LOG_DEBUG, "Launching minisat with %zu clauses", m_sat.size());
+      if (!satSolver->solve(res))
+	return;
+      VarIdVector resInstall, resRemove;
+      for(AbstractSatSolver::VarIdToBoolMap::const_iterator it = res.begin();it != res.end();it++)
+	if (it->second)
+	  {
+	    if (!m_scope.isInstalled(it->first))
+	      resInstall.push_back(it->first); 
+	  }else
+	  {
+	    if (m_scope.isInstalled(it->first))
+	      resRemove.push_back(it->first);
+	  }
+      logMsg(LOG_DEBUG, "Solution found: %zu to install, %zu to remove", resInstall.size(), resRemove.size());
+
+      /*
+      Clause blocking;
+      for(VarIdVector::size_type i = 0;i < resInstall.size();i++)
+	blocking.push_back(Lit(resInstall[i], 1));
+      for(VarIdVector::size_type i = 0;i < resRemove.size();i++)
+	blocking.push_back(Lit(resRemove[i]));
+      satSolver->addClause(blocking);
+    }
+      */
+      printSolution(m_scope, resInstall, resRemove);
 }
 
 void GeneralSolver::translateUserTask(const UserTask& userTask)
@@ -388,12 +403,12 @@ VarId GeneralSolver::satisfyRequire(PackageId pkgId, const VersionCond& version)
 }
 
 void GeneralSolver::handleChangeToTrue(VarId varId,
+				       bool includeItself,
 					 VarIdVector& involvedInstalled,
 					 VarIdVector& involvedRemoved)
 {
   assert(varId != BAD_VAR_ID);
   assert(!m_scope.isInstalled(varId));
-  logMsg(LOG_DEBUG, "Processing possibility to be installed for \'%s\'", m_scope.constructPackageName(varId).c_str());
 
   //Blocking other versions of this package;
   VarIdVector otherVersions;
@@ -403,7 +418,8 @@ void GeneralSolver::handleChangeToTrue(VarId varId,
       {
 	//FIXME:Not every package require this;
 	Clause clause;
-	clause.push_back(Lit(varId, 1));
+	if (includeItself)
+	  clause.push_back(Lit(varId, 1));
 	clause.push_back(Lit(otherVersions[i], 1));
 	m_sat.push_back(clause);
 	involvedRemoved.push_back(otherVersions[i]);
@@ -425,9 +441,9 @@ void GeneralSolver::handleChangeToTrue(VarId varId,
       std::string annotation;
       if (m_annotating)
 	annotation = "# By the require entry \"" + relToString(requires[i]) + "\" of \"" + m_scope.constructPackageNameWithBuildTime(varId) + "\":";
-      logMsg(LOG_DEBUG, "Require: %s", relToString(requires[i]).c_str());
       Clause clause;
-      clause.push_back(Lit(varId, 1));
+      if (includeItself)
+	clause.push_back(Lit(varId, 1));
       VarIdVector installed;
       m_scope.whatSatisfiesAmongInstalled(requires[i], installed);
       rmDub(installed);
@@ -456,7 +472,6 @@ void GeneralSolver::handleChangeToTrue(VarId varId,
 	      involvedInstalled.push_back(def);
 	    }
 	}
-      assert(clause.size() >= 2);
       m_sat.push_back(clause);
       if (m_annotating)
 	m_annotations.push_back(annotation);
@@ -479,7 +494,8 @@ void GeneralSolver::handleChangeToTrue(VarId varId,
 	if (vars[k] != varId)//Package cannot conflict with itself;
 	  {
 	    Clause clause;
-	    clause.push_back(Lit(varId, 1));
+	    if (includeItself)
+	      clause.push_back(Lit(varId, 1));
 	    clause.push_back(Lit(vars[k], 1));
 	    m_sat.push_back(clause);
 	    involvedRemoved.push_back(vars[k]);
@@ -497,7 +513,8 @@ void GeneralSolver::handleChangeToTrue(VarId varId,
     {
       assert(m_scope.isInstalled(vars[i]));
       Clause clause;
-      clause.push_back(Lit(varId, 1));
+      if (includeItself)
+	clause.push_back(Lit(varId, 1));
       clause.push_back(Lit(vars[i], 1));
       m_sat.push_back(clause);
       involvedRemoved.push_back(vars[i]);
@@ -572,7 +589,7 @@ void GeneralSolver::processPendings()
 	  m_processedInstalled.insert(varId);
 	  //FIXME:assert no in processedRemoved;
 	  VarIdVector involvedInstalled, involvedRemoved;
-	  handleChangeToTrue(varId, involvedInstalled, involvedRemoved);
+	  handleChangeToTrue(varId, 1, involvedInstalled, involvedRemoved);//1 means the package itself may be absent in system;
 	  for(VarIdVector::size_type i = 0;i < involvedInstalled.size();i++)
 	    if (m_processedInstalled.find(involvedInstalled[i]) == m_processedInstalled.end())
 	      m_pendingInstalled.push_back(involvedInstalled[i]);
