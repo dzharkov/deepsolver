@@ -55,8 +55,6 @@ void fillWithhInstalledPackages(AbstractPackageBackEnd& backEnd, PackageScopeCon
 	}
       if (found)
 	continue;
-      for(StringVector::size_type l = 0;l < pkg.fileList.size();l++)
-	pkg.provides.push_back(NamedPkgRel(pkg.fileList[l]));
       toInhanceWith.push_back(pkg);
 
     } //while(installed packages);

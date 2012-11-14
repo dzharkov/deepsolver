@@ -97,6 +97,9 @@ void PackageScopeContent::enhance(const PkgVector& pkgs, int flags)
       for(NamedPkgRelVector::size_type k = 0;k < pkg.conflicts.size();k++)
 	if (!checkName(pkg.conflicts[k].pkgName))
 	  newNames.insert(pkg.conflicts[k].pkgName);
+      for(StringVector::size_type k = 0;k < pkg.fileList.size();k++)
+	if (!checkName(pkg.fileList[k]))
+	  newNames.insert(pkg.fileList[k]);
     } //for(pkgs);
   logMsg(LOG_DEBUG, "%zu new package names were found among the packages to enhance package scope content", newNames.size());
   //OK, we have new package names and can now add them and perform rearranging;
@@ -136,7 +139,7 @@ void PackageScopeContent::enhance(const PkgVector& pkgs, int flags)
       info.buildTime = pkg.buildTime;
       info.flags = flags;
       addRelsForEnhancing(pkg.requires, info.requiresPos, info.requiresCount, stringBuf.get(), offset);
-      addRelsForEnhancing(pkg.provides, info.providesPos, info.providesCount, stringBuf.get(), offset);
+      addProvidesForEnhancing(pkg.provides, pkg.fileList, info.providesPos, info.providesCount, stringBuf.get(), offset);
       addRelsForEnhancing(pkg.conflicts, info.conflictsPos, info.conflictsCount, stringBuf.get(), offset);
       addRelsForEnhancing(pkg.obsoletes, info.obsoletesPos, info.obsoletesCount, stringBuf.get(), offset);
       pkgInfoVector.push_back(info);
@@ -176,7 +179,55 @@ void PackageScopeContent::addRelsForEnhancing(const NamedPkgRelVector& rels, siz
 	  assert(rel.ver.empty());
 	  placeStringInBuffer(stringBuf, stringBufOffset, "");
 	}
+      relInfoVector.push_back(info);
+    }
+}
 
+void PackageScopeContent::addProvidesForEnhancing(const NamedPkgRelVector& rels,
+						  const StringVector& fileList,
+						  size_t& pos,
+						  size_t& count,
+						  char* stringBuf,
+						  size_t& stringBufOffset)
+{
+  assert(stringBuf != NULL);
+  if (rels.empty() && fileList.empty())
+    {
+      pos = 0;
+      count = 0;
+      return;
+    }
+  pos = relInfoVector.size();
+  count = rels.size() + fileList.size();
+  for(NamedPkgRelVector::size_type i = 0;i < rels.size();i++)
+    {
+      const NamedPkgRel& rel = rels[i];
+      RelInfo info;
+      assert(!rel.pkgName.empty());
+      assert(checkName(rel.pkgName));
+      info.pkgId = strToPackageId(rel.pkgName);
+      if (rel.type != VerNone)
+	{
+	  info.type = rel.type;
+	  info.ver = placeStringInBuffer(stringBuf, stringBufOffset, rel.ver);
+	} else
+	{
+	  info.type = VerNone;
+	  assert(rel.ver.empty());
+	  placeStringInBuffer(stringBuf, stringBufOffset, "");
+	}
+      relInfoVector.push_back(info);
+    }
+  //Here!!!
+  for(StringVector::size_type i = 0;i < fileList.size();i++)
+    {
+      const std::string& value = fileList[i];
+      RelInfo info;
+      assert(!fileList.empty());
+      assert(checkName(value));
+      info.pkgId = strToPackageId(value);
+      info.type = VerNone;
+      info.ver = NULL;
       relInfoVector.push_back(info);
     }
 }

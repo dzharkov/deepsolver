@@ -67,7 +67,9 @@ public:
   struct RelInfo
   {
     RelInfo()
-      : pkgId(BAD_PACKAGE_ID), type(0), ver(NULL)  {}
+      : pkgId(BAD_PACKAGE_ID),
+	type(VerNone),
+	ver(NULL)  {}
 
     PackageId pkgId;
     VerDirection type;
@@ -117,7 +119,19 @@ public:
   typedef std::vector<PkgInfo> PkgInfoVector;
 
 private:
-  void addRelsForEnhancing(const NamedPkgRelVector& rels, size_t& pos, size_t& count, char* stringBuf, size_t& stringBufOffset);
+  void addRelsForEnhancing(const NamedPkgRelVector& rels,
+			   size_t& pos,
+			   size_t& count,
+			   char* stringBuf,
+			   size_t& stringBufOffset);
+
+  void addProvidesForEnhancing(const NamedPkgRelVector& rels,
+			       const StringVector& fileList,
+			       size_t& pos,
+			       size_t& count,
+			       char* stringBuf,
+			       size_t& stringBufOffset);
+
   void releaseStrings();
   char* placeStringInBuffer(char* buf, size_t& offset, const std::string& value);
 
