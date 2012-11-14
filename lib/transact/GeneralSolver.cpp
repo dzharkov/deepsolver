@@ -90,6 +90,7 @@ public:
 	       const InstalledReferences& requiresReferences,
 	       const InstalledReferences& conflictsReferences)
     : m_annotating(1),
+      m_advancedMode(0),
       m_content(content) , m_scope(content, provideMap, requiresReferences, conflictsReferences) {}
 
   virtual ~GeneralSolver() {}
@@ -128,7 +129,7 @@ private://Utilities;
   std::string relToString(const IdPkgRel& rel);
 
 private:
-  bool m_annotating;
+  bool m_annotating, m_advancedMode;
   StringVector m_annotations;
   const PackageScopeContent& m_content;
   PackageScope m_scope; 
@@ -174,7 +175,8 @@ void GeneralSolver::solve(const UserTask& task, VarIdVector& toInstall, VarIdVec
     satSolver->addClause(m_sat[i]);
   AbstractSatSolver::VarIdToBoolMap res;
     logMsg(LOG_DEBUG, "Launching minisat with %zu clauses", m_sat.size());
-    satSolver->solve(res);
+    if (!satSolver->solve(res))
+      return;
   VarIdVector resInstall, resRemove;
   for(AbstractSatSolver::VarIdToBoolMap::const_iterator it = res.begin();it != res.end();it++)
     if (it->second)
@@ -429,33 +431,31 @@ void GeneralSolver::handleChangeToTrue(VarId varId,
       VarIdVector installed;
       m_scope.whatSatisfiesAmongInstalled(requires[i], installed);
       rmDub(installed);
-      //      logMsg(LOG_DEBUG, "%zu packages satisfy among installed", installed.size());
       for(VarIdVector::size_type k = 0;k < installed.size();k++)
 	{
 	  assert(m_scope.isInstalled(installed[k]));
-	  //	  logMsg(LOG_DEBUG, "\'%s\' satisfies and installed", m_scope.constructPackageName(installed[k]).c_str());
 	  if (m_annotating)
 	    annotation += "\n# \"" + m_scope.constructPackageNameWithBuildTime(installed[k]) + "\" is already installed";
 	  clause.push_back(Lit(installed[k]));
 	  involvedRemoved.push_back(installed[k]);
 	}
-      const VarId def = satisfyRequire(requires[i]);
-      assert(def != BAD_VAR_ID);
-      logMsg(LOG_DEBUG, "Found default require solution \'%s\'", m_scope.constructPackageNameWithBuildTime(def).c_str());
-      VarIdVector::size_type k;
-      for(k = 0;k < installed.size();k++)
-	if (def == installed[k])
-	  break;
-      if (k >= installed.size())
+      if (installed.empty() || m_advancedMode)
 	{
-	  assert(!m_scope.isInstalled(def));
-	  //	  logMsg(LOG_DEBUG, "Default require solution \'%s\' is not installed, using it", m_scope.constructPackageName(def).c_str());
-	  if (m_annotating)
-	    annotation += "\n# \"" + m_scope.constructPackageNameWithBuildTime(def) + "\" is a default matching package among non-installed";
-	  clause.push_back(Lit(def));
-	  involvedInstalled.push_back(def);
-	} else
-	//	logMsg(LOG_DEBUG, "Default require solution  \'%s\' is already installed, ignoring it", m_scope.constructPackageName(def).c_str());
+	  const VarId def = satisfyRequire(requires[i]);
+	  assert(def != BAD_VAR_ID);
+	  VarIdVector::size_type k;
+	  for(k = 0;k < installed.size();k++)
+	    if (def == installed[k])
+	      break;
+	  if (k >= installed.size())
+	    {
+	      assert(!m_scope.isInstalled(def));
+	      if (m_annotating)
+		annotation += "\n# \"" + m_scope.constructPackageNameWithBuildTime(def) + "\" is a default matching package among non-installed";
+	      clause.push_back(Lit(def));
+	      involvedInstalled.push_back(def);
+	    }
+	}
       assert(clause.size() >= 2);
       m_sat.push_back(clause);
       if (m_annotating)
@@ -510,43 +510,50 @@ void GeneralSolver::handleChangeToFalse(VarId seed,
 					   VarIdVector& involvedInstalled,
 					   VarIdVector& involvedRemoved)
 {
+  assert(seed != BAD_VAR_ID);
   assert(m_scope.isInstalled(seed));
-  //  logMsg(LOG_DEBUG, "Processing dependence breaks for \'%s\' removing", m_scope.constructPackageName(seed).c_str());
   VarIdVector deps;
   IdPkgRelVector rels;
   m_scope.whatDependsAmongInstalled(seed, deps, rels);
   assert(deps.size() == rels.size());
   for(VarIdVector::size_type i = 0;i < deps.size();i++)
     {
-      //      logMsg(LOG_DEBUG, "Processing dependent package \'%s\' with require entry \'%s\'", m_scope.constructPackageName(deps[i]).c_str(), relToString(rels[i]).c_str());
+      std::string annotation = "# Installed \"" + m_scope.constructPackageNameWithBuildTime(deps[i]) + "\" depends on installed \"" + m_scope.constructPackageNameWithBuildTime(seed) + "\" by its require \"" + relToString(rels[i]) + "\":";
       Clause clause;
       clause.push_back(Lit(seed));
       clause.push_back(Lit(deps[i], 1));
       involvedRemoved.push_back(deps[i]);
       VarIdVector installed;
       m_scope.whatSatisfiesAmongInstalled(rels[i], installed);
-      //      logMsg(LOG_DEBUG, "%zu packages satisfy among installed", installed.size());
       for(VarIdVector::size_type k = 0;k < installed.size();k++)
+	if (installed[k] != seed)
+	  {
+	    assert(m_scope.isInstalled(installed[k]));
+	    clause.push_back(Lit(installed[k]));
+	    involvedRemoved.push_back(installed[k]);
+	    if (m_annotating)
+	      annotation += "\n# " + m_scope.constructPackageNameWithBuildTime(installed[k]) + "\" is installed and also matches this require entry";
+	  }
+      if (installed.empty() || m_advancedMode)
 	{
-	  //	  logMsg(LOG_DEBUG, "\'%s\' satisfies and installed", m_scope.constructPackageName(installed[k]).c_str());
-	  clause.push_back(Lit(installed[k]));
-	  involvedRemoved.push_back(installed[k]);
-	}
-      const VarId replacement = satisfyRequire(rels[i]);
-      assert(replacement != BAD_VAR_ID);
-      //      logMsg(LOG_DEBUG, "Found default replacement  \'%s\'", m_scope.constructPackageName(replacement).c_str());
-      VarIdVector::size_type k;
-      for(k = 0;k < installed.size();k++)
-	if (replacement == installed[k])
-	  break;
-      if (k >= installed.size())
-	{
-	  //	  logMsg(LOG_DEBUG, "Default replacement \'%s\' is not installed, using it", m_scope.constructPackageName(replacement).c_str());
-	  clause.push_back(Lit(replacement));
-	  involvedInstalled.push_back(replacement);
-	} else
-	//	logMsg(LOG_DEBUG, "Default replacement \'%s\' is already installed, ignoring it", m_scope.constructPackageName(replacement).c_str());
+	  const VarId replacement = satisfyRequire(rels[i]);
+	  assert(replacement != BAD_VAR_ID);
+	  VarIdVector::size_type k;
+	  for(k = 0;k < installed.size();k++)
+	    if (replacement == installed[k])
+	      break;
+	  if (k >= installed.size())
+	    {
+	      assert(!m_scope.isInstalled(replacement));
+	      clause.push_back(Lit(replacement));
+	      involvedInstalled.push_back(replacement);
+	      if (m_annotating)
+		annotation += "\n# \"" + m_scope.constructPackageNameWithBuildTime(replacement) + "\" is considered as default replacement among non-installed";
+	    }
+	    }
       m_sat.push_back(clause);
+      if (m_annotating)
+	m_annotations.push_back(annotation);
     }
 }
 
