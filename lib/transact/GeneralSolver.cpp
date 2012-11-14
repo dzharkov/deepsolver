@@ -33,8 +33,22 @@ static void printSolution(const PackageScope& scope,
 template<typename T>
 void rmDub(std::vector<T>& v)
 {
-  //FIXME:Small groups processing;
-  //Be careful: only for items with operator < and operator >;
+  if (v.size() < 64)
+    {
+      std::vector<T> vv;
+      for (size_t i = 0;i < v.size();i++)
+	{
+	  size_t j;
+	  for(j = 0;j < i;j++)
+	    if (v[i] == v[j])
+	      break;
+	  if (j == i)
+	  vv.push_back(v[i]);
+	}
+      v = vv;
+      return;
+    }
+  //Be careful: the following only for items with operator < and operator >;
   std::set<T> s;
   for(size_t i = 0;i < v.size();i++)
     s.insert(v[i]);
@@ -138,6 +152,7 @@ std::auto_ptr<AbstractTaskSolver> createGeneralTaskSolver(const PackageScopeCont
 
 void GeneralSolver::solve(const UserTask& task, VarIdVector& toInstall, VarIdVector& toRemove, VarIdToVarIdMap& toUpgrade)
 {
+  const clock_t satConstructStart = clock(); 
   translateUserTask(task);
   logMsg(LOG_DEBUG, "User task translated: %zu to be present, %zu to be absent", m_userTaskPresent.size(), m_userTaskAbsent.size());
   for(VarIdVector::size_type i = 0;i < m_userTaskAbsent.size();i++)
@@ -147,8 +162,11 @@ void GeneralSolver::solve(const UserTask& task, VarIdVector& toInstall, VarIdVec
     if (!m_scope.isInstalled(m_userTaskPresent[i]))
       handleChangeToTrue(m_userTaskPresent[i], m_pendingInstalled, m_pendingRemoved);
   processPendings();
-  for(Sat::size_type i = 0;i < m_sat.size();i++)
-    rmDub(m_sat[i]);
+  const double satConstructDuration = ((double)clock() - satConstructStart) / CLOCKS_PER_SEC;
+  logMsg(LOG_DEBUG, "SAT construction takes %f sec", satConstructDuration);
+
+    for(Sat::size_type i = 0;i < m_sat.size();i++)
+      rmDub(m_sat[i]);
   printSat(m_scope, m_sat, m_annotations);
   logMsg(LOG_DEBUG, "Creating libminisat SAT solver");
   std::auto_ptr<AbstractSatSolver> satSolver = createLibMinisatSolver();
@@ -156,7 +174,7 @@ void GeneralSolver::solve(const UserTask& task, VarIdVector& toInstall, VarIdVec
     satSolver->addClause(m_sat[i]);
   AbstractSatSolver::VarIdToBoolMap res;
     logMsg(LOG_DEBUG, "Launching minisat with %zu clauses", m_sat.size());
-  satSolver->solve(res);
+    satSolver->solve(res);
   VarIdVector resInstall, resRemove;
   for(AbstractSatSolver::VarIdToBoolMap::const_iterator it = res.begin();it != res.end();it++)
     if (it->second)
@@ -374,7 +392,10 @@ void GeneralSolver::handleChangeToTrue(VarId varId,
 					 VarIdVector& involvedRemoved)
 {
   assert(varId != BAD_VAR_ID);
-  logMsg(LOG_DEBUG, "Processing possibility to be installed for \'%s\'", m_scope.constructPackageName(varId).c_str());
+  assert(!m_scope.isInstalled(varId));
+  //  logMsg(LOG_DEBUG, "Processing possibility to be installed for \'%s\'", m_scope.constructPackageName(varId).c_str());
+
+  //Blocking other versions of this package;
   VarIdVector otherVersions;
   m_scope.selectMatchingVarsNoProvides(m_scope.packageIdOfVarId(varId), otherVersions);
   for(VarIdVector::size_type i = 0;i < otherVersions.size();i++)
@@ -386,21 +407,32 @@ void GeneralSolver::handleChangeToTrue(VarId varId,
 	clause.push_back(Lit(otherVersions[i], 1));
 	m_sat.push_back(clause);
 	involvedRemoved.push_back(otherVersions[i]);
+	if (m_annotating)
+	  m_annotations.push_back("# \"" + m_scope.constructPackageNameWithBuildTime(otherVersions[i]) + "\" cannot be installed if \"" + m_scope.constructPackageNameWithBuildTime(varId) + "\" is present in the system");
       }
+
+  //Requires;
   IdPkgRelVector requires;
   m_scope.getRequires(varId, requires);
-  logMsg(LOG_DEBUG, "\'%s\' has %zu requires", m_scope.constructPackageName(varId).c_str(), requires.size());
+  //  logMsg(LOG_DEBUG, "\'%s\' has %zu requires", m_scope.constructPackageName(varId).c_str(), requires.size());
   for(IdPkgRelVector::size_type i = 0;i < requires.size();i++)
     {
-      logMsg(LOG_DEBUG, "Processing require entry \'%s\'", relToString(requires[i]).c_str());
+      //      logMsg(LOG_DEBUG, "Processing require entry \'%s\'", relToString(requires[i]).c_str());
+      std::string annotation;
+      if (m_annotating)
+	annotation = "# By the require entry \"" + relToString(requires[i]) + "\" of \"" + m_scope.constructPackageNameWithBuildTime(varId) + "\":";
       Clause clause;
       clause.push_back(Lit(varId, 1));
       VarIdVector installed;
       m_scope.whatSatisfiesAmongInstalled(requires[i], installed);
+      rmDub(installed);
       //      logMsg(LOG_DEBUG, "%zu packages satisfy among installed", installed.size());
       for(VarIdVector::size_type k = 0;k < installed.size();k++)
 	{
+	  assert(m_scope.isInstalled(installed[k]));
 	  //	  logMsg(LOG_DEBUG, "\'%s\' satisfies and installed", m_scope.constructPackageName(installed[k]).c_str());
+	  if (m_annotating)
+	    annotation += "\n# \"" + m_scope.constructPackageNameWithBuildTime(installed[k]) + "\" is already installed";
 	  clause.push_back(Lit(installed[k]));
 	  involvedRemoved.push_back(installed[k]);
 	}
@@ -415,12 +447,16 @@ void GeneralSolver::handleChangeToTrue(VarId varId,
 	{
 	  assert(!m_scope.isInstalled(def));
 	  //	  logMsg(LOG_DEBUG, "Default require solution \'%s\' is not installed, using it", m_scope.constructPackageName(def).c_str());
+	  if (m_annotating)
+	    annotation += "\n# \"" + m_scope.constructPackageNameWithBuildTime(def) + "\" is a default matching package among non-installed";
 	  clause.push_back(Lit(def));
 	  involvedInstalled.push_back(def);
 	} else
 	//	logMsg(LOG_DEBUG, "Default require solution  \'%s\' is already installed, ignoring it", m_scope.constructPackageName(def).c_str());
       assert(clause.size() >= 2);
       m_sat.push_back(clause);
+      if (m_annotating)
+	m_annotations.push_back(annotation);
     }
 
   //Conflicts;
@@ -437,6 +473,10 @@ void GeneralSolver::handleChangeToTrue(VarId varId,
 	    clause.push_back(Lit(varId, 1));
 	    clause.push_back(Lit(vars[k], 1));
 	    m_sat.push_back(clause);
+	    involvedRemoved.push_back(vars[k]);
+	    //FIXME:If vars[k] is never involved elsewhere it should be explicitly blocked for installation;
+	    if (m_annotating)
+	      m_annotations.push_back("# \"" + m_scope.constructPackageNameWithBuildTime(vars[k]) + "\" cannot be installed with \"" + m_scope.constructPackageNameWithBuildTime(varId) + "\"");
 	  }
     }
 
@@ -452,6 +492,8 @@ void GeneralSolver::handleChangeToTrue(VarId varId,
       clause.push_back(Lit(vars[i], 1));
       m_sat.push_back(clause);
       involvedRemoved.push_back(vars[i]);
+      if (m_annotating)
+	m_annotations.push_back("# \"" + m_scope.constructPackageNameWithBuildTime(vars[i]) + "\" currently present in the system should be removed if \"" + m_scope.constructPackageNameWithBuildTime(varId) + "\" is considered for installation");
     }
 }
 
@@ -459,7 +501,8 @@ void GeneralSolver::handleChangeToFalse(VarId seed,
 					   VarIdVector& involvedInstalled,
 					   VarIdVector& involvedRemoved)
 {
-  logMsg(LOG_DEBUG, "Processing dependence breaks for \'%s\' removing", m_scope.constructPackageName(seed).c_str());
+  assert(m_scope.isInstalled(seed));
+  //  logMsg(LOG_DEBUG, "Processing dependence breaks for \'%s\' removing", m_scope.constructPackageName(seed).c_str());
   VarIdVector deps;
   IdPkgRelVector rels;
   m_scope.whatDependsAmongInstalled(seed, deps, rels);
@@ -510,8 +553,8 @@ void GeneralSolver::processPendings()
 	  if (m_processedInstalled.find(varId) != m_processedInstalled.end())
 	    continue;
 	  m_processedInstalled.insert(varId);
-	  logMsg(LOG_DEBUG, "Processing pending entry to be installed \'%s\'", m_scope.constructPackageName(varId).c_str());
-	  assert(!m_scope.isInstalled(varId));
+	  //	  logMsg(LOG_DEBUG, "Processing pending entry to be installed \'%s\'", m_scope.constructPackageName(varId).c_str());
+	  //	  assert(!m_scope.isInstalled(varId));
 	}
       while(!m_pendingRemoved.empty())
 	{
@@ -521,11 +564,8 @@ void GeneralSolver::processPendings()
 	    continue;
 	  m_processedRemoved.insert(varId);
 	  if (!m_scope.isInstalled(varId))
-	    {
-	    logMsg(LOG_DEBUG, "\'%s\' is not installed, skipping corresponding pending entry to handle dependence breaks", m_scope.constructPackageName(varId).c_str());
 	    continue;
-	    }
-	  logMsg(LOG_DEBUG, "Processing pending entry to be removed \'%s\'", m_scope.constructPackageName(varId).c_str());
+	  //	  logMsg(LOG_DEBUG, "Processing pending entry to be removed \'%s\'", m_scope.constructPackageName(varId).c_str());
 	  VarIdVector involvedInstalled, involvedRemoved;
 	  handleChangeToFalse(varId, involvedInstalled, involvedRemoved);
 	  for(VarIdVector::size_type i = 0;i < involvedInstalled.size();i++)
