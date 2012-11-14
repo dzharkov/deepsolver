@@ -75,7 +75,7 @@ void PackageScopeContent::locateRange(PackageId packageId, VarId& fromPos, VarId
 
 void PackageScopeContent::enhance(const PkgVector& pkgs, int flags)
 {
-  logMsg(LOG_DEBUG, "Trying to enhance package scope content with %zu new packages", pkgs.size());
+  logMsg(LOG_DEBUG, "enhancing:trying to enhance package scope content with %zu new packages", pkgs.size());
   if (pkgs.empty())
     return;
   //First of all we should collect new package names;
@@ -97,11 +97,11 @@ void PackageScopeContent::enhance(const PkgVector& pkgs, int flags)
       for(NamedPkgRelVector::size_type k = 0;k < pkg.conflicts.size();k++)
 	if (!checkName(pkg.conflicts[k].pkgName))
 	  newNames.insert(pkg.conflicts[k].pkgName);
-      for(StringVector::size_type k = 0;k < pkg.fileList.size();k++)
-	if (!checkName(pkg.fileList[k]))
-	  newNames.insert(pkg.fileList[k]);
+      //      for(StringVector::size_type k = 0;k < pkg.fileList.size();k++)
+      //	if (!checkName(pkg.fileList[k]))
+      //	  newNames.insert(pkg.fileList[k]);
     } //for(pkgs);
-  logMsg(LOG_DEBUG, "%zu new package names were found among the packages to enhance package scope content", newNames.size());
+  logMsg(LOG_DEBUG, "enhancing:%zu new package names gathered", newNames.size());
   //OK, we have new package names and can now add them and perform rearranging;
   for(StringSet::const_iterator it = newNames.begin();it != newNames.end();it++)
     names.push_back(*it);
@@ -122,7 +122,7 @@ void PackageScopeContent::enhance(const PkgVector& pkgs, int flags)
       for(NamedPkgRelVector::size_type k = 0;k < pkg.obsoletes.size();k++)
 	stringBufSize += (pkg.obsoletes[k].type == VerNone?0:pkg.obsoletes[k].ver.size()) + 1;
     }
-  logMsg(LOG_DEBUG, "String buffer for new versions and releases must have length %zu bytes", stringBufSize);
+  logMsg(LOG_DEBUG, "enhancing:string buffer for new versions and releases must have length %zu bytes", stringBufSize);
   assert(stringBufSize > 0);
   std::auto_ptr<char> stringBuf(new char[stringBufSize]);
   size_t offset = 0;
@@ -148,7 +148,7 @@ void PackageScopeContent::enhance(const PkgVector& pkgs, int flags)
   addStringToAutoRelease(stringBuf.get());
   stringBuf.release();
   std::sort(pkgInfoVector.begin(), pkgInfoVector.end());
-  logMsg(LOG_DEBUG, "Package scope content enhancing completed, now have %zu packages, %zu relations", pkgInfoVector.size(), relInfoVector.size());
+  logMsg(LOG_DEBUG, "enhancing:package scope content enhancing completed, now have %zu packages, %zu relations", pkgInfoVector.size(), relInfoVector.size());
 }
 
 void PackageScopeContent::addRelsForEnhancing(const NamedPkgRelVector& rels, size_t& pos, size_t& count, char* stringBuf, size_t& stringBufOffset)
@@ -191,14 +191,8 @@ void PackageScopeContent::addProvidesForEnhancing(const NamedPkgRelVector& rels,
 						  size_t& stringBufOffset)
 {
   assert(stringBuf != NULL);
-  if (rels.empty() && fileList.empty())
-    {
-      pos = 0;
-      count = 0;
-      return;
-    }
   pos = relInfoVector.size();
-  count = rels.size() + fileList.size();
+  count = rels.size();
   for(NamedPkgRelVector::size_type i = 0;i < rels.size();i++)
     {
       const NamedPkgRel& rel = rels[i];
@@ -218,18 +212,20 @@ void PackageScopeContent::addProvidesForEnhancing(const NamedPkgRelVector& rels,
 	}
       relInfoVector.push_back(info);
     }
-  //Here!!!
   for(StringVector::size_type i = 0;i < fileList.size();i++)
     {
       const std::string& value = fileList[i];
+      if (value.empty() || !checkName(value))
+	continue;
+      count++;
       RelInfo info;
-      assert(!fileList.empty());
-      assert(checkName(value));
       info.pkgId = strToPackageId(value);
       info.type = VerNone;
       info.ver = NULL;
       relInfoVector.push_back(info);
     }
+  if (count == 0)
+    pos = 0;
 }
 
 bool PackageScopeContent::checkName(const std::string& name) const
