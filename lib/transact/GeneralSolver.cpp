@@ -90,7 +90,7 @@ public:
 	       const InstalledReferences& requiresReferences,
 	       const InstalledReferences& conflictsReferences)
     : m_annotating(1),
-      m_advancedMode(1),
+      m_advancedMode(0),
       m_content(content) , m_scope(content, provideMap, requiresReferences, conflictsReferences) {}
 
   virtual ~GeneralSolver() {}
@@ -347,6 +347,7 @@ VarId GeneralSolver::satisfyRequire(PackageId pkgId)
    * We cannot find anything just by real names, so 
    * now the time to select anything among presented provides records;
    */
+  //  logMsg(LOG_DEBUG, "Need to search by provides for \'%s\'", m_scope.packageIdToStr(pkgId).c_str());
   m_scope.selectMatchingVarsAmongProvides(pkgId, vars);
   if (vars.empty())//No appropriate packages at all;
     {
@@ -656,7 +657,7 @@ VarId GeneralSolver::processPriorityBySorting(const VarIdVector& vars) const
   //Perform sorting by real package names and take last one;
   PrioritySortItemVector items;
   for(VarIdVector::size_type i = 0;i < vars.size();i++)
-    items.push_back(PrioritySortItem(vars[i], m_scope.packageIdToStr(m_scope.packageIdOfVarId(vars[i]))));
+    items.push_back(PrioritySortItem(vars[i], m_scope.constructPackageName(vars[i])));//FIXME:Epoch may be missed here;
   std::sort(items.begin(), items.end());
   assert(!items.empty());
   return items[items.size() - 1].varId;
