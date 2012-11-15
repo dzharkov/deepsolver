@@ -90,7 +90,7 @@ public:
 	       const InstalledReferences& requiresReferences,
 	       const InstalledReferences& conflictsReferences)
     : m_annotating(1),
-      m_advancedMode(0),
+      m_advancedMode(1),
       m_content(content) , m_scope(content, provideMap, requiresReferences, conflictsReferences) {}
 
   virtual ~GeneralSolver() {}
@@ -462,6 +462,7 @@ void GeneralSolver::handleChangeToTrue(VarId varId,
 	{
 	  const VarId def = satisfyRequire(requires[i]);
 	  assert(def != BAD_VAR_ID);
+	  //	  annotation += "\n" + m_scope.constructPackageName(def);
 	  VarIdVector::size_type k;
 	  for(k = 0;k < installed.size();k++)
 	    if (def == installed[k])
@@ -669,8 +670,22 @@ void GeneralSolver::addClause(const Clause& clause)
     return;
   const Lit& lit = clause[0];
   if (lit.neg)
-    m_decisionMadeFalse.insert(lit.varId); else
+    {
+      if(m_decisionMadeTrue.find(lit.varId) != m_decisionMadeTrue.end())
+	{
+	  logMsg(LOG_ERR, "\'%s\' must be simultaneously installed and removed", m_scope.constructPackageNameWithBuildTime(lit.varId).c_str());
+	  //FIXME:	  assert(0);
+	}
+      m_decisionMadeFalse.insert(lit.varId); 
+    } else
+    {
+      if(m_decisionMadeFalse.find(lit.varId) != m_decisionMadeFalse.end())
+	{
+	  logMsg(LOG_ERR, "\'%s\' must be simultaneously installed and removed", m_scope.constructPackageNameWithBuildTime(lit.varId).c_str());
+	  //FIXME:	  assert(0);
+	}
     m_decisionMadeTrue.insert(lit.varId);
+    }
 }
 
 std::string GeneralSolver::relToString(const IdPkgRel& rel)
