@@ -89,8 +89,8 @@ public:
 	       const ProvideMap& provideMap,
 	       const InstalledReferences& requiresReferences,
 	       const InstalledReferences& conflictsReferences)
-    : m_annotating(1),
-      m_advancedMode(0),
+    : m_annotating(0),
+      m_advancedMode(1),
       m_content(content) , m_scope(content, provideMap, requiresReferences, conflictsReferences) {}
 
   virtual ~GeneralSolver() {}

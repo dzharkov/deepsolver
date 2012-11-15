@@ -148,7 +148,7 @@ void OperationCore::doInstallRemove(const UserTask& userTask)
   VarIdToVarIdMap toUpgrade;
 
   UserTask t;
-  t.itemsToInstall.push_back(UserTaskItemToInstall("kde4"));
+  t.itemsToInstall.push_back(UserTaskItemToInstall("gnome3-default"));
   //  t.namesToRemove.insert("voiceman");
   //  t.namesToRemove.insert("gcc4.3");
   //  t.namesToRemove.insert("dbus");
