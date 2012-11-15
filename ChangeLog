@@ -9,6 +9,23 @@ Transaction processing:
 - StrictSolver previously used for 2-SAT construction removed;
 - previously used code for 2-SAT managing removed.
 
+Interfaces:
+- PackageInfoProcessor interface added;
+- AbstractSatSolver interface added.
+
+Documentation:
+- New text for Russian user manual.
+
+Programs:
+- ds-install utility added;
+- ds-update utility added.
+- obsolete ds utility removed.
+
+Other:
+- Major edit of ConfigCenter;
+- obsolete class TextFormatReader removed;
+- obsolete class CmdLineParser removed.
+
 0.1.1 (2012-10-16)
 
 ds-patch utility:
