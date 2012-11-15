@@ -90,10 +90,6 @@ public:
 		    PackageIdVector& withVersion,
 		    VersionCondVector& versions) const;
 
-  //  bool canBeSatisfiedByInstalled(PackageId pkgId);
-
-  //  bool canBeSatisfiedByInstalled(PackageId pkgId, const VersionCond& ver);
-
   void whatSatisfiesAmongInstalled(const IdPkgRel& rel, VarIdVector& res);
 
   void whatDependsAmongInstalled(VarId varId, VarIdVector& res, IdPkgRelVector& resRels);

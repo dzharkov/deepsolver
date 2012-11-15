@@ -306,64 +306,6 @@ bool PackageScope::allProvidesHaveTheVersion(const VarIdVector& vars, PackageId 
   return 1;
 }
 
-/*
-bool PackageScope::canBeSatisfiedByInstalled(PackageId pkgId)
-{
-  assert(pkgId != BAD_PACKAGE_ID);
-  VarIdVector vars;
-  selectVarsToTry(m_content, m_provideMap, pkgId, vars, 1);//1 means to include package itself;
-  const PkgInfoVector& pkgs = m_content.pkgInfoVector;
-  //Just checking if one of them is installd;
-  for(VarIdVector::size_type i = 0;i < vars.size();i++)
-    {
-      assert(vars[i] < pkgs.size());
-      if (pkgs[vars[i]].flags & PkgFlagInstalled)
-	return 1;
-    }
-  return 0;
-}
-*/
-
-/*
-bool PackageScope ::canBeSatisfiedByInstalled(PackageId pkgId, const VersionCond& ver)
-{
-  assert(pkgId != BAD_PACKAGE_ID);
-  VarIdVector vars;
-  selectVarsToTry(m_content, m_provideMap, pkgId, vars, 1);//1 means to include package itself;
-  const PkgInfoVector& pkgs = m_content.pkgInfoVector;
-  const RelInfoVector& rels = m_content.relInfoVector;
-  for(VarIdVector::size_type i = 0;i < vars.size();i++)
-    {
-      assert(vars[i] < pkgs.size());
-      const PkgInfo& pkg = pkgs[vars[i]];
-      if (!(pkg.flags & PkgFlagInstalled))
-	continue;
-      if (pkg.pkgId == pkgId && versionOverlap(constructVersionCondEquals(pkg.epoch, pkg.ver, pkg.release), ver))
-	return 1;
-      const size_t pos = pkg.providesPos;
-      const size_t count = pkg.providesCount;
-      if (count == 0)//There are no provides entries;
-	continue;
-      size_t j;
-      //There is very important assuming only one provide entry with requested name is present (ALT Linux policy, subject to change for other distros);
-      for(j = 0;j < count;j++)
-	{
-	  assert(pos + j < rels.size());
-	  if (rels[pos + j].pkgId == pkgId)
-	    break;
-	}
-      if (j >= count)//No corresponding provide entry;
-	continue;
-      if (!HAS_VERSION(rels[pos + j]))//Provide entry has no version;
-	continue;
-      assert(rels[pos + j].type != VerNone);
-      if (versionOverlap(VersionCond(rels[pos + j].ver, rels[pos + j].type), ver))
-	return 1;
-    }
-  return 0;
-}
-*/
-
 void PackageScope::whatSatisfiesAmongInstalled(const IdPkgRel& rel, VarIdVector& res)
 {
   assert(rel.pkgId != BAD_PACKAGE_ID);
