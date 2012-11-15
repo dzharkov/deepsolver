@@ -116,6 +116,7 @@ private:
   VarId processPriorityBySorting(const VarIdVector& vars) const;
 
   void handleChangeToFalse(VarId seed,
+			   bool includeItself,
 			      VarIdVector& involvedInstalled,
 			      VarIdVector& involvedRemoved);
 
@@ -161,7 +162,7 @@ void GeneralSolver::solve(const UserTask& task, VarIdVector& toInstall, VarIdVec
   logMsg(LOG_DEBUG, "User task translated: %zu to be present, %zu to be absent", m_userTaskPresent.size(), m_userTaskAbsent.size());
   for(VarIdVector::size_type i = 0;i < m_userTaskAbsent.size();i++)
     if (m_scope.isInstalled(m_userTaskAbsent[i]))
-      handleChangeToFalse(m_userTaskAbsent[i], m_pendingInstalled, m_pendingRemoved);
+      handleChangeToFalse(m_userTaskAbsent[i], 0, m_pendingInstalled, m_pendingRemoved);//0 means the package itself will be removed anyway;
   for(VarIdVector::size_type i = 0;i < m_userTaskPresent.size();i++)
     if (!m_scope.isInstalled(m_userTaskPresent[i]))
       handleChangeToTrue(m_userTaskPresent[i], 0, m_pendingInstalled, m_pendingRemoved);//0 means the package itself will be installed anyway;
@@ -526,6 +527,7 @@ void GeneralSolver::handleChangeToTrue(VarId varId,
 }
 
 void GeneralSolver::handleChangeToFalse(VarId seed,
+					bool includeItself,
 					   VarIdVector& involvedInstalled,
 					   VarIdVector& involvedRemoved)
 {
@@ -539,7 +541,8 @@ void GeneralSolver::handleChangeToFalse(VarId seed,
     {
       std::string annotation = "# Installed \"" + m_scope.constructPackageNameWithBuildTime(deps[i]) + "\" depends on installed \"" + m_scope.constructPackageNameWithBuildTime(seed) + "\" by its require \"" + relToString(rels[i]) + "\":";
       Clause clause;
-      clause.push_back(Lit(seed));
+      if (includeItself)
+	clause.push_back(Lit(seed));
       clause.push_back(Lit(deps[i], 1));
       involvedRemoved.push_back(deps[i]);
       VarIdVector installed;
@@ -592,7 +595,7 @@ void GeneralSolver::processPendings()
 	  if (m_decisionMadeFalse.find(varId) != m_decisionMadeFalse.end())//Installation of varId will never happen;
 	    continue;
 	  VarIdVector involvedInstalled, involvedRemoved;
-	  handleChangeToTrue(varId, 1, involvedInstalled, involvedRemoved);//1 means the package itself may be absent in system;
+	  handleChangeToTrue(varId, m_decisionMadeTrue.find(varId) == m_decisionMadeTrue.end(), involvedInstalled, involvedRemoved);
 	  for(VarIdVector::size_type i = 0;i < involvedInstalled.size();i++)
 	    if (m_processedInstalled.find(involvedInstalled[i]) == m_processedInstalled.end())
 	      m_pendingInstalled.push_back(involvedInstalled[i]);
@@ -612,7 +615,7 @@ void GeneralSolver::processPendings()
 	  if (!m_scope.isInstalled(varId))
 	    continue;
 	  VarIdVector involvedInstalled, involvedRemoved;
-	  handleChangeToFalse(varId, involvedInstalled, involvedRemoved);
+	  handleChangeToFalse(varId, m_decisionMadeFalse.find(varId) == m_decisionMadeFalse.end(), involvedInstalled, involvedRemoved);
 	  for(VarIdVector::size_type i = 0;i < involvedInstalled.size();i++)
 	    if (m_processedInstalled.find(involvedInstalled[i]) == m_processedInstalled.end())
 	      m_pendingInstalled.push_back(involvedInstalled[i]);
