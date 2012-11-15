@@ -1,7 +1,15 @@
 
   Deepsolver changes log
 
-	0.1.1 (2012-10-16)
+0.2.0 (2012-11-15, my mother birthday release!)
+
+Transaction processing:
+- libminisat interface added;
+- partially functioning GeneralSolver for SAT construction added;
+- StrictSolver previously used for 2-SAT construction removed;
+- previously used code for 2-SAT managing removed.
+
+0.1.1 (2012-10-16)
 
 ds-patch utility:
 - --add-list and --del-list command line options support added.
