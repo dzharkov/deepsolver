@@ -34,23 +34,7 @@ static void selectVarsToTry(const PackageScopeContent& content,
 			    const ProvideMap& provideMap,
 			    PackageId pkgId,
 			    VarIdVector& toTry,
-			    bool includeItself)
-{
-  toTry.clear();
-  if (includeItself)
-    {
-      VarId fromPos, toPos;
-      content.locateRange(pkgId, fromPos, toPos);
-      assert(fromPos < content.pkgInfoVector.size() && toPos < content.pkgInfoVector.size());
-      for(VarId i = fromPos;i < toPos;i++)
-	toTry.push_back(i);
-    }
-  VarIdVector providers;
-  provideMap.searchProviders(pkgId, providers);
-  for(VarIdVector::size_type i = 0;i < providers.size();i++)
-    toTry.push_back(providers[i]);
-  //Maybe it is good idea to perform dublications cleaning here,, but it can take time;
-}
+			    bool includeItself);
 
 void PackageScope::selectMatchingVarsNoProvides(PackageId packageId, VarIdVector& vars)
 {
@@ -688,4 +672,26 @@ VersionCond constructVersionCondEquals(int epoch,
   std::ostringstream ss;
   ss  << epoch << ":" << version << "-" << release;
   return VersionCond(ss.str(), VerEquals);
+}
+
+void selectVarsToTry(const PackageScopeContent& content,
+			    const ProvideMap& provideMap,
+			    PackageId pkgId,
+			    VarIdVector& toTry,
+			    bool includeItself)
+{
+  toTry.clear();
+  if (includeItself)
+    {
+      VarId fromPos, toPos;
+      content.locateRange(pkgId, fromPos, toPos);
+      assert(fromPos < content.pkgInfoVector.size() && toPos < content.pkgInfoVector.size());
+      for(VarId i = fromPos;i < toPos;i++)
+	toTry.push_back(i);
+    }
+  VarIdVector providers;
+  provideMap.searchProviders(pkgId, providers);
+  for(VarIdVector::size_type i = 0;i < providers.size();i++)
+    toTry.push_back(providers[i]);
+  //Maybe it is good idea to perform dublications cleaning here,, but it can take time;
 }

@@ -21,15 +21,6 @@
 #include"PackageScope.h"
 #include"version.h"
 
-#define NAME_S(x) m_scope.constructPackageName(x)
-
-static void printSat(const PackageScope& scope,
-		     const Sat& sat,
-		     const StringVector& annotations);
-static void printSolution(const PackageScope& scope,
-			  const VarIdVector& install,
-			  const VarIdVector& remove);
-
 template<typename T>
 void rmDub(std::vector<T>& v)
 {
@@ -696,53 +687,3 @@ std::string GeneralSolver::relToString(const IdPkgRel& rel)
       return m_scope.packageIdToStr(rel.pkgId);
   return m_scope.packageIdToStr(rel.pkgId) + " " + ver;
 }
-
-//Static functions;
-
-void printSat(const PackageScope& scope, 
-	      const Sat& sat,
-	      const StringVector& annotations)
-{
-  for(Sat::size_type i = 0;i < sat.size();i++)
-    {
-      const Clause& clause = sat[i];
-      if (i < annotations.size())
-	std::cout << annotations[i] << std::endl;
-      std::cout << "(" << std::endl;
-	for(Clause::size_type k = 0;k < clause.size();k++)
-	  {
-	    const Lit& lit = clause[k];
-	    if (lit.neg)
-	      std::cout << " !"; else 
-	      std::cout << "  ";
-	    std::cout << scope.constructPackageNameWithBuildTime(lit.varId);
-	    if (k + 1 < clause.size())
-	      std::cout << " ||";
-	    std::cout << std::endl;
-	  }
-	std::cout << ")" << std::endl;
-	if (i + 1 < sat.size())
-	  {
-	    std::cout << std::endl;
-	    std::cout << "&&" << std::endl;
-	    std::cout << std::endl;
-	  }
-    }
-}
-
-void printSolution(const PackageScope& scope,
-		   const VarIdVector& install,
-		   const VarIdVector& remove)
-{
-  std::cout << install.size() << " to install, " << remove.size() << " to remove" << std::endl;
-  std::cout << std::endl;
-  std::cout << "The following packages must be installed:" << std::endl;
-  for(size_t k = 0;k < install.size();k++)
-    std::cout << scope.constructPackageName(install[k]) << std::endl;
-  std::cout << std::endl;
-  std::cout << "The following packages must be removed:" << std::endl;
-  for(size_t k = 0;k < remove.size();k++)
-    std::cout << scope.constructPackageName(remove[k]) << std::endl;
-  std::cout << std::endl;
-}
-

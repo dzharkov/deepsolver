@@ -26,29 +26,16 @@
 #include"io/PackageScopeContentBuilder.h"
 #include"PkgUtils.h"
 
-static std::string urlToFileName(const std::string& url)
-{
-  std::string s;
-  for(std::string::size_type i = 0;i < url.length();i++)
-    {
-      const char c = url[i];
-      if ((c >= 'a' && c <= 'z') ||
-	  (c >= 'A' && c <= 'Z') ||
-	  (c >= '0' && c<= '9') ||
-	  c == '-' ||
-	  c == '_')
-	s += c; else 
-	if (s.empty() || s[s.length() - 1] != '-')
-	  s += '-';
-    } //for();
-  return s;
-}
+static void printSat(const PackageScope& scope,
+		     const Sat& sat,
+		     const StringVector& annotations);
 
-static void buildTemporaryIndexFileNames(StringToStringMap& files, const std::string& tmpDirName)
-{
-  for(StringToStringMap::iterator it = files.begin();it != files.end();it++)
-    it->second = Directory::mixNameComponents(tmpDirName, urlToFileName(it->first));
-}
+static void printSolution(const PackageScope& scope,
+			  const VarIdVector& install,
+			  const VarIdVector& remove);
+
+static std::string urlToFileName(const std::string& url);
+static void buildTemporaryIndexFileNames(StringToStringMap& files, const std::string& tmpDirName);
 
 void OperationCore::fetchIndices(AbstractIndexFetchListener& listener,
 				 const AbstractOperationContinueRequest& continueRequest)
@@ -158,4 +145,77 @@ void OperationCore::doInstallRemove(const UserTask& userTask)
   const double solverDuration = ((double)clock() - solverStart) / CLOCKS_PER_SEC;
   logMsg(LOG_DEBUG, "Solver takes %f seconds", solverDuration);
 
+}
+
+// Static functions;
+
+void printSat(const PackageScope& scope, 
+	      const Sat& sat,
+	      const StringVector& annotations)
+{
+  for(Sat::size_type i = 0;i < sat.size();i++)
+    {
+      const Clause& clause = sat[i];
+      if (i < annotations.size())
+	std::cout << annotations[i] << std::endl;
+      std::cout << "(" << std::endl;
+	for(Clause::size_type k = 0;k < clause.size();k++)
+	  {
+	    const Lit& lit = clause[k];
+	    if (lit.neg)
+	      std::cout << " !"; else 
+	      std::cout << "  ";
+	    std::cout << scope.constructPackageNameWithBuildTime(lit.varId);
+	    if (k + 1 < clause.size())
+	      std::cout << " ||";
+	    std::cout << std::endl;
+	  }
+	std::cout << ")" << std::endl;
+	if (i + 1 < sat.size())
+	  {
+	    std::cout << std::endl;
+	    std::cout << "&&" << std::endl;
+	    std::cout << std::endl;
+	  }
+    }
+}
+
+void printSolution(const PackageScope& scope,
+		   const VarIdVector& install,
+		   const VarIdVector& remove)
+{
+  std::cout << install.size() << " to install, " << remove.size() << " to remove" << std::endl;
+  std::cout << std::endl;
+  std::cout << "The following packages must be installed:" << std::endl;
+  for(size_t k = 0;k < install.size();k++)
+    std::cout << scope.constructPackageName(install[k]) << std::endl;
+  std::cout << std::endl;
+  std::cout << "The following packages must be removed:" << std::endl;
+  for(size_t k = 0;k < remove.size();k++)
+    std::cout << scope.constructPackageName(remove[k]) << std::endl;
+  std::cout << std::endl;
+}
+
+std::string urlToFileName(const std::string& url)
+{
+  std::string s;
+  for(std::string::size_type i = 0;i < url.length();i++)
+    {
+      const char c = url[i];
+      if ((c >= 'a' && c <= 'z') ||
+	  (c >= 'A' && c <= 'Z') ||
+	  (c >= '0' && c<= '9') ||
+	  c == '-' ||
+	  c == '_')
+	s += c; else 
+	if (s.empty() || s[s.length() - 1] != '-')
+	  s += '-';
+    } //for();
+  return s;
+}
+
+void buildTemporaryIndexFileNames(StringToStringMap& files, const std::string& tmpDirName)
+{
+  for(StringToStringMap::iterator it = files.begin();it != files.end();it++)
+    it->second = Directory::mixNameComponents(tmpDirName, urlToFileName(it->first));
 }
