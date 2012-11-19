@@ -59,3 +59,39 @@ void fillWithhInstalledPackages(AbstractPackageBackEnd& backEnd, PackageScopeCon
   logMsg(LOG_DEBUG, "installed:the system has %zu installed packages, %zu of them should be added to database since there are absent in attached repositories", installedCount, toInhanceWith.size());
   content.enhance(toInhanceWith, PkgFlagInstalled);
 }
+
+void prepareReversedMaps(const PackageScopeContent& content,
+			 ProvideMap& provideMap,
+			 InstalledReferences& requires,
+			 InstalledReferences& conflicts)
+{
+  const clock_t providesStart = clock();
+  provideMap.fillWith(content);
+  const double providesDuration = ((double)clock() - providesStart) / CLOCKS_PER_SEC;
+  logMsg(LOG_DEBUG, "Auxiliary provides map construction takes %f sec", providesDuration);
+  const PackageScopeContent::PkgInfoVector& pkgs = content.pkgInfoVector;
+  const PackageScopeContent::RelInfoVector& rels = content.relInfoVector; 
+  const clock_t installedStart = clock();
+  for(PackageScopeContent::PkgInfoVector::size_type i = 0;i < pkgs.size();i++)
+    if (pkgs[i].flags & PkgFlagInstalled)
+      {
+	const PackageScopeContent::PkgInfo& pkg = pkgs[i];
+	size_t pos = pkg.requiresPos, count = pkg.requiresCount;
+	for(size_t k = 0;k < count;k++)
+	  {
+	    assert(pos + k < rels.size());
+	    requires.add(rels[pos + k].pkgId, i);
+	  }
+	pos = pkg.conflictsPos;
+	count = pkg.conflictsCount;
+	for(size_t k = 0;k < count;k++)
+	  {
+	    assert(pos + k < rels.size());
+	    conflicts.add(rels[pos + k].pkgId, i);
+	  }
+      }
+  requires.commit();
+  conflicts.commit();
+  const double installedDuration = ((double)clock() - installedStart) / CLOCKS_PER_SEC;
+  logMsg(LOG_DEBUG, "Installed package requires/conflicts reversed map construction takes %f sec", installedDuration);
+}

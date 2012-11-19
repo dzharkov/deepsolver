@@ -23,4 +23,9 @@
 
 void fillWithhInstalledPackages(AbstractPackageBackEnd& backEnd, PackageScopeContent& content);
 
+void prepareReversedMaps(const PackageScopeContent& content,
+			 ProvideMap& provideMap,
+			 InstalledReferences& requires,
+			 InstalledReferences& conflicts);
+
 #endif //DEEPSOLVER_PKG_UTILS_H;

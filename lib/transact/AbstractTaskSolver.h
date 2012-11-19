@@ -18,11 +18,16 @@
 #ifndef DEEPSOLVER_ABSTRACT_TASK_SOLVER_H
 #define DEEPSOLVER_ABSTRACT_TASK_SOLVER_H
 
-#include"transact/PackageScopeContent.h"
+#include"transact/AbstractPackageScope.h"
 #include"UserTask.h"
-#include"transact/TaskException.h"
-#include"transact/ProvideMap.h"
-#include"transact/InstalledReferences.h"
+
+struct TaskSolverData
+{
+  TaskSolverData(AbstractPackageScope& s)
+    : scope(s) {}
+
+  AbstractPackageScope& scope;
+}; //struct TaskSolverData;
 
 class AbstractTaskSolver
 {
@@ -31,7 +36,8 @@ public:
   virtual ~AbstractTaskSolver() {}
 
 public:
-  virtual void solve(const UserTask& task, VarIdVector& toInstall, VarIdVector& toRemove, VarIdToVarIdMap& toUpgrade) = 0;
+  virtual void solve(const UserTask& task, VarIdVector& toInstall, VarIdVector& toRemove) = 0;
+  virtual void constructSat() = 0;
 }; //class AbstractTaskSolver;
 
 std::auto_ptr<AbstractTaskSolver> createStrictTaskSolver(const PackageScopeContent& content,
