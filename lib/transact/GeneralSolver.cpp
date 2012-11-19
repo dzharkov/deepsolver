@@ -73,79 +73,6 @@ struct PrioritySortItem
 typedef std::vector<PrioritySortItem> PrioritySortItemVector;
 typedef std::list<PrioritySortItem> PrioritySortItemList;
 
-class GeneralSolver: public AbstractTaskSolver
-{
-public:
-  GeneralSolver(const PackageScopeContent& content,
-	       const ProvideMap& provideMap,
-	       const InstalledReferences& requiresReferences,
-	       const InstalledReferences& conflictsReferences)
-    : m_annotating(0),
-      m_advancedMode(1),
-      m_content(content) , m_scope(content, provideMap, requiresReferences, conflictsReferences) {}
-
-  virtual ~GeneralSolver() {}
-
-public:
-  void solve(const UserTask& task, VarIdVector& toInstall, VarIdVector& toRemove, VarIdToVarIdMap& toUpgrade);
-
-private:
-  void translateUserTask(const UserTask& userTask);
-
-  //May not return BAD_VAR_ID;
-  VarId translateItemToInstall(const UserTaskItemToInstall& item);
-
-  //May not return BAD_VAR_ID;
-  VarId satisfyRequire(const IdPkgRel& rel);
-
-  //May not return BAD_VAR_ID;
-  VarId satisfyRequire(PackageId pkgId);
-
-  //May not return BAD_VAR_ID;
-  VarId satisfyRequire(PackageId pkgId, const VersionCond& version);
-  VarId processPriorityList(const VarIdVector& vars, PackageId provideEntry) const;
-  VarId processPriorityBySorting(const VarIdVector& vars) const;
-
-  void handleChangeToFalse(VarId seed,
-			   bool includeItself,
-			      VarIdVector& involvedInstalled,
-			      VarIdVector& involvedRemoved);
-
-  void handleChangeToTrue(VarId varId,
-			  bool includeItself,
-				VarIdVector& involvedInstalled,
-				VarIdVector& involvedRemoved);
-
-  void processPendings();
-  void addClause(const Clause& clause);
-
-private://Utilities;
-  std::string relToString(const IdPkgRel& rel);
-
-private:
-  bool m_annotating, m_advancedMode;
-  StringVector m_annotations;
-  const PackageScopeContent& m_content;
-  PackageScope m_scope; 
-  Sat m_sat;
-  VarIdVector m_userTaskPresent, m_userTaskAbsent;
-  VarIdVector m_pendingInstalled, m_pendingRemoved;
-  VarIdSet m_processedInstalled, m_processedRemoved;
-  VarIdSet m_decisionMadeTrue, m_decisionMadeFalse;
-
-  VarIdToVarIdMap m_userTaskUpgrade, m_anywayUpgrade;
-
-}; //class GeneralSolver;
-
-std::auto_ptr<AbstractTaskSolver> createGeneralTaskSolver(const PackageScopeContent& content,
-							 const ProvideMap& provideMap,
-							 const InstalledReferences& requiresReferences,
-							 const InstalledReferences& conflictsReferences)
-{
-  logMsg(LOG_DEBUG, "Creating general task solver");
-  return std::auto_ptr<AbstractTaskSolver>(new GeneralSolver(content, provideMap, requiresReferences, conflictsReferences));
-}
-
 void GeneralSolver::solve(const UserTask& task, VarIdVector& toInstall, VarIdVector& toRemove, VarIdToVarIdMap& toUpgrade)
 {
   const clock_t satConstructStart = clock(); 
@@ -686,4 +613,13 @@ std::string GeneralSolver::relToString(const IdPkgRel& rel)
   if (ver.empty())
       return m_scope.packageIdToStr(rel.pkgId);
   return m_scope.packageIdToStr(rel.pkgId) + " " + ver;
+}
+
+std::auto_ptr<AbstractTaskSolver> createGeneralTaskSolver(const PackageScopeContent& content,
+							 const ProvideMap& provideMap,
+							 const InstalledReferences& requiresReferences,
+							 const InstalledReferences& conflictsReferences)
+{
+  logMsg(LOG_DEBUG, "Creating general task solver");
+  return std::auto_ptr<AbstractTaskSolver>(new GeneralSolver(content, provideMap, requiresReferences, conflictsReferences));
 }
