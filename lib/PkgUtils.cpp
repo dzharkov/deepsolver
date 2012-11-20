@@ -20,6 +20,7 @@
 
 void fillWithhInstalledPackages(AbstractPackageBackEnd& backEnd, PackageScopeContent& content)
 {
+  const clock_t fillingStart = clock();
   PackageScopeContent::PkgInfoVector& pkgs = content.pkgInfoVector;
   std::auto_ptr<AbstractInstalledPackagesIterator> it = backEnd.enumInstalledPackages();
   size_t installedCount = 0;
@@ -58,6 +59,8 @@ void fillWithhInstalledPackages(AbstractPackageBackEnd& backEnd, PackageScopeCon
     } //while(installed packages);
   logMsg(LOG_DEBUG, "installed:the system has %zu installed packages, %zu of them should be added to database since there are absent in attached repositories", installedCount, toInhanceWith.size());
   content.enhance(toInhanceWith, PkgFlagInstalled);
+  const double fillingDuration = ((double)clock() - fillingStart) / CLOCKS_PER_SEC;
+  logMsg(LOG_DEBUG, "pkg-utils:installed packages adding takes %f sec", fillingDuration);
 }
 
 void prepareReversedMaps(const PackageScopeContent& content,

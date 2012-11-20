@@ -98,53 +98,15 @@ void OperationCore::doInstallRemove(const UserTask& userTask)
   PackageScopeContentLoader loader(content);
   loader.loadFromFile(Directory::mixNameComponents(m_conf.root().dir.pkgData, PKG_DATA_FILE_NAME));
   logMsg(LOG_DEBUG, "Index package list loaded");
-  const clock_t fillingStart = clock();
   fillWithhInstalledPackages(*backEnd.get(), content);
-  const double fillingDuration = ((double)clock() - fillingStart) / CLOCKS_PER_SEC;
-  logMsg(LOG_DEBUG, "Installed packages adding takes %f sec", fillingDuration);
-  logMsg(LOG_DEBUG, "Merged list of installed packages");
   ProvideMap provideMap;
   InstalledReferences requiresReferences, conflictsReferences;
-  provideMap.fillWith(content);
-  logMsg(LOG_DEBUG, "Provide map filled");
-  const PackageScopeContent::PkgInfoVector& pkgs = content.pkgInfoVector;
-  const PackageScopeContent::RelInfoVector& rels = content.relInfoVector; 
-  for(PackageScopeContent::PkgInfoVector::size_type i = 0;i < pkgs.size();i++)
-    if (pkgs[i].flags & PkgFlagInstalled)
-      {
-	const PackageScopeContent::PkgInfo& pkg = pkgs[i];
-	size_t pos = pkg.requiresPos, count = pkg.requiresCount;
-	for(size_t k = 0;k < count;k++)
-	  {
-	    assert(pos + k < rels.size());
-	    requiresReferences.add(rels[pos + k].pkgId, i);
-	  }
-	pos = pkg.conflictsPos;
-	count = pkg.conflictsCount;
-	for(size_t k = 0;k < count;k++)
-	  {
-	    assert(pos + k < rels.size());
-	    conflictsReferences.add(rels[pos + k].pkgId, i);
-	  }
-      }
-  requiresReferences.commit();
-  conflictsReferences.commit();
-  logMsg(LOG_DEBUG, "Requires and Conflicts references filled");
-  std::auto_ptr<AbstractTaskSolver> solver = createGeneralTaskSolver(content, provideMap, requiresReferences, conflictsReferences);
+  prepareReversedMaps(content, provideMap, requiresReferences, conflictsReferences);
+  std::auto_ptr<AbstractPackageScope> scope(new PackageScope(content, provideMap, requiresReferences, conflictsReferences));
+  TaskSolverData taskSolverData(*scope.get());
+  std::auto_ptr<AbstractTaskSolver> solver = createGeneralTaskSolver(taskSolverData);
   VarIdVector toInstall, toRemove;
-  VarIdToVarIdMap toUpgrade;
-
-  UserTask t;
-  t.itemsToInstall.push_back(UserTaskItemToInstall("gnome3-default"));
-  //  t.namesToRemove.insert("voiceman");
-  //  t.namesToRemove.insert("gcc4.3");
-  //  t.namesToRemove.insert("dbus");
-
-  const clock_t solverStart = clock();
-  solver->solve(t, toInstall, toRemove, toUpgrade);//FIXME:userTask;
-  const double solverDuration = ((double)clock() - solverStart) / CLOCKS_PER_SEC;
-  logMsg(LOG_DEBUG, "Solver takes %f seconds", solverDuration);
-
+  solver->solve(userTasks, toInstall, toRemove);
 }
 
 // Static functions;
