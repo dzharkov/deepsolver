@@ -23,6 +23,18 @@
 #include"deepsolver.h"
 #include<rpm/rpmlib.h>
 
+static bool alreadyReadConfigFiles = 0;
+
+void RpmBackEnd::initialize()
+{
+  if (!alreadyReadConfigFiles)
+    {
+      rpmReadConfigFiles( NULL, NULL );                                                                                                                          
+      alreadyReadConfigFiles = 1;
+    }
+
+}
+
 int rpmVerCmp(const std::string& ver1, const std::string& ver2)
 {
   return rpmvercmp(ver1.c_str(), ver2.c_str());

@@ -33,10 +33,14 @@ public:
 class AbstractPackageBackEnd
 {
 public:
+  /**\brief The default constructor*/
   AbstractPackageBackEnd() {}
+
+  /**\brief The destructor*/
   virtual ~AbstractPackageBackEnd() {}
 
 public:
+  virtual void initialize() = 0;
   virtual int versionCompare(const std::string& ver1, const std::string& ver2 const = 0);
 
   /**\brief Overlaps two version ranges

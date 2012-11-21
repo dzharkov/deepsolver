@@ -18,15 +18,27 @@
 #include"deepsolver.h"
 #include"RpmInstalledPackagesIterator.h"
 
-void RpmInstalledPackagesIterator::init()
+void RpmInstalledPackagesIterator::openEnum()
 {
-  m_rpmdb.openEnum();
+  if (rpmdbOpen( "", &m_db, O_RDONLY, 0644 ) != 0)
+    RPM_STOP("Could not open rpmdb");
+  m_it = rpmdbInitIterator(m_db, RPMDBI_PACKAGES, NULL, 0);
 }
 
 bool RpmInstalledPackagesIterator::moveNext(Pkg& pkg)
-{
-  if (m_rpmdb.moveNext(pkg))
-    return 1;
-  m_rpmdb.close();
-  return 0;
-}
+{                                                                                                                                                              
+  Header h = rpmdbNextIterator(m_it);
+  if (!h)
+    {
+      rpmdbFreeIterator(m_it);                                                                                                                                     
+      rpmdbClose(m_db);                                                                                                                                            
+      return 0;
+    }
+  rpmFillMainData(h, pkg);
+  rpmFillProvides(h, pkg.provides);
+  rpmFillRequires(h, pkg.requires);
+  rpmFillObsoletes(h, pkg.obsoletes);
+  rpmFillConflicts(h, pkg.conflicts);
+  rpmFillFileList(h, pkg.fileList);
+  return 1;
+}                                                                                                                                                              

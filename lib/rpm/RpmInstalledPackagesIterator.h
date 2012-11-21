@@ -19,7 +19,7 @@
 #define DEEPSOLVER_RPM_INSTALLED_PACKAGES_ITERATOR_H
 
 #include"AbstractInstalledPackagesIterator.h"
-#include<rpm/rpmdb.h>
+#include<rpm/rpmlib.h>
 
 /**\brief The iterator over set of installed packages
  *
@@ -39,11 +39,12 @@ public:
   virtual ~RpmInstalledPackagesIterator() {}
 
 public:
-  void init();
+  void openEnum();
   bool moveNext(Pkg& pkg);
 
 private:
-  Rpmdb m_rpmdb;
+  rpmdb m_db;
+  rpmdbMatchIterator m_it;
 }; //class RpmInstalledPackagesIterator;
 
 #endif //DEEPSOLVER_RPM_INSTALLED_PACKAGES_ITERATOR_H;

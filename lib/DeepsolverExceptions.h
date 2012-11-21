@@ -981,10 +981,29 @@ private:
   const std::string m_line;
 }; //class Md5FileException;
 
+class RpmException: public DeepsolverException
+{
+public:
+  RpmException() {}
+  RpmException(const std::string& message)
+    : m_message(message
+) {}
 
+      virtual ~RpmException() {}
 
+public:
+  std::string getType() const
+  {
+    return "rpm";
+  }
 
+  std::string getMessage() const
+  {
+    return m_message;
+  }
 
-
+private:
+  std::string m_message;
+}; //class RpmException;
 
 #endif //DEEPSOLVER_DEEPSOLVER_EXCEPTIONS_H;
