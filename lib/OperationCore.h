@@ -18,77 +18,8 @@
 #ifndef DEEPSOLVER_OPERATION_CORE_H
 #define DEEPSOLVER_OPERATION_CORE_H
 
-#include"DeepsolverException.h"
 #include"ConfigCenter.h"
 #include"UserTask.h"
-
-enum {
-  OperationErrorInvalidInfoFile = 0,
-  OperationErrorInvalidChecksum = 1,
-  OperationErrorBrokenIndexFile = 2,
-OperationErrorInternalIOProblem = 3
-};
-
-/**\brief The exception class for general operation problems
- *
- * This class is purposed for various general operation problems.
- * The errors can be thrown only by the methods of
- * OperationCore class covering transaction processing as well as index
- * updating. General error types are checksum
- * mismatch, invalid content of repo file and so on. Downloading problems
- * have their own exception class called CurlException.
- *
- * \sa OperationCore CurlException System Exception RpmException
- */
-class OperationException
-{
-public:
-  /**\brief The constructor
-   *
-   * \param [in] code The error code
-   */
-  OperationException(int code) 
-    : m_code(code) {}
-
-  /**\brief The destructor*/
-  virtual ~OperationException() {}
-
-public:
-  /**\brief Returns the error code
-   *
-   * Use this method to get error code.
-   *
-   * \return The error code
-   */
-  int getCode() const
-  {
-    return m_code;
-  }
-
-  std::string getType() const
-  {
-    return "operation";
-  }
-
-  std::string getMessage() const
-  {
-    switch (m_code)
-      {
-      case OperationErrorInvalidInfoFile:
-	return "repository info file has an invalid content";
-	break;
-      case OperationErrorInvalidChecksum :
-	return "one or more files were corrupted (invalid checksum)";
-	break;
-      default:
-	assert(0);
-      } //switch(m_code);
-    return "";//just to reduce warning messages;
-  }
-
-private:
-  const int m_code;
-}; //class OperationException;
 
 class UserTaskItemToInstall
 {

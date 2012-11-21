@@ -18,34 +18,6 @@
 #ifndef DEEPSOLVER_REG_EXP_H
 #define DEEPSOLVER_REG_EXP_H 
 
-class RegExpException: public DeepsolverException
-{
-public:
-  /**\brief The constructor
-   *
-   * \param [in] message The error message
-   */
- RegExpException(const std::string& message)
-    : m_message(message) {}
-
-  /**\brief The destructor*/
-  virtual ~RegExpException() {}
-
-public:
-  std::string getType() const
-  {
-    return "regular expression";
-  }
-
-  std::string getMessage() const
-  {
-    return "Invalid regular expression:" + m_message;
-  }
-
-private:
-  const std::string m_message;
-}; //class RegExpException;
-
 class RegExp
 {
 public:

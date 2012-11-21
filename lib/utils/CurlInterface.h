@@ -21,46 +21,6 @@
 #ifndef DEEPSOLVER_CURL_H
 #define DEEPSOLVER_CURL_H
 
-class CurlException //FIXME: : public DeepsolverException
-{
-public:
-  CurlException(int code, const std::string& url, const std::string& text)
-    : m_code(code), m_url(url), m_text(text) {}
-
-  virtual ~CurlException() {}
-
-public:
-  int getCode() const
-  {
-    return m_code;
-  }
-
-  std::string getUrl() const
-  {
-    return m_url;
-  }
-
-  std::string getText() const
-  {
-    return m_text;
-  }
-
-  std::string getType() const
-  {
-    return "curl";
-  }
-
-  std::string getMessage() const
-  {
-    return m_url + ":" + m_text;
-  }
-
-private:
-  const int m_code;
-  const std::string m_url;
-  const std::string m_text;
-}; //class CurlException;
-
 class AbstractCurlDataRecipient
 {
 public:
