@@ -89,18 +89,3 @@ void RpmFileHeaderReader::fillFileList(StringVector& v)
 {
   rpmFillFileList(m_header, v);
 }
-
-void readRpmPkgFile(const std::string& fileName, PkgFile& pkgFile)
-{
-  RpmFileHeaderReader reader;
-  reader.load(fileName);
-  reader.fillMainData(pkgFile);
-  reader.fillProvides(pkgFile.provides);
-  reader.fillConflicts(pkgFile.conflicts);
-  reader.fillObsoletes(pkgFile.obsoletes);
-  reader.fillRequires(pkgFile.requires);
-  reader.fillChangeLog(pkgFile.changeLog);
-  reader.fillFileList(pkgFile.fileList);
-  reader.close();
-  pkgFile.fileName = fileName;
-}

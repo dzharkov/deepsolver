@@ -16,14 +16,10 @@
 */
 
 #include"deepsolver.h"
-#include"AbstractPackageBackEnd.h"
-#include"rpm/Rpmdb.h"
-#include"rpm/RpmFile.h"
-
-#include"deepsolver.h"
-#include<rpm/rpmlib.h>
+#include"RpmBackEnd.h"
 
 static bool alreadyReadConfigFiles = 0;
+static int buildSenseFlags(const VersionCond& c);
 
 void RpmBackEnd::initialize()
 {
@@ -32,15 +28,76 @@ void RpmBackEnd::initialize()
       rpmReadConfigFiles( NULL, NULL );                                                                                                                          
       alreadyReadConfigFiles = 1;
     }
-
 }
 
-int rpmVerCmp(const std::string& ver1, const std::string& ver2)
+int RpmbackEnd::versionCompare(const std::string& ver1, const std::string& ver2) const
 {
   return rpmvercmp(ver1.c_str(), ver2.c_str());
 }
 
-static int buildSenseFlags(const VersionCond& c)
+bool RpmBackEnd::versionOverlap(const VersionCond& ver1, const VersionCond& ver2) const
+{
+  return rpmRangesOverlap("", v1.version.c_str(), buildSenseFlags(v1),
+			  "", v2.version.c_str(), buildSenseFlags(v2));
+}
+
+bool RpmBackEnd::versionEqual(const std::string& ver1, const std::string& ver2) const
+{
+  return versionOverlap(VersionCond(ver1), VersionCond(ver2));
+}
+
+bool RpmBackEnd::versionGreater(const std::string& ver1, const std::string& ver2) const
+{
+  return versionOverlap(VersionCond(ver1, VerLess), VersionCond(ver2));
+}
+
+std::auto_ptr<AbstractInstalledPackagesIterator> RpmBackEnd::enumInstalledPackages() const
+{
+  std::auto_ptr<RpmInstalledPackagesIterator> rpmIterator(new RpmInstalledPackagesIterator());
+  rpmIterator->openEnum();
+  std::auto_ptr<AbstractInstalledPackagesIterator> it(rpmIterator.get());
+  rpmIterator.release();
+  return it;
+}
+
+void RpmBackEnd::readPackageFile(const std::string& fileName, PkgFile& pkgFile) const
+{
+  RpmFileHeaderReader reader;
+  reader.load(fileName);
+  reader.fillMainData(pkgFile);
+  reader.fillProvides(pkgFile.provides);
+  reader.fillConflicts(pkgFile.conflicts);
+  reader.fillObsoletes(pkgFile.obsoletes);
+  reader.fillRequires(pkgFile.requires);
+  reader.fillChangeLog(pkgFile.changeLog);
+  reader.fillFileList(pkgFile.fileList);
+  reader.close();
+  pkgFile.fileName = fileName;
+}
+
+bool RpmBackEnd::validPkgFileName(const std::string& fileName) const
+{
+  if (fileName.length() <= 4)
+    return 0;
+  const std::string ext = ".rpm";
+  for(std::string::size_type i = 0;i < ext.size();i++)
+    if (fileName[fileName.length() - ext.length() + i] != ext[i])
+      return 0;
+  return 1;
+}
+
+bool RpmBackEnd::validSourcePkgFileName(const std::string& fileName) const
+{
+  if (fileName.length() <= 8)
+    return 0;
+  const std::string ext = ".src.rpm";
+  for(std::string::size_type i = 0;i < ext.size();i++)
+    if (fileName[fileName.length() - ext.length() + i] != ext[i])
+      return 0;
+  return 1;
+}
+
+int buildSenseFlags(const VersionCond& c)
 {
   int value = 0;
   if (c.isEqual())
@@ -52,106 +109,7 @@ static int buildSenseFlags(const VersionCond& c)
   return value;
 }
 
-int rpmVerOverlap(const VersionCond& v1, const VersionCond& v2)
-{
-  return rpmRangesOverlap("", v1.version.c_str(), buildSenseFlags(v1),
-			  "", v2.version.c_str(), buildSenseFlags(v2));
-}
-
-
-class RpmInstalledPackagesIterator: public AbstractInstalledPackagesIterator
-{
-public:
-  RpmInstalledPackagesIterator() {}
-  virtual ~RpmInstalledPackagesIterator() {}
-
-public:
-  void init()
-  {
-    m_rpmdb.openEnum();
-  }
-
-  bool moveNext(Pkg& pkg)
-  {
-    if (m_rpmdb.moveNext(pkg))
-      return 1;
-    m_rpmdb.close();
-    return 0;
-  }
-
-private:
-  Rpmdb m_rpmdb;
-}; //class RpmInstalledPackagesIterator;
-
-class RpmBackEnd: public AbstractPackageBackEnd
-{
-public:
-  RpmBackEnd() {}
-  virtual ~RpmBackEnd() {}
-
-public:
-  std::auto_ptr<AbstractInstalledPackagesIterator> enumInstalledPackages()
-  {
-
-    std::auto_ptr<RpmInstalledPackagesIterator> rpmIterator(new RpmInstalledPackagesIterator());
-    rpmIterator->init();
-    std::auto_ptr<AbstractInstalledPackagesIterator> it(rpmIterator.get());
-    rpmIterator.release();
-    return it;
-  }
-
-void readPackageFile(const std::string& fileName, PkgFile& pkgFile)
-  {
-    readRpmPkgFile(fileName, pkgFile);
-  }
-
-  bool validPkgFileName(const std::string& fileName) const
-  {
-    if (fileName.length() <= 4)
-      return 0;
-    const std::string ext = ".rpm";
-    for(std::string::size_type i = 0;i < ext.size();i++)
-      if (fileName[fileName.length() - ext.length() + i] != ext[i])
-	return 0;
-    return 1;
-  }
-
-  bool validSourcePkgFileName(const std::string& fileName) const
-  {
-    if (fileName.length() <= 8)
-      return 0;
-    const std::string ext = ".src.rpm";
-    for(std::string::size_type i = 0;i < ext.size();i++)
-      if (fileName[fileName.length() - ext.length() + i] != ext[i])
-	return 0;
-    return 1;
-  }
-
-
-}; //class RpmBackEnd;
-
 std::auto_ptr<AbstractPackageBackEnd> createRpmBackEnd()
 {
   return std::auto_ptr<AbstractPackageBackEnd>(new RpmBackEnd());
 }
-
-int versionCompare(const std::string& ver1, const std::string& ver2)
-{
-  return rpmVerCmp(ver1, ver2);
-}
-
-bool versionOverlap(const VersionCond& ver1, const VersionCond& ver2)
-{
-  return rpmVerOverlap(ver1, ver2);
-}
-
-bool versionEqual(const std::string& ver1, const std::string& ver2)
-{
-  return versionOverlap(VersionCond(ver1), VersionCond(ver2));
-}
-
-bool versionGreater(const std::string& ver1, const std::string& ver2)
-{
-  return versionOverlap(VersionCond(ver1, VerLess), VersionCond(ver2));
-}
-
