@@ -21,11 +21,11 @@
 #include"os/system.h"
 #include"DefaultValues.h"
 #include"logging.h"
-#include"DeepsolverException.h"
-#include"os/SystemException.h"
+#include"DeepsolverExceptions.h"
 #include"os/File.h"
 #include"os/Directory.h"
-#include"utils/string-utils.h"
+#include"utils/StringUtils.h"
 #include"DeepsolverTypes.h"
+#include"Pkg.h"
 
 #endif //DEEPSOLVER_H
