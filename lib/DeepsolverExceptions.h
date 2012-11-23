@@ -600,18 +600,25 @@ public:
    * \param [in] code The error code
    * \param [in] arg Optional string error argument with meaning depending on error code
    * \param [in] pos The information about configuration file line the error is associated
+   * \param [in] fileName The name of the config file with the invalid line
+   * \param [in] lineNumber The number of the invalid line
+   * \param [in] line The invalid line value
    */
-  ConfigException(int code, const std::string& arg, const ConfigFilePosInfo& pos)
+  ConfigException(int code,
+		  const std::string& arg,
+		  const std::string& fileName,
+		  size_t lineNumber,
+		  const std::string& line)
     : m_code(code),
       m_arg(arg),
-      m_fileName(pos.fileName),
-      m_lineNumber(pos.lineNumber),
-      m_line(pos.line) {}
+      m_fileName(fileName),
+      m_lineNumber(lineNumber),
+      m_line(line) {}
 
   /**\brief The constructor with no configuration file line info
    *
    * \param [in] code The error code
-   * \param [in] arg Optional argument with meaning depending on error code
+   * \param [in] arg Optional argument with meaning dependent on error code
    */
   ConfigException(int code, const std::string& arg)
     : m_code(code),

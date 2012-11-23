@@ -18,8 +18,6 @@
 #ifndef DEEPSOLVER_RPM_FILE_HEADER_READER_H
 #define DEEPSOLVEr_RPM_FILE_HEADER_READER_H
 
-#include"Pkg.h"
-#include"RpmException.h"
 #include<rpm/rpmlib.h>
 
 class RpmFileHeaderReader

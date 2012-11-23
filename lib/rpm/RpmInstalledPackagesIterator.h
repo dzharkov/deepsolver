@@ -18,7 +18,7 @@
 #ifndef DEEPSOLVER_RPM_INSTALLED_PACKAGES_ITERATOR_H
 #define DEEPSOLVER_RPM_INSTALLED_PACKAGES_ITERATOR_H
 
-#include"AbstractInstalledPackagesIterator.h"
+#include"AbstractPackageBackEnd.h"
 #include<rpm/rpmlib.h>
 
 /**\brief The iterator over set of installed packages

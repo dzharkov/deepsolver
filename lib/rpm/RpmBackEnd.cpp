@@ -17,6 +17,7 @@
 
 #include"deepsolver.h"
 #include"RpmBackEnd.h"
+#include"RpmFileHeaderReader.h"
 
 static bool alreadyReadConfigFiles = 0;
 static int buildSenseFlags(const VersionCond& c);
@@ -30,15 +31,15 @@ void RpmBackEnd::initialize()
     }
 }
 
-int RpmbackEnd::versionCompare(const std::string& ver1, const std::string& ver2) const
+int RpmBackEnd::versionCompare(const std::string& ver1, const std::string& ver2) const
 {
   return rpmvercmp(ver1.c_str(), ver2.c_str());
 }
 
 bool RpmBackEnd::versionOverlap(const VersionCond& ver1, const VersionCond& ver2) const
 {
-  return rpmRangesOverlap("", v1.version.c_str(), buildSenseFlags(v1),
-			  "", v2.version.c_str(), buildSenseFlags(v2));
+  return rpmRangesOverlap("", ver1.version.c_str(), buildSenseFlags(ver1),
+			  "", ver2.version.c_str(), buildSenseFlags(ver2));
 }
 
 bool RpmBackEnd::versionEqual(const std::string& ver1, const std::string& ver2) const

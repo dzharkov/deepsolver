@@ -93,7 +93,7 @@ public:
    *
    * \return The integer value less than zero in case of ver1 less than ver2, greater than zero if ver1 greater than ver2 and zero otherwise
    */
-  virtual int versionCompare(const std::string& ver1, const std::string& ver2 const = 0);
+  virtual int versionCompare(const std::string& ver1, const std::string& ver2) const = 0;
 
   /**\brief Overlaps two version ranges
    *
@@ -141,7 +141,7 @@ public:
    *
    * \return The iterator over set of installed packages
    */
-  virtual std::auto_ptr<AbstractInstalledPackagesIterator> enumInstalledPackages() = 0;
+  virtual std::auto_ptr<AbstractInstalledPackagesIterator> enumInstalledPackages() const = 0;
 
   /**\brief Reads header information from package file on disk
    *
