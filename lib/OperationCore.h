@@ -21,57 +21,6 @@
 #include"ConfigCenter.h"
 #include"UserTask.h"
 
-class UserTaskItemToInstall
-{
-public:
-  UserTaskItemToInstall()
-    : verDir(VerNone) {}
-
- UserTaskItemToInstall(const std::string& n)
-    : pkgName(n), verDir(VerNone) {}
-
-  UserTaskItemToInstall(const std::string& n, VerDirection d, const std::string& v)
-    : pkgName(n), verDir(d), version(v) {}
-
-  virtual ~UserTaskItemToInstall() {}
-
-public:
-  std::string toString() const
-  {
-    if (verDir == VerNone)
-      return pkgName;
-    std::string s = pkgName;
-    s += " ";
-    if (verDir & VerLess)
-      s += "<";
-    if (verDir & VerGreater)
-      s += ">";
-    if (verDir & VerEquals)
-      s += "=";
-    return s + " " + version;
-  }
-
-public:
-  std::string pkgName;
-  VerDirection verDir;
-  std::string version;
-}; //class UserTaskItemToINstall;
-
-typedef std::vector<UserTaskItemToInstall> UserTaskItemToInstallVector;
-typedef std::list<UserTaskItemToInstall> UserTaskItemToInstallList;
-
-class UserTask 
-{
-public:
-  UserTask() {}
-  ~UserTask() {}
-
-public:
-  UserTaskItemToInstallVector itemsToInstall;
-  StringSet urlsToInstall;
-  StringSet namesToRemove;
-}; //class UserTask;
-
 /**\brief The abstract interface for continuous process interruption
  *
  * Various continuous processes (such as downloading) ask external object

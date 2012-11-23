@@ -17,11 +17,12 @@
 
 #include"deepsolver.h"
 #include"RpmInstalledPackagesIterator.h"
+#include"rpmHeader.h"
 
 void RpmInstalledPackagesIterator::openEnum()
 {
   if (rpmdbOpen( "", &m_db, O_RDONLY, 0644 ) != 0)
-    RPM_STOP("Could not open rpmdb");
+    throw RpmException("Could not open rpmdb");
   m_it = rpmdbInitIterator(m_db, RPMDBI_PACKAGES, NULL, 0);
 }
 

@@ -19,6 +19,7 @@
 #define DEEPSOLVER_GENERAL_SOLVER_H
 
 #include"AbstractTaskSolver.h"
+#include"AbstractPackageBackEnd.h"
 #include"AbstractPackageScope.h"
 
 class GeneralSolver: public AbstractTaskSolver
@@ -27,6 +28,7 @@ public:
   GeneralSolver(TaskSolverData& data)
     : m_annotating(0),
       m_advancedMode(1),
+    m_backEnd(data.backEnd),
       m_scope(data.scope) {}
 
   virtual ~GeneralSolver() {}
@@ -60,6 +62,7 @@ private:
   bool m_annotating, m_advancedMode;
   StringVector m_annotations;
   AbstractPackageScope m_scope; 
+  const AbstractPackageBackEnd& m_backEnd;
   Sat m_sat;
   VarIdVector m_userTaskPresent, m_userTaskAbsent;
   VarIdVector m_pendingInstalled, m_pendingRemoved;

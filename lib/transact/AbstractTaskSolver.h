@@ -18,14 +18,16 @@
 #ifndef DEEPSOLVER_ABSTRACT_TASK_SOLVER_H
 #define DEEPSOLVER_ABSTRACT_TASK_SOLVER_H
 
-#include"transact/AbstractPackageScope.h"
-#include"UserTask.h"
+#include"AbstractPackageScope.h"
+#include"AbstractPackageBackEnd.h"
 
 struct TaskSolverData
 {
-  TaskSolverData(AbstractPackageScope& s)
-    : scope(s) {}
+  TaskSolverData(const AbstractPackageBackEnd& b, AbstractPackageScope& s)
+    : backEnd(b),
+      scope(s) {}
 
+  const AbstractPackageBackEnd& backEnd;
   AbstractPackageScope& scope;
 }; //struct TaskSolverData;
 

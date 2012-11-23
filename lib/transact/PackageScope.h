@@ -18,21 +18,22 @@
 #ifndef DEEPSOLVER_PACKAGE_SCOPE_H
 #define DEEPSOLVER_PACKAGE_SCOPE_H
 
-#include"Pkg.h"
+#include"AbstractPackageScope.h"
+#include"AbstractPackageBackEnd.h"
 #include"PackageScopeContent.h"
 #include"ProvideMap.h"
 #include"InstalledReferences.h"
 
-//All methods can throw only SystemException and RpmException;
-//Vars is the indices in the main PackageScopeContent array;
-class PackageScope 
+class PackageScope: public AbstractPackageScope
 {
 public:
-  PackageScope(const PackageScopeContent& content,
+  PackageScope(const AbstractPackageBackEnd& backEnd,
+	       const PackageScopeContent& content,
 	       const ProvideMap& provideMap,
-	       const InstalledReferences& requiresReferences,
-	       const InstalledReferences& conflictsReferences)
-    : m_content(content), 
+	       const InstalledReferences& installedRequiresEntries,
+	       const InstalledReferences& installedConflictsEntries)
+    : m_backEnd(backEnd),
+      m_content(content), 
       m_provideMap(provideMap),
       m_requiresReferences(requiresReferences),
       m_conflictsReferences(conflictsReferences) {}
@@ -104,10 +105,11 @@ private:
   typedef PackageScopeContent::RelInfoVector RelInfoVector;
 
 private:
+  const AbstractPackageBackEnd& m_backEnd;
   const PackageScopeContent& m_content;
   const ProvideMap& m_provideMap;
-  const InstalledReferences& m_requiresReferences;
-  const InstalledReferences& m_conflictsReferences; 
+  const InstalledReferences& m_installedRequiresEntries;
+  const InstalledReferences& m_installedConflictsEntries;
 }; //class PackageScope; 
 
 #endif //DEEPSOLVER_PACKAGE_SCOPE_H;

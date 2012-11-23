@@ -18,8 +18,6 @@
 #ifndef DEEPSOLVER_RPM_HEADER_READING_H
 #define DEEPSOLVEr_RPM_HEADER_READING_H
 
-#include"Pkg.h"
-#include"RpmException.h"
 #include<rpm/rpmlib.h>
 
 void rpmFillMainData(Header& header, PkgBase& pkg);
