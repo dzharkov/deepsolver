@@ -1,6 +1,7 @@
 
 AC_INIT(deepsolver, 0.2.0, msp@altlinux.org)
 AM_INIT_AUTOMAKE([-Wall foreign])
+AC_CONFIG_MACRO_DIR([m4])
 
 if test "x$CFLAGS" == 'x'; then
    CFLAGS='-O2'
@@ -36,4 +37,16 @@ AC_CONFIG_FILES([
 
 AC_OUTPUT
 
-AC_CONFIG_MACRO_DIR([m4])
+AC_CHECK_LIB(minisat, minisat_solve, [], [
+  echo
+  echo You should have the libminisat library in your system. If you are >&2
+  echo running ALT Linux you can use libminisat and libminisat-devel packages >&2
+  echo from ALT Linux Sisyphus repository. Otherwise you must compile and >&2
+  echo properly install code from following git repository: >&2
+  echo http://git.altlinux.org/people/msp/public/libminisat.git >&2
+  exit 1
+])
+
+AC_CHECK_LIB(curl, curl_global_init, [], [echo;echo Your system has no libcurl library needed for proper Deepsolver work! >&2;exit 1])
+AC_CHECK_LIB(z, gzdopen, [], [echo;echo Your system has no zlib library needed for proper Deepsolver work! >&2;exit 1])
+AC_CHECK_LIB(rpm, rpmReadPackageHeader, [], [echo;echo Your system has no librpm library needed for proper Deepsolver work! >&2;exit 1])
