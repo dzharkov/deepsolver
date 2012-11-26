@@ -16,7 +16,7 @@
 */
 
 #ifndef DEEPSOLVER_ABSTRACT_PACKAGE_SCOPE_H
-#define ABSTRACT_PACKAGE_SCOPE_H
+#define DEEPSOLVER_ABSTRACT_PACKAGE_SCOPE_H
 
 class AbstractPackageScope
 {
@@ -27,15 +27,19 @@ public:
 public:
   bool allProvidesHaveTheVersion(const VarIdVector& vars, PackageId provideEntry);
   bool checkName(const std::string& name);
-  std::string constructPackageNameWithBuildTime(VarId varId);
+  std::string constructPackageName(VarId varId);
   std::string constructPackageNameWithBuildTime(VarId varId);
   void getConflicts(VarId varId, IdPkgRelVector& res);
   void getRequires(VarId varId, IdPkgRelVector& res);
-  bool isInstalledWithMatchingAlternatives(VarId varId);
+  bool isInstalled(VarId varId);
   PackageId packageIdOfVarId(VarId varId);
   std::string packageIdToStr(PackageId packageId);
   void selectMatchingVarsAmongProvides(PackageId packageId, const VersionCond& ver, VarIdVector& vars);
+  void selectMatchingVarsAmongProvides(PackageId packageId, VarIdVector& vars);
   void selectMatchingVarsRealNames(PackageId packageId, const VersionCond& ver, VarIdVector& vars);
+  void selectMatchingVarsRealNames(PackageId packageId, VarIdVector& vars);
+  void selectMatchingVarsWithProvides(const IdPkgRel& rel, VarIdVector& vars);
+  void selectMatchingVarsWithProvides(PackageId packageId, VarIdVector& vars);
   void selectMatchingVarsWithProvides(PackageId packageId, const VersionCond& ver, VarIdVector& vars);
   void selectTheNewest(VarIdVector& vars);
   void selectTheNewestByProvide(VarIdVector& vars, PackageId provideEntry);

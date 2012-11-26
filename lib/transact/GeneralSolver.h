@@ -21,6 +21,7 @@
 #include"AbstractTaskSolver.h"
 #include"AbstractPackageBackEnd.h"
 #include"AbstractPackageScope.h"
+#include"AbstractSatSolver.h"
 
 class GeneralSolver: public AbstractTaskSolver
 {
@@ -35,6 +36,8 @@ public:
 
 public:
   void solve(const UserTask& task, VarIdVector& toInstall, VarIdVector& toRemove);
+  void constructSat();
+
 
 private:
   void handleChangeToFalse(VarId seed,

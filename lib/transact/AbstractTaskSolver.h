@@ -42,14 +42,6 @@ public:
   virtual void constructSat() = 0;
 }; //class AbstractTaskSolver;
 
-std::auto_ptr<AbstractTaskSolver> createStrictTaskSolver(const PackageScopeContent& content,
-							 const ProvideMap& provideMap,
-							 const InstalledReferences& requiresReferences,
-							 const InstalledReferences& conflictsReferences);
-
-std::auto_ptr<AbstractTaskSolver> createGeneralTaskSolver(const PackageScopeContent& content,
-							 const ProvideMap& provideMap,
-							 const InstalledReferences& requiresReferences,
-							 const InstalledReferences& conflictsReferences);
+std::auto_ptr<AbstractTaskSolver> createGeneralTaskSolver(TaskSolverData& taskSolverData);
 
 #endif //DEEPSOLVER_ABSTRACT_TASK_SOLVER_H;

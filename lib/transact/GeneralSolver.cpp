@@ -48,34 +48,7 @@ void rmDub(std::vector<T>& v)
   assert(k == s.size());
 }
 
-struct PrioritySortItem
-{
-  PrioritySortItem(const AbstractPackageBackEnd& b,
-		   VarId v,
-		   const std::string& n)
-    : backEnd(b),
-      varId(v),
-      name(n) {}
-
-  bool operator <(const PrioritySortItem& item) const
-  {
-    return backEnd.versionCompare(name, item.name) < 0;
-  }
-
-  bool operator >(const PrioritySortItem& item) const
-  {
-    return backEnd.versionCompare(name, item.name) > 0;
-  }
-
-  const AbstractPackageBackEnd& backEnd;
-  VarId varId;
-  std::string name;
-}; //struct PrioritySortItem;
-
-typedef std::vector<PrioritySortItem> PrioritySortItemVector;
-typedef std::list<PrioritySortItem> PrioritySortItemList;
-
-void GeneralSolver::solve(const UserTask& task, VarIdVector& toInstall, VarIdVector& toRemove, VarIdToVarIdMap& toUpgrade)
+void GeneralSolver::solve(const UserTask& task, VarIdVector& toInstall, VarIdVector& toRemove)
 {
   const clock_t satConstructStart = clock(); 
   translateUserTask(task);
@@ -92,7 +65,7 @@ void GeneralSolver::solve(const UserTask& task, VarIdVector& toInstall, VarIdVec
 
     for(Sat::size_type i = 0;i < m_sat.size();i++)
       rmDub(m_sat[i]);
-  printSat(m_scope, m_sat, m_annotations);
+    //  printSat(m_scope, m_sat, m_annotations);
   logMsg(LOG_DEBUG, "Creating libminisat SAT solver");
   std::auto_ptr<AbstractSatSolver> satSolver = createLibMinisatSolver();
   for(Sat::size_type i = 0;i < m_sat.size();i++)
@@ -126,7 +99,12 @@ void GeneralSolver::solve(const UserTask& task, VarIdVector& toInstall, VarIdVec
       satSolver->addClause(blocking);
     }
       */
-      printSolution(m_scope, resInstall, resRemove);
+      //      printSolution(m_scope, resInstall, resRemove);
+}
+
+void GeneralSolver::constructSat()
+{
+  //FIXME:
 }
 
 void GeneralSolver::translateUserTask(const UserTask& userTask)
@@ -146,7 +124,7 @@ void GeneralSolver::translateUserTask(const UserTask& userTask)
       if (m_annotating)
 	m_annotations.push_back("# Buy user task to install \"" + userTask.itemsToInstall[i].toString() + "\"");
       VarIdVector otherVersions;
-      m_scope.selectMatchingVarsNoProvides(m_scope.packageIdOfVarId(varId), otherVersions);
+      m_scope.selectMatchingVarsRealNames(m_scope.packageIdOfVarId(varId), otherVersions);
       rmDub(otherVersions);
       for(VarIdVector::size_type k = 0;k < otherVersions.size();k++)
 	if (otherVersions[k] != varId)
@@ -170,7 +148,7 @@ void GeneralSolver::translateUserTask(const UserTask& userTask)
 	  continue;
 	}
       VarIdVector vars;
-      m_scope.selectMatchingVarsNoProvides(pkgId, vars);
+      m_scope.selectMatchingVarsRealNames(pkgId, vars);
       rmDub(vars);
       for(VarIdVector::size_type k = 0;k < vars.size();k++)
 	{
@@ -199,12 +177,12 @@ VarId GeneralSolver::translateItemToInstall(const UserTaskItemToInstall& item)
   if (!hasVersion)
     {
       //The following line does not take into account available provides;
-      m_scope.selectMatchingVarsNoProvides(pkgId, vars);
+      m_scope.selectMatchingVarsRealNames(pkgId, vars);
     } else
     {
       VersionCond ver(item.version, item.verDir);
       //This line does not handle provides too;
-      m_scope.selectMatchingVarsNoProvides(pkgId, ver, vars);
+      m_scope.selectMatchingVarsRealNames(pkgId, ver, vars);
     }
   if (!vars.empty())
     {
@@ -255,7 +233,7 @@ VarId GeneralSolver::satisfyRequire(PackageId pkgId)
   assert(pkgId != BAD_PACKAGE_ID);
   VarIdVector vars;
   //The following line does not take into account available provides;
-  m_scope.selectMatchingVarsNoProvides(pkgId, vars);
+  m_scope.selectMatchingVarsRealNames(pkgId, vars);
   if (!vars.empty())
     {
       m_scope.selectTheNewest(vars);
@@ -298,7 +276,7 @@ VarId GeneralSolver::satisfyRequire(PackageId pkgId, const VersionCond& version)
   assert(pkgId != BAD_PACKAGE_ID);
   VarIdVector vars;
   //This line does not handle provides ;
-  m_scope.selectMatchingVarsNoProvides(pkgId, version, vars);
+  m_scope.selectMatchingVarsRealNames(pkgId, version, vars);
   if (!vars.empty())
     {
       m_scope.selectTheNewest(vars);
@@ -336,7 +314,7 @@ void GeneralSolver::handleChangeToTrue(VarId varId,
 
   //Blocking other versions of this package;
   VarIdVector otherVersions;
-  m_scope.selectMatchingVarsNoProvides(m_scope.packageIdOfVarId(varId), otherVersions);
+  m_scope.selectMatchingVarsRealNames(m_scope.packageIdOfVarId(varId), otherVersions);
   for(VarIdVector::size_type i = 0;i < otherVersions.size();i++)
     if (otherVersions[i] != varId)
       {
@@ -548,7 +526,7 @@ void GeneralSolver::processPendings()
     }
 }
 
-VarId GeneralSolver::processPriorityList(const VarIdVector& vars, PackageId provideEntry) const
+VarId GeneralSolver::processPriorityList(const VarIdVector& vars, PackageId provideEntry)
 {
   assert(!vars.empty());
   /*
@@ -571,16 +549,20 @@ VarId GeneralSolver::processPriorityList(const VarIdVector& vars, PackageId prov
   return BAD_VAR_ID;
 }
 
-VarId GeneralSolver::processPriorityBySorting(const VarIdVector& vars) const
+VarId GeneralSolver::processPriorityBySorting(const VarIdVector& vars)
 {
+  /*FIXME:
   assert(!vars.empty());
   //Perform sorting by real package names and take last one;
-  PrioritySortItemVector items;
+  StringList names;
   for(VarIdVector::size_type i = 0;i < vars.size();i++)
-    items.push_back(PrioritySortItem(vars[i], m_scope.constructPackageName(vars[i])));//FIXME:Epoch may be missed here;
+    names.push_back(m_scope.constructPackageName(vars[i]));//FIXME:Epoch may be missed here;
+  return sortPackageNames(vars, names);
   std::sort(items.begin(), items.end());
   assert(!items.empty());
   return items[items.size() - 1].varId;
+  */
+  return vars[0];
 }
 
 void GeneralSolver::addClause(const Clause& clause)
@@ -617,11 +599,7 @@ std::string GeneralSolver::relToString(const IdPkgRel& rel)
   return m_scope.packageIdToStr(rel.pkgId) + " " + ver;
 }
 
-std::auto_ptr<AbstractTaskSolver> createGeneralTaskSolver(const PackageScopeContent& content,
-							 const ProvideMap& provideMap,
-							 const InstalledReferences& requiresReferences,
-							 const InstalledReferences& conflictsReferences)
+std::auto_ptr<AbstractTaskSolver> createGeneralTaskSolver(TaskSolverData& taskSolverData)
 {
-  logMsg(LOG_DEBUG, "Creating general task solver");
-  return std::auto_ptr<AbstractTaskSolver>(new GeneralSolver(content, provideMap, requiresReferences, conflictsReferences));
+  return std::auto_ptr<AbstractTaskSolver>(new GeneralSolver(taskSolverData));
 }
