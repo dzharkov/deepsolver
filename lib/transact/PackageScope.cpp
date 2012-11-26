@@ -35,6 +35,60 @@ static void selectVarsToTry(const PackageScopeContent& content,
 			    VarIdVector& toTry,
 			    bool includeItself);
 
+void PackageScope::selectMatchingVarsAmongProvides(const IdPkgRel& rel, VarIdVector& vars)
+{
+  vars.clear();
+  if (rel.hasVer())
+    selectMatchingVarsAmongProvides(rel.pkgId, rel.extractVersionCond(), vars); else
+    selectMatchingVarsAmongProvides(rel.pkgId, vars);
+}
+
+void PackageScope::selectMatchingVarsAmongProvides(PackageId pkgId, VarIdVector& vars)
+{
+  //Only provides must be considered here;
+  vars.clear();
+  selectVarsToTry(m_content, m_provideMap, pkgId, vars, 0);//0 means do not include packageId itself;
+}
+
+void PackageScope::selectMatchingVarsAmongProvides(PackageId packageId, const VersionCond& ver, VarIdVector& vars)
+{
+  //Considering only provides entries and only with version information;
+  vars.clear();
+  const PkgInfoVector& pkgs = m_content.pkgInfoVector;
+  const RelInfoVector& rels = m_content.relInfoVector;
+  VarIdVector toTry;
+  selectVarsToTry(m_content, m_provideMap, packageId, toTry, 0);//0 means do not include packageId itself;
+  for(VarIdVector::size_type i = 0;i < toTry.size();i++)
+    {
+      assert(toTry[i] < pkgs.size());
+      const size_t pos = pkgs[toTry[i]].providesPos;
+      const size_t count = pkgs[toTry[i]].providesCount;
+      assert(count > 0);
+      //      if (count == 0)//There are no provides entries;
+      //	continue;
+      size_t j;
+      for(j = 0;j < count;j++)
+	{
+	  assert(pos + j < rels.size());
+	  if (!HAS_VERSION(rels[pos + j]))
+	    continue;  
+	  assert(rels[pos + j].type != VerNone);
+	  if (rels[pos + j].pkgId == packageId && versionOverlap(VersionCond(rels[pos + j].ver, rels[pos + j].type), ver))
+	    break;
+	}
+      if (j < count)
+	vars.push_back(toTry[i]);
+    }
+}
+
+void PackageScope::selectMatchingVarsRealNames(const IdPkgRel& rel, VarIdVector& vars)
+{
+  vars.clear();
+  if (rel.hasVer())
+    selectMatchingVarsRealNames(rel.pkgId, rel.extractVersionCond(), vars); else
+    selectMatchingVarsRealNames(rel.pkgId, vars);
+}
+
 void PackageScope::selectMatchingVarsRealNames(PackageId packageId, VarIdVector& vars)
 {
   //Here we must process only real package names, no provides are required;
@@ -65,7 +119,7 @@ void PackageScope::selectMatchingVarsRealNames(PackageId packageId, const Versio
     }
 }
 
-void PackageScope::selectMatchingVarsWithProvides(IdPkgRel& rel, VarIdVector& vars)
+void PackageScope::selectMatchingVarsWithProvides(const IdPkgRel& rel, VarIdVector& vars)
 {
   vars.clear();
   if (rel.hasVer())
@@ -100,44 +154,6 @@ void PackageScope::selectMatchingVarsWithProvides(PackageId packageId, const Ver
       const size_t count = pkgs[toTry[i]].providesCount;
       if (count == 0)//There are no provides entries;
 	continue;
-      size_t j;
-      for(j = 0;j < count;j++)
-	{
-	  assert(pos + j < rels.size());
-	  if (!HAS_VERSION(rels[pos + j]))
-	    continue;  
-	  assert(rels[pos + j].type != VerNone);
-	  if (rels[pos + j].pkgId == packageId && versionOverlap(VersionCond(rels[pos + j].ver, rels[pos + j].type), ver))
-	    break;
-	}
-      if (j < count)
-	vars.push_back(toTry[i]);
-    }
-}
-
-void PackageScope::selectMatchingVarsAmongProvides(PackageId pkgId, VarIdVector& vars)
-{
-  //Only provides must be considered here;
-  vars.clear();
-  selectVarsToTry(m_content, m_provideMap, pkgId, vars, 0);//0 means do not include packageId itself;
-}
-
-void PackageScope::selectMatchingVarsAmongProvides(PackageId packageId, const VersionCond& ver, VarIdVector& vars)
-{
-  //Considering only provides entries and only with version information;
-  vars.clear();
-  const PkgInfoVector& pkgs = m_content.pkgInfoVector;
-  const RelInfoVector& rels = m_content.relInfoVector;
-  VarIdVector toTry;
-  selectVarsToTry(m_content, m_provideMap, packageId, toTry, 0);//0 means do not include packageId itself;
-  for(VarIdVector::size_type i = 0;i < toTry.size();i++)
-    {
-      assert(toTry[i] < pkgs.size());
-      const size_t pos = pkgs[toTry[i]].providesPos;
-      const size_t count = pkgs[toTry[i]].providesCount;
-      assert(count > 0);
-      //      if (count == 0)//There are no provides entries;
-      //	continue;
       size_t j;
       for(j = 0;j < count;j++)
 	{
@@ -253,11 +269,38 @@ bool PackageScope::allProvidesHaveTheVersion(const VarIdVector& vars, PackageId 
   return 1;
 }
 
+void PackageScope::getRequires(VarId varId, IdPkgRelVector& res)
+{
+  assert(varId != BAD_VAR_ID);
+  PackageIdVector withVersion, withoutVersion;
+  VersionCondVector versions;
+  getRequires(varId, withoutVersion, withVersion, versions);
+  assert(withVersion.size() == versions.size());
+  res.clear();
+  for(PackageIdVector::size_type i = 0;i < withoutVersion.size();i++)
+    res.push_back(IdPkgRel(withoutVersion[i]));
+  for(PackageIdVector::size_type i = 0;i < withVersion.size();i++)
+    res.push_back(IdPkgRel(withVersion[i], versions[i]));
+}
+
+void PackageScope::getConflicts(VarId varId, IdPkgRelVector& res)
+{
+  assert(varId != BAD_VAR_ID);
+  PackageIdVector withVersion, withoutVersion;
+  VersionCondVector versions;
+  getConflicts(varId, withoutVersion, withVersion, versions);
+  assert(withVersion.size() == versions.size());
+  res.clear();
+  for(PackageIdVector::size_type i = 0;i < withoutVersion.size();i++)
+    res.push_back(IdPkgRel(withoutVersion[i]));
+  for(PackageIdVector::size_type i = 0;i < withVersion.size();i++)
+    res.push_back(IdPkgRel(withVersion[i], versions[i]));
+}
+
 void PackageScope::whatSatisfiesAmongInstalled(const IdPkgRel& rel, VarIdVector& res)
 {
   assert(rel.pkgId != BAD_PACKAGE_ID);
   res.clear();
-
 
   //If there is no version restrictions;
   if (!rel.hasVer())
@@ -310,80 +353,6 @@ void PackageScope::whatSatisfiesAmongInstalled(const IdPkgRel& rel, VarIdVector&
 	    }
 	} //for(provides);
     } //for(packages);
-}
-
-void PackageScope::getRequires(VarId varId, IdPkgRelVector& res)
-{
-  assert(varId != BAD_VAR_ID);
-  PackageIdVector withVersion, withoutVersion;
-  VersionCondVector versions;
-  getRequires(varId, withoutVersion, withVersion, versions);
-  assert(withVersion.size() == versions.size());
-  res.clear();
-  for(PackageIdVector::size_type i = 0;i < withoutVersion.size();i++)
-    res.push_back(IdPkgRel(withoutVersion[i]));
-  for(PackageIdVector::size_type i = 0;i < withVersion.size();i++)
-    res.push_back(IdPkgRel(withVersion[i], versions[i]));
-}
-
-void PackageScope::getRequires(VarId varId, PackageIdVector& depWithoutVersion, PackageIdVector& depWithVersion, VersionCondVector& versions) const
-{
-  depWithoutVersion.clear();
-  depWithVersion.clear();
-  versions.clear();
-  const PkgInfoVector& pkgs = m_content.pkgInfoVector;
-  assert(varId < pkgs.size());
-  const PackageScopeContent::PkgInfo& pkg = pkgs[varId];
-  const RelInfoVector& rels = m_content.relInfoVector;
-  const size_t pos = pkg.requiresPos;
-  const size_t count = pkg.requiresCount;
-  for(size_t i = 0;i < count;i++)
-    {
-      assert(pos + i < rels.size());
-      if (rels[pos + i].ver == NULL)
-	depWithoutVersion.push_back(rels[pos + i].pkgId); else 
-	{
-	  depWithVersion.push_back(rels[pos + i].pkgId);
-	  versions.push_back(VersionCond(rels[pos + i].ver, rels[pos + i].type));
-	}
-    }
-}
-
-void PackageScope::getConflicts(VarId varId, IdPkgRelVector& res)
-{
-  assert(varId != BAD_VAR_ID);
-  PackageIdVector withVersion, withoutVersion;
-  VersionCondVector versions;
-  getConflicts(varId, withoutVersion, withVersion, versions);
-  assert(withVersion.size() == versions.size());
-  res.clear();
-  for(PackageIdVector::size_type i = 0;i < withoutVersion.size();i++)
-    res.push_back(IdPkgRel(withoutVersion[i]));
-  for(PackageIdVector::size_type i = 0;i < withVersion.size();i++)
-    res.push_back(IdPkgRel(withVersion[i], versions[i]));
-}
-
-void PackageScope::getConflicts(VarId varId, PackageIdVector& withoutVersion, PackageIdVector& withVersion, VersionCondVector& versions) const
-{
-  withoutVersion.clear();
-  withVersion.clear();
-  versions.clear();
-  const PkgInfoVector& pkgs = m_content.pkgInfoVector;
-  assert(varId < pkgs.size());
-  const PackageScopeContent::PkgInfo& pkg = pkgs[varId];
-  const RelInfoVector& rels = m_content.relInfoVector;
-  const size_t pos = pkg.conflictsPos;
-  const size_t count = pkg.conflictsCount;
-  for(size_t i = 0;i < count;i++)
-    {
-      assert(pos + i < rels.size());
-      if (rels[pos + i].ver == NULL)
-	withoutVersion.push_back(rels[pos + i].pkgId); else 
-	{
-	  withVersion.push_back(rels[pos + i].pkgId);
-	  versions.push_back(VersionCond(rels[pos + i].ver, rels[pos + i].type));
-	}
-    }
 }
 
 void PackageScope::whatDependsAmongInstalled(VarId varId, VarIdVector& res, IdPkgRelVector& resRels)
@@ -582,6 +551,58 @@ std::string PackageScope::packageIdToStr(PackageId packageId)
 
 // Private methods;
 
+void PackageScope::getRequires(VarId varId,
+			       PackageIdVector& depWithoutVersion,
+			       PackageIdVector& depWithVersion,
+			       VersionCondVector& versions) const
+{
+  depWithoutVersion.clear();
+  depWithVersion.clear();
+  versions.clear();
+  const PkgInfoVector& pkgs = m_content.pkgInfoVector;
+  assert(varId < pkgs.size());
+  const PackageScopeContent::PkgInfo& pkg = pkgs[varId];
+  const RelInfoVector& rels = m_content.relInfoVector;
+  const size_t pos = pkg.requiresPos;
+  const size_t count = pkg.requiresCount;
+  for(size_t i = 0;i < count;i++)
+    {
+      assert(pos + i < rels.size());
+      if (rels[pos + i].ver == NULL)
+	depWithoutVersion.push_back(rels[pos + i].pkgId); else 
+	{
+	  depWithVersion.push_back(rels[pos + i].pkgId);
+	  versions.push_back(VersionCond(rels[pos + i].ver, rels[pos + i].type));
+	}
+    }
+}
+
+void PackageScope::getConflicts(VarId varId,
+				PackageIdVector& withoutVersion,
+				PackageIdVector& withVersion,
+				VersionCondVector& versions) const
+{
+  withoutVersion.clear();
+  withVersion.clear();
+  versions.clear();
+  const PkgInfoVector& pkgs = m_content.pkgInfoVector;
+  assert(varId < pkgs.size());
+  const PackageScopeContent::PkgInfo& pkg = pkgs[varId];
+  const RelInfoVector& rels = m_content.relInfoVector;
+  const size_t pos = pkg.conflictsPos;
+  const size_t count = pkg.conflictsCount;
+  for(size_t i = 0;i < count;i++)
+    {
+      assert(pos + i < rels.size());
+      if (rels[pos + i].ver == NULL)
+	withoutVersion.push_back(rels[pos + i].pkgId); else 
+	{
+	  withVersion.push_back(rels[pos + i].pkgId);
+	  versions.push_back(VersionCond(rels[pos + i].ver, rels[pos + i].type));
+	}
+    }
+}
+
 int PackageScope::versionCompare(const std::string& ver1, const std::string& ver2) const
 {
   return m_backEnd.versionCompare(ver1, ver2);
@@ -650,9 +671,3 @@ void selectVarsToTry(const PackageScopeContent& content,
   //Maybe it is good idea to perform dublications cleaning here,, but it can take time;
 }
 
-void proba()
-{
-  AbstractPackageBackEnd* backEnd;
-  PackageScopeContent* content;
-  PackageScope* k = new PackageScope(*backEnd, *content, ProvideMap(), InstalledReferences(), InstalledReferences());
-}
