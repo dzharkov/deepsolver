@@ -34,10 +34,12 @@ public:
   bool isInstalled(VarId varId);
   PackageId packageIdOfVarId(VarId varId);
   std::string packageIdToStr(PackageId packageId);
-  void selectMatchingVarsAmongProvides(PackageId packageId, const VersionCond& ver, VarIdVector& vars);
+  void selectMatchingVarsAmongProvides(const IdPkgRel& rel, VarIdVector& vars);
   void selectMatchingVarsAmongProvides(PackageId packageId, VarIdVector& vars);
-  void selectMatchingVarsRealNames(PackageId packageId, const VersionCond& ver, VarIdVector& vars);
+  void selectMatchingVarsAmongProvides(PackageId packageId, const VersionCond& ver, VarIdVector& vars);
+  void selectMatchingVarsRealNames(const IdPkgRel& rel, VarIdVector& vars);
   void selectMatchingVarsRealNames(PackageId packageId, VarIdVector& vars);
+  void selectMatchingVarsRealNames(PackageId packageId, const VersionCond& ver, VarIdVector& vars);
   void selectMatchingVarsWithProvides(const IdPkgRel& rel, VarIdVector& vars);
   void selectMatchingVarsWithProvides(PackageId packageId, VarIdVector& vars);
   void selectMatchingVarsWithProvides(PackageId packageId, const VersionCond& ver, VarIdVector& vars);

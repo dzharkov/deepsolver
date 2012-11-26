@@ -44,59 +44,42 @@ public:
   PackageId packageIdOfVarId(VarId varId) const;
   std::string constructPackageName(VarId varId) const;
   std::string constructPackageNameWithBuildTime(VarId varId) const;
-  std::string constructFullVersion(VarId varId) const;
   bool checkName(const std::string& name) const;
-
-  /**\brief Translates package name as a string to PackageId value
-   *
-   * Package Id replaces both the real names and provides entries
-   */
   PackageId strToPackageId(const std::string& name) const;
-
-  /**\brief Translates the package name replaced by PackageId value to original string
-   *
-   * Package Id replaces both the real names and provides entries
-   */
   std::string packageIdToStr(PackageId packageId) const;
 
-  void selectMatchingVarsNoProvides(PackageId packageId, VarIdVector& vars);
-  void selectMatchingVarsNoProvides(PackageId packageId, const VersionCond& ver, VarIdVector& vars);
-
+  void selectMatchingVarsAmongProvides(const IdPkgRel& rel, VarIdVector& vars);
+  void selectMatchingVarsAmongProvides(PackageId packageId, VarIdVector& vars);
+  void selectMatchingVarsAmongProvides(PackageId packageId, const VersionCond& ver, VarIdVector& vars);
+  void selectMatchingVarsRealNames(const IdPkgRel& rel, VarIdVector& vars);
+  void selectMatchingVarsRealNames(PackageId packageId, VarIdVector& vars);
+  void selectMatchingVarsRealNames(PackageId packageId, const VersionCond& ver, VarIdVector& vars);
   void selectMatchingVarsWithProvides(IdPkgRel& rel, VarIdVector& vars);
   void selectMatchingVarsWithProvides(PackageId packageId, VarIdVector& vars);
   void selectMatchingVarsWithProvides(PackageId packageId, const VersionCond& ver, VarIdVector& vars);
 
-  void selectMatchingVarsAmongProvides(PackageId packageId, VarIdVector& vars);
-  void selectMatchingVarsAmongProvides(PackageId packageId, const VersionCond& ver, VarIdVector& vars);
-
   bool isInstalled(VarId varId) const;
-  bool isInstalledWithMatchingAlternatives(VarId varId) const;//FIXME:Give new name;;
-  void selectInstalledNoProvides(PackageId pkgId, VarIdVector& vars) const;
-
   void selectTheNewest(VarIdVector& vars);
   void selectTheNewestByProvide(VarIdVector& vars, PackageId provideEntry);
   bool allProvidesHaveTheVersion(const VarIdVector& vars, PackageId provideEntry);
 
   void getRequires(VarId varId, IdPkgRelVector& res) const;
+  void getConflicts(VarId varId, IdPkgRelVector& res) const;
 
+  void whatConflictsAmongInstalled(VarId varId, VarIdVector& res, IdPkgRelVector& resRels);
+  void whatDependsAmongInstalled(VarId varId, VarIdVector& res, IdPkgRelVector& resRels);
+  void whatSatisfiesAmongInstalled(const IdPkgRel& rel, VarIdVector& res);
+
+private:
   void getRequires(VarId varId,
 		   PackageIdVector& depWithoutVersion,
 		   PackageIdVector& depWithVersion,
 		   VersionCondVector& versions) const;
 
-  void getConflicts(VarId varId, IdPkgRelVector& res) const;
-
   void getConflicts(VarId varId,
 		    PackageIdVector& withoutVersion,
 		    PackageIdVector& withVersion,
 		    VersionCondVector& versions) const;
-
-  void whatSatisfiesAmongInstalled(const IdPkgRel& rel, VarIdVector& res);
-
-  void whatDependsAmongInstalled(VarId varId, VarIdVector& res, IdPkgRelVector& resRels);
-  void whatConflictsAmongInstalled(VarId varId, VarIdVector& res, IdPkgRelVector& resRels);
-
-  bool variableSatisfies(VarId varId, const IdPkgRel& rel);
 
 private:
   typedef PackageScopeContent::PkgInfo PkgInfo;
