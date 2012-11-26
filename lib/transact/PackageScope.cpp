@@ -153,53 +153,13 @@ void PackageScope::selectMatchingVarsAmongProvides(PackageId packageId, const Ve
     }
 }
 
-bool PackageScope::isInstalled(VarId varId) const
+bool PackageScope::isInstalled(VarId varId)
 {
   assert(varId != BAD_VAR_ID);
   const PkgInfoVector& pkgs = m_content.pkgInfoVector;
   assert(varId < pkgs.size());
   return pkgs[varId].flags & PkgFlagInstalled;
 }
-
-/*KILLME:bool PackageScope::isInstalledWithMatchingAlternatives(VarId varId) 
-const
-{
-  assert(varId != BAD_VAR_ID);
-  const PkgInfoVector& pkgs = m_content.pkgInfoVector;
-  assert(varId < pkgs.size());
-  if (pkgs[varId].flags & PkgFlagInstalled)
-    return 1;
-  //Not everything is so simple, there can be other variables of this package and they can be installed;
-  VarId fromPos, toPos;
-  m_content.locateRange(pkgs[varId].pkgId, fromPos, toPos);
-  assert(fromPos <= toPos && fromPos < pkgs.size() && toPos < pkgs.size());
-  const PkgInfo& p1 = pkgs[varId];
-  for(VarId i = fromPos;i < toPos ;i++)
-    if (pkgs[i].flags & PkgFlagInstalled)
-      {
-  const PkgInfo& p2 = pkgs[i];
-  if (p1.pkgId == p2.pkgId && p1.epoch == p2.epoch && std::string(p1.ver) == p2.ver && std::string(p1.release) == p2.release)//No need to check buildtime here;
-    return 1;
-      }
-  return 0;
-}
-*/
-
-	 /*KILLME:
-void PackageScope::selectInstalledNoProvides(PackageId pkgId, VarIdVector& vars) const
-{
-  vars.clear();
-  assert(pkgId != BAD_PACKAGE_ID);
-  VarId fromVarId, toVarId;
-  m_content.locateRange(pkgId, fromVarId, toVarId);
-  if (fromVarId == toVarId)
-    return;
-  const PkgInfoVector& pkgs = m_content.pkgInfoVector;
-  for(VarId i = fromVarId;i < toVarId;i++)
-    if (pkgs[i].flags & PkgFlagInstalled)
-      vars.push_back(i);
-}
-	 */
 
 void PackageScope::selectTheNewest(VarIdVector& vars)
 {
@@ -352,7 +312,7 @@ void PackageScope::whatSatisfiesAmongInstalled(const IdPkgRel& rel, VarIdVector&
     } //for(packages);
 }
 
-void PackageScope::getRequires(VarId varId, IdPkgRelVector& res) const
+void PackageScope::getRequires(VarId varId, IdPkgRelVector& res)
 {
   assert(varId != BAD_VAR_ID);
   PackageIdVector withVersion, withoutVersion;
@@ -389,7 +349,7 @@ void PackageScope::getRequires(VarId varId, PackageIdVector& depWithoutVersion, 
     }
 }
 
-void PackageScope::getConflicts(VarId varId, IdPkgRelVector& res) const
+void PackageScope::getConflicts(VarId varId, IdPkgRelVector& res)
 {
   assert(varId != BAD_VAR_ID);
   PackageIdVector withVersion, withoutVersion;
@@ -568,51 +528,16 @@ void PackageScope::whatConflictsAmongInstalled(VarId varId, VarIdVector& res, Id
     } //for provides;
 }
 
-/*KILLME:
-bool PackageScope::variableSatisfies(VarId varId, const IdPkgRel& rel)
-{
-  assert(varId != BAD_VAR_ID && rel.pkgId != BAD_PACKAGE_ID);
-  const PkgInfoVector& pkgs = m_content.pkgInfoVector;
-  const RelInfoVector& rels = m_content.relInfoVector;
-  assert(varId < pkgs.size());
-  const PkgInfo& pkg = pkgs[varId];
-  if (packageIdOfVarId(varId) == rel.pkgId)
-    {
-      if (!rel.hasVer())
-	return 1;
-      if (versionOverlap(constructVersionCondEquals(pkg.epoch, pkg.ver, pkg.release), rel.extractVersionCond()))
-	return 1;
-    }
-  //The package itself does not match, checking its provides;
-  const size_t pos = pkg.providesPos;
-  const size_t count = pkg.providesCount;
-  if (count == 0)
-    return 0;
-  for(size_t i = 0;i < count;i++)
-    {
-      assert(pos + i < rels.size());
-      const RelInfo& r = rels[pos + i];
-      if (r.pkgId != rel.pkgId)
-	continue;
-      if (!rel.hasVer())
-	return 1;
-      if (!HAS_VERSION(r))
-	continue;
-      if (versionOverlap(VersionCond(rel.ver, rel.verDir), VersionCond(r.ver, r.type)))
-	return 1;
-    }
-  return 0;
-}
-*/
+// Information methods;
 
-PackageId PackageScope::packageIdOfVarId(VarId varId) const
+PackageId PackageScope::packageIdOfVarId(VarId varId)
 {
   const PkgInfoVector& pkgs = m_content.pkgInfoVector;
   assert(varId < pkgs.size());
   return pkgs[varId].pkgId;
 }
 
-std::string PackageScope::constructPackageName(VarId varId) const
+std::string PackageScope::constructPackageName(VarId varId)
 {
   const PkgInfoVector& pkgs = m_content.pkgInfoVector;
   assert(varId < pkgs.size());
@@ -627,7 +552,7 @@ std::string PackageScope::constructPackageName(VarId varId) const
   return res;
 }
 
-std::string PackageScope::constructPackageNameWithBuildTime(VarId varId) const
+std::string PackageScope::constructPackageNameWithBuildTime(VarId varId)
 {
   const PkgInfoVector& pkgs = m_content.pkgInfoVector;
   assert(varId < pkgs.size());
@@ -640,30 +565,17 @@ std::string PackageScope::constructPackageNameWithBuildTime(VarId varId) const
   return res.str();
 }
 
-std::string PackageScope::constructFullVersion(VarId varId) const
-{
-  const PkgInfoVector& pkgs = m_content.pkgInfoVector;
-  assert(varId < pkgs.size());
-  const PackageScopeContent::PkgInfo& pkg = pkgs[varId];
-  assert(pkg.ver != NULL && pkg.release != NULL);
-  std::ostringstream ss;
-  if (pkg.epoch > 0)
-    ss << pkg.epoch << ":";
-  ss << pkg.ver << "-" << pkg.release;
-  return ss.str();
-}
-
-bool PackageScope::checkName(const std::string& name) const
+bool PackageScope::checkName(const std::string& name)
 {
   return m_content.checkName(name);
 }
 
-PackageId PackageScope::strToPackageId(const std::string& name) const
+PackageId PackageScope::strToPackageId(const std::string& name)
 {
   return m_content.strToPackageId(name);
 }
 
-std::string PackageScope::packageIdToStr(PackageId packageId) const
+std::string PackageScope::packageIdToStr(PackageId packageId)
 {
   return m_content.packageIdToStr(packageId);
 }
@@ -688,6 +600,19 @@ bool PackageScope::versionEqual(const std::string& ver1, const std::string& ver2
 bool PackageScope::versionGreater(const std::string& ver1, const std::string& ver2) const
 {
   return m_backEnd.versionGreater(ver1, ver2);
+}
+
+std::string PackageScope::constructFullVersion(VarId varId) const
+{
+  const PkgInfoVector& pkgs = m_content.pkgInfoVector;
+  assert(varId < pkgs.size());
+  const PackageScopeContent::PkgInfo& pkg = pkgs[varId];
+  assert(pkg.ver != NULL && pkg.release != NULL);
+  std::ostringstream ss;
+  if (pkg.epoch > 0)
+    ss << pkg.epoch << ":";
+  ss << pkg.ver << "-" << pkg.release;
+  return ss.str();
 }
 
 // Static functions;
@@ -723,4 +648,11 @@ void selectVarsToTry(const PackageScopeContent& content,
   for(VarIdVector::size_type i = 0;i < providers.size();i++)
     toTry.push_back(providers[i]);
   //Maybe it is good idea to perform dublications cleaning here,, but it can take time;
+}
+
+void proba()
+{
+  AbstractPackageBackEnd* backEnd;
+  PackageScopeContent* content;
+  PackageScope* k = new PackageScope(*backEnd, *content, ProvideMap(), InstalledReferences(), InstalledReferences());
 }
