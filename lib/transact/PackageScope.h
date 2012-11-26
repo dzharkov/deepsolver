@@ -35,8 +35,8 @@ public:
     : m_backEnd(backEnd),
       m_content(content), 
       m_provideMap(provideMap),
-      m_requiresReferences(requiresReferences),
-      m_conflictsReferences(conflictsReferences) {}
+      m_installedRequiresEntries(installedRequiresEntries),
+      m_installedConflictsEntries(installedConflictsEntries) {}
 
   virtual ~PackageScope() {}
 
@@ -80,6 +80,13 @@ private:
 		    PackageIdVector& withoutVersion,
 		    PackageIdVector& withVersion,
 		    VersionCondVector& versions) const;
+
+private:
+  int versionCompare(const std::string& ver1, const std::string& ver2) const;
+  bool versionOverlap(const VersionCond& ver1, const VersionCond& ver2) const;
+  bool versionEqual(const std::string& ver1, const std::string& ver2) const;
+bool versionGreater(const std::string& ver1, const std::string& ver2) const;
+  std::string constructFullVersion(VarId varId) const;
 
 private:
   typedef PackageScopeContent::PkgInfo PkgInfo;

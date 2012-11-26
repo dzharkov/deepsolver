@@ -131,7 +131,6 @@ public:
    */
   virtual bool versionGreater(const std::string& ver1, const std::string& ver2) const = 0;
 
-
   /**\brief Creates an instance of an iterator over the set of installed packages
    *
    * Use this method to get the complete list of packages currently

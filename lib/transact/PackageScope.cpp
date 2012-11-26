@@ -17,7 +17,6 @@
 
 #include"deepsolver.h"
 #include"PackageScope.h"
-#include"version.h"
 
 #define HAS_VERSION(x) ((x).ver != NULL)
 
@@ -36,7 +35,7 @@ static void selectVarsToTry(const PackageScopeContent& content,
 			    VarIdVector& toTry,
 			    bool includeItself);
 
-void PackageScope::selectMatchingVarsNoProvides(PackageId packageId, VarIdVector& vars)
+void PackageScope::selectMatchingVarsRealNames(PackageId packageId, VarIdVector& vars)
 {
   //Here we must process only real package names, no provides are required;
   vars.clear();
@@ -50,7 +49,7 @@ void PackageScope::selectMatchingVarsNoProvides(PackageId packageId, VarIdVector
     }
 }
 
-void PackageScope::selectMatchingVarsNoProvides(PackageId packageId, const VersionCond& ver, VarIdVector& vars)
+void PackageScope::selectMatchingVarsRealNames(PackageId packageId, const VersionCond& ver, VarIdVector& vars)
 {
   //Here we must process only real package names, no provides are required;
   vars.clear();
@@ -162,7 +161,8 @@ bool PackageScope::isInstalled(VarId varId) const
   return pkgs[varId].flags & PkgFlagInstalled;
 }
 
-bool PackageScope::isInstalledWithMatchingAlternatives(VarId varId) const
+/*KILLME:bool PackageScope::isInstalledWithMatchingAlternatives(VarId varId) 
+const
 {
   assert(varId != BAD_VAR_ID);
   const PkgInfoVector& pkgs = m_content.pkgInfoVector;
@@ -183,7 +183,9 @@ bool PackageScope::isInstalledWithMatchingAlternatives(VarId varId) const
       }
   return 0;
 }
+*/
 
+	 /*KILLME:
 void PackageScope::selectInstalledNoProvides(PackageId pkgId, VarIdVector& vars) const
 {
   vars.clear();
@@ -197,6 +199,7 @@ void PackageScope::selectInstalledNoProvides(PackageId pkgId, VarIdVector& vars)
     if (pkgs[i].flags & PkgFlagInstalled)
       vars.push_back(i);
 }
+	 */
 
 void PackageScope::selectTheNewest(VarIdVector& vars)
 {
@@ -433,7 +436,7 @@ void PackageScope::whatDependsAmongInstalled(VarId varId, VarIdVector& res, IdPk
   const PkgInfo& pkg = pkgs[varId];
   VarIdVector v;
   //First of all checking the package itself;
-  m_requiresReferences.searchReferencesTo(pkgs[varId].pkgId, v);
+  m_installedRequiresEntries.searchReferencesTo(pkgs[varId].pkgId, v);
   for(VarIdVector::size_type i = 0;i < v.size();i++)
     {
       assert(v[i] < pkgs.size());
@@ -463,7 +466,7 @@ void PackageScope::whatDependsAmongInstalled(VarId varId, VarIdVector& res, IdPk
       assert(pos + i < rels.size());
       const RelInfo& rel = rels[pos + i];
       v.clear();
-      m_requiresReferences.searchReferencesTo(rel.pkgId, v);
+      m_installedRequiresEntries.searchReferencesTo(rel.pkgId, v);
       for(VarIdVector::size_type k = 0;k < v.size();k++)
 	{
 	  assert(v[k] < pkgs.size());
@@ -504,7 +507,7 @@ void PackageScope::whatConflictsAmongInstalled(VarId varId, VarIdVector& res, Id
   const PkgInfo& pkg = pkgs[varId];
   VarIdVector v;
   //First of all checking the package itself;
-  m_conflictsReferences.searchReferencesTo(pkgs[varId].pkgId, v);
+  m_installedConflictsEntries.searchReferencesTo(pkgs[varId].pkgId, v);
   for(VarIdVector::size_type i = 0;i < v.size();i++)
     {
       assert(v[i] < pkgs.size());
@@ -534,7 +537,7 @@ void PackageScope::whatConflictsAmongInstalled(VarId varId, VarIdVector& res, Id
       assert(pos + i < rels.size());
       const RelInfo& rel = rels[pos + i];
       v.clear();
-      m_conflictsReferences.searchReferencesTo(rel.pkgId, v);
+      m_installedConflictsEntries.searchReferencesTo(rel.pkgId, v);
       for(VarIdVector::size_type k = 0;k < v.size();k++)
 	{
 	  assert(v[k] < pkgs.size());
@@ -565,6 +568,7 @@ void PackageScope::whatConflictsAmongInstalled(VarId varId, VarIdVector& res, Id
     } //for provides;
 }
 
+/*KILLME:
 bool PackageScope::variableSatisfies(VarId varId, const IdPkgRel& rel)
 {
   assert(varId != BAD_VAR_ID && rel.pkgId != BAD_PACKAGE_ID);
@@ -599,6 +603,7 @@ bool PackageScope::variableSatisfies(VarId varId, const IdPkgRel& rel)
     }
   return 0;
 }
+*/
 
 PackageId PackageScope::packageIdOfVarId(VarId varId) const
 {
@@ -662,6 +667,30 @@ std::string PackageScope::packageIdToStr(PackageId packageId) const
 {
   return m_content.packageIdToStr(packageId);
 }
+
+// Private methods;
+
+int PackageScope::versionCompare(const std::string& ver1, const std::string& ver2) const
+{
+  return m_backEnd.versionCompare(ver1, ver2);
+}
+
+bool PackageScope::versionOverlap(const VersionCond& ver1, const VersionCond& ver2) const
+{
+  return m_backEnd.versionOverlap(ver1, ver2);
+}
+
+bool PackageScope::versionEqual(const std::string& ver1, const std::string& ver2) const
+{
+  return m_backEnd.versionEqual(ver1, ver2);
+}
+
+bool PackageScope::versionGreater(const std::string& ver1, const std::string& ver2) const
+{
+  return m_backEnd.versionGreater(ver1, ver2);
+}
+
+// Static functions;
 
 VersionCond constructVersionCondEquals(int epoch, 
 					      const std::string& version,
