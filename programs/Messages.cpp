@@ -116,6 +116,13 @@ void Messages::onOperationError(const OperationException& e)
     } //switch(e.getCode());
 }
 
+void Messages::onTaskError(const TaskException& e)
+{
+  m_stream << std::endl;
+  m_stream << "Some errors were occurred during the last operation:" << std::endl;
+  m_stream << e.getMessage() << std::endl;
+}
+
 //Command line errors;
 
 void Messages::onMissedProgramName() const

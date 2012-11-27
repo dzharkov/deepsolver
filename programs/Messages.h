@@ -6,6 +6,7 @@
 #include"utils/CurlInterface.h"
 #include"OperationCore.h"
 #include"CliParser.h"
+#include"transact/TaskException.h"
 
 extern std::string messagesProgramName;
 
@@ -23,6 +24,7 @@ public:
   void onConfigError(const ConfigException& e);
   void onCurlError(const CurlException& e);
   void onOperationError(const OperationException& e);
+  void onTaskError(const TaskException& e);
 
   //Command line errors;
   void onMissedProgramName() const;
