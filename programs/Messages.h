@@ -2,7 +2,6 @@
 #ifndef DEEPSOLVER_MESSAGES_H
 #define DEEPSOLVER_MESSAGES_H
 
-#include"os/SystemException.h"
 #include"ConfigCenter.h"
 #include"utils/CurlInterface.h"
 #include"OperationCore.h"
