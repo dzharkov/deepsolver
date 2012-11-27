@@ -26,14 +26,14 @@ public:
 
 public:
   virtual bool allProvidesHaveTheVersion(const VarIdVector& vars, PackageId provideEntry) = 0;
-  virtual bool checkName(const std::string& name) = 0;
-  virtual std::string constructPackageName(VarId varId) = 0;
-  virtual std::string constructPackageNameWithBuildTime(VarId varId) = 0;
+  virtual bool checkName(const std::string& name) const = 0;
+  virtual std::string constructPackageName(VarId varId) const = 0;
+  virtual std::string constructPackageNameWithBuildTime(VarId varId) const = 0;
   virtual void getConflicts(VarId varId, IdPkgRelVector& res) = 0;
   virtual void getRequires(VarId varId, IdPkgRelVector& res) = 0;
-  virtual bool isInstalled(VarId varId) = 0;
-  virtual PackageId packageIdOfVarId(VarId varId) = 0;
-  virtual std::string packageIdToStr(PackageId packageId) = 0;
+  virtual bool isInstalled(VarId varId) const = 0;
+  virtual PackageId packageIdOfVarId(VarId varId) const = 0;
+  virtual std::string packageIdToStr(PackageId packageId) const = 0;
   virtual void selectMatchingVarsAmongProvides(const IdPkgRel& rel, VarIdVector& vars) = 0;
   virtual void selectMatchingVarsAmongProvides(PackageId packageId, VarIdVector& vars) = 0;
   virtual void selectMatchingVarsAmongProvides(PackageId packageId, const VersionCond& ver, VarIdVector& vars) = 0;
@@ -45,7 +45,7 @@ public:
   virtual void selectMatchingVarsWithProvides(PackageId packageId, const VersionCond& ver, VarIdVector& vars) = 0;
   virtual void selectTheNewest(VarIdVector& vars) = 0;
   virtual void selectTheNewestByProvide(VarIdVector& vars, PackageId provideEntry) = 0;
-  virtual PackageId strToPackageId(const std::string& name) = 0;
+  virtual PackageId strToPackageId(const std::string& name) const = 0;
   virtual void whatConflictsAmongInstalled(VarId varId, VarIdVector& res, IdPkgRelVector& resRels) = 0;
   virtual void whatDependsAmongInstalled(VarId varId, VarIdVector& res, IdPkgRelVector& resRels) = 0;
   virtual void whatSatisfiesAmongInstalled(const IdPkgRel& rel, VarIdVector& res) = 0;

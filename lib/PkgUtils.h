@@ -20,6 +20,8 @@
 
 #include"AbstractPackageBackEnd.h"
 #include"transact/PackageScopeContent.h"
+#include"transact/ProvideMap.h"
+#include"transact/InstalledReferences.h"
 
 void fillWithhInstalledPackages(AbstractPackageBackEnd& backEnd, PackageScopeContent& content);
 

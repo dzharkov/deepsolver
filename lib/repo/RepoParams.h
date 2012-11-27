@@ -18,8 +18,6 @@
 #ifndef DEEPSOLVER_REPO_PARAMS_H
 #define DEEPSOLVER_REPO_PARAMS_H
 
-#include"InfoFileException.h"
-
 class RepoParams
 {
 public:

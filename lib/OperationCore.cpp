@@ -21,7 +21,9 @@
 #include"PackageInfoProcessor.h"
 #include"IndexFetch.h"
 #include"AbstractPackageBackEnd.h"
-#include"AbstractTaskSolver.h"
+#include"transact/AbstractTaskSolver.h"
+#include"transact/AbstractSatSolver.h"
+#include"transact/PackageScope.h"
 #include"io/PackageScopeContentLoader.h"
 #include"io/PackageScopeContentBuilder.h"
 #include"PkgUtils.h"
@@ -102,11 +104,11 @@ void OperationCore::doInstallRemove(const UserTask& userTask)
   ProvideMap provideMap;
   InstalledReferences requiresReferences, conflictsReferences;
   prepareReversedMaps(content, provideMap, requiresReferences, conflictsReferences);
-  std::auto_ptr<AbstractPackageScope> scope(new PackageScope(content, provideMap, requiresReferences, conflictsReferences));
-  TaskSolverData taskSolverData(*scope.get());
+  PackageScope scope(*backEnd.get(), content, provideMap, requiresReferences, conflictsReferences);
+  TaskSolverData taskSolverData(*backEnd.get(), scope);
   std::auto_ptr<AbstractTaskSolver> solver = createGeneralTaskSolver(taskSolverData);
   VarIdVector toInstall, toRemove;
-  solver->solve(userTasks, toInstall, toRemove);
+  solver->solve(userTask, toInstall, toRemove);
 }
 
 // Static functions;

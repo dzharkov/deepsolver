@@ -41,12 +41,12 @@ public:
   virtual ~PackageScope() {}
 
 public:
-  PackageId packageIdOfVarId(VarId varId);
-  std::string constructPackageName(VarId varId);
-  std::string constructPackageNameWithBuildTime(VarId varId);
-  bool checkName(const std::string& name);
-  PackageId strToPackageId(const std::string& name);
-  std::string packageIdToStr(PackageId packageId);
+  PackageId packageIdOfVarId(VarId varId) const;
+  std::string constructPackageName(VarId varId) const;
+  std::string constructPackageNameWithBuildTime(VarId varId) const;
+  bool checkName(const std::string& name) const;
+  PackageId strToPackageId(const std::string& name) const;
+  std::string packageIdToStr(PackageId packageId) const;
 
   void selectMatchingVarsAmongProvides(const IdPkgRel& rel, VarIdVector& vars);
   void selectMatchingVarsAmongProvides(PackageId packageId, VarIdVector& vars);
@@ -58,7 +58,7 @@ public:
   void selectMatchingVarsWithProvides(PackageId packageId, VarIdVector& vars);
   void selectMatchingVarsWithProvides(PackageId packageId, const VersionCond& ver, VarIdVector& vars);
 
-  bool isInstalled(VarId varId);
+  bool isInstalled(VarId varId) const;
   void selectTheNewest(VarIdVector& vars);
   void selectTheNewestByProvide(VarIdVector& vars, PackageId provideEntry);
   bool allProvidesHaveTheVersion(const VarIdVector& vars, PackageId provideEntry);

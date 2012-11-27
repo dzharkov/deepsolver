@@ -19,7 +19,6 @@
 #define DEEPSOLVER_OPERATION_CORE_H
 
 #include"ConfigCenter.h"
-#include"UserTask.h"
 
 /**\brief The abstract interface for continuous process interruption
  *
