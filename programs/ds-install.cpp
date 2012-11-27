@@ -18,6 +18,7 @@
 #include"deepsolver.h"
 #include"OperationCore.h"
 #include"Messages.h"
+#include"transact/TaskException.h"
 
 class DsInstallCliParser: public CliParser
 {
@@ -150,6 +151,11 @@ int main(int argc, char* argv[])
     {
       Messages(std::cerr).onSystemError(e);
       return EXIT_FAILURE;
+    }
+  catch(const TaskException& e)
+    {
+       Messages(std::cerr).onTaskError(e);
+       return EXIT_FAILURE;
     }
   return EXIT_SUCCESS;
 }
