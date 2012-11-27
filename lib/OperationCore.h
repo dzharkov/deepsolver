@@ -76,7 +76,7 @@ public:
   void fetchIndices(AbstractIndexFetchListener& listener,
 		    const AbstractOperationContinueRequest& continueRequest);
 
-  void doInstallRemove(const UserTask& task);
+  void transaction(const UserTask& task);
 
 private:
   const ConfigCenter& m_conf;

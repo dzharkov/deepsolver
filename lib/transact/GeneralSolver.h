@@ -64,8 +64,8 @@ private:
 private:
   bool m_annotating, m_advancedMode;
   StringVector m_annotations;
-  AbstractPackageScope& m_scope; 
   const AbstractPackageBackEnd& m_backEnd;
+  AbstractPackageScope& m_scope; 
   Sat m_sat;
   VarIdVector m_userTaskPresent, m_userTaskAbsent;
   VarIdVector m_pendingInstalled, m_pendingRemoved;

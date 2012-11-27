@@ -24,7 +24,6 @@ struct ConfDir
   //FIXME:default values;
 
     std::string pkgData;
-  std::string tmpPkgDataFetch;
 }; //struct ConfDir;
 
 struct ConfRepo
@@ -59,6 +58,7 @@ typedef std::list<ConfRepo> ConfRepoList;
 struct ConfRoot
 {
   ConfDir dir;
+  StringList transactReadAhead;
   ConfRepoVector repo;
 }; //struct ConfRoot;
 

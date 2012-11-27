@@ -23,11 +23,14 @@
 #include"transact/ProvideMap.h"
 #include"transact/InstalledReferences.h"
 
-void fillWithhInstalledPackages(AbstractPackageBackEnd& backEnd, PackageScopeContent& content);
-
-void prepareReversedMaps(const PackageScopeContent& content,
-			 ProvideMap& provideMap,
-			 InstalledReferences& requires,
-			 InstalledReferences& conflicts);
+class PkgUtils
+{
+public:
+  static void fillWithhInstalledPackages(AbstractPackageBackEnd& backEnd, PackageScopeContent& content);
+  static void prepareReversedMaps(const PackageScopeContent& content,
+			   ProvideMap& provideMap,
+			   InstalledReferences& requires,
+			   InstalledReferences& conflicts);
+}; //class PkgUtils;
 
 #endif //DEEPSOLVER_PKG_UTILS_H;
