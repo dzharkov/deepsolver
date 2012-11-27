@@ -18,8 +18,7 @@
 //Written with librpm-4.0.4-alt100.29;
 
 #include"deepsolver.h"
-#include"RpmException.h"
-#include"RpmHeaderReading.h"
+#include"rpmHeader.h"
 
 static VerDirection translateRelFlags(int_32 flags)
 {

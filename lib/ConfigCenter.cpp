@@ -216,12 +216,12 @@ void ConfigCenter::processStringListValue(const StringVector& path,
 	  continue;
 	}
       if (!stringListValue.canContainEmptyItem && trim(item).empty())
-	throw ConfigException(ConfigErrorValueCannotBeEmpty, buildConfigParamTitle(path, sectArg), pos);
+	throw ConfigException(ConfigErrorValueCannotBeEmpty, buildConfigParamTitle(path, sectArg), pos.fileName, pos.lineNumber, pos.line);
       v.push_back(item);
       item.erase();
     }
   if (!stringListValue.canContainEmptyItem && trim(item).empty())
-    throw ConfigException(ConfigErrorValueCannotBeEmpty, buildConfigParamTitle(path, sectArg), pos);
+    throw ConfigException(ConfigErrorValueCannotBeEmpty, buildConfigParamTitle(path, sectArg), pos.fileName, pos.lineNumber, pos.line);
   v.push_back(item);
 }
 
@@ -236,7 +236,7 @@ void ConfigCenter::processBooleanValue(const StringVector& path,
   assert(booleanValue.value != NULL);
   bool& v = *(booleanValue.value);
   if (adding)
-	throw ConfigException(ConfigErrorAddingNotPermitted, buildConfigParamTitle(path, sectArg), pos);
+    throw ConfigException(ConfigErrorAddingNotPermitted, buildConfigParamTitle(path, sectArg), pos.fileName, pos.lineNumber, pos.line);
   v = parseBooleanValue(path, sectArg, value, pos);
 }
 
@@ -263,7 +263,7 @@ int ConfigCenter::getParamType(const StringVector& path, const std::string& sect
   for(BooleanValueVector::size_type i = 0;i < m_repoBooleanValues.size();i++)
     if (m_repoBooleanValues[i].pathMatches(path, sectArg))
       return ValueTypeBoolean;
-  throw ConfigException(ConfigErrorUnknownParam, buildConfigParamTitle(path, sectArg), pos);
+  throw ConfigException(ConfigErrorUnknownParam, buildConfigParamTitle(path, sectArg), pos.fileName, pos.lineNumber, pos.line);
 }
 
 void ConfigCenter::findStringValue(const StringVector& path, 
@@ -351,6 +351,6 @@ bool parseBooleanValue(const StringVector& path,
     return 0;
   if (str == "0")
     return 0;
-  throw ConfigException(ConfigErrorInvalidBooleanValue, buildConfigParamTitle(path, sectArg), pos);
+  throw ConfigException(ConfigErrorInvalidBooleanValue, buildConfigParamTitle(path, sectArg), pos.fileName, pos.lineNumber, pos.line);
 }
 

@@ -896,6 +896,28 @@ private:
   const std::string m_arg;
 }; //class InfoFileValueException;
 
+class GzipException: public DeepsolverException
+{
+public:
+  GzipException(const std::string& msg)
+    : m_msg(msg) {}
+
+  virtual ~GzipException() {}
+
+public:
+  std::string getType() const
+  {
+    return "gzip";
+  }
+
+  std::string getMessage() const
+  {
+    return m_msg;
+  }
+
+private:
+  const std::string m_msg;
+}; //class GzipException;
 
 class CurlException: public DeepsolverException
 {

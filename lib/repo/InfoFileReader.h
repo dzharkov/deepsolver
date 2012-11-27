@@ -18,8 +18,6 @@
 #ifndef DEEPSOLVER_INFO_FILE_READER_H
 #define DEEPSOLVER_INFO_FILE_READER_H
 
-#include"InfoFileException.h"
-
 class InfoFileReader
 {
 public:

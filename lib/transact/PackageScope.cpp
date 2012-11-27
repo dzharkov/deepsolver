@@ -169,7 +169,7 @@ void PackageScope::selectMatchingVarsWithProvides(PackageId packageId, const Ver
     }
 }
 
-bool PackageScope::isInstalled(VarId varId)
+bool PackageScope::isInstalled(VarId varId) const
 {
   assert(varId != BAD_VAR_ID);
   const PkgInfoVector& pkgs = m_content.pkgInfoVector;
@@ -499,14 +499,14 @@ void PackageScope::whatConflictsAmongInstalled(VarId varId, VarIdVector& res, Id
 
 // Information methods;
 
-PackageId PackageScope::packageIdOfVarId(VarId varId)
+PackageId PackageScope::packageIdOfVarId(VarId varId) const
 {
   const PkgInfoVector& pkgs = m_content.pkgInfoVector;
   assert(varId < pkgs.size());
   return pkgs[varId].pkgId;
 }
 
-std::string PackageScope::constructPackageName(VarId varId)
+std::string PackageScope::constructPackageName(VarId varId) const
 {
   const PkgInfoVector& pkgs = m_content.pkgInfoVector;
   assert(varId < pkgs.size());
@@ -521,7 +521,7 @@ std::string PackageScope::constructPackageName(VarId varId)
   return res;
 }
 
-std::string PackageScope::constructPackageNameWithBuildTime(VarId varId)
+std::string PackageScope::constructPackageNameWithBuildTime(VarId varId) const
 {
   const PkgInfoVector& pkgs = m_content.pkgInfoVector;
   assert(varId < pkgs.size());
@@ -534,17 +534,17 @@ std::string PackageScope::constructPackageNameWithBuildTime(VarId varId)
   return res.str();
 }
 
-bool PackageScope::checkName(const std::string& name)
+bool PackageScope::checkName(const std::string& name) const
 {
   return m_content.checkName(name);
 }
 
-PackageId PackageScope::strToPackageId(const std::string& name)
+PackageId PackageScope::strToPackageId(const std::string& name) const
 {
   return m_content.strToPackageId(name);
 }
 
-std::string PackageScope::packageIdToStr(PackageId packageId)
+std::string PackageScope::packageIdToStr(PackageId packageId) const
 {
   return m_content.packageIdToStr(packageId);
 }
