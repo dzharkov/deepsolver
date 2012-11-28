@@ -194,8 +194,32 @@ void Messages::dsInstallInitCliParser(CliParser& cliParser) const
 
 void Messages::dsInstallHelp(const CliParser& cliParser) const
 {
-  dsUpdateLogo();
+  dsInstallLogo();
   m_stream << "Usage: ds-install [OPTIONS] [PKG1 [(<|<=|=|>=|>) VERSION] [...]]" << std::endl;
+  m_stream << std::endl;
+  m_stream << "Valid command line options are:" << std::endl;
+  cliParser.printHelp(m_stream);
+}
+
+void Messages::dsRemoveLogo() const
+{
+  m_stream << "ds-remove: The Deepsolver utility to uninstall" << std::endl;
+  m_stream << "Version: " << PACKAGE_VERSION << std::endl;
+  m_stream << std::endl;
+}
+
+void Messages::dsRemoveInitCliParser(CliParser& cliParser) const
+{
+  cliParser.addKeyDoubleName("-s", "--sat", "print SAT equation and do not touch any packages in the system");
+  cliParser.addKeyDoubleName("-h", "--help", "print this help screen and exit");
+  cliParser.addKey("--log", "print log to console instead of user progress information");
+  cliParser.addKey("--debug", "relax filtering level for log output");
+}
+
+void Messages::dsRemoveHelp(const CliParser& cliParser) const
+{
+  dsRemoveLogo();
+  m_stream << "Usage: ds-remove [OPTIONS] [PKG1 [PKG2 [...]]]" << std::endl;
   m_stream << std::endl;
   m_stream << "Valid command line options are:" << std::endl;
   cliParser.printHelp(m_stream);

@@ -41,6 +41,11 @@ public:
   void dsInstallInitCliParser(CliParser& cliParser) const;
   void dsInstallHelp(const CliParser& cliParser) const;
 
+  //ds-remove;
+  void dsRemoveLogo() const;
+  void dsRemoveInitCliParser(CliParser& cliParser) const;
+  void dsRemoveHelp(const CliParser& cliParser) const;
+
 private:
   std::ostream& m_stream;
 }; //class Messages;
