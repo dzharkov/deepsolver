@@ -6,7 +6,6 @@
 #include"utils/CurlInterface.h"
 #include"OperationCore.h"
 #include"CliParser.h"
-#include"transact/TaskException.h"
 
 extern std::string messagesProgramName;
 

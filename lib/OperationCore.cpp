@@ -35,7 +35,8 @@ void OperationCore::fetchIndices(AbstractIndexFetchListener& listener,
 				 const AbstractOperationContinueRequest& continueRequest)
 {
   const ConfRoot& root = m_conf.root();
-  logMsg(LOG_DEBUG, "PkgData updating begin: pkgdatadir=\'%s\', tmpdir=\'%s\'", root.dir.pkgData.c_str(), root.dir.tmpPkgDataFetch.c_str());
+  const std::string tmpDir = Directory::mixNameComponents(root.dir.pkgData, PKG_DATA_FETCH_DIR);
+  logMsg(LOG_DEBUG, "PkgData updating begin: pkgdatadir=\'%s\', tmpdir=\'%s\'", root.dir.pkgData.c_str(), tmpDir.c_str());
   listener.onInfoFilesFetch();
   //FIXME:file lock;
   RepositoryVector repo;
@@ -54,15 +55,15 @@ void OperationCore::fetchIndices(AbstractIndexFetchListener& listener,
       repo[i].fetchInfoAndChecksum();
       repo[i].addIndexFilesForFetch(files);
     }
-  buildTemporaryIndexFileNames(files, root.dir.tmpPkgDataFetch);
+  buildTemporaryIndexFileNames(files, tmpDir);
   logMsg(LOG_DEBUG, "List of index files to download consists of %zu entries:", files.size());
   for(StringToStringMap::const_iterator it = files.begin();it != files.end();it++)
     logMsg(LOG_DEBUG, "Download entry: \'%s\' -> \'%s\'", it->first.c_str(), it->second.c_str());
   listener.onIndexFetchBegin();
-  if (Directory::isExist(root.dir.tmpPkgDataFetch))
-    logMsg(LOG_WARNING, "Directory \'%s\' already exists, probably unfinished previous transaction", root.dir.tmpPkgDataFetch.c_str());
-  logMsg(LOG_DEBUG, "Preparing directory \'%s\', it must exist and be empty", root.dir.tmpPkgDataFetch.c_str());
-  Directory::ensureExistsAndEmpty(root.dir.tmpPkgDataFetch, 1);//1 means erase any content;
+  if (Directory::isExist(tmpDir))
+    logMsg(LOG_WARNING, "Directory \'%s\' already exists, probably unfinished previous transaction", tmpDir.c_str());
+  logMsg(LOG_DEBUG, "Preparing directory \'%s\', it must exist and be empty", tmpDir.c_str());
+  Directory::ensureExistsAndEmpty(tmpDir, 1);//1 means erase any content;
   IndexFetch indexFetch(listener, continueRequest);
   indexFetch.fetch(files);
   listener.onIndexFilesReading();
@@ -76,15 +77,15 @@ void OperationCore::fetchIndices(AbstractIndexFetchListener& listener,
   logMsg(LOG_DEBUG, "Saving constructed package data to \'%s\'", outputFileName.c_str());
   scope.saveToFile(outputFileName);
   //FIXME:The current code is working but it should create temporary file elsewhere and then replace with it already existing outputFileName;
-  logMsg(LOG_DEBUG, "Clearing and removing \'%s\'", root.dir.tmpPkgDataFetch.c_str());
-  Directory::eraseContent(root.dir.tmpPkgDataFetch);
-  Directory::remove(root.dir.tmpPkgDataFetch);
+  logMsg(LOG_DEBUG, "Clearing and removing \'%s\'", tmpDir.c_str());
+  Directory::eraseContent(tmpDir);
+  Directory::remove(tmpDir);
   logMsg(LOG_INFO, "Repository index updating finished!");
   //FIXME:remove file lock;
   listener.onIndexFetchComplete();
 }
 
-void OperationCore::doInstallRemove(const UserTask& userTask)
+void OperationCore::transaction(const UserTask& userTask)
 {
   File::readAhead("/var/lib/rpm/Packages");//FIXME:take the value from configuration;
   std::auto_ptr<AbstractPackageBackEnd> backEnd = CREATE_PACKAGE_BACKEND;
@@ -92,10 +93,10 @@ void OperationCore::doInstallRemove(const UserTask& userTask)
   PackageScopeContentLoader loader(content);
   loader.loadFromFile(Directory::mixNameComponents(m_conf.root().dir.pkgData, PKG_DATA_FILE_NAME));
   logMsg(LOG_DEBUG, "Index package list loaded");
-  fillWithhInstalledPackages(*backEnd.get(), content);
+  PkgUtils::fillWithhInstalledPackages(*backEnd.get(), content);
   ProvideMap provideMap;
   InstalledReferences requiresReferences, conflictsReferences;
-  prepareReversedMaps(content, provideMap, requiresReferences, conflictsReferences);
+  PkgUtils::prepareReversedMaps(content, provideMap, requiresReferences, conflictsReferences);
   PackageScope scope(*backEnd.get(), content, provideMap, requiresReferences, conflictsReferences);
   TaskSolverData taskSolverData(*backEnd.get(), scope);
   std::auto_ptr<AbstractTaskSolver> solver = createGeneralTaskSolver(taskSolverData);

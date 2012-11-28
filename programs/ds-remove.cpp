@@ -63,7 +63,7 @@ int main(int argc, char* argv[])
     OperationCore core(conf);
     UserTask userTask;
     for(StringVector::size_type i = 0;i < cliParser.files.size();i++)
-      userTask.itemsToInstall.insert(cliParser.files[i]);
+      userTask.namesToRemove.insert(cliParser.files[i]);
     core.transaction(userTask);
   }
   catch (const ConfigFileException& e)

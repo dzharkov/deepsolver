@@ -96,7 +96,6 @@ void ConfigCenter::commit()
       throw ConfigException(ConfigErrorValueCannotBeEmpty, m_stringValues[i].pathToString());
   //Custom commit;
   logMsg(LOG_DEBUG, "Custom commit");
-  m_root.dir.tmpPkgDataFetch = Directory::mixNameComponents(m_root.dir.pkgData, PKG_DATA_FETCH_DIR);//Real constant can be found in DefaultValues.h;
   logMsg(LOG_DEBUG, "Configuration data commit completed");
 }
 

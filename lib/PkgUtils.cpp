@@ -18,7 +18,7 @@
 #include"deepsolver.h"
 #include"PkgUtils.h"
 
-void fillWithhInstalledPackages(AbstractPackageBackEnd& backEnd, PackageScopeContent& content)
+void PkgUtils::fillWithhInstalledPackages(AbstractPackageBackEnd& backEnd, PackageScopeContent& content)
 {
   const clock_t fillingStart = clock();
   PackageScopeContent::PkgInfoVector& pkgs = content.pkgInfoVector;
@@ -63,7 +63,7 @@ void fillWithhInstalledPackages(AbstractPackageBackEnd& backEnd, PackageScopeCon
   logMsg(LOG_DEBUG, "pkg-utils:installed packages adding takes %f sec", fillingDuration);
 }
 
-void prepareReversedMaps(const PackageScopeContent& content,
+void PkgUtils::prepareReversedMaps(const PackageScopeContent& content,
 			 ProvideMap& provideMap,
 			 InstalledReferences& requires,
 			 InstalledReferences& conflicts)
@@ -99,7 +99,7 @@ void prepareReversedMaps(const PackageScopeContent& content,
   logMsg(LOG_DEBUG, "Installed package requires/conflicts reversed map construction takes %f sec", installedDuration);
 }
 
-void printSat(const PackageScope& scope, 
+void printSat(const AbstractPackageScope& scope, 
 	      const Sat& sat,
 	      const StringVector& annotations)
 {
@@ -130,7 +130,7 @@ void printSat(const PackageScope& scope,
     }
 }
 
-void printSolution(const PackageScope& scope,
+void printSolution(const AbstractPackageScope& scope,
 		   const VarIdVector& install,
 		   const VarIdVector& remove)
 {

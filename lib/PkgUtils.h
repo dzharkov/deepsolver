@@ -19,6 +19,8 @@
 #define DEEPSOLVER_PKG_UTILS_H
 
 #include"AbstractPackageBackEnd.h"
+#include"transact/AbstractPackageScope.h"
+#include"transact/AbstractSatSolver.h"
 #include"transact/PackageScopeContent.h"
 #include"transact/ProvideMap.h"
 #include"transact/InstalledReferences.h"

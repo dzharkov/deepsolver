@@ -18,7 +18,6 @@
 #include"deepsolver.h"
 #include"OperationCore.h"
 #include"Messages.h"
-#include"transact/TaskException.h"
 
 class DsInstallCliParser: public CliParser
 {
@@ -130,7 +129,7 @@ int main(int argc, char* argv[])
   logMsg(LOG_DEBUG, "Recognized %zu items to install:", cliParser.userTask.itemsToInstall.size());
   for(UserTaskItemToInstallVector::size_type i = 0;i < cliParser.userTask.itemsToInstall.size();i++)
     logMsg(LOG_DEBUG, "%s", cliParser.userTask.itemsToInstall[i].toString().c_str());
-    core.doInstallRemove(cliParser.userTask);
+    core.transaction(cliParser.userTask);
   }
   catch (const ConfigFileException& e)
     {
