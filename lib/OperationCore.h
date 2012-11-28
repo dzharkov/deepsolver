@@ -64,19 +64,40 @@ public:
 				  const std::string& currentPartName) = 0;
 }; //class AbstractIndexFetchListener;
 
+class AbstractTransactionListener
+{
+public:
+  /**\brief The default constructor*/
+  abstractTransactionListener() {}
+
+  /**\brief The destructor*/
+  virtual ~AbstractTransactionListener() {}
+
+public:
+  virtual void onAvailablePkgListProcessing() = 0;
+  virtual void onInstalledPkgListProcessing() = 0;
+  virtual void onInstallRemovePkgListProcessing() = 0;
+}; //class abstractTransactionListener;
+
 class OperationCore
 {
 public:
+  /**\brief constructor
+   *
+   * \param [in] conf The configuration data
+   */
   OperationCore(const ConfigCenter& conf): 
     m_conf(conf)  {}
 
+  /**\brief The destructor*/
     virtual ~OperationCore() {}
 
 public:
   void fetchIndices(AbstractIndexFetchListener& listener,
-		    const AbstractOperationContinueRequest& continueRequest);
+		    const AbstractOperationContinueRequest& continueRequest) const;
 
-  void transaction(const UserTask& task);
+  void transaction(AbstractTransactionListener& listener, const UserTask& task) const;
+  std::string generateSat(AbstractTransactionListener& listener, const UserTask& task) const;
 
 private:
   const ConfigCenter& m_conf;

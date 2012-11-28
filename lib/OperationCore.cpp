@@ -32,7 +32,7 @@ static std::string urlToFileName(const std::string& url);
 static void buildTemporaryIndexFileNames(StringToStringMap& files, const std::string& tmpDirName);
 
 void OperationCore::fetchIndices(AbstractIndexFetchListener& listener,
-				 const AbstractOperationContinueRequest& continueRequest)
+				 const AbstractOperationContinueRequest& continueRequest) const
 {
   const ConfRoot& root = m_conf.root();
   const std::string tmpDir = Directory::mixNameComponents(root.dir.pkgData, PKG_DATA_FETCH_DIR);
@@ -85,18 +85,43 @@ void OperationCore::fetchIndices(AbstractIndexFetchListener& listener,
   listener.onIndexFetchComplete();
 }
 
-void OperationCore::transaction(const UserTask& userTask)
+void OperationCore::transaction(AbstractTransactionListener& listener, const UserTask& userTask) const
 {
   File::readAhead("/var/lib/rpm/Packages");//FIXME:take the value from configuration;
   std::auto_ptr<AbstractPackageBackEnd> backEnd = CREATE_PACKAGE_BACKEND;
   PackageScopeContent content;
   PackageScopeContentLoader loader(content);
+  listener.onAvailablePkgListProcessing();
   loader.loadFromFile(Directory::mixNameComponents(m_conf.root().dir.pkgData, PKG_DATA_FILE_NAME));
   logMsg(LOG_DEBUG, "Index package list loaded");
+  listener.onInstalledPkgListProcessing();
   PkgUtils::fillWithhInstalledPackages(*backEnd.get(), content);
   ProvideMap provideMap;
   InstalledReferences requiresReferences, conflictsReferences;
   PkgUtils::prepareReversedMaps(content, provideMap, requiresReferences, conflictsReferences);
+  listener.onInstallRemovePkgLIstProcessing();
+  PackageScope scope(*backEnd.get(), content, provideMap, requiresReferences, conflictsReferences);
+  TaskSolverData taskSolverData(*backEnd.get(), scope);
+  std::auto_ptr<AbstractTaskSolver> solver = createGeneralTaskSolver(taskSolverData);
+  VarIdVector toInstall, toRemove;
+  solver->solve(userTask, toInstall, toRemove);
+}
+
+std::string OperationCore::generateSat(AbstractTransactionListener& listener, const UserTask& userTask) const
+{
+  File::readAhead("/var/lib/rpm/Packages");//FIXME:take the value from configuration;
+  std::auto_ptr<AbstractPackageBackEnd> backEnd = CREATE_PACKAGE_BACKEND;
+  PackageScopeContent content;
+  PackageScopeContentLoader loader(content);
+  listener.onAvailablePkgListProcessing();
+  loader.loadFromFile(Directory::mixNameComponents(m_conf.root().dir.pkgData, PKG_DATA_FILE_NAME));
+  logMsg(LOG_DEBUG, "Index package list loaded");
+  listener.onInstalledPkgListProcessing();
+  PkgUtils::fillWithhInstalledPackages(*backEnd.get(), content);
+  ProvideMap provideMap;
+  InstalledReferences requiresReferences, conflictsReferences;
+  PkgUtils::prepareReversedMaps(content, provideMap, requiresReferences, conflictsReferences);
+  listener.onInstallRemovePkgLIstProcessing();
   PackageScope scope(*backEnd.get(), content, provideMap, requiresReferences, conflictsReferences);
   TaskSolverData taskSolverData(*backEnd.get(), scope);
   std::auto_ptr<AbstractTaskSolver> solver = createGeneralTaskSolver(taskSolverData);
