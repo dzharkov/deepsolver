@@ -58,6 +58,7 @@ int main(int argc, char* argv[])
   parseCmdLine(argc, argv);
   initLogging(cliParser.wasKeyUsed("--debug")?LOG_DEBUG:LOG_INFO, cliParser.wasKeyUsed("--log"));
   try{
+    Messages(std::cout).dsRemoveLogo();
     TransactionProgress transactionProgress(std::cout, cliParser.wasKeyUsed("--log"));
     ConfigCenter conf;
     conf.loadFromFile(DEFAULT_CONFIG_FILE_NAME);
@@ -77,8 +78,9 @@ int main(int argc, char* argv[])
 	core.transaction(transactionProgress, userTask);
       } else
       {
+	const std::string res = core.generateSat(transactionProgress, userTask);
 	std::cout << std::endl;
-	std::cout << core.generateSat(transactionProgress, userTask);
+	std::cout << res;
       }
   }
   catch (const ConfigFileException& e)

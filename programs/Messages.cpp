@@ -214,7 +214,7 @@ void Messages::dsInstallHelp(const CliParser& cliParser) const
 
 void Messages::dsRemoveLogo() const
 {
-  m_stream << "ds-remove: the Deepsolver utility package removing" << std::endl;
+  m_stream << "ds-remove: the Deepsolver utility for package removing" << std::endl;
   m_stream << "Version: " << PACKAGE_VERSION << std::endl;
   m_stream << std::endl;
 }
