@@ -99,35 +99,37 @@ void PkgUtils::prepareReversedMaps(const PackageScopeContent& content,
   logMsg(LOG_DEBUG, "Installed package requires/conflicts reversed map construction takes %f sec", installedDuration);
 }
 
-void printSat(const AbstractPackageScope& scope, 
+std::string PkgUtils::satToString(const AbstractPackageScope& scope, 
 	      const Sat& sat,
 	      const StringVector& annotations)
 {
+  std::ostringstream ss;
   for(Sat::size_type i = 0;i < sat.size();i++)
     {
       const Clause& clause = sat[i];
       if (i < annotations.size())
-	std::cout << annotations[i] << std::endl;
-      std::cout << "(" << std::endl;
+	ss << annotations[i] << std::endl;
+      ss << "(" << std::endl;
 	for(Clause::size_type k = 0;k < clause.size();k++)
 	  {
 	    const Lit& lit = clause[k];
 	    if (lit.neg)
-	      std::cout << " !"; else 
-	      std::cout << "  ";
-	    std::cout << scope.constructPackageNameWithBuildTime(lit.varId);
+	      ss << " !"; else 
+	      ss << "  ";
+	    ss << scope.constructPackageNameWithBuildTime(lit.varId);
 	    if (k + 1 < clause.size())
-	      std::cout << " ||";
-	    std::cout << std::endl;
+	      ss << " ||";
+	    ss << std::endl;
 	  }
-	std::cout << ")" << std::endl;
+	ss << ")" << std::endl;
 	if (i + 1 < sat.size())
 	  {
-	    std::cout << std::endl;
-	    std::cout << "&&" << std::endl;
-	    std::cout << std::endl;
+	    ss << std::endl;
+	    ss << "&&" << std::endl;
+	    ss << std::endl;
 	  }
     }
+  return ss.str();
 }
 
 void printSolution(const AbstractPackageScope& scope,

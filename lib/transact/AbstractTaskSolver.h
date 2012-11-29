@@ -39,7 +39,7 @@ public:
 
 public:
   virtual void solve(const UserTask& task, VarIdVector& toInstall, VarIdVector& toRemove) = 0;
-  virtual void constructSat() = 0;
+  virtual std::string constructSat(const UserTask& task) = 0;
 }; //class AbstractTaskSolver;
 
 std::auto_ptr<AbstractTaskSolver> createGeneralTaskSolver(TaskSolverData& taskSolverData);

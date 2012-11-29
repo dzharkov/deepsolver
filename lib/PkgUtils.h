@@ -29,10 +29,15 @@ class PkgUtils
 {
 public:
   static void fillWithhInstalledPackages(AbstractPackageBackEnd& backEnd, PackageScopeContent& content);
+
   static void prepareReversedMaps(const PackageScopeContent& content,
 			   ProvideMap& provideMap,
 			   InstalledReferences& requires,
 			   InstalledReferences& conflicts);
+
+  static std::string satToString(const AbstractPackageScope& scope, 
+				 const Sat& sat,
+				 const StringVector& annotations);
 }; //class PkgUtils;
 
 #endif //DEEPSOLVER_PKG_UTILS_H;

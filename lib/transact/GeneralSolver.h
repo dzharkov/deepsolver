@@ -36,10 +36,10 @@ public:
 
 public:
   void solve(const UserTask& task, VarIdVector& toInstall, VarIdVector& toRemove);
-  void constructSat();
-
+  std::string constructSat(const UserTask& task);
 
 private:
+  void constructSatImpl(const UserTask& task);
   void handleChangeToFalse(VarId seed,
 			   bool includeItself,
 			   VarIdVector& involvedInstalled,

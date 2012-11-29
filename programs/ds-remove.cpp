@@ -49,11 +49,6 @@ void parseCmdLine(int argc, char* argv[])
       Messages(std::cout).dsRemoveHelp(cliParser);
       exit(EXIT_SUCCESS);
     }
-  if (cliParser.files.empty())
-    {
-      Messages(std::cerr).onNoPackagesMentionedError();
-      exit(EXIT_FAILURE);
-    }
 }
 
 int main(int argc, char* argv[])
@@ -70,8 +65,21 @@ int main(int argc, char* argv[])
     OperationCore core(conf);
     UserTask userTask;
     for(StringVector::size_type i = 0;i < cliParser.files.size();i++)
-      userTask.namesToRemove.insert(cliParser.files[i]);
-    core.transaction(transactionProgress, userTask);
+      if (!cliParser.files[i].empty())
+	userTask.namesToRemove.insert(cliParser.files[i]);
+    if (userTask.namesToRemove.empty())
+      {
+	Messages(std::cerr).onNoPackagesMentionedError();
+	return EXIT_FAILURE;
+      }
+    if (!cliParser.wasKeyUsed("--sat"))
+      {
+	core.transaction(transactionProgress, userTask);
+      } else
+      {
+	std::cout << std::endl;
+	std::cout << core.generateSat(transactionProgress, userTask);
+      }
   }
   catch (const ConfigFileException& e)
     {

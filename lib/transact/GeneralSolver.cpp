@@ -17,6 +17,7 @@
 
 #include"deepsolver.h"
 #include"GeneralSolver.h"
+#include"PkgUtils.h"
 
 template<typename T>
 void rmDub(std::vector<T>& v)
@@ -50,21 +51,8 @@ void rmDub(std::vector<T>& v)
 
 void GeneralSolver::solve(const UserTask& task, VarIdVector& toInstall, VarIdVector& toRemove)
 {
-  const clock_t satConstructStart = clock(); 
-  translateUserTask(task);
-  logMsg(LOG_DEBUG, "User task translated: %zu to be present, %zu to be absent", m_userTaskPresent.size(), m_userTaskAbsent.size());
-  for(VarIdVector::size_type i = 0;i < m_userTaskAbsent.size();i++)
-    if (m_scope.isInstalled(m_userTaskAbsent[i]))
-      handleChangeToFalse(m_userTaskAbsent[i], 0, m_pendingInstalled, m_pendingRemoved);//0 means the package itself will be removed anyway;
-  for(VarIdVector::size_type i = 0;i < m_userTaskPresent.size();i++)
-    if (!m_scope.isInstalled(m_userTaskPresent[i]))
-      handleChangeToTrue(m_userTaskPresent[i], 0, m_pendingInstalled, m_pendingRemoved);//0 means the package itself will be installed anyway;
-  processPendings();
-  const double satConstructDuration = ((double)clock() - satConstructStart) / CLOCKS_PER_SEC;
-  logMsg(LOG_DEBUG, "SAT construction takes %f sec", satConstructDuration);
-
-    for(Sat::size_type i = 0;i < m_sat.size();i++)
-      rmDub(m_sat[i]);
+  m_annotating = 0;
+  constructSatImpl(task);
     //  printSat(m_scope, m_sat, m_annotations);
   logMsg(LOG_DEBUG, "Creating libminisat SAT solver");
   std::auto_ptr<AbstractSatSolver> satSolver = createLibMinisatSolver();
@@ -102,9 +90,29 @@ void GeneralSolver::solve(const UserTask& task, VarIdVector& toInstall, VarIdVec
       //      printSolution(m_scope, resInstall, resRemove);
 }
 
-void GeneralSolver::constructSat()
+std::string GeneralSolver::constructSat(const UserTask& task)
 {
-  //FIXME:
+  m_annotating = 1;
+  constructSatImpl(task);
+  return PkgUtils::satToString(m_scope, m_sat, m_annotations);
+}
+
+void GeneralSolver::constructSatImpl(const UserTask& task)
+{
+  const clock_t satConstructStart = clock(); 
+  translateUserTask(task);
+  logMsg(LOG_DEBUG, "User task translated: %zu to be present, %zu to be absent", m_userTaskPresent.size(), m_userTaskAbsent.size());
+  for(VarIdVector::size_type i = 0;i < m_userTaskAbsent.size();i++)
+    if (m_scope.isInstalled(m_userTaskAbsent[i]))
+      handleChangeToFalse(m_userTaskAbsent[i], 0, m_pendingInstalled, m_pendingRemoved);//0 means the package itself will be removed anyway;
+  for(VarIdVector::size_type i = 0;i < m_userTaskPresent.size();i++)
+    if (!m_scope.isInstalled(m_userTaskPresent[i]))
+      handleChangeToTrue(m_userTaskPresent[i], 0, m_pendingInstalled, m_pendingRemoved);//0 means the package itself will be installed anyway;
+  processPendings();
+  const double satConstructDuration = ((double)clock() - satConstructStart) / CLOCKS_PER_SEC;
+    for(Sat::size_type i = 0;i < m_sat.size();i++)
+      rmDub(m_sat[i]);
+  logMsg(LOG_DEBUG, "general:SAT construction takes %f sec", satConstructDuration);
 }
 
 void GeneralSolver::translateUserTask(const UserTask& userTask)

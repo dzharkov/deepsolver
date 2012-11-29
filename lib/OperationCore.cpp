@@ -89,6 +89,7 @@ void OperationCore::transaction(AbstractTransactionListener& listener, const Use
 {
   File::readAhead("/var/lib/rpm/Packages");//FIXME:take the value from configuration;
   std::auto_ptr<AbstractPackageBackEnd> backEnd = CREATE_PACKAGE_BACKEND;
+  backEnd->initialize();
   PackageScopeContent content;
   PackageScopeContentLoader loader(content);
   listener.onAvailablePkgListProcessing();
@@ -111,6 +112,7 @@ std::string OperationCore::generateSat(AbstractTransactionListener& listener, co
 {
   File::readAhead("/var/lib/rpm/Packages");//FIXME:take the value from configuration;
   std::auto_ptr<AbstractPackageBackEnd> backEnd = CREATE_PACKAGE_BACKEND;
+  backEnd->initialize();
   PackageScopeContent content;
   PackageScopeContentLoader loader(content);
   listener.onAvailablePkgListProcessing();
@@ -121,12 +123,10 @@ std::string OperationCore::generateSat(AbstractTransactionListener& listener, co
   ProvideMap provideMap;
   InstalledReferences requiresReferences, conflictsReferences;
   PkgUtils::prepareReversedMaps(content, provideMap, requiresReferences, conflictsReferences);
-  listener.onInstallRemovePkgListProcessing();
   PackageScope scope(*backEnd.get(), content, provideMap, requiresReferences, conflictsReferences);
   TaskSolverData taskSolverData(*backEnd.get(), scope);
   std::auto_ptr<AbstractTaskSolver> solver = createGeneralTaskSolver(taskSolverData);
-  VarIdVector toInstall, toRemove;
-  solver->solve(userTask, toInstall, toRemove);
+  return solver->constructSat(userTask);
 }
 
 // Static functions;

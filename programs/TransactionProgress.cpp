@@ -22,19 +22,19 @@ void TransactionProgress::onAvailablePkgListProcessing()
 {
   if (m_suppress)
     return;
-  m_stream << "Processing package lists from all repositories..." << std::endl;
+  m_stream << "Processing package lists from all repositories" << std::endl;
 }
 
 void TransactionProgress::onInstalledPkgListProcessing()
 {
   if (m_suppress)
     return;
-  m_stream << "Processing installed package list..." << std::endl;
+  m_stream << "Processing installed package list" << std::endl;
 }
 
 void TransactionProgress::onInstallRemovePkgListProcessing()
 {
   if (m_suppress)
     return;
-  m_stream << "Calculating package lists for installation and removing..." << std::endl;
+  m_stream << "Calculating package lists for installation and removing" << std::endl;
 }
