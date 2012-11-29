@@ -9,6 +9,7 @@ ds_install_DEPENDENCIES = $(ds_install_LDADD)
 ds_install_SOURCES=\
 CliParser.cpp \
 Messages.cpp \
+TransactionProgress.cpp \
 ds-install.cpp
 
 ds_remove_LDADD = \
@@ -17,6 +18,7 @@ ds_remove_DEPENDENCIES = $(ds_remove_LDADD)
 ds_remove_SOURCES=\
 CliParser.cpp \
 Messages.cpp \
+TransactionProgress.cpp \
 ds-remove.cpp
 
 ds_update_LDADD = \

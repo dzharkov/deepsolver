@@ -68,7 +68,7 @@ class AbstractTransactionListener
 {
 public:
   /**\brief The default constructor*/
-  abstractTransactionListener() {}
+  AbstractTransactionListener() {}
 
   /**\brief The destructor*/
   virtual ~AbstractTransactionListener() {}

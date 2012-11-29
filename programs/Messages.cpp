@@ -135,7 +135,14 @@ void Messages::onMissedCommandLineArgument(const std::string& arg) const
   m_stream << messagesProgramName << ":The command line argument \'" << arg << "\' requires additional parameter" << std::endl;
 }
 
-//ds-update;
+// User input errors;
+
+void Messages::onNoPackagesMentionedError() const
+{
+  m_stream << messagesProgramName << ":No packages mentioned" << std::endl;
+}
+
+// ds-update;
 
 void Messages::dsUpdateLogo() const
 {
@@ -178,9 +185,11 @@ void Messages::introduceRepoSet(const ConfigCenter& conf) const
     }
 }
 
+// ds-install;
+
 void Messages::dsInstallLogo() const
 {
-  m_stream << "ds-install: The Deepsolver utility for package installation" << std::endl;
+  m_stream << "ds-install: the Deepsolver utility for package installation" << std::endl;
   m_stream << "Version: " << PACKAGE_VERSION << std::endl;
   m_stream << std::endl;
 }
@@ -201,9 +210,11 @@ void Messages::dsInstallHelp(const CliParser& cliParser) const
   cliParser.printHelp(m_stream);
 }
 
+// ds-remove;
+
 void Messages::dsRemoveLogo() const
 {
-  m_stream << "ds-remove: The Deepsolver utility to uninstall" << std::endl;
+  m_stream << "ds-remove: the Deepsolver utility package removing" << std::endl;
   m_stream << "Version: " << PACKAGE_VERSION << std::endl;
   m_stream << std::endl;
 }

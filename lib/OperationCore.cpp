@@ -99,7 +99,7 @@ void OperationCore::transaction(AbstractTransactionListener& listener, const Use
   ProvideMap provideMap;
   InstalledReferences requiresReferences, conflictsReferences;
   PkgUtils::prepareReversedMaps(content, provideMap, requiresReferences, conflictsReferences);
-  listener.onInstallRemovePkgLIstProcessing();
+  listener.onInstallRemovePkgListProcessing();
   PackageScope scope(*backEnd.get(), content, provideMap, requiresReferences, conflictsReferences);
   TaskSolverData taskSolverData(*backEnd.get(), scope);
   std::auto_ptr<AbstractTaskSolver> solver = createGeneralTaskSolver(taskSolverData);
@@ -121,7 +121,7 @@ std::string OperationCore::generateSat(AbstractTransactionListener& listener, co
   ProvideMap provideMap;
   InstalledReferences requiresReferences, conflictsReferences;
   PkgUtils::prepareReversedMaps(content, provideMap, requiresReferences, conflictsReferences);
-  listener.onInstallRemovePkgLIstProcessing();
+  listener.onInstallRemovePkgListProcessing();
   PackageScope scope(*backEnd.get(), content, provideMap, requiresReferences, conflictsReferences);
   TaskSolverData taskSolverData(*backEnd.get(), scope);
   std::auto_ptr<AbstractTaskSolver> solver = createGeneralTaskSolver(taskSolverData);

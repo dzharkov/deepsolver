@@ -75,7 +75,7 @@ int main(int argc, char* argv[])
     AlwaysTrueContinueRequest alwaysTrueContinueRequest;
     Messages(std::cout).dsUpdateLogo();
     ConfigCenter conf;
-    conf.loadFromFile("/tmp/ds.ini");
+    conf.loadFromFile(DEFAULT_CONFIG_FILE_NAME);
     conf.commit();
     Messages(std::cout).introduceRepoSet(conf);
     OperationCore core(conf);

@@ -17,6 +17,7 @@
 
 #include"deepsolver.h"
 #include"OperationCore.h"
+#include"TransactionProgress.h"
 #include"Messages.h"
 
 class DsInstallCliParser: public CliParser
@@ -122,14 +123,15 @@ int main(int argc, char* argv[])
   parseCmdLine(argc, argv);
   initLogging(cliParser.wasKeyUsed("--debug")?LOG_DEBUG:LOG_INFO, cliParser.wasKeyUsed("--log"));
   try{
+    TransactionProgress transactionProgress(std::cout, cliParser.wasKeyUsed("--log"));
     ConfigCenter conf;
-    conf.loadFromFile("/tmp/ds.ini");
+    conf.loadFromFile(DEFAULT_CONFIG_FILE_NAME);
     conf.commit();
     OperationCore core(conf);
   logMsg(LOG_DEBUG, "Recognized %zu items to install:", cliParser.userTask.itemsToInstall.size());
   for(UserTaskItemToInstallVector::size_type i = 0;i < cliParser.userTask.itemsToInstall.size();i++)
     logMsg(LOG_DEBUG, "%s", cliParser.userTask.itemsToInstall[i].toString().c_str());
-    core.transaction(cliParser.userTask);
+  core.transaction(transactionProgress, cliParser.userTask);
   }
   catch (const ConfigFileException& e)
     {

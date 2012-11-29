@@ -29,6 +29,9 @@ public:
   void onMissedProgramName() const;
   void onMissedCommandLineArgument(const std::string& arg) const;
 
+  //User input errors;
+  void onNoPackagesMentionedError() const;
+
   //ds-update;
   void dsUpdateLogo() const;
   void dsUpdateInitCliParser(CliParser& cliParser) const;

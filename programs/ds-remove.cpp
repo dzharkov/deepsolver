@@ -17,6 +17,7 @@
 
 #include"deepsolver.h"
 #include"OperationCore.h"
+#include"TransactionProgress.h"
 #include"Messages.h"
 #include"CliParser.h"
 
@@ -48,6 +49,11 @@ void parseCmdLine(int argc, char* argv[])
       Messages(std::cout).dsRemoveHelp(cliParser);
       exit(EXIT_SUCCESS);
     }
+  if (cliParser.files.empty())
+    {
+      Messages(std::cerr).onNoPackagesMentionedError();
+      exit(EXIT_FAILURE);
+    }
 }
 
 int main(int argc, char* argv[])
@@ -57,14 +63,15 @@ int main(int argc, char* argv[])
   parseCmdLine(argc, argv);
   initLogging(cliParser.wasKeyUsed("--debug")?LOG_DEBUG:LOG_INFO, cliParser.wasKeyUsed("--log"));
   try{
+    TransactionProgress transactionProgress(std::cout, cliParser.wasKeyUsed("--log"));
     ConfigCenter conf;
-    conf.loadFromFile("/tmp/ds.ini");
+    conf.loadFromFile(DEFAULT_CONFIG_FILE_NAME);
     conf.commit();
     OperationCore core(conf);
     UserTask userTask;
     for(StringVector::size_type i = 0;i < cliParser.files.size();i++)
       userTask.namesToRemove.insert(cliParser.files[i]);
-    core.transaction(userTask);
+    core.transaction(transactionProgress, userTask);
   }
   catch (const ConfigFileException& e)
     {
@@ -75,6 +82,11 @@ int main(int argc, char* argv[])
     {
       Messages(std::cerr).onConfigError(e);
       return EXIT_FAILURE;
+    }
+  catch(const TaskException& e)
+    {
+       Messages(std::cerr).onTaskError(e);
+       return EXIT_FAILURE;
     }
   catch(const OperationException& e)
     {
