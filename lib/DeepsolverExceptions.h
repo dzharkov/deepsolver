@@ -192,27 +192,67 @@ enum {
 OperationErrorInternalIOProblem = 3
 };
 
-enum {
-  TaskErrorUnknownPackageName = 1,
-  TaskErrorBothInstallRemove = 2,
-  TaskErrorNoInstallationCandidat = 3
-};
-
-//This class must have i18n support in the future;
+/**\brief The class for indication user has asked impossible task
+ *
+ * package lists generating work. It should not be confused with
+ * OperationException class which is used for system or repository
+ * problems occurred in transaction. In most cases TaskException
+ * indicates errors caused by invalid user input such as user has asked
+ * to install unknown package or he has asked to install incompatible set
+ * of packages. This class contains optional string argument for various
+ * error types. Its meaning depends on particular error.
+ *
+ * \sa AbstractTaskSolver GeneralSolver OperationException
+ */
 class TaskException: public DeepsolverException
 {
 public:
- TaskException(int code, const std::string& arg)
-   : m_code(code), m_arg(arg) {}
+  enum {
+    UnknownPackageName = 0,
+    UnsolvableSat = 1,
+    NoSatSolution = 2,
+    Unmet = 3
+  };
 
+public:
+  /**\brief The constructor with error type and string argument initialization
+   *
+   * \param [in] code The error code
+   * \param [in] arg The string argument value
+   */
+  TaskException(int code, const std::string& arg)
+    : m_code(code), 
+      m_arg(arg) {}
+
+  /**\brief The constructor with error type initialization
+   *
+   * \param [in] code The error code
+   */
+  TaskException(int code)
+    : m_code(code) {}
+
+  /**\brief The destructor*/
   virtual ~TaskException() {}
 
 public:
+  /**\brief Returns the error type code
+   *
+   * Use this method to get code of the error occurred.
+   *
+   * \return The code of the error occurred
+   */
   int getCode() const
   {
     return m_code;
   }
 
+  /**\brief Returns the optional error string argument
+   *
+   * The purpose of this argument depends on error code. It is optional, 
+   * so not every of the possible task errors must has non-empty string argument.
+   *
+   * \return The string argument of the error occurred
+   */
   const std::string& getArg() const
   {
     return m_arg;
@@ -227,12 +267,14 @@ public:
   {
     switch(m_code)
       {
-      case TaskErrorUnknownPackageName:
-	return "unknown package name: " + m_arg;
-      case TaskErrorBothInstallRemove:
-	return "conflicting actions: \'" + m_arg + "\' was considered both for install and remove";
-      case TaskErrorNoInstallationCandidat:
-	return "package has no installation candidat: " + m_arg;
+      case UnknownPackageName:
+	return "Unknown package name \'" + m_arg + "\'";
+      case UnsolvableSat:
+	return "Package \'" + m_arg + "\' involved in SAT simultaneously for installation and removing";
+      case NoSatSolution:
+	return "Constructed SAT has no solutions";
+      case Unmet:
+	return "No packages to resolve require entry \'" + m_arg + "\'";
       default:
 	assert(0);
 	return "";//Just to reduce warning 
@@ -304,6 +346,8 @@ public:
 private:
   const int m_code;
 }; //class OperationException;
+
+
 
 /**\brief Indicates repository index manipulation problem
  *
