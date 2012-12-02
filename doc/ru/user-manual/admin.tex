@@ -76,7 +76,7 @@
 например, \PATH{/repo/i586/RPMS.classic}.
 Несмотря на то, что набор каталогов для~организации репозитория пакетов \ds строго определён (см.~разд.~\ref{repo_format}),
 для~большей гибкости  утилиты администрирования  его не~обрабатывают автоматически.
-Для~всех трёх перечисленных утилит опции командной строки могут быть ключами, управляющими поведением (обычно начинаются с~одиночного или двойного дефиса), и свободными параметрами.
+Для~всех трёх перечисленных утилит опции командной строки могут быть ключами, управляющими поведением (обычно начинаются с~одиночного или двойного тире), и свободными параметрами.
 Для~запрета обработки опции как~ключей, т.~е. для~явного перехода к~режиму свободных параметров,
  пользователь может указать последовательность ``-~-'' (два дефиса). %%FIXME:Space between dashes;
 Количество и назначение ключей и свободных параметров для~каждой утилиты требуют отдельного   описания,
@@ -206,3 +206,50 @@
 После выполнения всех необходимых действий файл с~контрольными суммами обновляется.
 В~качестве дополнительного параметра может быть указан параметр \CODE{-~-ref-sources}, 
 назначение которого полностью аналогично назначению одноимённого параметра для~утилиты \EN{ds-repo}.
+
+\subsubsection{Примеры}
+
+Ниже приводится тривиальный пример создания индекса репозитория только для~одной архитектуры \EN{i586}, только для~одной компоненты \EN{classic}
+и с~фильтрацией \provides только для файлов из~каталога \PATH{/usr/bin}:
+
+{\large
+\begin{verbatim}
+# ds-repo -d /usr/bin i586/base.classic i586/RPMS.classic i586/SRPMS.classic
+\end{verbatim}
+}
+
+Пример создания индексов репозитория с~одной компонентой \EN{classic} и для~трёх архитектур: 
+\EN{i586}, \EN{noarch}, \EN{x86\_64}.
+Включены оба режима фильтрации \provides, т.~е.
+используются записи, для~которых есть известные \requires/\conflicts, а также файлы из~каталогов, перечисленных в~переменной окружения \CODE{\$PATH}. 
+Используются регулярные выражения для~фильтрации \requires из~файла \PATH{\~/exclude}, 
+записи историй обновлений пакетов сохраняются как для~пакетов с~исходными текстами, так и для~бинарных пакетов.
+
+{\large
+\begin{verbatim}
+# ds-repo -lb -ls -r -s noarch/RPMS.classic -d "$PATH" \
+-nr ~/exclude i586/base.classic i586/RPMS.classic i586/SRPMS.classic
+
+# ds-repo -lb -ls -r -s noarch/RPMS.classic -d "$PATH" \
+-nr ~/exclude x86_64/base.classic x86_64/RPMS.classic x86_64/SRPMS.classic
+
+# ds-repo -lb -ls -r -s i586/base.classic:x86_64/base.classic -d "$PATH" \
+-nr ~/exclude noarch/base.classic noarch/RPMS.classic noarch/SRPMS.classic
+\end{verbatim}
+}
+
+Пример аналогичный предыдущему, но без~исключения \requires,
+без истории обновления пакетов с~исходными текстами и с~фильтрацией \provides только по известным \requires/\conflicts:
+
+{\large
+\begin{verbatim}
+# ds-repo -lb -r -s noarch/RPMS.classic \
+i586/base.classic i586/RPMS.classic i586/SRPMS.classic
+
+# ds-repo -lb -r -s noarch/RPMS.classic \
+-nr ~/exclude x86_64/base.classic x86_64/RPMS.classic x86_64/SRPMS.classic
+
+# ds-repo -lb -r -s i586/base.classic:x86_64/base.classic \
+-nr ~/exclude noarch/base.classic noarch/RPMS.classic noarch/SRPMS.classic
+\end{verbatim}
+}
