@@ -178,7 +178,7 @@ VarId GeneralSolver::translateItemToInstall(const UserTaskItemToInstall& item)
   const bool hasVersion = item.verDir != VerNone;
   assert(!hasVersion || !item.version.empty());
   if (!m_scope.checkName(item.pkgName))
-    throw TaskException(TaskErrorUnknownPackageName, item.pkgName);
+    throw TaskException(TaskException::UnknownPackageName, item.pkgName);
   const PackageId pkgId = m_scope.strToPackageId(item.pkgName);
   assert(pkgId != BAD_PACKAGE_ID);
   VarIdVector vars;
@@ -211,7 +211,7 @@ VarId GeneralSolver::translateItemToInstall(const UserTaskItemToInstall& item)
     } else
     m_scope.selectMatchingVarsAmongProvides(pkgId, vars);
   if (vars.empty())//No appropriate packages at all;
-    throw TaskException(TaskErrorNoInstallationCandidat, item.toString());
+    throw TaskException(TaskException::NoRequestedPackage, item.toString());
   if (hasVersion || m_scope.allProvidesHaveTheVersion(vars, pkgId))
     {
       const VarId res = processPriorityList(vars, pkgId);
@@ -258,7 +258,7 @@ VarId GeneralSolver::satisfyRequire(PackageId pkgId)
   if (vars.empty())//No appropriate packages at all;
     {
       logMsg(LOG_ERR, "No matching package for require entry \'%s\'", m_scope.packageIdToStr(pkgId).c_str());
-      throw TaskException(TaskErrorNoInstallationCandidat, m_scope.packageIdToStr(pkgId));
+      throw TaskException(TaskException::Unmet, m_scope.packageIdToStr(pkgId));
     }
   if (m_scope.allProvidesHaveTheVersion(vars, pkgId))
     {
@@ -300,7 +300,7 @@ VarId GeneralSolver::satisfyRequire(PackageId pkgId, const VersionCond& version)
   if (vars.empty())//No appropriate packages at all;
     {
       logMsg(LOG_ERR, "No matching package for require entry \'%s\'", relToString(IdPkgRel(pkgId, version)).c_str());
-    throw TaskException(TaskErrorNoInstallationCandidat, m_scope.packageIdToStr(pkgId));
+      throw TaskException(TaskException::Unmet, m_scope.packageIdToStr(pkgId));
     }
   const VarId res = processPriorityList(vars, pkgId);
   if (res != BAD_VAR_ID)

@@ -211,7 +211,8 @@ public:
     UnknownPackageName = 0,
     UnsolvableSat = 1,
     NoSatSolution = 2,
-    Unmet = 3
+    Unmet = 3,
+    NoRequestedPackage = 4
   };
 
 public:
@@ -275,6 +276,8 @@ public:
 	return "Constructed SAT has no solutions";
       case Unmet:
 	return "No packages to resolve require entry \'" + m_arg + "\'";
+      case NoRequestedPackage:
+	return "No packages to match \'" + m_arg + "\' request";
       default:
 	assert(0);
 	return "";//Just to reduce warning 

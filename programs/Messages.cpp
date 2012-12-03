@@ -119,8 +119,37 @@ void Messages::onOperationError(const OperationException& e)
 void Messages::onTaskError(const TaskException& e)
 {
   m_stream << std::endl;
-  m_stream << "Some errors were occurred during the last operation:" << std::endl;
-  m_stream << e.getMessage() << std::endl;
+  switch(e.getCode())
+    {
+    case TaskException::UnknownPackageName:
+      m_stream << "You have requested an unknown package. Provided name \"" << e.getArg() << "\" is not present" << std::endl;
+      m_stream << "neither in available repositories nor in the system." << std::endl;
+      return;
+    case TaskException::UnsolvableSat:
+      m_stream << "The package \"" << e.getArg() << "\" was considered to be installed and removed simultaneously. That can" << std::endl;
+      m_stream << "be caused by problems in the package dependencies set or too difficult" << std::endl;
+	m_stream << "user request. To resolve this situation you can simplify your task by" << std::endl;
+	m_stream << "listing less packages if there are several." << std::endl;
+	return;
+    case TaskException::NoSatSolution:
+      m_stream << "Deepsolver task processor is unable to find a valid solution. That may" << std::endl;
+      m_stream << "be caused by problems in the package dependencies set or too difficult" << std::endl;
+      m_stream << "user request. To resolve this situation you can simplify your task by" << std::endl;
+      m_stream << "listing less packages if there are several." << std::endl;
+      return;
+    case TaskException::Unmet:
+      m_stream << "The require entry \"" << e.getArg() << "\" causes an unmet. That means there are no packages" << std::endl;
+      m_stream << "neither in the available repositories nor in the system suitable to" << std::endl;
+      m_stream << "satisfy this requirement. Probably there are problems in package set" << std::endl;
+      m_stream << "you are working with. Please, contact your repositories administrator." << std::endl;
+      return;
+    case TaskException::NoRequestedPackage:
+      m_stream << "There are no suitable packages to match your task request \"" << e.getArg() << "\". Please," << std::endl;
+      m_stream << "consider another expression." << std::endl;
+	return;
+    default:
+      assert(0);
+  };
 }
 
 //Command line errors;
