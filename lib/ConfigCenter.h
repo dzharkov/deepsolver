@@ -99,10 +99,47 @@ private:
   enum {
     ValueTypeString = 1,
     ValueTypeStringList = 2,
-    ValueTypeBoolean = 3
+    ValueTypeBoolean = 3,
+ValueTypeUint = 4
   };
 
-  class StringValue//FIXME:General parent;
+class Value
+{
+public:
+  public:
+  Value() {}
+  virtual ~Value() {}
+
+public:
+    bool pathMatches(const StringVector& p, const std::string& a) const 
+      {
+	if (path.size() != p.size())
+	  return 0;
+	for(StringVector::size_type i = 0;i < path.size();i++)
+	  if (path[i] != p[i])
+	    return 0;
+	if (!sectArg.empty() && sectArg != a)
+	  return 0;
+	return 1;
+      }
+
+    std::string pathToString()
+    {
+      assert(!path.empty());
+      std::string value = path[0];
+      if (!sectArg.empty())
+	value += " \"" + sectArg + "\"";
+      for(StringVector::size_type i = 1;i < path.size();i++)
+	value += "." + path[i];
+      return value;
+    }
+
+public:
+  StringVector path;
+  std::string sectArg;
+}; //class Value;
+
+  class StringValue: public Value 
   {
   public:
   StringValue()
@@ -113,39 +150,14 @@ private:
     : canBeEmpty(0),
       value(&v) {}
 
-  public:
-    bool pathMatches(const StringVector& p, const std::string& a) const 
-      {
-	if (path.size() != p.size())
-	  return 0;
-	for(StringVector::size_type i = 0;i < path.size();i++)
-	  if (path[i] != p[i])
-	    return 0;
-	if (!sectArg.empty() && sectArg != a)
-	  return 0;
-	return 1;
-      }
+    virtual ~StringValue() {}
 
   public:
-    std::string pathToString()
-    {
-      assert(!path.empty());
-      std::string value = path[0];
-      if (!sectArg.empty())
-	value += " \"" + sectArg + "\"";
-      for(StringVector::size_type i = 1;i < path.size();i++)
-	value += "." + path[i];
-      return value;
-    }
-
-  public:
-    StringVector path;
-    std::string sectArg;
     bool canBeEmpty;
     std::string* value;
   }; //class StringValue;
 
-  class StringListValue
+  class StringListValue : public Value
   {
   public:
   StringListValue()
@@ -156,40 +168,15 @@ private:
     : canContainEmptyItem(0),
       value(&v) {}
 
-  public:
-    bool pathMatches(const StringVector& p, const std::string& a) const 
-      {
-	if (path.size() != p.size())
-	  return 0;
-	for(StringVector::size_type i = 0;i < path.size();i++)
-	  if (path[i] != p[i])
-	    return 0;
-	if (!sectArg.empty() && sectArg != a)
-	  return 0;
-	return 1;
-      }
+    virtual ~StringListValue() {}
 
   public:
-    std::string pathToString()
-    {
-      assert(!path.empty());
-      std::string value = path[0];
-      if (!sectArg.empty())
-	value += " \"" + sectArg + "\"";
-      for(StringVector::size_type i = 1;i < path.size();i++)
-	value += "." + path[i];
-      return value;
-    }
-
-  public:
-    StringVector path;
-    std::string sectArg;
     bool canContainEmptyItem;
     std::string delimiters;
     StringVector* value;
   }; //class StringListValue;
 
-  class BooleanValue
+  class BooleanValue: public Value
   {
   public:
   BooleanValue()
@@ -198,42 +185,33 @@ private:
   BooleanValue(bool& v)
     : value(&v) {}
 
-  public:
-    bool pathMatches(const StringVector& p, const std::string& a) const 
-      {
-	if (path.size() != p.size())
-	  return 0;
-	for(StringVector::size_type i = 0;i < path.size();i++)
-	  if (path[i] != p[i])
-	    return 0;
-	if (!sectArg.empty() && sectArg != a)
-	  return 0;
-	return 1;
-      }
+    virtual ~BooleanValue() {}
 
   public:
-    std::string pathToString()
-    {
-      assert(!path.empty());
-      std::string value = path[0];
-      if (!sectArg.empty())
-	value += " \"" + sectArg + "\"";
-      for(StringVector::size_type i = 1;i < path.size();i++)
-	value += "." + path[i];
-      return value;
-    }
-
-  public:
-    StringVector path;
-    std::string sectArg;
     bool* value;
   }; //class BooleanValue;
+
+  class UintValue: public Value
+  {
+  public:
+  UintValue()
+    : value(NULL) {}
+
+  UintValue(unsigned int& v)
+    : value(&v) {}
+
+    virtual ~UintValue() {}
+
+  public:
+    unsigned int* value;
+  }; //class UintValue;
 
 private:
   void initValues();
   void reinitRepoValues();
   int getParamType(const StringVector& path, const std::string& sectArg, const ConfigFilePosInfo& pos) const;
 
+private:
   void addStringParam3(const std::string& path1,
 		       const std::string& path2,
 		       const std::string& path3,
@@ -243,6 +221,16 @@ private:
 			       const std::string& path2,
 			       const std::string& path3,
 			       std::string& value);
+
+  void addStringListParam3(const std::string& path1,
+		       const std::string& path2,
+		       const std::string& path3,
+		       StringVector& value);
+
+  void addNonEmptyStringListParam3(const std::string& path1,
+			       const std::string& path2,
+			       const std::string& path3,
+			       StringVector& value);
 
 private:
   void processStringValue(const StringVector& path, 
@@ -275,6 +263,16 @@ private:
 			 const std::string& sectArg,
 		       BooleanValue& booleanValue);
 
+  void processUintValue(const StringVector& path, 
+			 const std::string& sectArg,
+			 const std::string& value,
+			 bool adding,
+			 const ConfigFilePosInfo& pos);
+
+  void findUintValue(const StringVector& path, 
+			 const std::string& sectArg,
+		       BooleanValue& booleanValue);
+
 private://AbstractConfigFileHandler;
   void onConfigFileValue(const StringVector& path, 
 			 const std::string& sectArg,
@@ -286,12 +284,14 @@ private:
   typedef std::vector<StringValue> StringValueVector;
   typedef std::vector<StringListValue> StringListValueVector;
   typedef std::vector<BooleanValue> BooleanValueVector;
+  typedef std::vector<UintValue> UintValueVector;
 
 private:
   ConfRoot m_root;
   StringValueVector m_stringValues, m_repoStringValues;
   StringListValueVector m_stringListValues, m_repoStringListValues;
   BooleanValueVector m_booleanValues, m_repoBooleanValues;
+  UintValueVector m_uintValues, m_repoUintValues;
 }; //class ConfigCenter;
 
 #endif //DEEPSOLVER_CONFIG_CENTER_H;

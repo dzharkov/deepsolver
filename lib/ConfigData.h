@@ -26,6 +26,11 @@ struct ConfDir
     std::string pkgData;
 }; //struct ConfDir;
 
+struct ConfOs
+{
+  StringList transactReadAhead;w
+}; //struct ConfOs;
+
 struct ConfRepo
 {
   ConfRepo()
@@ -58,7 +63,7 @@ typedef std::list<ConfRepo> ConfRepoList;
 struct ConfRoot
 {
   ConfDir dir;
-  StringList transactReadAhead;
+  ConfOs os;
   ConfRepoVector repo;
 }; //struct ConfRoot;
 

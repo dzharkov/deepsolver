@@ -18,7 +18,7 @@
 #include"deepsolver.h"
 #include"ConfigCenter.h"
 
-#define DELIMITERS ",;"
+#define DELIMITERS ";"
 
 static std::string buildConfigParamTitle(const StringVector& path, const std::string& sectArg);
 static bool parseBooleanValue(const StringVector& path,
@@ -28,7 +28,8 @@ static bool parseBooleanValue(const StringVector& path,
 
 void ConfigCenter::initValues()
 {
-  addNonEmptyStringParam3("core", "dir", "pkg-data", m_root.dir.pkgData );
+  addNonEmptyStringParam3("core", "dir", "pkg-data", m_root.dir.pkgData);
+  addNonEmptyStringListParam3("core", "dir", "pkg-data", m_root.os.transactReadAhead);
 }
 
 void ConfigCenter::reinitRepoValues()
