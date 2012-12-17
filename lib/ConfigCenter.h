@@ -271,7 +271,7 @@ private:
 
   void findUintValue(const StringVector& path, 
 			 const std::string& sectArg,
-		       BooleanValue& booleanValue);
+		       UintValue& uintValue);
 
 private://AbstractConfigFileHandler;
   void onConfigFileValue(const StringVector& path, 

@@ -1177,4 +1177,27 @@ private:
   std::string m_message;
 }; //class RpmException;
 
+class NotImplementedException: public DeepsolverException
+{
+public:
+  NotImplementedException(const std::string& message) 
+    : m_message(message) {}
+
+  virtual ~NotImplementedException() {}
+
+public:
+  std::string getType() const
+  {
+    return "not implemented";
+  }
+
+  std::string getMessage() const
+  {
+    return m_message;
+  }
+
+private:
+  const std::string m_message;
+}; //class NotImplementedException;
+
 #endif //DEEPSOLVER_DEEPSOLVER_EXCEPTIONS_H;

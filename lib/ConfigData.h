@@ -28,7 +28,7 @@ struct ConfDir
 
 struct ConfOs
 {
-  StringList transactReadAhead;w
+  StringVector transactReadAhead;
 }; //struct ConfOs;
 
 struct ConfRepo

@@ -28,7 +28,7 @@ static bool parseBooleanValue(const StringVector& path,
 static unsigned int parseUintValue(const StringVector& path,
 		       const std::string& sectArg,
 		       const std::string& str,
-		       const ConfigFilePosInfo& pos)
+				   const ConfigFilePosInfo& pos);
 
 void ConfigCenter::initValues()
 {
@@ -90,10 +90,12 @@ void ConfigCenter::commit()
       //Common checking;
   for(StringValueVector::size_type i = 0;i < m_stringValues.size();i++)
     if (!m_stringValues[i].canBeEmpty && trim(*m_stringValues[i].value).empty())
-      throw ConfigException(ConfigErrorValueCannotBeEmpty, m_stringValues[i].pathToString());
+      throw ConfigException(ConfigException::ValueCannotBeEmpty, m_stringValues[i].pathToString());
+  /*
   for(StringValueVector::size_type i = 0;i < m_repoStringValues.size();i++)
     if (!m_repoStringValues[i].canBeEmpty && trim(*m_repoStringValues[i].value).empty())
       throw ConfigException(ConfigErrorValueCannotBeEmpty, m_stringValues[i].pathToString());
+  */
   //Custom commit;
   logMsg(LOG_DEBUG, "config:commit completed");
 }
@@ -113,10 +115,10 @@ void ConfigCenter::onConfigFileValue(const StringVector& path,
 	i++;
       if (i >= m_root.repo.size())
 	m_root.repo.push_back(ConfRepo(sectArg));
-      m_stringValueVector.clear();
-      m_stringListValueVector.clear();
-      m_booleanValueVector.clear();
-      m_uintValueVector.clear();
+      m_stringValues.clear();
+      m_stringListValues.clear();
+      m_booleanValues.clear();
+      m_uintValues.clear();
       initValues();
       initRepoValues();
     }
@@ -182,12 +184,12 @@ void ConfigCenter::processStringListValue(const StringVector& path,
 	  continue;
 	}
       if (!stringListValue.canContainEmptyItem && trim(item).empty())
-	throw ConfigException(ConfigErrorValueCannotBeEmpty, buildConfigParamTitle(path, sectArg), pos.fileName, pos.lineNumber, pos.line);
+	throw ConfigException(ConfigException::ValueCannotBeEmpty, buildConfigParamTitle(path, sectArg), pos.fileName, pos.lineNumber, pos.line);
       v.push_back(item);
       item.erase();
     }
   if (!stringListValue.canContainEmptyItem && trim(item).empty())
-    throw ConfigException(ConfigErrorValueCannotBeEmpty, buildConfigParamTitle(path, sectArg), pos.fileName, pos.lineNumber, pos.line);
+    throw ConfigException(ConfigException::ValueCannotBeEmpty, buildConfigParamTitle(path, sectArg), pos.fileName, pos.lineNumber, pos.line);
   v.push_back(item);
 }
 
@@ -202,7 +204,7 @@ void ConfigCenter::processBooleanValue(const StringVector& path,
   assert(booleanValue.value != NULL);
   bool& v = *(booleanValue.value);
   if (adding)
-    throw ConfigException(ConfigErrorAddingNotPermitted, buildConfigParamTitle(path, sectArg), pos.fileName, pos.lineNumber, pos.line);
+    throw ConfigException(ConfigException::AddingNotPermitted, buildConfigParamTitle(path, sectArg), pos.fileName, pos.lineNumber, pos.line);
   v = parseBooleanValue(path, sectArg, value, pos);
 }
 
@@ -213,7 +215,7 @@ void ConfigCenter::processUintValue(const StringVector& path,
 				      const ConfigFilePosInfo& pos)
 {
   UintValue uintValue;
-  findUintValue(path, sectArg, booleanValue);
+  findUintValue(path, sectArg, uintValue);
   assert(uintValue.value != NULL);
   unsigned int& v = *(uintValue.value);
   v = parseUintValue(path, sectArg, value, pos);
@@ -341,11 +343,11 @@ void ConfigCenter::addStringListParam3(const std::string& path1,
 {
   assert(!path1.empty() && !path2.empty() && !path3.empty());
   StringListValue stringListValue(value);
-  stringListValue.canBeEmpty = 1;
+  stringListValue.canContainEmptyItem = 1;
   stringListValue.path.push_back(path1);
   stringListValue.path.push_back(path2);
   stringListValue.path.push_back(path3);
-  m_stringListValues.push_back(stringValue);
+  m_stringListValues.push_back(stringListValue);
 }
 
 void ConfigCenter::addNonEmptyStringListParam3(const std::string& path1,
@@ -355,11 +357,11 @@ void ConfigCenter::addNonEmptyStringListParam3(const std::string& path1,
 {
   assert(!path1.empty() && !path2.empty() && !path3.empty());
   StringListValue stringListValue(value);
-  stringListValue.canBeEmpty = 0;
+  stringListValue.canContainEmptyItem = 0;
   stringListValue.path.push_back(path1);
   stringListValue.path.push_back(path2);
   stringListValue.path.push_back(path3);
-  m_stringListValues.push_back(stringValue);
+  m_stringListValues.push_back(stringListValue);
 }
 
 // Static functions;
@@ -392,7 +394,7 @@ bool parseBooleanValue(const StringVector& path,
     return 0;
   if (str == "0")
     return 0;
-  throw ConfigException(ConfigErrorInvalidBooleanValue, buildConfigParamTitle(path, sectArg), pos.fileName, pos.lineNumber, pos.line);
+  throw ConfigException(ConfigException::InvalidBooleanValue, buildConfigParamTitle(path, sectArg), pos.fileName, pos.lineNumber, pos.line);
 }
 
 unsigned int parseUintValue(const StringVector& path,
@@ -401,10 +403,10 @@ unsigned int parseUintValue(const StringVector& path,
 		       const ConfigFilePosInfo& pos)
 {
   if (trim(str).empty())
-    throw ConfigException(ConfigErrorInvalidUintValue, buildConfigParamTitle(path, sectArg), pos.fileName, pos.lineNumber, pos.line);
+    throw ConfigException(ConfigException::InvalidUintValue, buildConfigParamTitle(path, sectArg), pos.fileName, pos.lineNumber, pos.line);
   std::istringstream ss(trim(str));
   unsigned int k;
   if (!(ss >> k))
-    throw ConfigException(ConfigErrorInvalidUintValue, buildConfigParamTitle(path, sectArg), pos.fileName, pos.lineNumber, pos.line);
+    throw ConfigException(ConfigException::InvalidUintValue, buildConfigParamTitle(path, sectArg), pos.fileName, pos.lineNumber, pos.line);
   return k;
 }
