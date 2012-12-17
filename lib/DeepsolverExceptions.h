@@ -617,13 +617,6 @@ private:
   const std::string m_line;
 }; //class ConfigFileException;
 
-enum {
-  ConfigErrorUnknownParam = 0,
-  ConfigErrorValueCannotBeEmpty = 1,
-  ConfigErrorAddingNotPermitted = 2,
-ConfigErrorInvalidBooleanValue = 3
-};
-
 /**\brief Indicates the error in configuration data
  *
  * This class instance indicates any problem in Deepsolver configuration
@@ -642,11 +635,19 @@ ConfigErrorInvalidBooleanValue = 3
 class ConfigException: public DeepsolverException
 {
 public:
+  enum {
+    UnknownParam = 0,
+    ValueCannotBeEmpty = 1,
+    AddingNotPermitted = 2,
+    InvalidBooleanValue = 3,
+    InvalidUintValue = 4
+  };
+
+public:
   /**\brief The constructor
    *
    * \param [in] code The error code
-   * \param [in] arg Optional string error argument with meaning depending on error code
-   * \param [in] pos The information about configuration file line the error is associated
+   * \param [in] arg Optional string error argument with meaning dependent on error code
    * \param [in] fileName The name of the config file with the invalid line
    * \param [in] lineNumber The number of the invalid line
    * \param [in] line The invalid line value

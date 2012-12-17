@@ -54,7 +54,7 @@ void Messages::onConfigSyntaxError(const ConfigFileException& e)
 {
   m_stream << messagesProgramName << ":Configuration file syntax error:" << getConfigSyntaxErrorText(e.getCode()) << std::endl;
   std::ostringstream ss;
-  ss << e.getFileName() << "(" << e.getLineNumber() << "):";
+  ss << e.getFileName() << ":" << e.getLineNumber() << ":";
   const size_t pos = ss.str().length() + e.getPos();//FIXME:UTF-8 character make this value incorrect;
   m_stream << ss.str() << e.getLine() << std::endl;
   for(size_t i = 0;i < pos;i++)
@@ -64,27 +64,38 @@ void Messages::onConfigSyntaxError(const ConfigFileException& e)
 
 void Messages::onConfigError(const ConfigException& e)
 {
-  m_stream << messagesProgramName << ":Configuration file error:";
+  m_stream << "There is an error in your configuration file. Please, consult your" << std::endl;
+  m_stream << "system administrator for problem resolving information. Details listed below:" << std::endl;
+  m_stream << std::endl;
+  if (e.getLineNumber() > 0)
+    m_stream << e.getFileName() << ":" << e.getLineNumber() << ":";
   switch(e.getCode())
     {
-    case ConfigErrorUnknownParam:
+    case ConfigException::UnknownParam:
       m_stream << "unknown parameter: " << e.getArg() << std::endl;
   break;
-    case ConfigErrorValueCannotBeEmpty:
+    case ConfigException::ValueCannotBeEmpty:
       m_stream << "value of parameter \'" << e.getArg() << "\' cannot be empty" << std::endl;
   break;
-    case ConfigErrorAddingNotPermitted:
+    case ConfigException::AddingNotPermitted:
       m_stream << "adding not permitted" << std::endl;
   break;
-    case ConfigErrorInvalidBooleanValue:
-      m_stream << "invalid boolean valuepermitted" << std::endl;
+    case ConfigException::InvalidBooleanValue:
+      m_stream << "invalid boolean value" << std::endl;
+  break;
+    case ConfigException::InvalidUintValue:
+      m_stream << "invalid unsigned integer value" << std::endl;
   break;
     default:
       assert(0);
       return;
     } //switch(e.getCode());
   if (e.getLineNumber() > 0)
-    m_stream << e.getFileName() << "(" << e.getLineNumber() << "):" << e.getLine() << std::endl;
+    {
+      m_stream << std::endl;
+      m_stream << "Invalid line content:" << std::endl;
+    m_stream << e.getLine() << std::endl;
+    }
 }
 
 void Messages::onCurlError(const CurlException& e)

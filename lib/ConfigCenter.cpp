@@ -25,6 +25,10 @@ static bool parseBooleanValue(const StringVector& path,
 		       const std::string& sectArg,
 		       const std::string& str,
 		       const ConfigFilePosInfo& pos);
+static unsigned int parseUintValue(const StringVector& path,
+		       const std::string& sectArg,
+		       const std::string& str,
+		       const ConfigFilePosInfo& pos)
 
 void ConfigCenter::initValues()
 {
@@ -32,7 +36,7 @@ void ConfigCenter::initValues()
   addNonEmptyStringListParam3("core", "dir", "pkg-data", m_root.os.transactReadAhead);
 }
 
-void ConfigCenter::reinitRepoValues()
+void ConfigCenter::initRepoValues()
 {
   for(ConfRepoVector::size_type i = 0;i < m_root.repo.size();i++)
     {
@@ -103,13 +107,18 @@ void ConfigCenter::onConfigFileValue(const StringVector& path,
   assert(!path.empty());
   if (path[0] == "repo")
     {
-      assert(!sectArg.empty());//FIXME:
+      throw NotImplementedException("Empty configuration file section argument");
       ConfRepoVector::size_type i = 0;
       while(i < m_root.repo.size() && m_root.repo[i].name != sectArg)
 	i++;
       if (i >= m_root.repo.size())
 	m_root.repo.push_back(ConfRepo(sectArg));
-      reinitRepoValues();
+      m_stringValueVector.clear();
+      m_stringListValueVector.clear();
+      m_booleanValueVector.clear();
+      m_uintValueVector.clear();
+      initValues();
+      initRepoValues();
     }
   const int paramType = getParamType(path, sectArg, pos);
   if (paramType == ValueTypeString)
@@ -125,6 +134,11 @@ void ConfigCenter::onConfigFileValue(const StringVector& path,
   if (paramType == ValueTypeBoolean)
     {
       processBooleanValue(path, sectArg, value, adding, pos);
+      return;
+    }
+  if (paramType == ValueTypeUint)
+    {
+      processUintValue(path, sectArg, value, adding, pos);
       return;
     }
   assert(0);
@@ -192,30 +206,38 @@ void ConfigCenter::processBooleanValue(const StringVector& path,
   v = parseBooleanValue(path, sectArg, value, pos);
 }
 
+void ConfigCenter::processUintValue(const StringVector& path, 
+				      const std::string& sectArg,
+				      const std::string& value,
+				      bool adding,
+				      const ConfigFilePosInfo& pos)
+{
+  UintValue uintValue;
+  findUintValue(path, sectArg, booleanValue);
+  assert(uintValue.value != NULL);
+  unsigned int& v = *(uintValue.value);
+  v = parseUintValue(path, sectArg, value, pos);
+}
+
 int ConfigCenter::getParamType(const StringVector& path, const std::string& sectArg, const ConfigFilePosInfo& pos) const
 {
   //String;
   for(StringValueVector::size_type i = 0;i < m_stringValues.size();i++)
     if (m_stringValues[i].pathMatches(path, sectArg))
       return ValueTypeString;
-  for(StringValueVector::size_type i = 0;i < m_repoStringValues.size();i++)
-    if (m_repoStringValues[i].pathMatches(path, sectArg))
-      return ValueTypeString;
   //StringList;
   for(StringListValueVector::size_type i = 0;i < m_stringListValues.size();i++)
     if (m_stringListValues[i].pathMatches(path, sectArg))
-      return ValueTypeStringList;
-  for(StringListValueVector::size_type i = 0;i < m_repoStringListValues.size();i++)
-    if (m_repoStringListValues[i].pathMatches(path, sectArg))
       return ValueTypeStringList;
   //Boolean;
   for(BooleanValueVector::size_type i = 0;i < m_booleanValues.size();i++)
     if (m_booleanValues[i].pathMatches(path, sectArg))
       return ValueTypeBoolean;
-  for(BooleanValueVector::size_type i = 0;i < m_repoBooleanValues.size();i++)
-    if (m_repoBooleanValues[i].pathMatches(path, sectArg))
-      return ValueTypeBoolean;
-  throw ConfigException(ConfigErrorUnknownParam, buildConfigParamTitle(path, sectArg), pos.fileName, pos.lineNumber, pos.line);
+  //Unsigned integer;
+  for(UintValueVector::size_type i = 0;i < m_uintValues.size();i++)
+    if (m_uintValues[i].pathMatches(path, sectArg))
+      return ValueTypeUint;
+  throw ConfigException(ConfigException::UnknownParam, buildConfigParamTitle(path, sectArg), pos.fileName, pos.lineNumber, pos.line);
 }
 
 void ConfigCenter::findStringValue(const StringVector& path, 
@@ -226,12 +248,6 @@ void ConfigCenter::findStringValue(const StringVector& path,
     if (m_stringValues[i].pathMatches(path, sectArg))
       {
 	stringValue = m_stringValues[i];
-	return;
-      }
-  for(StringValueVector::size_type i = 0;i < m_repoStringValues.size();i++)
-    if (m_repoStringValues[i].pathMatches(path, sectArg))
-      {
-	stringValue = m_repoStringValues[i];
 	return;
       }
   assert(0);
@@ -247,12 +263,6 @@ void ConfigCenter::findStringListValue(const StringVector& path,
 	stringListValue = m_stringListValues[i];
 	return;
       }
-  for(StringListValueVector::size_type i = 0;i < m_repoStringValues.size();i++)
-    if (m_repoStringListValues[i].pathMatches(path, sectArg))
-      {
-	stringListValue = m_repoStringListValues[i];
-	return;
-      }
   assert(0);
 }
 
@@ -266,10 +276,17 @@ void ConfigCenter::findBooleanValue(const StringVector& path,
 	booleanValue = m_booleanValues[i];
 	return;
       }
-  for(BooleanValueVector::size_type i = 0;i < m_repoBooleanValues.size();i++)
-    if (m_repoBooleanValues[i].pathMatches(path, sectArg))
+  assert(0);
+}
+
+void ConfigCenter::findUintValue(const StringVector& path, 
+				   const std::string& sectArg,
+				   UintValue& uintValue)
+{
+  for(BooleanValueVector::size_type i = 0;i < m_uintValues.size();i++)
+    if (m_uintValues[i].pathMatches(path, sectArg))
       {
-	booleanValue = m_repoBooleanValues[i];
+	uintValue = m_uintValues[i];
 	return;
       }
   assert(0);
@@ -277,7 +294,7 @@ void ConfigCenter::findBooleanValue(const StringVector& path,
 
 void ConfigCenter::loadFromFile(const std::string& fileName)
 {
-  logMsg(LOG_DEBUG, "Reading configuration from \'%s\'", fileName.c_str());
+  logMsg(LOG_DEBUG, "config:reading configuration from \'%s\'", fileName.c_str());
   assert(!fileName.empty());
   File f;
   f.openReadOnly(fileName);
@@ -383,18 +400,11 @@ unsigned int parseUintValue(const StringVector& path,
 		       const std::string& str,
 		       const ConfigFilePosInfo& pos)
 {
-  if (str == "YES" || str == "Yes" || str == "yes")
-    return 1;
-  if (str == "TRUE" || str == "True" || str == "true")
-    return 1;
-  if (str == "1")
-    return 1;
-  if (str == "NO" || str == "No" || str == "no")
-    return 0;
-  if (str == "FALSE" || str == "False" || str == "false")
-    return 0;
-  if (str == "0")
-    return 0;
-  throw ConfigException(ConfigErrorInvalidBooleanValue, buildConfigParamTitle(path, sectArg), pos.fileName, pos.lineNumber, pos.line);
+  if (trim(str).empty())
+    throw ConfigException(ConfigErrorInvalidUintValue, buildConfigParamTitle(path, sectArg), pos.fileName, pos.lineNumber, pos.line);
+  std::istringstream ss(trim(str));
+  unsigned int k;
+  if (!(ss >> k))
+    throw ConfigException(ConfigErrorInvalidUintValue, buildConfigParamTitle(path, sectArg), pos.fileName, pos.lineNumber, pos.line);
+  return k;
 }
-

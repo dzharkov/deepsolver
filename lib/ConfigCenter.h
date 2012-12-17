@@ -208,7 +208,7 @@ public:
 
 private:
   void initValues();
-  void reinitRepoValues();
+  void initRepoValues();
   int getParamType(const StringVector& path, const std::string& sectArg, const ConfigFilePosInfo& pos) const;
 
 private:
