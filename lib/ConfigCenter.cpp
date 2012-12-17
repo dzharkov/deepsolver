@@ -34,9 +34,6 @@ void ConfigCenter::initValues()
 
 void ConfigCenter::reinitRepoValues()
 {
-  m_repoStringValues.clear();
-  m_repoStringListValues.clear();
-  m_repoBooleanValues.clear();
   for(ConfRepoVector::size_type i = 0;i < m_root.repo.size();i++)
     {
       ConfRepo& repo = m_root.repo[i];
@@ -47,12 +44,12 @@ void ConfigCenter::reinitRepoValues()
       stringValue.path.push_back("url");
       stringValue.value = &repo.url;
       stringValue.canBeEmpty = 0;
-      m_repoStringValues.push_back(stringValue);
+      m_stringValues.push_back(stringValue);
       //Vendor;
       stringValue.path[1] = "vendor";
       stringValue.value = &repo.vendor;
       stringValue.canBeEmpty = 1;
-      m_repoStringValues.push_back(stringValue);
+      m_stringValues.push_back(stringValue);
       //Arch;
       StringListValue stringListValue;
       stringListValue.sectArg = repo.name;
@@ -61,19 +58,18 @@ void ConfigCenter::reinitRepoValues()
       stringListValue.delimiters = DELIMITERS;
       stringListValue.canContainEmptyItem = 0;
       stringListValue.value = &repo.arch;
-      m_repoStringListValues.push_back(stringListValue);
+      m_stringListValues.push_back(stringListValue);
       //Components;
       stringListValue.path[1] = "components";
       stringListValue.value = &repo.components;
-      m_repoStringListValues.push_back(stringListValue);
+      m_stringListValues.push_back(stringListValue);
       //FIXME:take-*;
     }
 }
 
 void ConfigCenter::commit()
 {
-  logMsg(LOG_DEBUG, "Committing configuration");
-  logMsg(LOG_DEBUG, "Adjusting values");
+  logMsg(LOG_DEBUG, "config:about to commit configuration values");
   //Adjusting;
   m_root.dir.pkgData = trim(m_root.dir.pkgData);
   for(ConfRepoVector::size_type i = 0;i < m_root.repo.size();i++)
@@ -88,7 +84,6 @@ void ConfigCenter::commit()
 	repo.components[k] = trim(repo.components[k]);
     }
       //Common checking;
-  logMsg(LOG_DEBUG, "Common values checking");
   for(StringValueVector::size_type i = 0;i < m_stringValues.size();i++)
     if (!m_stringValues[i].canBeEmpty && trim(*m_stringValues[i].value).empty())
       throw ConfigException(ConfigErrorValueCannotBeEmpty, m_stringValues[i].pathToString());
@@ -96,50 +91,7 @@ void ConfigCenter::commit()
     if (!m_repoStringValues[i].canBeEmpty && trim(*m_repoStringValues[i].value).empty())
       throw ConfigException(ConfigErrorValueCannotBeEmpty, m_stringValues[i].pathToString());
   //Custom commit;
-  logMsg(LOG_DEBUG, "Custom commit");
-  logMsg(LOG_DEBUG, "Configuration data commit completed");
-}
-
-void ConfigCenter::addStringParam3(const std::string& path1,
-				   const std::string& path2,
-				   const std::string& path3,
-				   std::string& value)
-{
-  assert(!path1.empty() && !path2.empty() && !path3.empty());
-  StringValue stringValue(value);
-  stringValue.canBeEmpty = 1;
-  stringValue.path.push_back(path1);
-  stringValue.path.push_back(path2);
-  stringValue.path.push_back(path3);
-  m_stringValues.push_back(stringValue);
-}
-
-void ConfigCenter::addNonEmptyStringParam3(const std::string& path1,
-					   const std::string& path2,
-					   const std::string& path3,
-					   std::string& value)
-{
-  assert(!path1.empty() && !path2.empty() && !path3.empty());
-  StringValue stringValue(value);
-  stringValue.canBeEmpty = 0;
-  stringValue.path.push_back(path1);
-  stringValue.path.push_back(path2);
-  stringValue.path.push_back(path3);
-  m_stringValues.push_back(stringValue);
-}
-
-void ConfigCenter::loadFromFile(const std::string& fileName)
-{
-  logMsg(LOG_DEBUG, "Reading configuration from \'%s\'", fileName.c_str());
-  assert(!fileName.empty());
-  File f;
-  f.openReadOnly(fileName);
-  StringVector lines;
-  f.readTextFile(lines);
-  f.close();
-  ConfigFile parser(*this, fileName);
-  for(StringVector::size_type i = 0;i < lines.size();i++)
-      parser.processLine(lines[i]);
+  logMsg(LOG_DEBUG, "config:commit completed");
 }
 
 void ConfigCenter::onConfigFileValue(const StringVector& path, 
@@ -323,6 +275,78 @@ void ConfigCenter::findBooleanValue(const StringVector& path,
   assert(0);
 }
 
+void ConfigCenter::loadFromFile(const std::string& fileName)
+{
+  logMsg(LOG_DEBUG, "Reading configuration from \'%s\'", fileName.c_str());
+  assert(!fileName.empty());
+  File f;
+  f.openReadOnly(fileName);
+  StringVector lines;
+  f.readTextFile(lines);
+  f.close();
+  ConfigFile parser(*this, fileName);
+  for(StringVector::size_type i = 0;i < lines.size();i++)
+      parser.processLine(lines[i]);
+}
+
+void ConfigCenter::addStringParam3(const std::string& path1,
+				   const std::string& path2,
+				   const std::string& path3,
+				   std::string& value)
+{
+  assert(!path1.empty() && !path2.empty() && !path3.empty());
+  StringValue stringValue(value);
+  stringValue.canBeEmpty = 1;
+  stringValue.path.push_back(path1);
+  stringValue.path.push_back(path2);
+  stringValue.path.push_back(path3);
+  m_stringValues.push_back(stringValue);
+}
+
+void ConfigCenter::addNonEmptyStringParam3(const std::string& path1,
+					   const std::string& path2,
+					   const std::string& path3,
+					   std::string& value)
+{
+  assert(!path1.empty() && !path2.empty() && !path3.empty());
+  StringValue stringValue(value);
+  stringValue.canBeEmpty = 0;
+  stringValue.path.push_back(path1);
+  stringValue.path.push_back(path2);
+  stringValue.path.push_back(path3);
+  m_stringValues.push_back(stringValue);
+}
+
+void ConfigCenter::addStringListParam3(const std::string& path1,
+				   const std::string& path2,
+				   const std::string& path3,
+				   StringVector& value)
+{
+  assert(!path1.empty() && !path2.empty() && !path3.empty());
+  StringListValue stringListValue(value);
+  stringListValue.canBeEmpty = 1;
+  stringListValue.path.push_back(path1);
+  stringListValue.path.push_back(path2);
+  stringListValue.path.push_back(path3);
+  m_stringListValues.push_back(stringValue);
+}
+
+void ConfigCenter::addNonEmptyStringListParam3(const std::string& path1,
+					   const std::string& path2,
+					   const std::string& path3,
+					   StringVector& value)
+{
+  assert(!path1.empty() && !path2.empty() && !path3.empty());
+  StringListValue stringListValue(value);
+  stringListValue.canBeEmpty = 0;
+  stringListValue.path.push_back(path1);
+  stringListValue.path.push_back(path2);
+  stringListValue.path.push_back(path3);
+  m_stringListValues.push_back(stringValue);
+}
+
+// Static functions;
+
 std::string buildConfigParamTitle(const StringVector& path, const std::string& sectArg)
 {
   assert(!path.empty());
@@ -335,6 +359,26 @@ std::string buildConfigParamTitle(const StringVector& path, const std::string& s
 }
 
 bool parseBooleanValue(const StringVector& path,
+		       const std::string& sectArg,
+		       const std::string& str,
+		       const ConfigFilePosInfo& pos)
+{
+  if (str == "YES" || str == "Yes" || str == "yes")
+    return 1;
+  if (str == "TRUE" || str == "True" || str == "true")
+    return 1;
+  if (str == "1")
+    return 1;
+  if (str == "NO" || str == "No" || str == "no")
+    return 0;
+  if (str == "FALSE" || str == "False" || str == "false")
+    return 0;
+  if (str == "0")
+    return 0;
+  throw ConfigException(ConfigErrorInvalidBooleanValue, buildConfigParamTitle(path, sectArg), pos.fileName, pos.lineNumber, pos.line);
+}
+
+unsigned int parseUintValue(const StringVector& path,
 		       const std::string& sectArg,
 		       const std::string& str,
 		       const ConfigFilePosInfo& pos)

@@ -288,10 +288,10 @@ private:
 
 private:
   ConfRoot m_root;
-  StringValueVector m_stringValues, m_repoStringValues;
-  StringListValueVector m_stringListValues, m_repoStringListValues;
-  BooleanValueVector m_booleanValues, m_repoBooleanValues;
-  UintValueVector m_uintValues, m_repoUintValues;
+  StringValueVector m_stringValues;
+  StringListValueVector m_stringListValues;
+  BooleanValueVector m_booleanValues;
+  UintValueVector m_uintValues;
 }; //class ConfigCenter;
 
 #endif //DEEPSOLVER_CONFIG_CENTER_H;
