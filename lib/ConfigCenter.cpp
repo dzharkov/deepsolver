@@ -61,6 +61,7 @@ void ConfigCenter::initRepoValues()
       stringListValue.path.push_back("arch");
       stringListValue.delimiters = DELIMITERS;
       stringListValue.canContainEmptyItem = 0;
+      stringListValue.canBeEmpty = 0;
       stringListValue.value = &repo.arch;
       m_stringListValues.push_back(stringListValue);
       //Components;
@@ -106,6 +107,9 @@ void ConfigCenter::commit()
   for(StringValueVector::size_type i = 0;i < m_stringValues.size();i++)
     if (!m_stringValues[i].canBeEmpty && trim(*m_stringValues[i].value).empty())
       throw ConfigException(ConfigException::ValueCannotBeEmpty, m_stringValues[i].pathToString());
+  for(StringListValueVector::size_type i = 0;i < m_stringListValues.size();i++)
+    if (!m_stringListValues[i].canBeEmpty && (*m_stringValues[i].value).empty())
+      throw ConfigException(ConfigException::ValueCannotBeEmpty, m_stringListValues[i].pathToString());
   logMsg(LOG_DEBUG, "config:commit completed");
 }
 
@@ -354,6 +358,7 @@ void ConfigCenter::addStringListParam3(const std::string& path1,
   assert(!path1.empty() && !path2.empty() && !path3.empty());
   StringListValue stringListValue(value);
   stringListValue.canContainEmptyItem = 1;
+  stringListValue.canBeEmpty = 1;
   stringListValue.path.push_back(path1);
   stringListValue.path.push_back(path2);
   stringListValue.path.push_back(path3);
@@ -368,6 +373,7 @@ void ConfigCenter::addNonEmptyStringListParam3(const std::string& path1,
   assert(!path1.empty() && !path2.empty() && !path3.empty());
   StringListValue stringListValue(value);
   stringListValue.canContainEmptyItem = 0;
+  stringListValue.canBeEmpty = 0;
   stringListValue.path.push_back(path1);
   stringListValue.path.push_back(path2);
   stringListValue.path.push_back(path3);

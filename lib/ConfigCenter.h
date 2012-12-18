@@ -162,16 +162,19 @@ public:
   public:
   StringListValue()
     : canContainEmptyItem(0),
+      canBeEmpty(0),
       value(NULL) {}
 
   StringListValue(StringVector& v)
     : canContainEmptyItem(0),
+      canBeEmpty(0),
       value(&v) {}
 
     virtual ~StringListValue() {}
 
   public:
     bool canContainEmptyItem;
+    bool canBeEmpty;
     std::string delimiters;
     StringVector* value;
   }; //class StringListValue;
