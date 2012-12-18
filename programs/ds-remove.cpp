@@ -58,11 +58,12 @@ int main(int argc, char* argv[])
   parseCmdLine(argc, argv);
   initLogging(cliParser.wasKeyUsed("--debug")?LOG_DEBUG:LOG_INFO, cliParser.wasKeyUsed("--log"));
   try{
-    Messages(std::cout).dsRemoveLogo();
     TransactionProgress transactionProgress(std::cout, cliParser.wasKeyUsed("--log"));
     ConfigCenter conf;
     conf.loadFromFile(DEFAULT_CONFIG_FILE_NAME);
     conf.commit();
+    if (!cliParser.wasKeyUsed("--log"))
+      Messages(std::cout).dsRemoveLogo();
     OperationCore core(conf);
     UserTask userTask;
     for(StringVector::size_type i = 0;i < cliParser.files.size();i++)

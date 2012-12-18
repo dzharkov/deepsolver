@@ -67,15 +67,31 @@ void ConfigCenter::initRepoValues()
       stringListValue.path[1] = "components";
       stringListValue.value = &repo.components;
       m_stringListValues.push_back(stringListValue);
-      //FIXME:take-*;
+      //Enabled;
+      BooleanValue booleanValue;
+      booleanValue.path.push_back("repo");
+      booleanValue.path.push_back("enabled");
+      booleanValue.value = &repo.enabled;
+      m_booleanValues.push_back(booleanValue);
+      //Take*;
+      booleanValue.path[1] = "take-descr";
+      booleanValue.value = &repo.takeDescr;
+      m_booleanValues.push_back(booleanValue);
+      booleanValue.path[1] = "take-file-list";
+      booleanValue.value = &repo.takeFileList;
+      m_booleanValues.push_back(booleanValue);
+      booleanValue.path[1] = "take-sources";
+      booleanValue.value = &repo.takeSources;
+      m_booleanValues.push_back(booleanValue);
     }
 }
 
 void ConfigCenter::commit()
 {
   logMsg(LOG_DEBUG, "config:about to commit configuration values");
-  //Adjusting;
   m_root.dir.pkgData = trim(m_root.dir.pkgData);
+  for(StringVector::size_type i = 0;i < m_root.os.transactReadAhead.size();i++)
+    m_root.os.transactReadAhead[i] = trim(m_root.os.transactReadAhead[i]);
   for(ConfRepoVector::size_type i = 0;i < m_root.repo.size();i++)
     {
       ConfRepo& repo = m_root.repo[i];
@@ -87,16 +103,9 @@ void ConfigCenter::commit()
       for(StringVector::size_type k = 0;k < repo.components.size();k++)
 	repo.components[k] = trim(repo.components[k]);
     }
-      //Common checking;
   for(StringValueVector::size_type i = 0;i < m_stringValues.size();i++)
     if (!m_stringValues[i].canBeEmpty && trim(*m_stringValues[i].value).empty())
       throw ConfigException(ConfigException::ValueCannotBeEmpty, m_stringValues[i].pathToString());
-  /*
-  for(StringValueVector::size_type i = 0;i < m_repoStringValues.size();i++)
-    if (!m_repoStringValues[i].canBeEmpty && trim(*m_repoStringValues[i].value).empty())
-      throw ConfigException(ConfigErrorValueCannotBeEmpty, m_stringValues[i].pathToString());
-  */
-  //Custom commit;
   logMsg(LOG_DEBUG, "config:commit completed");
 }
 
@@ -109,7 +118,8 @@ void ConfigCenter::onConfigFileValue(const StringVector& path,
   assert(!path.empty());
   if (path[0] == "repo")
     {
-      throw NotImplementedException("Empty configuration file section argument");
+      if (trim(sectArg).empty())
+	throw NotImplementedException("Empty configuration file section argument");
       ConfRepoVector::size_type i = 0;
       while(i < m_root.repo.size() && m_root.repo[i].name != sectArg)
 	i++;
@@ -205,7 +215,7 @@ void ConfigCenter::processBooleanValue(const StringVector& path,
   bool& v = *(booleanValue.value);
   if (adding)
     throw ConfigException(ConfigException::AddingNotPermitted, buildConfigParamTitle(path, sectArg), pos.fileName, pos.lineNumber, pos.line);
-  v = parseBooleanValue(path, sectArg, value, pos);
+  v = parseBooleanValue(path, sectArg, trim(value), pos);
 }
 
 void ConfigCenter::processUintValue(const StringVector& path, 

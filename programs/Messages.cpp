@@ -65,7 +65,7 @@ void Messages::onConfigSyntaxError(const ConfigFileException& e)
 void Messages::onConfigError(const ConfigException& e)
 {
   m_stream << "There is an error in your configuration file. Please, consult your" << std::endl;
-  m_stream << "system administrator for problem resolving information. Details listed below:" << std::endl;
+  m_stream << "system administrator for problem resolving. Details listed below:" << std::endl;
   m_stream << std::endl;
   if (e.getLineNumber() > 0)
     m_stream << e.getFileName() << ":" << e.getLineNumber() << ":";

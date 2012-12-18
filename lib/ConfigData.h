@@ -35,14 +35,14 @@ struct ConfRepo
 {
   ConfRepo()
     : enabled(1),
-      takeDescr(0),
+      takeDescr(1),
       takeFileList(0),
       takeSources(0) {}
 
   ConfRepo(const std::string& n)
     : name(n),
       enabled(1),
-      takeDescr(0),
+      takeDescr(1),
       takeFileList(0),
       takeSources(0) {}
 
