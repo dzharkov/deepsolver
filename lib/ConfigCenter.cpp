@@ -33,7 +33,7 @@ static unsigned int parseUintValue(const StringVector& path,
 void ConfigCenter::initValues()
 {
   addNonEmptyStringParam3("core", "dir", "pkg-data", m_root.dir.pkgData);
-  addNonEmptyStringListParam3("core", "dir", "pkg-data", m_root.os.transactReadAhead);
+  addStringListParam3("core", "os", "transact-read-ahead", m_root.os.transactReadAhead);
 }
 
 void ConfigCenter::initRepoValues()
@@ -108,7 +108,7 @@ void ConfigCenter::commit()
     if (!m_stringValues[i].canBeEmpty && trim(*m_stringValues[i].value).empty())
       throw ConfigException(ConfigException::ValueCannotBeEmpty, m_stringValues[i].pathToString());
   for(StringListValueVector::size_type i = 0;i < m_stringListValues.size();i++)
-    if (!m_stringListValues[i].canBeEmpty && (*m_stringValues[i].value).empty())
+    if (!m_stringListValues[i].canBeEmpty && (*m_stringListValues[i].value).empty())
       throw ConfigException(ConfigException::ValueCannotBeEmpty, m_stringListValues[i].pathToString());
   logMsg(LOG_DEBUG, "config:commit completed");
 }
