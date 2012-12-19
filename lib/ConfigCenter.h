@@ -82,6 +82,8 @@ public:
    */
   void commit();
 
+  void printConfigData(std::ostream& s) const;
+
   /**\brief Returns the reference to parsed configuration data
    *
    * This method used for access to parsed values after configuration data reading during operations processing.
@@ -123,7 +125,7 @@ public:
 	return 1;
       }
 
-    std::string pathToString()
+    std::string pathToString() const
     {
       assert(!path.empty());
       std::string value = path[0];

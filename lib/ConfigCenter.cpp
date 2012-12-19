@@ -70,6 +70,7 @@ void ConfigCenter::initRepoValues()
       m_stringListValues.push_back(stringListValue);
       //Enabled;
       BooleanValue booleanValue;
+      booleanValue.sectArg = repo.name;
       booleanValue.path.push_back("repo");
       booleanValue.path.push_back("enabled");
       booleanValue.value = &repo.enabled;
@@ -111,6 +112,36 @@ void ConfigCenter::commit()
     if (!m_stringListValues[i].canBeEmpty && (*m_stringListValues[i].value).empty())
       throw ConfigException(ConfigException::ValueCannotBeEmpty, m_stringListValues[i].pathToString());
   logMsg(LOG_DEBUG, "config:commit completed");
+}
+
+void ConfigCenter::printConfigData(std::ostream& s) const
+{
+  StringVector v;
+  for(StringValueVector::size_type i = 0;i < m_stringValues.size();i++)
+    v.push_back(m_stringValues[i].pathToString() + " = \"" + (*m_stringValues[i].value) + "\"");
+  for(StringListValueVector::size_type i = 0;i < m_stringListValues.size();i++)
+    {
+      std::string k = m_stringListValues[i].pathToString() + " =";
+      const StringVector& values = *m_stringListValues[i].value;
+      for(StringVector::size_type j = 0;j < values.size();j++)
+	{
+	  k += " \"" + values[j] + "\"";
+	  if (j + 1 < values.size())
+	    k += ",";
+	}
+      v.push_back(k);
+    }
+  for(BooleanValueVector::size_type i = 0;i < m_booleanValues.size();i++)
+    v.push_back(m_booleanValues[i].pathToString() + " = " + ((*m_booleanValues[i].value)?"yes":"no"));
+  for(UintValueVector::size_type i = 0;i < m_uintValues.size();i++)
+    {
+      std::ostringstream ss;
+      ss << m_uintValues[i].pathToString() << " = " << (*m_uintValues[i].value);
+      v.push_back(ss.str());
+    }
+  std::sort(v.begin(), v.end());
+  for(StringVector::size_type i = 0;i < v.size();i++)
+    s << v[i] << std::endl;
 }
 
 void ConfigCenter::onConfigFileValue(const StringVector& path, 
