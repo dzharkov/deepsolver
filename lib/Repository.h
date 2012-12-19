@@ -32,6 +32,9 @@ public:
       m_url(confRepo.url), 
       m_arch(arch),
       m_component(component),
+    m_takeDescr(confRepo.takeDescr),
+    m_takeFileList(confRepo.takeFileList),
+    m_takeSources(confRepo.takeSources),
     m_compressionType(RepoParams::CompressionTypeNone),
     m_formatType(RepoParams::FormatTypeText)
   {
@@ -60,10 +63,11 @@ private:
 
 private:
   std::string m_name, m_url, m_arch, m_component;
+  bool m_takeDescr, m_takeFileList, m_takeSources;
   //  std::string m_checksum;
   char m_compressionType;
   char m_formatType;
-  std::string m_pkgFileUrl, m_pkgDescrFileUrl, m_srcFileUrl, m_srcDescrFileUrl;
+  std::string m_pkgFileUrl, m_pkgDescrFileUrl, m_pkgFileListFileUrl, m_srcFileUrl, m_srcDescrFileUrl;
   std::string m_checksumFileName;
 }; //class Repository;
 

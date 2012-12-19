@@ -185,13 +185,6 @@ private:
   std::string m_comment;
 }; //class SystemException;
 
-enum {
-  OperationErrorInvalidInfoFile = 0,
-  OperationErrorInvalidChecksum = 1,
-  OperationErrorBrokenIndexFile = 2,
-OperationErrorInternalIOProblem = 3
-};
-
 /**\brief The class for indication user has asked impossible task
  *
  * package lists generating work. It should not be confused with
@@ -303,12 +296,29 @@ private:
 class OperationException
 {
 public:
+  enum {
+    InvalidInfoFile = 0,
+    InvalidChecksumData = 1,
+    BrokenIndexFile = 2,
+    InternalIOProblem = 3
+  };
+
+public:
   /**\brief The constructor
    *
    * \param [in] code The error code
    */
   OperationException(int code) 
     : m_code(code) {}
+
+  /**\brief The constructor
+   *
+   * \param [in] code The error code
+   * \param [in] arg The optional string argument
+   */
+  OperationException(int code, const std::string& arg) 
+    : m_code(code) 
+      m_arg(arg) {}
 
   /**\brief The destructor*/
   virtual ~OperationException() {}
@@ -325,6 +335,17 @@ public:
     return m_code;
   }
 
+  /**\brief Returns the optional string argument of the error occurred
+   *
+   * Argument meaning depends on error type.
+   *
+   * \return The optional string argument of the error
+   */
+  std::string getArg() const
+  {
+    return m_arg;
+  }
+
   std::string getType() const
   {
     return "operation";
@@ -334,23 +355,24 @@ public:
   {
     switch (m_code)
       {
-      case OperationErrorInvalidInfoFile:
-	return "repository info file has an invalid content";
-	break;
-      case OperationErrorInvalidChecksum :
-	return "one or more files were corrupted (invalid checksum)";
-	break;
+      case InvalidInfoFile:
+	return "The repository info file from \'" + m_arg + "\' has an invalid content";
+      case InvalidChecksum Data:
+	return "Checksum data from \'" + m_arg + "\' has an invalid format";
+      case BrokenIndexFile:
+	return "Repository index file downloaded from \'" + m_arg + "\' is corrupted according to checksum data";
+      case InternalIOProblem:
+	return "Unexpected internal error during operation";
       default:
 	assert(0);
       } //switch(m_code);
-    return "";//just to reduce warning messages;
+    return "";
   }
 
 private:
   const int m_code;
+  const std::string m_arg;
 }; //class OperationException;
-
-
 
 /**\brief Indicates repository index manipulation problem
  *
@@ -1050,7 +1072,6 @@ private:
 class Md5FileException: public DeepsolverException
 {
 public:
-
   enum {
     TooShortLine = 0,
     InvalidChecksumFormat = 2
@@ -1132,7 +1153,7 @@ public:
     switch(m_code)
       {
       case TooShortLine:
-	msg = "too short line";;
+	msg = "too short line";
 	break;
       case InvalidChecksumFormat:
 	msg = "invalid checksum format";

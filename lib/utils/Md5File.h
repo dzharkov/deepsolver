@@ -18,7 +18,6 @@
 #ifndef DEEPSOLVER_MD5FILE_H
 #define DEEPSOLVER_MD5FILE_H
 
-
 class Md5File
 {
 public:
@@ -42,6 +41,7 @@ public:
 
 public:
   void addItemFromFile(const std::string& fileName, const std::string& realPath);
+  void loadFromString(const std::string& str, const std::string& fileName);
   void loadFromFile(const std::string& fileName);
   void saveToFile(const std::string& fileName) const;
   bool verifyItem(size_t itemIndex, const std::string& fileName) const;

@@ -32,16 +32,16 @@ void Repository::fetchInfoAndChecksum()
   logMsg(LOG_DEBUG, "Constructed info file URL is \'%s\'", infoFileUrl.c_str());
   TinyFileDownload download;//FIXME:max file size limit;
   download.fetch(infoFileUrl);
-  const std::string info = download.getContent();
+  const std::string infoFileContent = download.getContent();
   InfoFileReader reader;
   StringToStringMap infoValues;
   try {
-    reader.read(info, infoValues);
+    reader.read(infoFileContent, infoValues);
   }
   catch(const InfoFileException& e)
     {
       logMsg(LOG_ERR, "info file parsing problem:%s", e.getMessage().c_str());
-      throw OperationException(OperationErrorInvalidInfoFile);//FIXME:Info file URL;
+      throw OperationException(OperationException::InvalidInfoFile, infoFileUrl);
     }
   logMsg(LOG_DEBUG, "Info file downloaded and parsed, list of values:");
   for(StringToStringMap::const_iterator it = infoValues.begin();it != infoValues.end();it++)
@@ -49,15 +49,38 @@ void Repository::fetchInfoAndChecksum()
   if (infoValues.find(INFO_FILE_FORMAT_TYPE) == infoValues.end())
     {
       logMsg(LOG_ERR, "Info file does not contain the \'%s\' key", INFO_FILE_FORMAT_TYPE);
-      throw OperationException(OperationErrorInvalidInfoFile);
+      throw OperationException(OperationException::InvalidInfoFile, infoFileUrl);
     }
   if (infoValues.find(INFO_FILE_MD5SUM) == infoValues.end())
     {
       logMsg(LOG_ERR, "Info file does not contain the \'%s\' key", INFO_FILE_MD5SUM);
-      throw OperationException(OperationErrorInvalidInfoFile);
+      throw OperationException(OperationException::InvalidInfoFile, infoFileUrl);
     }
   m_checksumFileName = trim(infoValues.find(INFO_FILE_MD5SUM)->second);
-  //FIXME:Checksum;
+  const std::string checksumFileUrl = buildChecksumFileUrl();
+  download.fetch(checksumFileUrl);
+  Md5File md5File;
+  try {
+    md5File.loadFromString(download.getContent(), checksumFileUrl);
+  }
+  catch(const Md5FileException& e)
+    {
+      logMsg(LOG_ERR, "Checksum file problem:%s", e.getMessage().c_str());
+      throw OperationException(OperationException::InvalidChecksumData, checksumFileUrl);
+    }
+  Md5File::ItemVector::size_type i;
+  for(i = 0;i < md5File.items.size();i++)
+    if (md5file.items[i].fileName == REPO_INDEX_INFO_FILE)
+      break;
+  if (i >= md5File.items.size())
+    {
+      logMsg(LOG_ERR, "Checksum file from \'%\' has no entry for info file (\'%s\')", checksumFileUrl.c_str(), REPO_INDEX_INFO_FILE);
+      throw OperationException(OperationException::InvalidChecksumData, checksumFileUrl);
+    }
+  if (!md5File.verifyItem(i, Directory::mixNameComponents(params.indexPath, md5File.items[i].fileName)))
+
+
+
   if (infoValues.find(INFO_FILE_COMPRESSION_TYPE) == infoValues.end())
     {
       logMsg(LOG_ERR, "Info file does not contain the \'%s\' key", INFO_FILE_COMPRESSION_TYPE);

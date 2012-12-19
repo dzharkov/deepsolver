@@ -44,6 +44,64 @@ void Md5File::addItemFromFile(const std::string& fileName, const std::string& re
   items.push_back(item);
 }
 
+void Md5File::loadFromString(const std::string& str, const std::string& fileName)
+{
+  std::string line;
+  size_t lineNum = 0;
+  for(std::string::size_type i = 0;i < str.length();i++)
+    {
+      const char c = str[i];
+      if (c == '\r')
+	continue;
+      if (c != '\n')
+	{
+	  line += c;
+	  continue;
+	}
+      lineNum++;
+      line = trim(line);
+      if (line.empty())
+	continue;
+      if (line.length() < 35)
+	throw Md5FileException(Md5FileException::TooShortLine, fileName, lineNum, line);
+      Item item;
+      for(std::string::size_type k = 0;k < 32;k++)
+	item.checksum += line[k];
+      for(std::string::size_type k = 34;k < line.length();k++)
+	item.fileName += line[k];
+      for(std::string::size_type k = 0;k < item.checksum.length();k++)
+	{
+	  if (item.checksum[k] >= 'A' && item.checksum[k] <= 'F')
+	    item.checksum[k] = 'a' + (item.checksum[k] - 'A');
+	  if ((item.checksum [k] >= 'a' && item.checksum[k] <= 'f') || (item.checksum[k] >= '0' && item.checksum [k] <= '9'))
+	    continue;
+	  throw Md5FileException(Md5FileException::InvalidChecksumFormat, fileName, lineNum, line);
+	}
+      items.push_back(item);
+      line.erase();
+    }
+  line = trim(line);
+  if (line.empty())
+    continue;
+  lineNum++;
+  if (line.length() < 35)
+    throw Md5FileException(Md5FileException::TooShortLine, fileName, lineNum, line);
+  Item item;
+  for(std::string::size_type k = 0;k < 32;k++)
+    item.checksum += line[k];
+  for(std::string::size_type k = 34;k < line.length();k++)
+    item.fileName += line[k];
+  for(std::string::size_type k = 0;k < item.checksum.length();k++)
+    {
+      if (item.checksum[k] >= 'A' && item.checksum[k] <= 'F')
+	item.checksum[k] = 'a' + (item.checksum[k] - 'A');
+      if ((item.checksum [k] >= 'a' && item.checksum[k] <= 'f') || (item.checksum[k] >= '0' && item.checksum [k] <= '9'))
+	continue;
+      throw Md5FileException(Md5FileException::InvalidChecksumFormat, fileName, lineNum, line);
+    }
+  items.push_back(item);
+}
+
 void Md5File::loadFromFile(const std::string& fileName)
 {
   logMsg(LOG_DEBUG, "Reading \'%s\' md5file in read-only mode", fileName.c_str());

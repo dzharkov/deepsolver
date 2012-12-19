@@ -93,6 +93,12 @@ public:
     virtual ~OperationCore() {}
 
 public:
+    /**\brief Updates repository content information
+     *
+     * \throws OperationException
+     * \throws CurlException
+     * \throws SystemException
+     */
   void fetchIndices(AbstractIndexFetchListener& listener,
 		    const AbstractOperationContinueRequest& continueRequest) const;
 
