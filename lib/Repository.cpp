@@ -59,9 +59,10 @@ void Repository::fetchInfoAndChecksum()
   m_checksumFileName = trim(infoValues.find(INFO_FILE_MD5SUM)->second);
   const std::string checksumFileUrl = buildChecksumFileUrl();
   download.fetch(checksumFileUrl);
+  m_checksums = download.getContent();
   Md5File md5File;
   try {
-    md5File.loadFromString(download.getContent(), checksumFileUrl);
+    md5File.loadFromString(m_checksums, checksumFileUrl);
   }
   catch(const Md5FileException& e)
     {
@@ -77,14 +78,15 @@ void Repository::fetchInfoAndChecksum()
       logMsg(LOG_ERR, "Checksum file from \'%\' has no entry for info file (\'%s\')", checksumFileUrl.c_str(), REPO_INDEX_INFO_FILE);
       throw OperationException(OperationException::InvalidChecksumData, checksumFileUrl);
     }
-  if (!md5File.verifyItem(i, Directory::mixNameComponents(params.indexPath, md5File.items[i].fileName)))
-
-
-
+  if (!md5File.verifyItemByyString(i, infoFileContent))
+    {
+      logMsg(LOG_ERR, "Info file from \'%s\' is corrupted according checksum data", infoFileUrl.c_str());
+      throw OperationException(OperationException::InvalidInfoFile, infoFileUrl);
+    }
   if (infoValues.find(INFO_FILE_COMPRESSION_TYPE) == infoValues.end())
     {
       logMsg(LOG_ERR, "Info file does not contain the \'%s\' key", INFO_FILE_COMPRESSION_TYPE);
-      throw OperationException(OperationErrorInvalidInfoFile);
+      throw OperationException(OperationException::InvalidInfoFile, infoFileUrl);
     }
   const std::string formatType = trim(infoValues.find(INFO_FILE_FORMAT_TYPE)->second);
   const std::string compressionType = trim(infoValues.find(INFO_FILE_COMPRESSION_TYPE)->second);
@@ -97,7 +99,7 @@ void Repository::fetchInfoAndChecksum()
       m_formatType = RepoParams::FormatTypeBinary; else
       {
 	logMsg(LOG_ERR, "Unsupported format type in info file: \'%s\'", formatType.c_str());
-	throw OperationException(OperationErrorInvalidInfoFile);
+	throw OperationException(OperationException::InvalidInfoFile, infoFileUrl);
       }
   if (compressionType == INFO_FILE_COMPRESSION_TYPE_NONE)
     m_compressionType = RepoParams::CompressionTypeNone; else
@@ -105,7 +107,7 @@ void Repository::fetchInfoAndChecksum()
       m_compressionType = RepoParams::CompressionTypeGzip; else
       {
 	logMsg(LOG_ERR, "Unsupported compression type in info file: \'%s\'", compressionType.c_str());
-	throw OperationException(OperationErrorInvalidInfoFile);
+	throw OperationException(OperationException::InvalidInfoFile, infoFileUrl);
       }
 }
 

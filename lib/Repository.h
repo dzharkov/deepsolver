@@ -64,7 +64,7 @@ private:
 private:
   std::string m_name, m_url, m_arch, m_component;
   bool m_takeDescr, m_takeFileList, m_takeSources;
-  //  std::string m_checksum;
+  std::string m_checksums;
   char m_compressionType;
   char m_formatType;
   std::string m_pkgFileUrl, m_pkgDescrFileUrl, m_pkgFileListFileUrl, m_srcFileUrl, m_srcDescrFileUrl;
