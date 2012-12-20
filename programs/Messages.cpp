@@ -105,7 +105,8 @@ void Messages::onCurlError(const CurlException& e)
 
 void Messages::onOperationError(const OperationException& e)
 {
-  m_stream << "The requested operation cannot be properly performed due to errors" << std::endl;
+  m_stream << std::endl;
+  m_stream << "The requested operation cannot be properly performed due to unexpected errors." << std::endl;
   switch(e.getCode())
     {
     case OperationException::InvalidInfoFile:
@@ -123,12 +124,13 @@ void Messages::onOperationError(const OperationException& e)
       m_stream << "cannot be properly parsed. Usually it means you have an error in your" << std::endl;
       m_stream << "configuration data or repository provider is experiencing technical" << std::endl;
       m_stream << "problems. Without checksum data Deepsolver is unable to be sure" << std::endl;
-      m_stream << "fetched files are not broken. Please, consult your system" << std::endl;
+      m_stream << "the fetched files are not broken. Please, consult your system" << std::endl;
       m_stream << "administrator or try again later. Here is the URL of the invalid" << std::endl;
       m_stream << "checksum file:" << std::endl;
       m_stream << std::endl;
       m_stream << e.getArg() << std::endl;
       m_stream << std::endl;
+      break;
     case OperationException::BrokenIndexFile:
       m_stream << "one or more files in repository index is broken. Since basic repository data" << std::endl;
       m_stream << "is correct very likely it means the repository provider is experiencing technical" << std::endl;
@@ -208,7 +210,7 @@ void Messages::onNoPackagesMentionedError() const
 
 void Messages::dsUpdateLogo() const
 {
-  m_stream << "ds-update: The utility to fetch repository headers" << std::endl;
+  m_stream << "ds-update: the utility to fetch repository headers" << std::endl;
   m_stream << "Version: " << PACKAGE_VERSION << std::endl;
   m_stream << std::endl;
 }
