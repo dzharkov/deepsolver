@@ -105,22 +105,44 @@ void Messages::onCurlError(const CurlException& e)
 
 void Messages::onOperationError(const OperationException& e)
 {
-  m_stream << std::endl;
-  m_stream << "Some errors were occurred during the last operation:" << std::endl;
+  m_stream << "The requested operation cannot be properly performed due to errors" << std::endl;
   switch(e.getCode())
     {
-    case OperationErrorInvalidInfoFile:
-      //Maybe it is good idea to write also the name of repository caused the problem; 
+    case OperationException::InvalidInfoFile:
       m_stream << "the information file for one or more repositories contains incorrect" << std::endl;
-      m_stream << "data. Usually it means the invalid URL of remote repository was used" << std::endl;
+      m_stream << "data. Usually it means an invalid URL of remote repository is used" << std::endl;
       m_stream << "or repository provider is experiencing technical problems. Please, be" << std::endl;
-      m_stream << "sure your configuration data is correct and try again later!" << std::endl;
+      m_stream << "sure your configuration data is correct and try again later." << std::endl;
+      m_stream << "Here is the URL of the incorrect info file:" << std::endl;
+      m_stream << std::endl;
+      m_stream << e.getArg() << std::endl;
+      m_stream << std::endl;
       break;
-      //FIXME:OperationErrorInvalidChecksum;
-    case OperationErrorBrokenIndexFile:
-      m_stream << "one or more files in repository index is broken. Since checksum is" << std::endl;
-      m_stream << "correct it means the repository provider is experiencing technical" << std::endl;
-      m_stream << "problems." << std::endl;
+    case OperationException::InvalidChecksumData:
+      m_stream << "One of the attached repositories has corrupted checksum file and it" << std::endl;
+      m_stream << "cannot be properly parsed. Usually it means you have an error in your" << std::endl;
+      m_stream << "configuration data or repository provider is experiencing technical" << std::endl;
+      m_stream << "problems. Without checksum data Deepsolver is unable to be sure" << std::endl;
+      m_stream << "fetched files are not broken. Please, consult your system" << std::endl;
+      m_stream << "administrator or try again later. Here is the URL of the invalid" << std::endl;
+      m_stream << "checksum file:" << std::endl;
+      m_stream << std::endl;
+      m_stream << e.getArg() << std::endl;
+      m_stream << std::endl;
+    case OperationException::BrokenIndexFile:
+      m_stream << "one or more files in repository index is broken. Since basic repository data" << std::endl;
+      m_stream << "is correct very likely it means the repository provider is experiencing technical" << std::endl;
+      m_stream << "problems. Here is the URL of the corrupted file:" << std::endl;
+      m_stream << std::endl;
+      m_stream << e.getArg() << std::endl;
+      m_stream << std::endl;
+      break;
+    case OperationException::InternalIOProblem:
+      m_stream << "The internal program error was occurred. The most likely that means" << std::endl;
+      m_stream << "the Deepsolver was not properly installed or you are running broken" << std::endl;
+      m_stream << "system. This type of error may not be caused by corrupted external" << std::endl;
+      m_stream << "data or an invalid user input. The only reason is incorrect execution" << std::endl;
+      m_stream << "environment. Please, contact your system administrator." << std::endl;
       break;
     default:
       assert(0);
