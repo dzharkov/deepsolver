@@ -20,16 +20,22 @@
 
 void IndexFetchProgress::onInfoFilesFetch()
 {
-  m_stream << "Downloading primary repository data" << std::endl;
+  if (m_suppressed)
+    return;
+  m_stream << "Downloading basic repository data" << std::endl;
 }
 
 void IndexFetchProgress::onIndexFetchBegin()
 {
+  if (m_suppressed)
+    return;
   m_stream << "Downloading package lists" << std::endl;
 }
 
 void IndexFetchProgress::onIndexFilesReading()
 {
+  if (m_suppressed)
+    return;
   for(std::string::size_type i = 0;i < m_prevStrLen;i++)
     m_stream << "\b";
   m_prevStrLen = 0;
@@ -38,6 +44,8 @@ void IndexFetchProgress::onIndexFilesReading()
 
 void IndexFetchProgress::onIndexFetchComplete()
 {
+  if (m_suppressed)
+    return;
   m_stream << "Your indices were successfully updated!" << std::endl;
 }
 
@@ -48,9 +56,13 @@ void IndexFetchProgress::onIndexFetchStatus(unsigned char currentPartPercents,
 					    size_t currentPartSize,
 					    const std::string& currentPartName)
 {
+  if (m_suppressed)
+    return;
   assert(totalPercents <= 100);
   std::ostringstream ss;
-  ss << (size_t)totalPercents << "% (file " << (partNumber + 1) << " of " << partCount << ", " << currentPartSize / 1024 << "k, " << currentPartName << ")";
+  if (totalPercents)
+    ss << " " << (size_t)totalPercents << "% (file " << (partNumber + 1) << " of " << partCount << ", " << currentPartSize / 1024 << "k, " << currentPartName << ")"; else
+    ss << (size_t)totalPercents << "% (file " << (partNumber + 1) << " of " << partCount << ", " << currentPartSize / 1024 << "k, " << currentPartName << ")";
   for(std::string::size_type i = 0;i < m_prevStrLen;i++)
     m_stream << "\b";
   m_stream << ss.str();

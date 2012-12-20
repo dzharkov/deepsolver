@@ -23,8 +23,9 @@
 class IndexFetchProgress: public AbstractIndexFetchListener
 {
 public:
-  IndexFetchProgress(std::ostream& stream)
-    : m_stream(stream), m_prevStrLen(0) {}
+  IndexFetchProgress(std::ostream& stream, bool suppressed)
+    : m_stream(stream), m_prevStrLen(0),
+      m_suppressed(suppressed) {}
 
   virtual ~IndexFetchProgress() {}
 
@@ -42,6 +43,7 @@ public:
 
 private:
   std::ostream& m_stream;
+  bool m_suppressed;
   std::string::size_type m_prevStrLen;
 }; //class IndexFetchProgress;
 
