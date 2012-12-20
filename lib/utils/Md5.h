@@ -29,7 +29,7 @@ public:
 
 public:
   void init();
-  void update(void* buf, size_t len);
+  void update(const void* buf, size_t len);
   std::string commit();
 
 private:

@@ -317,7 +317,7 @@ public:
    * \param [in] arg The optional string argument
    */
   OperationException(int code, const std::string& arg) 
-    : m_code(code) 
+    : m_code(code), 
       m_arg(arg) {}
 
   /**\brief The destructor*/
@@ -357,7 +357,7 @@ public:
       {
       case InvalidInfoFile:
 	return "The repository info file from \'" + m_arg + "\' has an invalid content";
-      case InvalidChecksum Data:
+      case InvalidChecksumData:
 	return "Checksum data from \'" + m_arg + "\' has an invalid format";
       case BrokenIndexFile:
 	return "Repository index file downloaded from \'" + m_arg + "\' is corrupted according to checksum data";

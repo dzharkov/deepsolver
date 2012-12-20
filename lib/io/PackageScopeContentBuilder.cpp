@@ -19,7 +19,7 @@
 #include"PackageScopeContentBuilder.h"
 #include"OperationCore.h"
 
-#define THROW_INTERNAL_ERROR throw OperationException(OperationErrorInternalIOProblem)
+#define THROW_INTERNAL_ERROR throw OperationException(OperationException::InternalIOProblem)
 
 inline void writeSizeValue(std::ofstream& s, size_t value)
 {

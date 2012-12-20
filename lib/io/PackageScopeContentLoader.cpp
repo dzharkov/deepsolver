@@ -20,7 +20,7 @@
 #include"OperationCore.h"
 
 #define IO_BLOCK_SIZE 512
-#define THROW_INTERNAL_ERROR throw OperationException(OperationErrorInternalIOProblem)
+#define THROW_INTERNAL_ERROR throw OperationException(OperationException::InternalIOProblem)
 
 inline size_t readSizeValue(std::ifstream& s)
 {

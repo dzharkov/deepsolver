@@ -82,7 +82,7 @@ void Md5File::loadFromString(const std::string& str, const std::string& fileName
     }
   line = trim(line);
   if (line.empty())
-    continue;
+    return;
   lineNum++;
   if (line.length() < 35)
     throw Md5FileException(Md5FileException::TooShortLine, fileName, lineNum, line);

@@ -45,7 +45,7 @@ public:
   void loadFromFile(const std::string& fileName);
   void saveToFile(const std::string& fileName) const;
   bool verifyItem(size_t itemIndex, const std::string& fileName) const;
-  bool verifyItemByString(size_t itemIndex, const std::string& str) const
+  bool verifyItemByString(size_t itemIndex, const std::string& str) const;
   void removeItem(const std::string& fileName);
 
 public:

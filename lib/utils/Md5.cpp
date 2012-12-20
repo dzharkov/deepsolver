@@ -32,10 +32,10 @@ void Md5::init()
   m_ctx.buf[3] = 0x10325476;
 }
 
-void Md5::update(void* buf, size_t len)
+void Md5::update(const void* buf, size_t len)
 {
   assert(buf);
-  updateImpl(&m_ctx, static_cast<Md5Byte*>(buf), len);
+  updateImpl(&m_ctx, (Md5Byte*)buf, len);
 }
 
 

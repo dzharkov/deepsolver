@@ -19,6 +19,7 @@
 #include"OperationCore.h"
 #include"Repository.h"
 #include"utils/TinyFileDownload.h"
+#include"utils/Md5File.h"
 #include"repo/InfoFileReader.h"
 #include"repo/TextFormatSectionReader.h"
 #include"repo/PkgSection.h"
@@ -71,14 +72,14 @@ void Repository::fetchInfoAndChecksum()
     }
   Md5File::ItemVector::size_type i;
   for(i = 0;i < md5File.items.size();i++)
-    if (md5file.items[i].fileName == REPO_INDEX_INFO_FILE)
+    if (md5File.items[i].fileName == REPO_INDEX_INFO_FILE)
       break;
   if (i >= md5File.items.size())
     {
       logMsg(LOG_ERR, "Checksum file from \'%\' has no entry for info file (\'%s\')", checksumFileUrl.c_str(), REPO_INDEX_INFO_FILE);
       throw OperationException(OperationException::InvalidChecksumData, checksumFileUrl);
     }
-  if (!md5File.verifyItemByyString(i, infoFileContent))
+  if (!md5File.verifyItemByString(i, infoFileContent))
     {
       logMsg(LOG_ERR, "Info file from \'%s\' is corrupted according checksum data", infoFileUrl.c_str());
       throw OperationException(OperationException::InvalidInfoFile, infoFileUrl);
@@ -175,7 +176,7 @@ void Repository::loadPackageData(const StringToStringMap& files,
       if (!PkgSection::parsePkgFileSection(lines, pkgFile, invalidLineNum, invalidLineValue))
 	{
 	  logMsg(LOG_ERR, "Broken index file \'%s\', invalid line %zu in section \'%s\': \'%s\'", m_pkgFileUrl.c_str(), invalidLineNum, pkgFile.fileName.c_str(), invalidLineValue.c_str());
-	  throw OperationException(OperationErrorBrokenIndexFile);
+	  throw OperationException(OperationException::BrokenIndexFile);
 	}
       pkgFile.isSource = 0;
       transactData.onNewPkgFile(pkgFile);
@@ -191,7 +192,7 @@ void Repository::loadPackageData(const StringToStringMap& files,
       if (!PkgSection::parsePkgFileSection(lines, pkgFile, invalidLineNum, invalidLineValue))
 	{
 	  logMsg(LOG_ERR, "Broken index file \'%s\', invalid line %zu in section \'%s\': \'%s\'", m_pkgDescrFileUrl.c_str(), invalidLineNum, pkgFile.fileName.c_str(), invalidLineValue.c_str());
-	  throw OperationException(OperationErrorBrokenIndexFile);
+	  throw OperationException(OperationException::BrokenIndexFile);
 	}
       pkgFile.isSource = 0;
       pkgInfoData.onNewPkgFile(pkgFile);
@@ -207,7 +208,7 @@ void Repository::loadPackageData(const StringToStringMap& files,
       if (!PkgSection::parsePkgFileSection(lines, pkgFile, invalidLineNum, invalidLineValue))
 	{
 	  logMsg(LOG_ERR, "Broken index file \'%s\', invalid line %zu in section \'%s\': \'%s\'", m_srcFileUrl.c_str(), invalidLineNum, pkgFile.fileName.c_str(), invalidLineValue.c_str());
-	  throw OperationException(OperationErrorBrokenIndexFile);
+	  throw OperationException(OperationException::BrokenIndexFile);
 	}
       pkgFile.isSource = 1;
       pkgInfoData.onNewPkgFile(pkgFile);
@@ -223,7 +224,7 @@ void Repository::loadPackageData(const StringToStringMap& files,
       if (!PkgSection::parsePkgFileSection(lines, pkgFile, invalidLineNum, invalidLineValue))
 	{
 	  logMsg(LOG_ERR, "Broken index file \'%s\', invalid line %zu in section \'%s\': \'%s\'", m_srcDescrFileUrl.c_str(), invalidLineNum, pkgFile.fileName.c_str(), invalidLineValue.c_str());
-	  throw OperationException(OperationErrorBrokenIndexFile);
+	  throw OperationException(OperationException::BrokenIndexFile);
 	}
       pkgFile.isSource = 1;
       pkgInfoData.onNewPkgFile(pkgFile);
@@ -242,6 +243,20 @@ std::string Repository::buildInfoFileUrl() const
   value += m_arch + "/";
   value += REPO_INDEX_DIR_PREFIX + m_component + "/";
   value += REPO_INDEX_INFO_FILE;
+  return value;
+}
+
+std::string Repository::buildChecksumFileUrl() const
+{
+  assert(!m_url.empty());
+  assert(!m_arch.empty());
+  assert(!m_component.empty());
+  std::string value = m_url;
+  if (value[value.size() - 1] != '/')
+    value += '/';
+  value += m_arch + "/";
+  value += REPO_INDEX_DIR_PREFIX + m_component + "/";
+  value += m_checksumFileName;
   return value;
 }
 

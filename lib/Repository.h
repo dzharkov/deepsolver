@@ -60,6 +60,7 @@ public:
 
 private:
   std::string buildInfoFileUrl() const;
+  std::string buildChecksumFileUrl() const;
 
 private:
   std::string m_name, m_url, m_arch, m_component;
