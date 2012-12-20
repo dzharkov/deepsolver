@@ -26,6 +26,7 @@
 
 static std::auto_ptr<AbstractTextFormatSectionReader> createReader(const std::string& fileName, char compressionType);
 static void splitSectionLines(const std::string& sect, StringVector& lines);
+static std::string getFileNameFromUrl(const std::string& url);
 
 void Repository::fetchInfoAndChecksum()
 {
@@ -58,17 +59,17 @@ void Repository::fetchInfoAndChecksum()
       throw OperationException(OperationException::InvalidInfoFile, infoFileUrl);
     }
   m_checksumFileName = trim(infoValues.find(INFO_FILE_MD5SUM)->second);
-  const std::string checksumFileUrl = buildChecksumFileUrl();
-  download.fetch(checksumFileUrl);
+  m_checksumFileUrl = buildChecksumFileUrl();
+  download.fetch(m_checksumFileUrl);
   m_checksums = download.getContent();
   Md5File md5File;
   try {
-    md5File.loadFromString(m_checksums, checksumFileUrl);
+    md5File.loadFromString(m_checksums, m_checksumFileUrl);
   }
   catch(const Md5FileException& e)
     {
       logMsg(LOG_ERR, "Checksum file problem:%s", e.getMessage().c_str());
-      throw OperationException(OperationException::InvalidChecksumData, checksumFileUrl);
+      throw OperationException(OperationException::InvalidChecksumData, m_checksumFileUrl);
     }
   Md5File::ItemVector::size_type i;
   for(i = 0;i < md5File.items.size();i++)
@@ -76,15 +77,15 @@ void Repository::fetchInfoAndChecksum()
       break;
   if (i >= md5File.items.size())
     {
-      logMsg(LOG_ERR, "Checksum file from \'%s\' has no entry for info file (\'%s\')", checksumFileUrl.c_str(), REPO_INDEX_INFO_FILE);
-      throw OperationException(OperationException::InvalidChecksumData, checksumFileUrl);
+      logMsg(LOG_ERR, "Checksum file from \'%s\' has no entry for info file (\'%s\')", m_checksumFileUrl.c_str(), REPO_INDEX_INFO_FILE);
+      throw OperationException(OperationException::InvalidChecksumData, m_checksumFileUrl);
     }
   if (!md5File.verifyItemByString(i, infoFileContent))
     {
       logMsg(LOG_ERR, "Info file from \'%s\' is corrupted according checksum data", infoFileUrl.c_str());
       throw OperationException(OperationException::InvalidInfoFile, infoFileUrl);
     }
-  logMsg(LOG_INFO, "operation:info file from \'%s\' matches the checksum from \'%s\'", infoFileUrl.c_str(), checksumFileUrl.c_str());
+  logMsg(LOG_INFO, "operation:info file from \'%s\' matches the checksum from \'%s\'", infoFileUrl.c_str(), m_checksumFileUrl.c_str());
   if (infoValues.find(INFO_FILE_COMPRESSION_TYPE) == infoValues.end())
     {
       logMsg(LOG_ERR, "Info file does not contain the \'%s\' key", INFO_FILE_COMPRESSION_TYPE);
@@ -157,24 +158,34 @@ void Repository::loadPackageData(const StringToStringMap& files,
   StringToStringMap::const_iterator it = files.find(m_pkgFileUrl);
   assert(it != files.end());
   const std::string pkgFileName = it->second;
-  it = files.find(m_pkgDescrFileUrl);
-  assert(it != files.end());
-  const std::string pkgDescrFileName = it->second;
-  it = files.find(m_srcFileUrl);
-  assert(it != files.end());
-  const std::string srcFileName = it->second;
-  it = files.find(m_srcDescrFileUrl);
-  assert(it != files.end());
-  const std::string srcDescrFileName = it->second;
-  logMsg(LOG_DEBUG, "pkgFileName = \'%s\'", pkgFileName.c_str());
-  logMsg(LOG_DEBUG, "pkgDescrFileName = \'%s\'", pkgDescrFileName.c_str());
-  logMsg(LOG_DEBUG, "srcFileName = \'%s\'", srcFileName.c_str());
-  logMsg(LOG_DEBUG, "srcDescrFileName = \'%s\'", srcDescrFileName.c_str());
+  Md5File md5File;
+  try {
+    md5File.loadFromString(m_checksums, m_checksumFileUrl);
+  }
+  catch(const Md5FileException& e)
+    {
+      logMsg(LOG_ERR, "Checksum file problem:%s", e.getMessage().c_str());
+      throw OperationException(OperationException::InvalidChecksumData, m_checksumFileUrl);
+    }
+  Md5File::ItemVector::size_type i;
+  assert(!getFileNameFromUrl(m_pkgFileUrl).empty());
+  for(i = 0;i < md5File.items.size();i++)
+    if (md5File.items[i].fileName == getFileNameFromUrl(m_pkgFileUrl))
+      break;
+  if (i >= md5File.items.size())
+    {
+      logMsg(LOG_ERR, "Checksum file from \'%s\' does not contain entry for main packages file from \'%s\'", m_checksumFileUrl.c_str(), m_pkgFileUrl.c_str());
+      throw OperationException(OperationException::InvalidChecksumData, m_checksumFileUrl);
+    }
+  if (!md5File.verifyItem(i, pkgFileName))
+    {
+      logMsg(LOG_ERR, "Packages data from \'%s\' has incorrect checksum from \'%s\'", m_pkgFileUrl.c_str(), m_checksumFileUrl.c_str());
+      throw OperationException(OperationException::BrokenIndexFile, m_pkgFileUrl);
+    }
   size_t invalidLineNum;
   std::string invalidLineValue;
   std::string sect;
   StringVector lines;
-  logMsg(LOG_DEBUG, "Reading transact data");
   std::auto_ptr<AbstractTextFormatSectionReader> reader = createReader(pkgFileName, m_compressionType);
   reader->init();
   while(reader->readNext(sect))
@@ -190,7 +201,17 @@ void Repository::loadPackageData(const StringToStringMap& files,
       transactData.onNewPkgFile(pkgFile);
     }
   reader->close();
-  logMsg(LOG_DEBUG, "Reading binary packages descriptions");
+  logMsg(LOG_DEBUG, "repository:successfully read main packages data from \'%s\'", m_pkgFileUrl.c_str());
+  /*
+  it = files.find(m_pkgDescrFileUrl);
+  assert(it != files.end());
+  const std::string pkgDescrFileName = it->second;
+  it = files.find(m_srcFileUrl);
+  assert(it != files.end());
+  const std::string srcFileName = it->second;
+  it = files.find(m_srcDescrFileUrl);
+  assert(it != files.end());
+  const std::string srcDescrFileName = it->second;
   reader = createReader(pkgDescrFileName, m_compressionType);
   reader->init();
   while(reader->readNext(sect))
@@ -238,6 +259,7 @@ void Repository::loadPackageData(const StringToStringMap& files,
       pkgInfoData.onNewPkgFile(pkgFile);
     }
   reader->close();
+  */
 }
 
 std::string Repository::buildInfoFileUrl() const
@@ -307,4 +329,17 @@ void splitSectionLines(const std::string& sect, StringVector& lines)
   line = trim(line);
   if (!line.empty())
     lines.push_back(line);
+}
+
+std::string getFileNameFromUrl(const std::string& url)
+{
+  if (trim(url).empty())
+    return "";
+  std::string::size_type pos = url.length();
+  for(std::string::size_type i = 0;i < url.length();i++)
+    if (url[i] == '/')
+      pos = i;
+  if (pos + 1 >= url.length())
+    return "";
+  return url.substr(pos + 1);
 }
