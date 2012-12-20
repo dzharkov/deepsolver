@@ -111,7 +111,7 @@ void Messages::onOperationError(const OperationException& e)
     {
     case OperationException::InvalidInfoFile:
       m_stream << "the information file for one or more repositories contains incorrect" << std::endl;
-      m_stream << "data. Usually it means an invalid URL of remote repository is used" << std::endl;
+      m_stream << "data or damaged. Usually it means an invalid URL of remote repository is used" << std::endl;
       m_stream << "or repository provider is experiencing technical problems. Please, be" << std::endl;
       m_stream << "sure your configuration data is correct and try again later." << std::endl;
       m_stream << "Here is the URL of the incorrect info file:" << std::endl;

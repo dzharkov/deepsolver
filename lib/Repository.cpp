@@ -76,7 +76,7 @@ void Repository::fetchInfoAndChecksum()
       break;
   if (i >= md5File.items.size())
     {
-      logMsg(LOG_ERR, "Checksum file from \'%\' has no entry for info file (\'%s\')", checksumFileUrl.c_str(), REPO_INDEX_INFO_FILE);
+      logMsg(LOG_ERR, "Checksum file from \'%s\' has no entry for info file (\'%s\')", checksumFileUrl.c_str(), REPO_INDEX_INFO_FILE);
       throw OperationException(OperationException::InvalidChecksumData, checksumFileUrl);
     }
   if (!md5File.verifyItemByString(i, infoFileContent))
@@ -84,6 +84,7 @@ void Repository::fetchInfoAndChecksum()
       logMsg(LOG_ERR, "Info file from \'%s\' is corrupted according checksum data", infoFileUrl.c_str());
       throw OperationException(OperationException::InvalidInfoFile, infoFileUrl);
     }
+  logMsg(LOG_INFO, "operation:info file from \'%s\' matches the checksum from \'%s\'", infoFileUrl.c_str(), checksumFileUrl.c_str());
   if (infoValues.find(INFO_FILE_COMPRESSION_TYPE) == infoValues.end())
     {
       logMsg(LOG_ERR, "Info file does not contain the \'%s\' key", INFO_FILE_COMPRESSION_TYPE);
@@ -124,22 +125,29 @@ void Repository::addIndexFilesForFetch(StringToStringMap& files)
     dir += '/';
   dir += m_arch + "/";
   dir += REPO_INDEX_DIR_PREFIX + m_component + "/";
-  logMsg(LOG_DEBUG, "Constructing list of files to download, basic URL is \'%s\'", dir.c_str());
+  logMsg(LOG_DEBUG, "repository:constructing list of files to download, basic URL is \'%s\'", dir.c_str());
   m_pkgFileUrl = dir + REPO_INDEX_PACKAGES_FILE;
   m_pkgDescrFileUrl = dir + REPO_INDEX_PACKAGES_DESCR_FILE;
+  m_pkgFileListFileUrl = dir + REPO_INDEX_PACKAGES_FILELIST_FILE;
 m_srcFileUrl = dir + REPO_INDEX_SOURCES_FILE;
 m_srcDescrFileUrl = dir + REPO_INDEX_SOURCES_DESCR_FILE;
  if (m_compressionType == RepoParams::CompressionTypeGzip)
     {
       m_pkgFileUrl += COMPRESSION_SUFFIX_GZIP;
       m_pkgDescrFileUrl += COMPRESSION_SUFFIX_GZIP;
+      m_pkgFileListFileUrl += COMPRESSION_SUFFIX_GZIP;
       m_srcFileUrl += COMPRESSION_SUFFIX_GZIP;
       m_srcDescrFileUrl += COMPRESSION_SUFFIX_GZIP;
     }
   files.insert(StringToStringMap::value_type(m_pkgFileUrl, ""));
-  files.insert(StringToStringMap::value_type(m_pkgDescrFileUrl, ""));
-  files.insert(StringToStringMap::value_type(m_srcFileUrl, ""));
-  files.insert(StringToStringMap::value_type(m_srcDescrFileUrl, ""));
+  if (m_takeDescr)
+    files.insert(StringToStringMap::value_type(m_pkgDescrFileUrl, ""));
+  if (m_takeFileList)
+    files.insert(StringToStringMap::value_type(m_pkgFileListFileUrl, ""));
+  if (m_takeSources)
+    files.insert(StringToStringMap::value_type(m_srcFileUrl, ""));
+  if (m_takeSources && m_takeDescr)
+    files.insert(StringToStringMap::value_type(m_srcDescrFileUrl, ""));
 }
 
 void Repository::loadPackageData(const StringToStringMap& files, 

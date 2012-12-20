@@ -72,7 +72,8 @@ int main(int argc, char* argv[])
   initLogging(cliParser.wasKeyUsed("--debug")?LOG_DEBUG:LOG_INFO, cliParser.wasKeyUsed("--log"));
   try{
     AlwaysTrueContinueRequest alwaysTrueContinueRequest;
-    Messages(std::cout).dsUpdateLogo();
+    if (!cliParser.wasKeyUsed("--log"))
+      Messages(std::cout).dsUpdateLogo();
     ConfigCenter conf;
     conf.loadFromFile(DEFAULT_CONFIG_FILE_NAME);
     conf.commit();
