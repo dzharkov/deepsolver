@@ -53,41 +53,24 @@ void GeneralSolver::solve(const UserTask& task, VarIdVector& toInstall, VarIdVec
 {
   m_annotating = 0;
   constructSatImpl(task);
-    //  printSat(m_scope, m_sat, m_annotations);
-  logMsg(LOG_DEBUG, "Creating libminisat SAT solver");
   std::auto_ptr<AbstractSatSolver> satSolver = createLibMinisatSolver();
   for(Sat::size_type i = 0;i < m_sat.size();i++)
     satSolver->addClause(m_sat[i]);
-
-  //  while(1)
-  //    {
-      AbstractSatSolver::VarIdToBoolMap res;
-      logMsg(LOG_DEBUG, "Launching minisat with %zu clauses", m_sat.size());
-      if (!satSolver->solve(res))
-	return;
-      VarIdVector resInstall, resRemove;
-      for(AbstractSatSolver::VarIdToBoolMap::const_iterator it = res.begin();it != res.end();it++)
-	if (it->second)
-	  {
-	    if (!m_scope.isInstalled(it->first))
-	      resInstall.push_back(it->first); 
-	  }else
-	  {
-	    if (m_scope.isInstalled(it->first))
-	      resRemove.push_back(it->first);
-	  }
-      logMsg(LOG_DEBUG, "Solution found: %zu to install, %zu to remove", resInstall.size(), resRemove.size());
-
-      /*
-      Clause blocking;
-      for(VarIdVector::size_type i = 0;i < resInstall.size();i++)
-	blocking.push_back(Lit(resInstall[i], 1));
-      for(VarIdVector::size_type i = 0;i < resRemove.size();i++)
-	blocking.push_back(Lit(resRemove[i]));
-      satSolver->addClause(blocking);
-    }
-      */
-      //      printSolution(m_scope, resInstall, resRemove);
+  AbstractSatSolver::VarIdToBoolMap res;
+  logMsg(LOG_DEBUG, "general:launching minisat with %zu clauses", m_sat.size());
+  if (!satSolver->solve(res))
+    throw TaskException(TaskException::NoSatSolution);
+  for(AbstractSatSolver::VarIdToBoolMap::const_iterator it = res.begin();it != res.end();it++)
+    if (it->second)
+      {
+	if (!m_scope.isInstalled(it->first))
+	  toInstall.push_back(it->first); 
+      }else
+      {
+	if (m_scope.isInstalled(it->first))
+	  toRemove.push_back(it->first);
+      }
+  logMsg(LOG_DEBUG, "general:solution found: %zu to install, %zu to remove", toInstall.size(), toRemove.size());
 }
 
 std::string GeneralSolver::constructSat(const UserTask& task)

@@ -18,7 +18,7 @@
 #include"deepsolver.h"
 #include"PkgUtils.h"
 
-static void printThreeColumns(const StringVector& v);
+static void printThreeColumns(const StringVector& items);
 
 void PkgUtils::fillWithhInstalledPackages(AbstractPackageBackEnd& backEnd, PackageScopeContent& content)
 {
@@ -138,6 +138,7 @@ void PkgUtils::printSolution(const AbstractPackageScope& scope,
 			     const VarIdVector& install,
 			     const VarIdVector& remove)
 {
+  std::cout << std::endl;
   std::cout << install.size() << " packages to install, " << remove.size() << " packages to remove" << std::endl;
   if (!install.empty())
     {
@@ -155,12 +156,15 @@ void PkgUtils::printSolution(const AbstractPackageScope& scope,
       std::cout << "The following packages must be removed:" << std::endl;
       for(size_t k = 0;k < remove.size();k++)
 	v.push_back(scope.constructPackageName(remove[k]));
+      printThreeColumns(v);
       std::cout << std::endl;
     }
 }
 
-void printThreeColumns(const StringVector& v)
+void printThreeColumns(const StringVector& items)
 {
+  StringVector v = items;
+  std::sort(v.begin(), v.end());
   if (v.empty())
     return;
   StringVector v1, v2, v3;
