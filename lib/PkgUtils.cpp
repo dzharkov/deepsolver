@@ -139,18 +139,24 @@ void PkgUtils::printSolution(const AbstractPackageScope& scope,
 			     const VarIdVector& remove)
 {
   std::cout << install.size() << " packages to install, " << remove.size() << " packages to remove" << std::endl;
-  std::cout << std::endl;
-  std::cout << "The following packages must be installed:" << std::endl;
-  StringVector v;
-  for(size_t k = 0;k < install.size();k++)
-    v.push_back(scope.constructPackageName(install[k]));
-  printThreeColumns(v);
-  v.clear();
-  std::cout << std::endl;
-  std::cout << "The following packages must be removed:" << std::endl;
-  for(size_t k = 0;k < remove.size();k++)
-    v.push_back(scope.constructPackageName(remove[k]));
-  std::cout << std::endl;
+  if (!install.empty())
+    {
+      std::cout << std::endl;
+      std::cout << "The following packages must be installed:" << std::endl;
+      StringVector v;
+      for(size_t k = 0;k < install.size();k++)
+	v.push_back(scope.constructPackageName(install[k]));
+      printThreeColumns(v);
+    }
+  if (!remove.empty())
+    {
+      StringVector v;
+      std::cout << std::endl;
+      std::cout << "The following packages must be removed:" << std::endl;
+      for(size_t k = 0;k < remove.size();k++)
+	v.push_back(scope.constructPackageName(remove[k]));
+      std::cout << std::endl;
+    }
 }
 
 void printThreeColumns(const StringVector& v)
