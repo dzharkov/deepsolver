@@ -106,6 +106,7 @@ void OperationCore::transaction(AbstractTransactionListener& listener, const Use
   std::auto_ptr<AbstractTaskSolver> solver = createGeneralTaskSolver(taskSolverData);
   VarIdVector toInstall, toRemove;
   solver->solve(userTask, toInstall, toRemove);
+  PkgUtils::printSolution(scope, toInstall, toRemove);
 }
 
 std::string OperationCore::generateSat(AbstractTransactionListener& listener, const UserTask& userTask) const

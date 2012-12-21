@@ -38,6 +38,10 @@ public:
   static std::string satToString(const AbstractPackageScope& scope, 
 				 const Sat& sat,
 				 const StringVector& annotations);
+
+  static void printSolution(const AbstractPackageScope& scope,
+			    const VarIdVector& install,
+			    const VarIdVector& remove);
 }; //class PkgUtils;
 
 #endif //DEEPSOLVER_PKG_UTILS_H;

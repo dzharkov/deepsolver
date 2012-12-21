@@ -18,6 +18,8 @@
 #include"deepsolver.h"
 #include"PkgUtils.h"
 
+static void printThreeColumns(const StringVector& v);
+
 void PkgUtils::fillWithhInstalledPackages(AbstractPackageBackEnd& backEnd, PackageScopeContent& content)
 {
   const clock_t fillingStart = clock();
@@ -132,18 +134,65 @@ std::string PkgUtils::satToString(const AbstractPackageScope& scope,
   return ss.str();
 }
 
-void printSolution(const AbstractPackageScope& scope,
-		   const VarIdVector& install,
-		   const VarIdVector& remove)
+void PkgUtils::printSolution(const AbstractPackageScope& scope,
+			     const VarIdVector& install,
+			     const VarIdVector& remove)
 {
-  std::cout << install.size() << " to install, " << remove.size() << " to remove" << std::endl;
+  std::cout << install.size() << " packages to install, " << remove.size() << " packages to remove" << std::endl;
   std::cout << std::endl;
   std::cout << "The following packages must be installed:" << std::endl;
+  StringVector v;
   for(size_t k = 0;k < install.size();k++)
-    std::cout << scope.constructPackageName(install[k]) << std::endl;
+    v.push_back(scope.constructPackageName(install[k]));
+  printThreeColumns(v);
+  v.clear();
   std::cout << std::endl;
   std::cout << "The following packages must be removed:" << std::endl;
   for(size_t k = 0;k < remove.size();k++)
-    std::cout << scope.constructPackageName(remove[k]) << std::endl;
+    v.push_back(scope.constructPackageName(remove[k]));
   std::cout << std::endl;
+}
+
+void printThreeColumns(const StringVector& v)
+{
+  if (v.empty())
+    return;
+  StringVector v1, v2, v3;
+  for(StringVector::size_type i = 0;i < v.size();i += 3)
+    {
+      v1.push_back(v[i]);
+      if (i + 1 < v.size())
+	v2.push_back(v[i + 1]);
+      if (i + 2 < v.size())
+	v3.push_back(v[i + 2]);
+    }
+  std::string::size_type maxLen1 = 0, maxLen2 = 0;
+  for(StringVector::size_type i = 0;i < v1.size();i++)
+    if (v1[i].length() > maxLen1)
+      maxLen1 = v1[i].length();
+  for(StringVector::size_type i = 0;i < v2.size();i++)
+    if (v2[i].length() > maxLen2)
+      maxLen2 = v2[i].length();
+  assert(maxLen1 > 0 && maxLen2 > 0);
+  for(StringVector::size_type i = 0;i < v3.size();i++)
+    {
+      std::cout << v1[i];
+      for(std::string::size_type k = v1[i].length();k < maxLen1 + 2;k++)
+	std::cout << " ";
+      std::cout << v2[i];
+      for(std::string::size_type k = v2[i].length();k < maxLen2 + 2;k++)
+	std::cout << " ";
+      std::cout << v3[i] << std::endl;
+    }
+  if (v1.size() > v3.size())
+    {
+      std::cout << v1[v1.size() - 1];
+      if (v2.size() > v3.size())
+	{
+	  for(std::string::size_type k = v1[v1.size() - 1].length();k < maxLen1 + 2;k++)
+	    std::cout << " ";
+	  std::cout << v2[v2.size() - 1];
+	}
+      std::cout << std::endl;
+    }
 }
