@@ -30,7 +30,7 @@ public:
 public:
   void reset();
   void addClause(const Clause& clause);
-  bool solve(VarIdToBoolMap& res);
+  bool solve(const VarIdToBoolMap& assumptions, VarIdToBoolMap& res);
 
 private:
   int mapVarId(VarId varId);
@@ -75,7 +75,7 @@ void LibMinisatSolver::addClause(const Clause& clause)
   m_clauseLengths.push_back(clause.size());
 }
 
-bool LibMinisatSolver::solve(VarIdToBoolMap& res)
+bool LibMinisatSolver::solve(const VarIdToBoolMap& assumptions, VarIdToBoolMap& res)
 {
   assert(m_clauses.size() == m_clauseLengths.size());
   assert(!m_clauses.empty());
@@ -91,13 +91,22 @@ bool LibMinisatSolver::solve(VarIdToBoolMap& res)
       usingCounts[i] = m_clauseLengths[i];
       usingEq[i] = m_clauses[i];
     }
-  logMsg(LOG_DEBUG, "Calling libminisat to solve the task with %zu variables in %zu clauses", varCount, m_clauses.size());
-  if (minisat_solve(m_clauses.size(), usingCounts, usingEq, usingSolution) != MINISAT_OK)
+  int* assump = new int[assumptions.size()];
+  size_t index = 0;
+  for(VarIdToBoolMap::const_iterator it = assumptions.begin();it != assumptions.end();it++)
+    {
+      if (it->second)
+	assump[index] = -1 * mapVarId(it->first); else
+	assump[index] = mapVarId(it->first);
+      index++;
+    }
+  logMsg(LOG_DEBUG, "libminisat:calling libminisat to solve the task with %zu variables in %zu clauses", varCount, m_clauses.size());
+  if (minisat_solve_assumption(m_clauses.size(), usingCounts, usingEq, assump, assumptions.size(), usingSolution) != MINISAT_OK)
     {
       logMsg(LOG_DEBUG, "libminisat said no solution!");
       return 0;
     }
-  logMsg(LOG_DEBUG, "libminisat found a solution!");
+  logMsg(LOG_DEBUG, "libminisat:libminisat found a solution!");
   for(size_t i = 1;i < varCount;i++)
     {
       IntToVarIdMap::const_iterator it = m_intToVarIdMap.find(i);

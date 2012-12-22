@@ -54,11 +54,15 @@ void GeneralSolver::solve(const UserTask& task, VarIdVector& toInstall, VarIdVec
   m_annotating = 0;
   constructSatImpl(task);
   std::auto_ptr<AbstractSatSolver> satSolver = createLibMinisatSolver();
+  AbstractSatSolver::VarIdToBoolMap res, assumptions;
   for(Sat::size_type i = 0;i < m_sat.size();i++)
-    satSolver->addClause(m_sat[i]);
-  AbstractSatSolver::VarIdToBoolMap res;
+    {
+      satSolver->addClause(m_sat[i]);
+      //      for(Clause::size_type k = 0;k < m_sat[i].size();k++)
+      //	assumptions.insert(AbstractSatSolver::VarIdToBoolMap::value_type(m_sat[i][k].varId, m_scope.isInstalled(m_sat[i][k].varId)));
+    }
   logMsg(LOG_DEBUG, "general:launching minisat with %zu clauses", m_sat.size());
-  if (!satSolver->solve(res))
+  if (!satSolver->solve(assumptions, res))
     throw TaskException(TaskException::NoSatSolution);
   for(AbstractSatSolver::VarIdToBoolMap::const_iterator it = res.begin();it != res.end();it++)
     if (it->second)
