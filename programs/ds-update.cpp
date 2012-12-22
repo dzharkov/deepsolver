@@ -108,5 +108,10 @@ int main(int argc, char* argv[])
       Messages(std::cerr).onSystemError(e);
       return EXIT_FAILURE;
     }
+  catch(const NotImplementedException& e)
+    {
+      std::cerr << "Feature not implemented:" << e.getMessage() << std::endl;
+      return EXIT_FAILURE;
+    }
   return EXIT_SUCCESS;
 }

@@ -22,6 +22,7 @@ public:
   void onConfigSyntaxError(const ConfigFileException& e);
   void onConfigError(const ConfigException& e);
   void onCurlError(const CurlException& e);
+  void onRpmError(const RpmException& e);
   void onOperationError(const OperationException& e);
   void onTaskError(const TaskException& e);
 

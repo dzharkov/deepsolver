@@ -143,9 +143,24 @@ int main(int argc, char* argv[])
       Messages(std::cerr).onConfigError(e);
       return EXIT_FAILURE;
     }
+  catch(const TaskException& e)
+    {
+      Messages(std::cerr).onTaskError(e);
+      return EXIT_FAILURE;
+    }
   catch(const OperationException& e)
     {
       Messages(std::cerr).onOperationError(e);
+      return EXIT_FAILURE;
+    }
+  catch(const CurlException& e)
+    {
+      Messages(std::cerr).onCurlError(e);
+      return EXIT_FAILURE;
+    }
+  catch(const RpmException& e)
+    {
+      Messages(std::cerr).onRpmError(e);
       return EXIT_FAILURE;
     }
   catch(const SystemException& e)
@@ -153,10 +168,10 @@ int main(int argc, char* argv[])
       Messages(std::cerr).onSystemError(e);
       return EXIT_FAILURE;
     }
-  catch(const TaskException& e)
+  catch(const NotImplementedException& e)
     {
-       Messages(std::cerr).onTaskError(e);
-       return EXIT_FAILURE;
+      std::cerr << "Feature not implemented:" << e.getMessage() << std::endl;
+      return EXIT_FAILURE;
     }
   return EXIT_SUCCESS;
 }

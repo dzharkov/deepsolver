@@ -103,6 +103,11 @@ void Messages::onCurlError(const CurlException& e)
   m_stream << messagesProgramName << ":" << e.getUrl() << ":curl error " << e.getCode() << ":" << e.getText() << std::endl;
 }
 
+void Messages::onRpmError(const RpmException& e)
+{
+  m_stream << "RpmError:FIXME" << std::endl;
+}
+
 void Messages::onOperationError(const OperationException& e)
 {
   m_stream << std::endl;

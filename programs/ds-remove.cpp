@@ -104,9 +104,24 @@ int main(int argc, char* argv[])
       Messages(std::cerr).onOperationError(e);
       return EXIT_FAILURE;
     }
+  catch(const CurlException& e)
+    {
+      Messages(std::cerr).onCurlError(e);
+      return EXIT_FAILURE;
+    }
+  catch(const RpmException& e)
+    {
+      Messages(std::cerr).onRpmError(e);
+      return EXIT_FAILURE;
+    }
   catch(const SystemException& e)
     {
       Messages(std::cerr).onSystemError(e);
+      return EXIT_FAILURE;
+    }
+  catch(const NotImplementedException& e)
+    {
+      std::cerr << "Feature not implemented:" << e.getMessage() << std::endl;
       return EXIT_FAILURE;
     }
   return EXIT_SUCCESS;
