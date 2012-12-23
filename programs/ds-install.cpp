@@ -38,7 +38,7 @@ protected:
   if (mode == 0 && findKey(params[0]) != (KeyVector::size_type)-1)
     return CliParser::recognizeCluster(params, mode);
   if (params.size() < 3 ||
-      (params[1] != '=' && params[1] != '<=' && params[1] != '>=' && params[1] != '<' && params[1] != '>'))
+      (params[1] != "=" && params[1] != "<=" && params[1] != ">=" && params[1] != "<" && params[1] != ">"))
     return CliParser::recognizeCluster(params, mode);
   return 2;
   }
@@ -50,7 +50,7 @@ protected:
 	mode = 1;
 	return ;
       }
-    if (mode == 0 && findKey(params[0]) != (KeyVector::size_type)-1)
+    if (mode == 0 && findKey(cluster[0]) != (KeyVector::size_type)-1)
       {
 	CliParser::parseCluster(cluster, mode);
 	return;
@@ -60,18 +60,22 @@ protected:
 	CliParser::parseCluster(cluster, mode);
 	return;
       }
+    if (trim(cluster[0]).empty())
+      return;
     if (cluster.size() == 1)
       {
 	userTask.itemsToInstall.push_back(UserTaskItemToInstall(cluster[0]));
 	return;
       }
-    VerDir verDir = VerNone;
+    if (trim(cluster[2]).empty())
+      return;
+    VerDirection verDir = VerNone;
     if (cluster[1] == "=")
       verDir = VerEquals; else
       if (cluster[1] == "<=")
 	verDir = VerLess | VerEquals; else
 	if (cluster[1] == ">=")
-	  verDir = VerGrater | VerEquals; else
+	  verDir = VerGreater | VerEquals; else
 	  if (cluster[1] == "<")
 	    verDir = VerLess; else 
 	    if (cluster[1] == ">")
@@ -127,11 +131,23 @@ int main(int argc, char* argv[])
     ConfigCenter conf;
     conf.loadFromFile(DEFAULT_CONFIG_FILE_NAME);
     conf.commit();
+    if (!cliParser.wasKeyUsed("--log"))
+      Messages(std::cout).dsInstallLogo();
     OperationCore core(conf);
-  logMsg(LOG_DEBUG, "Recognized %zu items to install:", cliParser.userTask.itemsToInstall.size());
-  for(UserTaskItemToInstallVector::size_type i = 0;i < cliParser.userTask.itemsToInstall.size();i++)
-    logMsg(LOG_DEBUG, "%s", cliParser.userTask.itemsToInstall[i].toString().c_str());
-  core.transaction(transactionProgress, cliParser.userTask);
+    if (cliParser.userTask.itemsToInstall.empty())
+      {
+	Messages(std::cerr).onNoPackagesMentionedError();
+	return EXIT_FAILURE;
+      }
+    if (!cliParser.wasKeyUsed("--sat"))
+      {
+	core.transaction(transactionProgress, cliParser.userTask);
+      } else
+      {
+	const std::string res = core.generateSat(transactionProgress, cliParser.userTask);
+	std::cout << std::endl;
+	std::cout << res;
+      }
   }
   catch (const ConfigFileException& e)
     {
@@ -145,8 +161,8 @@ int main(int argc, char* argv[])
     }
   catch(const TaskException& e)
     {
-      Messages(std::cerr).onTaskError(e);
-      return EXIT_FAILURE;
+       Messages(std::cerr).onTaskError(e);
+       return EXIT_FAILURE;
     }
   catch(const OperationException& e)
     {
