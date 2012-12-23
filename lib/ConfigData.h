@@ -60,11 +60,26 @@ struct ConfRepo
 typedef std::vector<ConfRepo> ConfRepoVector;
 typedef std::list<ConfRepo> ConfRepoList;
 
+struct ConfProvide
+{
+  ConfProvide() {}
+
+  ConfProvide(const std::string& n)
+    : name(n) {}
+
+  std::string name;
+  StringVector providers;
+}; //struct ConfProvide;
+
+typedef std::string<ConfProvide> ConfProvideVector;
+typedef std::list<ConfProvide> ConfProvideList;
+
 struct ConfRoot
 {
   ConfDir dir;
   ConfOs os;
   ConfRepoVector repo;
+  ConfProvideVector provide;
 }; //struct ConfRoot;
 
 #endif //DEEPSOLVER_CONFIG_DATA_H;

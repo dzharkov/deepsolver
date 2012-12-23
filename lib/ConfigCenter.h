@@ -214,6 +214,7 @@ public:
 private:
   void initValues();
   void initRepoValues();
+  void initProvideValues();
   int getParamType(const StringVector& path, const std::string& sectArg, const ConfigFilePosInfo& pos) const;
 
 private:

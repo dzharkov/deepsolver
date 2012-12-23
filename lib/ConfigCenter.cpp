@@ -88,6 +88,24 @@ void ConfigCenter::initRepoValues()
     }
 }
 
+void ConfigCenter::initProvideValues()
+{
+  for(ConfProvideVector::size_type i = 0;i < m_root.provide.size();i++)
+    {
+      ConfProvide& provide = m_root.provide[i];
+      StringListValue stringListValue;
+      stringListValue.sectArg = provide.name;
+      stringListValue.path.push_back("provide");
+      stringListValue.path.push_back("providers");
+      stringListValue.delimiters = DELIMITERS;
+      stringListValue.canContainEmptyItem = 0;
+      stringListValue.canBeEmpty = 1;
+      stringListValue.value = &provide.providers;
+      m_stringListValues.push_back(stringListValue);
+    }
+}
+
+
 void ConfigCenter::commit()
 {
   logMsg(LOG_DEBUG, "config:about to commit configuration values");
