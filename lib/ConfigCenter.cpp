@@ -177,13 +177,35 @@ void ConfigCenter::onConfigFileValue(const StringVector& path,
       while(i < m_root.repo.size() && m_root.repo[i].name != sectArg)
 	i++;
       if (i >= m_root.repo.size())
-	m_root.repo.push_back(ConfRepo(sectArg));
-      m_stringValues.clear();
-      m_stringListValues.clear();
-      m_booleanValues.clear();
-      m_uintValues.clear();
-      initValues();
-      initRepoValues();
+	{
+	  m_root.repo.push_back(ConfRepo(sectArg));
+	  m_stringValues.clear();
+	  m_stringListValues.clear();
+	  m_booleanValues.clear();
+	  m_uintValues.clear();
+	  initValues();
+	  initRepoValues();
+	  initProvideValues();
+	}
+    }
+  if (path[0] == "provide")
+    {
+      if (trim(sectArg).empty())
+	throw NotImplementedException("Empty configuration file section argument");
+      ConfProvideVector::size_type i = 0;
+      while(i < m_root.provide.size() && m_root.provide[i].name != sectArg)
+	i++;
+      if (i >= m_root.provide.size())
+	{
+	  m_root.provide.push_back(ConfProvide(sectArg));
+	  m_stringValues.clear();
+	  m_stringListValues.clear();
+	  m_booleanValues.clear();
+	  m_uintValues.clear();
+	  initValues();
+	  initRepoValues();
+	  initProvideValues();
+	}
     }
   const int paramType = getParamType(path, sectArg, pos);
   if (paramType == ValueTypeString)

@@ -71,7 +71,7 @@ struct ConfProvide
   StringVector providers;
 }; //struct ConfProvide;
 
-typedef std::string<ConfProvide> ConfProvideVector;
+typedef std::vector<ConfProvide> ConfProvideVector;
 typedef std::list<ConfProvide> ConfProvideList;
 
 struct ConfRoot
