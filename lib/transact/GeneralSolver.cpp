@@ -547,11 +547,12 @@ VarId GeneralSolver::processPriorityList(const VarIdVector& vars, PackageId prov
 VarId GeneralSolver::processPriorityBySorting(const VarIdVector& vars)
 {
   assert(!vars.empty());
-  StringList names;
+  PackageNameSortItem items;
   for(VarIdVector::size_type i = 0;i < vars.size();i++)
-    names.push_back(m_scope.constructPackageName(vars[i]));//FIXME:Epoch may be missed here;
-kaka
-  return sortPackageNames(vars, names);
+    items.push_back(PackageNameSortItem(&m_backEnd, vars[i], m_scope.constructPackageName(vars[i])));
+  std::sort(items.begin(), items.end());
+  assert(!items.end());
+  return items[items.size() - 1].varId;
 }
 
 void GeneralSolver::addClause(const Clause& clause)

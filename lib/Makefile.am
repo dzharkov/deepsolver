@@ -83,6 +83,7 @@ transact/AbstractSatSolver.h \
 transact/AbstractTaskSolver.h \
 transact/GeneralSolver.h \
 transact/InstalledReferences.h \
+transact/PackageNameSorting.h \
 transact/PackageScopeContent.h \
 transact/PackageScope.h \
 transact/ProvideMap.h \
