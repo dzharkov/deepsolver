@@ -342,8 +342,8 @@ void GeneralSolver::handleChangeToTrue(VarId varId, bool includeItself)
 	  clause.push_back(Lit(installed[k]));
 	  m_pending.push_back(installed[k]);
 	}
-      if (installed.empty())
-	{
+      //      if (installed.empty())
+      //	{
 	  const VarId def = satisfyRequire(requires[i]);
 	  assert(def != BAD_VAR_ID);
 	  VarIdVector::size_type k;
@@ -358,7 +358,7 @@ void GeneralSolver::handleChangeToTrue(VarId varId, bool includeItself)
 	      clause.push_back(Lit(def));
 	      m_pending.push_back(def);
 	    }
-	}
+	  //	}
       addClause(clause);
       if (m_annotating)
 	m_annotations.push_back(annotation);
@@ -435,23 +435,22 @@ void GeneralSolver::handleChangeToFalse(VarId seed, bool includeItself)
 	    if (m_annotating)
 	      annotation += "\n# " + m_scope.constructPackageNameWithBuildTime(installed[k]) + "\" is installed and also matches this require entry";
 	  }
-      if (installed.empty())
+
+      const VarId replacement = satisfyRequire(rels[i]);
+      assert(replacement != BAD_VAR_ID);
+      VarIdVector::size_type k;
+      for(k = 0;k < installed.size();k++)
+	if (replacement == installed[k])
+	  break;
+      if (k >= installed.size())
 	{
-	  const VarId replacement = satisfyRequire(rels[i]);
-	  assert(replacement != BAD_VAR_ID);
-	  VarIdVector::size_type k;
-	  for(k = 0;k < installed.size();k++)
-	    if (replacement == installed[k])
-	      break;
-	  if (k >= installed.size())
-	    {
-	      assert(!m_scope.isInstalled(replacement));
-	      clause.push_back(Lit(replacement));
-	      m_pending.push_back(replacement);
-	      if (m_annotating)
-		annotation += "\n# \"" + m_scope.constructPackageNameWithBuildTime(replacement) + "\" is considered as default replacement among non-installed";
-	    }
-	    }
+	  assert(!m_scope.isInstalled(replacement));
+	  clause.push_back(Lit(replacement));
+	  m_pending.push_back(replacement);
+	  if (m_annotating)
+	    annotation += "\n# \"" + m_scope.constructPackageNameWithBuildTime(replacement) + "\" is considered as default replacement among non-installed";
+	}
+
       addClause(clause);
       if (m_annotating)
 	m_annotations.push_back(annotation);
