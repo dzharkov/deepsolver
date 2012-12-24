@@ -546,18 +546,12 @@ VarId GeneralSolver::processPriorityList(const VarIdVector& vars, PackageId prov
 
 VarId GeneralSolver::processPriorityBySorting(const VarIdVector& vars)
 {
-  /*FIXME:
   assert(!vars.empty());
-  //Perform sorting by real package names and take last one;
   StringList names;
   for(VarIdVector::size_type i = 0;i < vars.size();i++)
     names.push_back(m_scope.constructPackageName(vars[i]));//FIXME:Epoch may be missed here;
+kaka
   return sortPackageNames(vars, names);
-  std::sort(items.begin(), items.end());
-  assert(!items.empty());
-  return items[items.size() - 1].varId;
-  */
-  return vars[0];
 }
 
 void GeneralSolver::addClause(const Clause& clause)
