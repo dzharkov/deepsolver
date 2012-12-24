@@ -18,6 +18,7 @@
 #include"deepsolver.h"
 #include"GeneralSolver.h"
 #include"PkgUtils.h"
+#include"PackageNameSorting.h"
 
 template<typename T>
 void rmDub(std::vector<T>& v)
@@ -547,7 +548,7 @@ VarId GeneralSolver::processPriorityList(const VarIdVector& vars, PackageId prov
 VarId GeneralSolver::processPriorityBySorting(const VarIdVector& vars)
 {
   assert(!vars.empty());
-  PackageNameSortItem items;
+  PackageNameSortItemVector items;
   for(VarIdVector::size_type i = 0;i < vars.size();i++)
     items.push_back(PackageNameSortItem(&m_backEnd, vars[i], m_scope.constructPackageName(vars[i])));
   std::sort(items.begin(), items.end());
