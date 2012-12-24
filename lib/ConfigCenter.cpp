@@ -112,6 +112,13 @@ void ConfigCenter::commit()
   m_root.dir.pkgData = trim(m_root.dir.pkgData);
   for(StringVector::size_type i = 0;i < m_root.os.transactReadAhead.size();i++)
     m_root.os.transactReadAhead[i] = trim(m_root.os.transactReadAhead[i]);
+  for(ConfProvideVector::size_type i = 0;i < m_root.provide.size();i++)
+    {
+      ConfProvide& provide = m_root.provide[i];
+      provide.name = trim(provide.name);
+      for(StringVector::size_type k = 0;k < provide.providers.size();k++)
+	provide.providers[k] = trim(provide.providers[k]);
+    }
   for(ConfRepoVector::size_type i = 0;i < m_root.repo.size();i++)
     {
       ConfRepo& repo = m_root.repo[i];
