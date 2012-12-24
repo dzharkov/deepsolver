@@ -21,6 +21,20 @@
 #include"AbstractPackageScope.h"
 #include"AbstractPackageBackEnd.h"
 
+struct TaskSolverProvideInfo
+{
+  TaskSolverProvideInfo() {}
+
+  TaskSolverProvideInfo(const std::string& n)
+    : name(n) {}
+
+  std::string name;
+  StringVector providers;
+}; //struct TaskSolverProvideInfo;
+
+typedef std::vector<TaskSolverProvideInfo> TaskSolverProvideInfoVector;
+typedef std::list<TaskSolverProvideInfo> TaskSolverProvideInfoList;
+
 struct TaskSolverData
 {
   TaskSolverData(const AbstractPackageBackEnd& b, AbstractPackageScope& s)
@@ -29,6 +43,7 @@ struct TaskSolverData
 
   const AbstractPackageBackEnd& backEnd;
   AbstractPackageScope& scope;
+  TaskSolverProvideInfoVector provides;
 }; //struct TaskSolverData;
 
 class AbstractTaskSolver

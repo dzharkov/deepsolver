@@ -87,7 +87,9 @@ void OperationCore::fetchIndices(AbstractIndexFetchListener& listener,
 
 void OperationCore::transaction(AbstractTransactionListener& listener, const UserTask& userTask) const
 {
-  File::readAhead("/var/lib/rpm/Packages");//FIXME:take the value from configuration;
+  const ConfRoot& root = m_conf.root();
+  for(StringVector::size_type i = 0;i < root.os.transactReadAhead.size();i++)
+    File::readAhead(root.os.transactReadAhead[i]);
   std::auto_ptr<AbstractPackageBackEnd> backEnd = CREATE_PACKAGE_BACKEND;
   backEnd->initialize();
   PackageScopeContent content;
@@ -103,6 +105,14 @@ void OperationCore::transaction(AbstractTransactionListener& listener, const Use
   listener.onInstallRemovePkgListProcessing();
   PackageScope scope(*backEnd.get(), content, provideMap, requiresReferences, conflictsReferences);
   TaskSolverData taskSolverData(*backEnd.get(), scope);
+  for(ConfProvideVector::size_type i = 0;i < root.provide.size();i++)
+    {
+      assert(!trim(root.provide[i].name).empty());
+      TaskSolverProvideInfo info(root.provide[i].name);
+      for(StringVector::size_type k = 0;k < root.provide[i].providers.size();k++)
+	info.providers.push_back(root.provide[i].providers[k]);
+      taskSolverData.provides.push_back(info);
+    }
   std::auto_ptr<AbstractTaskSolver> solver = createGeneralTaskSolver(taskSolverData);
   VarIdVector toInstall, toRemove;
   solver->solve(userTask, toInstall, toRemove);
@@ -111,7 +121,9 @@ void OperationCore::transaction(AbstractTransactionListener& listener, const Use
 
 std::string OperationCore::generateSat(AbstractTransactionListener& listener, const UserTask& userTask) const
 {
-  File::readAhead("/var/lib/rpm/Packages");//FIXME:take the value from configuration;
+  const ConfRoot& root = m_conf.root();
+  for(StringVector::size_type i = 0;i < root.os.transactReadAhead.size();i++)
+    File::readAhead(root.os.transactReadAhead[i]);
   std::auto_ptr<AbstractPackageBackEnd> backEnd = CREATE_PACKAGE_BACKEND;
   backEnd->initialize();
   PackageScopeContent content;
@@ -126,6 +138,14 @@ std::string OperationCore::generateSat(AbstractTransactionListener& listener, co
   PkgUtils::prepareReversedMaps(content, provideMap, requiresReferences, conflictsReferences);
   PackageScope scope(*backEnd.get(), content, provideMap, requiresReferences, conflictsReferences);
   TaskSolverData taskSolverData(*backEnd.get(), scope);
+  for(ConfProvideVector::size_type i = 0;i < root.provide.size();i++)
+    {
+      assert(!trim(root.provide[i].name).empty());
+      TaskSolverProvideInfo info(root.provide[i].name);
+      for(StringVector::size_type k = 0;k < root.provide[i].providers.size();k++)
+	info.providers.push_back(root.provide[i].providers[k]);
+      taskSolverData.provides.push_back(info);
+    }
   std::auto_ptr<AbstractTaskSolver> solver = createGeneralTaskSolver(taskSolverData);
   return solver->constructSat(userTask);
 }
