@@ -40,16 +40,8 @@ public:
 
 private:
   void constructSatImpl(const UserTask& task);
-  void handleChangeToFalse(VarId seed,
-			   bool includeItself,
-			   VarIdVector& involvedInstalled,
-			   VarIdVector& involvedRemoved);
-
-  void handleChangeToTrue(VarId varId,
-			  bool includeItself,
-			  VarIdVector& involvedInstalled,
-			  VarIdVector& involvedRemoved);
-
+  void handleChangeToFalse(VarId seed, bool includeItself);
+  void handleChangeToTrue(VarId varId, bool includeItself);
   void addClause(const Clause& clause);
   void processPendings();
   VarId processPriorityBySorting(const VarIdVector& vars);
@@ -68,9 +60,8 @@ private:
   const AbstractPackageBackEnd& m_backEnd;
   AbstractPackageScope& m_scope; 
   Sat m_sat;
-  VarIdVector m_userTaskPresent, m_userTaskAbsent;
-  VarIdVector m_pendingInstalled, m_pendingRemoved;
-  VarIdSet m_processedInstalled, m_processedRemoved;
+  VarIdVector m_pending;
+  VarIdSet m_processed;
   VarIdSet m_decisionMadeTrue, m_decisionMadeFalse;
 }; //class GeneralSolver;
 

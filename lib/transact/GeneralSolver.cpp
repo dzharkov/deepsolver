@@ -89,13 +89,6 @@ void GeneralSolver::constructSatImpl(const UserTask& task)
 {
   const clock_t satConstructStart = clock(); 
   translateUserTask(task);
-  logMsg(LOG_DEBUG, "general:user task translated: %zu to be present, %zu to be absent", m_userTaskPresent.size(), m_userTaskAbsent.size());
-  for(VarIdVector::size_type i = 0;i < m_userTaskAbsent.size();i++)
-    if (m_scope.isInstalled(m_userTaskAbsent[i]))
-      handleChangeToFalse(m_userTaskAbsent[i], 0, m_pendingInstalled, m_pendingRemoved);//0 means the package itself will be removed anyway;
-  for(VarIdVector::size_type i = 0;i < m_userTaskPresent.size();i++)
-    if (!m_scope.isInstalled(m_userTaskPresent[i]))
-      handleChangeToTrue(m_userTaskPresent[i], 0, m_pendingInstalled, m_pendingRemoved);//0 means the package itself will be installed anyway;
   processPendings();
   const double satConstructDuration = ((double)clock() - satConstructStart) / CLOCKS_PER_SEC;
     for(Sat::size_type i = 0;i < m_sat.size();i++)
@@ -105,14 +98,10 @@ void GeneralSolver::constructSatImpl(const UserTask& task)
 
 void GeneralSolver::translateUserTask(const UserTask& userTask)
 {
-  m_userTaskPresent.clear();
-  m_userTaskAbsent.clear();
   m_sat.clear();
   m_annotations.clear();
-  m_processedInstalled.clear();
-  m_processedRemoved.clear();
-  m_pendingInstalled.clear();
-  m_pendingRemoved.clear();
+  m_pending.clear();
+  m_processed.clear();
   m_decisionMadeFalse.clear();
   m_decisionMadeTrue.clear();
 
@@ -122,8 +111,7 @@ void GeneralSolver::translateUserTask(const UserTask& userTask)
       //The following line checks the entire package scope including installed packages, so it can return also the installed package if it matches the user request;
       const VarId varId = translateItemToInstall(userTask.itemsToInstall[i]);
       assert(varId != BAD_VAR_ID);
-      m_processedInstalled.insert(varId);
-      m_userTaskPresent.push_back(varId);
+      m_pending.push_back(varId);
       addClause(unitClause(Lit(varId)));
       if (m_annotating)
 	m_annotations.push_back("# Buy user task to install \"" + userTask.itemsToInstall[i].toString() + "\"");
@@ -133,8 +121,7 @@ void GeneralSolver::translateUserTask(const UserTask& userTask)
       for(VarIdVector::size_type k = 0;k < otherVersions.size();k++)
 	if (otherVersions[k] != varId)
 	  {
-	    m_userTaskAbsent.push_back(otherVersions[k]);//FIXME:Not every package require this;
-	      m_processedRemoved.insert(otherVersions[k]);
+	    m_pending.push_back(otherVersions[k]);//FIXME:Not every package require this;
 	    addClause(unitClause(Lit(otherVersions[k], 1)));
 	    if (m_annotating)
 	      m_annotations.push_back("# Blocked by user task to install \"" + userTask.itemsToInstall[i].toString() + "\"");
@@ -147,7 +134,7 @@ void GeneralSolver::translateUserTask(const UserTask& userTask)
       const PackageId pkgId = m_scope.strToPackageId(*it);
       if (pkgId == BAD_PACKAGE_ID)
 	{
-	  //FIXME:Notice;
+	  //FIXME:user Notice;
 	  logMsg(LOG_DEBUG, "general:request contains ask to remove unknown package \'%s\', skipping", it->c_str());
 	  continue;
 	}
@@ -156,15 +143,12 @@ void GeneralSolver::translateUserTask(const UserTask& userTask)
       rmDub(vars);
       for(VarIdVector::size_type k = 0;k < vars.size();k++)
 	{
-	  m_userTaskAbsent.push_back(vars[k]);
-	  m_processedRemoved.insert(vars[k]);
+	  m_pending.push_back(vars[k]);
 	  addClause(unitClause(Lit(vars[k], 1)));
 	  if (m_annotating)
 	    m_annotations.push_back("# By user task to remove \"" + *it + "\"");
 	}
     }
-  rmDub(m_userTaskPresent);
-  rmDub(m_userTaskAbsent);
 }
 
 VarId GeneralSolver::translateItemToInstall(const UserTaskItemToInstall& item) 
@@ -308,10 +292,7 @@ VarId GeneralSolver::satisfyRequire(PackageId pkgId, const VersionCond& version)
   return processPriorityBySorting(vars);
 }
 
-void GeneralSolver::handleChangeToTrue(VarId varId,
-				       bool includeItself,
-					 VarIdVector& involvedInstalled,
-					 VarIdVector& involvedRemoved)
+void GeneralSolver::handleChangeToTrue(VarId varId, bool includeItself)
 {
   assert(varId != BAD_VAR_ID);
   assert(!m_scope.isInstalled(varId));
@@ -328,9 +309,7 @@ void GeneralSolver::handleChangeToTrue(VarId varId,
 	  clause.push_back(Lit(varId, 1));
 	clause.push_back(Lit(otherVersions[i], 1));
 	addClause(clause);
-	if (m_scope.isInstalled(otherVersions[i]))
-	  involvedRemoved.push_back(otherVersions[i]); else
-	  involvedInstalled.push_back(otherVersions[i]);
+	m_pending.push_back(otherVersions[i]);
 	if (m_annotating)
 	  m_annotations.push_back("# \"" + m_scope.constructPackageNameWithBuildTime(otherVersions[i]) + "\" cannot be installed if \"" + m_scope.constructPackageNameWithBuildTime(varId) + "\" is present in the system");
       }
@@ -361,13 +340,12 @@ void GeneralSolver::handleChangeToTrue(VarId varId,
 	  if (m_annotating)
 	    annotation += "\n# \"" + m_scope.constructPackageNameWithBuildTime(installed[k]) + "\" is already installed";
 	  clause.push_back(Lit(installed[k]));
-	  involvedRemoved.push_back(installed[k]);
+	  m_pending.push_back(installed[k]);
 	}
       if (installed.empty())
 	{
 	  const VarId def = satisfyRequire(requires[i]);
 	  assert(def != BAD_VAR_ID);
-	  //	  annotation += "\n" + m_scope.constructPackageName(def);
 	  VarIdVector::size_type k;
 	  for(k = 0;k < installed.size();k++)
 	    if (def == installed[k])
@@ -378,7 +356,7 @@ void GeneralSolver::handleChangeToTrue(VarId varId,
 	      if (m_annotating)
 		annotation += "\n# \"" + m_scope.constructPackageNameWithBuildTime(def) + "\" is a default matching package among non-installed";
 	      clause.push_back(Lit(def));
-	      involvedInstalled.push_back(def);
+	      m_pending.push_back(def);
 	    }
 	}
       addClause(clause);
@@ -407,10 +385,7 @@ void GeneralSolver::handleChangeToTrue(VarId varId,
 	      clause.push_back(Lit(varId, 1));
 	    clause.push_back(Lit(vars[k], 1));
 	    addClause(clause);
-	    if (m_scope.isInstalled(vars[k]))
-	      involvedRemoved.push_back(vars[k]); else
-	      involvedInstalled.push_back(vars[k]);
-	    //FIXME:If vars[k] is never involved elsewhere it should be explicitly blocked for installation;
+	    m_pending.push_back(vars[k]);
 	    if (m_annotating)
 	      m_annotations.push_back("# \"" + m_scope.constructPackageNameWithBuildTime(vars[k]) + "\" cannot be installed with \"" + m_scope.constructPackageNameWithBuildTime(varId) + "\"");
 	  }
@@ -428,19 +403,15 @@ void GeneralSolver::handleChangeToTrue(VarId varId,
 	clause.push_back(Lit(varId, 1));
       clause.push_back(Lit(vars[i], 1));
       addClause(clause);
-      involvedRemoved.push_back(vars[i]);
+      m_pending.push_back(vars[i]);
       if (m_annotating)
 	m_annotations.push_back("# \"" + m_scope.constructPackageNameWithBuildTime(vars[i]) + "\" currently present in the system should be removed if \"" + m_scope.constructPackageNameWithBuildTime(varId) + "\" is considered for installation");
     }
 }
 
-void GeneralSolver::handleChangeToFalse(VarId seed,
-					bool includeItself,
-					   VarIdVector& involvedInstalled,
-					   VarIdVector& involvedRemoved)
+void GeneralSolver::handleChangeToFalse(VarId seed, bool includeItself)
 {
   assert(seed != BAD_VAR_ID);
-  assert(m_scope.isInstalled(seed));
   VarIdVector deps;
   IdPkgRelVector rels;
   m_scope.whatDependsAmongInstalled(seed, deps, rels);
@@ -452,7 +423,7 @@ void GeneralSolver::handleChangeToFalse(VarId seed,
       if (includeItself)
 	clause.push_back(Lit(seed));
       clause.push_back(Lit(deps[i], 1));
-      involvedRemoved.push_back(deps[i]);
+      m_pending.push_back(deps[i]);
       VarIdVector installed;
       m_scope.whatSatisfiesAmongInstalled(rels[i], installed);
       for(VarIdVector::size_type k = 0;k < installed.size();k++)
@@ -460,7 +431,7 @@ void GeneralSolver::handleChangeToFalse(VarId seed,
 	  {
 	    assert(m_scope.isInstalled(installed[k]));
 	    clause.push_back(Lit(installed[k]));
-	    involvedRemoved.push_back(installed[k]);
+	    m_pending.push_back(installed[k]);
 	    if (m_annotating)
 	      annotation += "\n# " + m_scope.constructPackageNameWithBuildTime(installed[k]) + "\" is installed and also matches this require entry";
 	  }
@@ -476,7 +447,7 @@ void GeneralSolver::handleChangeToFalse(VarId seed,
 	    {
 	      assert(!m_scope.isInstalled(replacement));
 	      clause.push_back(Lit(replacement));
-	      involvedInstalled.push_back(replacement);
+	      m_pending.push_back(replacement);
 	      if (m_annotating)
 		annotation += "\n# \"" + m_scope.constructPackageNameWithBuildTime(replacement) + "\" is considered as default replacement among non-installed";
 	    }
@@ -489,47 +460,26 @@ void GeneralSolver::handleChangeToFalse(VarId seed,
 
 void GeneralSolver::processPendings()
 {
-  while(!m_pendingInstalled.empty() || !m_pendingRemoved.empty())
+  while(!m_pending.empty())
     {
-      logMsg(LOG_DEBUG, "Have pending entries: %zu to be installed and %zu to be removed", m_pendingInstalled.size(), m_pendingRemoved.size());
+      const VarId varId = m_pending.back();
+      m_pending.pop_back();
+      if (m_processed.find(varId) != m_processed.end())
+	continue;
+      m_processed.insert(varId);
 
-      while(!m_pendingInstalled.empty())
+      if (!m_scope.isInstalled(varId))
 	{
-	  const VarId varId = m_pendingInstalled[m_pendingInstalled.size() - 1];
-	  m_pendingInstalled.pop_back();
-	  if (m_processedInstalled.find(varId) != m_processedInstalled.end())
-	    continue;
-	  m_processedInstalled.insert(varId);
+	  //Handling the case varId is pending to be installed;
 	  if (m_decisionMadeFalse.find(varId) != m_decisionMadeFalse.end())//Installation of varId will never happen;
 	    continue;
-	  VarIdVector involvedInstalled, involvedRemoved;
-	  handleChangeToTrue(varId, m_decisionMadeTrue.find(varId) == m_decisionMadeTrue.end(), involvedInstalled, involvedRemoved);
-	  for(VarIdVector::size_type i = 0;i < involvedInstalled.size();i++)
-	    if (m_processedInstalled.find(involvedInstalled[i]) == m_processedInstalled.end())
-	      m_pendingInstalled.push_back(involvedInstalled[i]);
-	  for(VarIdVector::size_type i = 0;i < involvedRemoved.size();i++)
-	    if (m_processedRemoved.find(involvedRemoved[i]) == m_processedRemoved.end())
-	      m_pendingRemoved.push_back(involvedRemoved[i]);
-	}
-      while(!m_pendingRemoved.empty())
+	  handleChangeToTrue(varId, m_decisionMadeTrue.find(varId) == m_decisionMadeTrue.end());
+	} else
 	{
-	  const VarId varId = m_pendingRemoved[m_pendingRemoved.size() - 1];
-	  m_pendingRemoved.pop_back();
-	  if (m_processedRemoved.find(varId) != m_processedRemoved.end())
-	    continue;
-	  m_processedRemoved.insert(varId);
+	  //Handling the case varId is pending to be removed;
 	  if (m_decisionMadeTrue.find(varId) != m_decisionMadeTrue.end())//Removing of varId will never happen;
 	    continue;
-	  if (!m_scope.isInstalled(varId))
-	    continue;
-	  VarIdVector involvedInstalled, involvedRemoved;
-	  handleChangeToFalse(varId, m_decisionMadeFalse.find(varId) == m_decisionMadeFalse.end(), involvedInstalled, involvedRemoved);
-	  for(VarIdVector::size_type i = 0;i < involvedInstalled.size();i++)
-	    if (m_processedInstalled.find(involvedInstalled[i]) == m_processedInstalled.end())
-	      m_pendingInstalled.push_back(involvedInstalled[i]);
-	  for(VarIdVector::size_type i = 0;i < involvedRemoved.size();i++)
-	    if (m_processedRemoved.find(involvedRemoved[i]) == m_processedRemoved.end())
-	      m_pendingRemoved.push_back(involvedRemoved[i]);
+	  handleChangeToFalse(varId, m_decisionMadeFalse.find(varId) == m_decisionMadeFalse.end());
 	}
     }
 }
