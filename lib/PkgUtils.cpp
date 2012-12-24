@@ -183,7 +183,7 @@ void printThreeColumns(const StringVector& items)
   for(StringVector::size_type i = 0;i < v2.size();i++)
     if (v2[i].length() > maxLen2)
       maxLen2 = v2[i].length();
-  assert(maxLen1 > 0 && maxLen2 > 0);
+  assert(maxLen1 > 0 && (v2.empty() || maxLen2 > 0));
   for(StringVector::size_type i = 0;i < v3.size();i++)
     {
       std::cout << v1[i];
