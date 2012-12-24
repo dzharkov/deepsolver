@@ -524,23 +524,23 @@ void GeneralSolver::processPendings()
 VarId GeneralSolver::processPriorityList(const VarIdVector& vars, PackageId provideEntry)
 {
   assert(!vars.empty());
-  /*
-  //Process the system provide priority list using provideEntry;
   const std::string provideName = m_scope.packageIdToStr(provideEntry);
-  StringVector providers;
-  m_providePriorityList.getPriority(provideName, providers);
-  //Providers vector can easily be empty;
+  TaskSolverProvideInfoVector::size_type k = 0;
+  while(k < m_taskSolverData.provides.size() && provideName != m_taskSolverData.provides[k].name)
+    k++;
+  if (k >= m_taskSolverData.provides.size())
+    return BAD_VAR_ID;
+  const StringVector& providers = m_taskSolverData.provides[k].providers;
   for(StringVector::size_type i = 0;i < providers.size();i++)
     {
-      const PackageId providerId = m_scope.strToPackageId(providers[i]);//FIXME:there can be an error since priority list can return an invalid package name due to its invalid content;
+      if (!m_scope.checkName(providers[i]))
+	continue;
+      const PackageId providerId = m_scope.strToPackageId(providers[i]);
       assert(providerId != BAD_PACKAGE_ID);
       for(VarIdVector::size_type k = 0;k < vars.size();k++)
 	if (providerId == m_scope.packageIdOfVarId(vars[k]))
 	  return vars[k];
     }
-  //No matching entry in priority list;
-  return BAD_VAR_ID;
-  */
   return BAD_VAR_ID;
 }
 

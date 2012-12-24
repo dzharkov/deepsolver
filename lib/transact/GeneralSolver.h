@@ -29,6 +29,7 @@ public:
   GeneralSolver(TaskSolverData& data)
     : m_annotating(0),
       m_advancedMode(1),
+    m_taskSolverData(data),
     m_backEnd(data.backEnd),
       m_scope(data.scope) {}
 
@@ -64,6 +65,7 @@ private:
 private:
   bool m_annotating, m_advancedMode;
   StringVector m_annotations;
+  const TaskSolverData& m_taskSolverData;
   const AbstractPackageBackEnd& m_backEnd;
   AbstractPackageScope& m_scope; 
   Sat m_sat;
