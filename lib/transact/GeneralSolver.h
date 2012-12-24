@@ -28,7 +28,6 @@ class GeneralSolver: public AbstractTaskSolver
 public:
   GeneralSolver(TaskSolverData& data)
     : m_annotating(0),
-      m_advancedMode(1),
     m_taskSolverData(data),
     m_backEnd(data.backEnd),
       m_scope(data.scope) {}
@@ -63,7 +62,7 @@ private:
   void translateUserTask(const UserTask& userTask);
 
 private:
-  bool m_annotating, m_advancedMode;
+  bool m_annotating;
   StringVector m_annotations;
   const TaskSolverData& m_taskSolverData;
   const AbstractPackageBackEnd& m_backEnd;

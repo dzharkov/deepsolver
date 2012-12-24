@@ -265,6 +265,7 @@ void Messages::dsInstallLogo() const
 
 void Messages::dsInstallInitCliParser(CliParser& cliParser) const
 {
+  cliParser.addKeyDoubleName("-s", "--sat", "print SAT equation and do not touch any packages");
   cliParser.addKeyDoubleName("-h", "--help", "print this help screen and exit");
   cliParser.addKey("--log", "print log to console instead of user progress information");
   cliParser.addKey("--debug", "relax filtering level for log output");
