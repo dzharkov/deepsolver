@@ -36,19 +36,23 @@ void OperationCore::fetchIndices(AbstractIndexFetchListener& listener,
 {
   const ConfRoot& root = m_conf.root();
   const std::string tmpDir = Directory::mixNameComponents(root.dir.pkgData, PKG_DATA_FETCH_DIR);
-  logMsg(LOG_DEBUG, "PkgData updating begin: pkgdatadir=\'%s\', tmpdir=\'%s\'", root.dir.pkgData.c_str(), tmpDir.c_str());
+  logMsg(LOG_DEBUG, "operation:package data updating begin: pkgdatadir=\'%s\', tmpdir=\'%s\'", root.dir.pkgData.c_str(), tmpDir.c_str());
   listener.onInfoFilesFetch();
   //FIXME:file lock;
   RepositoryVector repo;
   for(ConfRepoVector::size_type i = 0;i < root.repo.size();i++)
-    for(StringVector::size_type k = 0;k < root.repo[i].arch.size();k++)
-      for(StringVector::size_type j = 0;j < root.repo[i].components.size();j++)
-	{
-	  const std::string& arch = root.repo[i].arch[k];
-	  const std::string& component = root.repo[i].components[j];
-	  logMsg(LOG_DEBUG, "Registering repo \'%s\' for index update (\'%s\', %s, %s)", root.repo[i].name.c_str(), root.repo[i].url.c_str(), arch.c_str(), component.c_str());
-	  repo.push_back(Repository(root.repo[i], arch, component));
-	}
+    {
+      if (!root.repo[i].enabled)
+	continue;
+      for(StringVector::size_type k = 0;k < root.repo[i].arch.size();k++)
+	for(StringVector::size_type j = 0;j < root.repo[i].components.size();j++)
+	  {
+	    const std::string& arch = root.repo[i].arch[k];
+	    const std::string& component = root.repo[i].components[j];
+	    logMsg(LOG_DEBUG, "operation:registering repo \'%s\' for index update (\'%s\', %s, %s)", root.repo[i].name.c_str(), root.repo[i].url.c_str(), arch.c_str(), component.c_str());
+	    repo.push_back(Repository(root.repo[i], arch, component));
+	  }
+    }
   StringToStringMap files;
   for(RepositoryVector::size_type i = 0;i < repo.size();i++)
     {
@@ -56,28 +60,31 @@ void OperationCore::fetchIndices(AbstractIndexFetchListener& listener,
       repo[i].addIndexFilesForFetch(files);
     }
   buildTemporaryIndexFileNames(files, tmpDir);
-  logMsg(LOG_DEBUG, "List of index files to download consists of %zu entries:", files.size());
+  logMsg(LOG_DEBUG, "operation:list of index files to download consists of %zu entries:", files.size());
   for(StringToStringMap::const_iterator it = files.begin();it != files.end();it++)
-    logMsg(LOG_DEBUG, "Download entry: \'%s\' -> \'%s\'", it->first.c_str(), it->second.c_str());
+    logMsg(LOG_DEBUG, "operation:download entry: \'%s\' -> \'%s\'", it->first.c_str(), it->second.c_str());
   listener.onIndexFetchBegin();
   if (Directory::isExist(tmpDir))
     logMsg(LOG_WARNING, "Directory \'%s\' already exists, probably unfinished previous transaction", tmpDir.c_str());
-  logMsg(LOG_DEBUG, "Preparing directory \'%s\', it must exist and be empty", tmpDir.c_str());
+  logMsg(LOG_DEBUG, "operation:preparing directory \'%s\', it must exist and be empty", tmpDir.c_str());
   Directory::ensureExistsAndEmpty(tmpDir, 1);//1 means erase any content;
-  IndexFetch indexFetch(listener, continueRequest);
-  indexFetch.fetch(files);
+  if (!files.empty())
+    {
+      IndexFetch indexFetch(listener, continueRequest);
+      indexFetch.fetch(files);
+    }
   listener.onIndexFilesReading();
   PackageScopeContentBuilder scope;
   PackageInfoProcessor infoProcessor;
   for(RepositoryVector::size_type i = 0; i < repo.size();i++)
     repo[i].loadPackageData(files, scope, infoProcessor);
-  logMsg(LOG_DEBUG, "Committing loaded packages data");
+  logMsg(LOG_DEBUG, "operation:committing loaded packages data");
   scope.commit();
   const std::string outputFileName = Directory::mixNameComponents(root.dir.pkgData, PKG_DATA_FILE_NAME);
-  logMsg(LOG_DEBUG, "Saving constructed package data to \'%s\'", outputFileName.c_str());
+  logMsg(LOG_DEBUG, "operation:saving constructed package data to \'%s\'", outputFileName.c_str());
   scope.saveToFile(outputFileName);
   //FIXME:The current code is working but it should create temporary file elsewhere and then replace with it already existing outputFileName;
-  logMsg(LOG_DEBUG, "Clearing and removing \'%s\'", tmpDir.c_str());
+  logMsg(LOG_DEBUG, "operation:clearing and removing \'%s\'", tmpDir.c_str());
   Directory::eraseContent(tmpDir);
   Directory::remove(tmpDir);
   logMsg(LOG_INFO, "Repository index updating finished!");
@@ -96,7 +103,9 @@ void OperationCore::transaction(AbstractTransactionListener& listener, const Use
   PackageScopeContentLoader loader(content);
   listener.onAvailablePkgListProcessing();
   loader.loadFromFile(Directory::mixNameComponents(m_conf.root().dir.pkgData, PKG_DATA_FILE_NAME));
-  logMsg(LOG_DEBUG, "Index package list loaded");
+  logMsg(LOG_DEBUG, "operation:index package list loaded");
+  if (content.pkgInfoVector.empty())//FIXME:
+    throw NotImplementedException("Empty set of attached repositories");
   listener.onInstalledPkgListProcessing();
   PkgUtils::fillWithhInstalledPackages(*backEnd.get(), content);
   ProvideMap provideMap;
@@ -130,7 +139,9 @@ std::string OperationCore::generateSat(AbstractTransactionListener& listener, co
   PackageScopeContentLoader loader(content);
   listener.onAvailablePkgListProcessing();
   loader.loadFromFile(Directory::mixNameComponents(m_conf.root().dir.pkgData, PKG_DATA_FILE_NAME));
-  logMsg(LOG_DEBUG, "Index package list loaded");
+  logMsg(LOG_DEBUG, "operation:index package list loaded");
+  if (content.pkgInfoVector.empty())//FIXME:
+    throw NotImplementedException("Empty set of attached repositories");
   listener.onInstalledPkgListProcessing();
   PkgUtils::fillWithhInstalledPackages(*backEnd.get(), content);
   ProvideMap provideMap;

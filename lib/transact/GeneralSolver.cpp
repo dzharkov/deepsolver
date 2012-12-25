@@ -346,8 +346,6 @@ void GeneralSolver::handleChangeToTrue(VarId varId, bool includeItself)
 	  clause.push_back(Lit(installed[k]));
 	  m_pending.push_back(installed[k]);
 	}
-      //      if (installed.empty())
-      //	{
 	  const VarId def = satisfyRequire(requires[i]);
 	  assert(def != BAD_VAR_ID);
 	  VarIdVector::size_type k;
@@ -362,7 +360,6 @@ void GeneralSolver::handleChangeToTrue(VarId varId, bool includeItself)
 	      clause.push_back(Lit(def));
 	      m_pending.push_back(def);
 	    }
-	  //	}
       addClause(clause);
       if (m_annotating)
 	m_annotations.push_back(annotation);
