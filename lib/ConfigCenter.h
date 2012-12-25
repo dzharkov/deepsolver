@@ -70,6 +70,7 @@ public:
    * \sa ConfigException ConfigFileException
    */
   void loadFromFile(const std::string& fileName);
+  void loadFromDir(const std::string& path);
 
   /**\brief Verifies read configuration data
    *

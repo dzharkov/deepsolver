@@ -27,6 +27,7 @@ int main(int argc, char* argv[])
   try{
     ConfigCenter conf;
     conf.loadFromFile(DEFAULT_CONFIG_FILE_NAME);
+    conf.loadFromDir(DEFAULT_CONFIG_DIR_NAME);
     conf.commit();
     conf.printConfigData(std::cout);
   }

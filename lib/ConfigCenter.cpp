@@ -400,6 +400,23 @@ void ConfigCenter::loadFromFile(const std::string& fileName)
       parser.processLine(lines[i]);
 }
 
+void ConfigCenter::loadFromDir(const std::string& path)
+{
+  logMsg(LOG_DEBUG, "config:reading config file fragments from \'%s\'", path.c_str());
+  StringVector files;
+  std::auto_ptr<Directory::Iterator> it = Directory::enumerate(path);
+  while(it->moveNext())
+    {
+      const std::string fileName = it->fullPath();
+      if (File::isDir(fileName) || (!File::isRegFile(fileName) && !File::isSymLink(path)))//FIXME:Check exact symlink behaviour;
+	continue;
+      files.push_back(fileName);
+    }
+  std::sort(files.begin(), files.end());
+  for(StringVector::size_type i = 0;i < files.size();i++)
+    loadFromFile(files[i]);
+}
+
 void ConfigCenter::addStringParam3(const std::string& path1,
 				   const std::string& path2,
 				   const std::string& path3,

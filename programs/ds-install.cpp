@@ -130,6 +130,7 @@ int main(int argc, char* argv[])
     TransactionProgress transactionProgress(std::cout, cliParser.wasKeyUsed("--log"));
     ConfigCenter conf;
     conf.loadFromFile(DEFAULT_CONFIG_FILE_NAME);
+    conf.loadFromDir(DEFAULT_CONFIG_DIR_NAME);
     conf.commit();
     if (!cliParser.wasKeyUsed("--log"))
       Messages(std::cout).dsInstallLogo();
