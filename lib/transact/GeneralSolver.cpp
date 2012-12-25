@@ -54,6 +54,8 @@ void GeneralSolver::solve(const UserTask& task, VarIdVector& toInstall, VarIdVec
 {
   m_annotating = 0;
   constructSatImpl(task);
+  if (m_sat.empty())
+    return;
   std::auto_ptr<AbstractSatSolver> satSolver = createLibMinisatSolver();
   AbstractSatSolver::VarIdToBoolMap res, assumptions;
   for(Sat::size_type i = 0;i < m_sat.size();i++)
@@ -131,13 +133,15 @@ void GeneralSolver::translateUserTask(const UserTask& userTask)
   // To remove;
   for(StringSet::const_iterator it = userTask.namesToRemove.begin() ;it != userTask.namesToRemove.end();it++)
     {
-      const PackageId pkgId = m_scope.strToPackageId(*it);
-      if (pkgId == BAD_PACKAGE_ID)
+      assert(!it->empty());
+      if (!m_scope.checkName(*it))
 	{
 	  //FIXME:user Notice;
 	  logMsg(LOG_DEBUG, "general:request contains ask to remove unknown package \'%s\', skipping", it->c_str());
 	  continue;
 	}
+      const PackageId pkgId = m_scope.strToPackageId(*it);
+      assert(pkgId != BAD_PACKAGE_ID);
       VarIdVector vars;
       m_scope.selectMatchingVarsRealNames(pkgId, vars);
       rmDub(vars);
