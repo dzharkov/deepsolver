@@ -1,6 +1,28 @@
 
   Deepsolver changes log
 
+0.2.5 (2012-12-26)
+
+Applications:
+- ds-remove utility added;
+- ds-conf utility added;
+- ds-install deeply improved;
+- ds-update deeply improved;
+- TransactionProgress class added.
+
+Configuration:
+- "repo" section processing deeply improved;
+- "provide" section support added.
+
+GeneralSolver:
+- a lot of bugfixes;
+- Provide priority information is now takes through new TaskSolverData struct.
+
+Other:
+- AbstractPackageScope class added;
+- all version operations is now go through AbstractPackageBackEnd class;
+- rpm interaction code is deeply restructured and cleaned up.
+
 0.2.0 (2012-11-15, my mother birthday release!)
 
 Transaction processing:

@@ -1,5 +1,5 @@
 
-AC_INIT(deepsolver, 0.2.0, msp@altlinux.org)
+AC_INIT(deepsolver, 0.2.5, msp@altlinux.org)
 AM_INIT_AUTOMAKE([-Wall foreign])
 AC_CONFIG_MACRO_DIR([m4])
 
