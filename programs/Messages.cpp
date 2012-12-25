@@ -6,8 +6,6 @@
 #include"deepsolver.h"
 #include"Messages.h"
 
-//TODO:OperationErrorInvalidIOProblem;
-
 std::string messagesProgramName;
 
 struct ConfigSyntaxErrorMessage 
@@ -44,15 +42,22 @@ static std::string getConfigSyntaxErrorText(int code)
 void Messages::onSystemError(const SystemException& e)
 {
   m_stream << std::endl;
-  m_stream << "Some errors were occurred during the last operation:" << std::endl;
-  m_stream << "system call failed, probably the utility was not properly installed." << std::endl;
-    m_stream << std::endl;
-    m_stream << e.getMessage() << std::endl;
+
+  m_stream << "System error were occurred during last operation. That may be caused" << std::endl;
+  m_stream << "by improper Deepsolver installation or by damaged environment." << std::endl;
+  m_stream << "Here is problem details:" << std::endl;
+  m_stream << std::endl;
+  m_stream << e.getMessage() << std::endl;
+  m_stream << std::endl;
 }
 
 void Messages::onConfigSyntaxError(const ConfigFileException& e)
 {
-  m_stream << messagesProgramName << ":Configuration file syntax error:" << getConfigSyntaxErrorText(e.getCode()) << std::endl;
+  m_stream << "There is an error in your configuration file. Please, consult your" << std::endl;
+  m_stream << "system administrator for problem resolving. Details:" << std::endl;
+  m_stream << std::endl;
+  m_stream << "ERROR:" << getConfigSyntaxErrorText(e.getCode()) << std::endl;
+  m_stream << std::endl;
   std::ostringstream ss;
   ss << e.getFileName() << ":" << e.getLineNumber() << ":";
   const size_t pos = ss.str().length() + e.getPos();//FIXME:UTF-8 character make this value incorrect;
@@ -100,12 +105,20 @@ void Messages::onConfigError(const ConfigException& e)
 
 void Messages::onCurlError(const CurlException& e)
 {
-  m_stream << messagesProgramName << ":" << e.getUrl() << ":curl error " << e.getCode() << ":" << e.getText() << std::endl;
+  m_stream << std::endl;
+  m_stream << "Your network connection is experiencing difficulties or you have the" << std::endl;
+  m_stream << "error in your configuration files. Please, consult your system" << std::endl;
+  m_stream << "administrator. Problem detailes:" << std::endl;
+  m_stream << std::endl;
+  m_stream << "URL: " << e.getUrl() << std::endl;
+  m_stream << "ERROR: " << e.getText() << std::endl;
+  m_stream << std::endl;
 }
 
 void Messages::onRpmError(const RpmException& e)
 {
-  m_stream << "RpmError:FIXME" << std::endl;
+  m_stream << std::endl;
+  m_stream << "RpmError:" << e.getMessage() << std::endl;
 }
 
 void Messages::onOperationError(const OperationException& e)
