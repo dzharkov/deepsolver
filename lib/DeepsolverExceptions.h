@@ -24,12 +24,26 @@
 /**\brief The main exception class for Deepsolver project
  *
  * The every exception class used for error indication in Deepsolver
- * project must be the child (not strongly directly) of this
+ * project must be a descendant (not exactly direct) of this
  * DeepsolverException class. It is created to simplify error handling and
  * make it unified. The main information this class must provide is the
- * error type and single line error description.
+ * an error type and a single line error description.
  *
- * \sa SystemException RpmException IndexCoreException ConfigException ConfigFileException CurlException InfoFileException OperationException TaskException
+ * \sa ConfigException
+ * \sa ConfigFileException
+ * \sa CurlException
+ * \sa GzipException
+ * \sa IndexCoreException
+ * \sa InfoFileException
+ * \sa InfoFileSyntaxException
+ * \sa InfoFileValueException
+ * \sa Md5FileException
+ * \sa NotImplementedException
+ * \sa OperationException
+ * \sa RegExpException
+ * \sa RpmException
+ * \sa SystemException
+ * \sa TaskException
  */
 class DeepsolverException
 {
@@ -41,25 +55,25 @@ public:
   virtual ~DeepsolverException() {}
 
 public:
-  /**\brief Returns the string with error type
+  /**\brief Returns a string with error type
    *
-   * This method returns the short string with one or two words describing
+   * This method returns a short string with one or two words describing
    * the error type. For example, this method can return values like
-   * "system", "rpm" etc. The value returned by this method usually is used
+   * "system", "rpm" etc. A value returned by this method usually is used
    * for error message construction.
    *
-   * \return The short string with error type description
+   * \return A short string with error type description
    */
   virtual std::string getType() const = 0;
 
-  /**\brief Returns the single line error description
+  /**\brief Returns a single line error description
    *
-   * This method returns the single line string value with error
+   * This method returns a single line string value with error
    * description. Usually it is the value printed to user in error
    * message. The value may not include error type since it can be obtained
    * with getType() method.
    *
-   * \return The single line error description
+   * \return A single line error description
    */
   virtual std::string getMessage() const = 0;
 }; //class DeepsolverException;
@@ -69,13 +83,11 @@ public:
  * This class is used for indication of errors caused by various system
  * calls problems. It automatically analyzes value of system errno
  * variable and can construct informative error description with text
- * provided by operating system about error occurred. The error message
+ * provided by operating system. An error message
  * consists of two parts: the short string provided by developer with any
- * information hi want and the string given by the operating system. The
- * developer can save in the string, for example, the name of system call
- * with its arguments which execution failed.
- *
- * \sa Exception
+ * information he wants and the string given by a operating system. 
+ * Developer can save in string, for example, a name of failed system call
+ * with its arguments.
  */
 class SystemException: public DeepsolverException
 {
@@ -83,8 +95,8 @@ public:
   /**\brief The default constructor
    *
    * This constructor implies automatic errno analyzing but without
-   * developer string, so the getMessage() method will return only the
-   * single line description provided by operating system.
+   * developer string, so the getMessage() method will return only
+   * a single line description provided by operating system.
    */
   SystemException()
     : m_code(errno) {}
@@ -92,34 +104,35 @@ public:
   /**\brief The constructor with automatic errno analyzing with developer comment
    *
    * This constructor allows developer to give short comment of the error
-   * and automatically add string from operating system got with errno
+   * and automatically add string from operating system got through errno
    * variable.
    *
-   * \param [in] comment The developer error comment*
+   * \param [in] comment A developer error comment
    */
   SystemException(const std::string& comment)
     : m_code(errno), m_comment(comment) {}
 
   /**\brief The constructor with error code specification
    *
-   * Using this constructor the developer can provide error code by himself
+   * Using this constructor tdeveloper can provide error code by himself
    * without any additional comment. The operating system will be requested
    * for error description using provided error code. The developer must
    * give the value usually got through errno variable.
    *
-   * \param [in] code The error code
+   * \param [in] code An error code
    */
   SystemException(int code)
     : m_code(code) {}
 
   /**\brief The constructor with error code and comment specification
    *
-   * With this constructor developer can provide the error code to request
-   * description about from operation system and any short comment he
-   * want. The value of error code must be the value usually taken through
+   * With this constructor developer can provide an error code to request
+   * description from operating system and any short comment he
+   * wants. The value of error code must be the value usually taken through
    * errno variable.
-   * \param [in] code The error code
-   * \param [in] comment The developer error additional information
+   *
+   * \param [in] code An error code
+   * \param [in] comment Developer error additional information
    */
   SystemException(int code, const std::string& comment)
     : m_code(code), m_comment(comment) {}
@@ -128,11 +141,11 @@ public:
   virtual ~SystemException() {}
 
 public:
-  /**\brief Returns the type of an error
+  /**\brief Returns a type of an error
    *
    * This method always returns the "system" string. This string is used in
    * error message construction and allows to distinguish the system errors
-   * from other types of exceptions.
+   * from any other types of exceptions.
    *
    * \return The single word exception type ("system")
    */
@@ -141,34 +154,34 @@ public:
     return "system";
   }
 
-  /**\brief Returns the error code
+  /**\brief Returns an error code
    *
-   * This method returns the errno value got at exception creations.
+   * This method returns the errno value got at exception throwing.
    *
-   * \return The erno value of corresponding error
+   * \return An erno value of corresponding error
    */
   int getCode() const
   {
     return m_code;
   }
 
-  /**\brief The error description from the operating system
+  /**\brief TA error description from the operating system
    *
-   * This method returns the error description from the operating system
-   * got by the errno value with strerror[] array.
+   * This method returns the error description from an operating system
+   * got by an errno value with strerror[] array.
    *
-   * \return The error description from the operating system
+   * \return A error description from the operating system
    */
   std::string getDescr() const
   {
     return strerror(m_code);
   }
 
-  /**\brief Returns the developer error comment
+  /**\brief Returns developer error comment
    *
-   * This method returns the error comment provided by developer.
+   * This method returns an error comment provided by developer.
    *
-   * \return The developer error description
+   * \return A developer error description
    */
   std::string getComment() const
   {
@@ -185,15 +198,8 @@ private:
   std::string m_comment;
 }; //class SystemException;
 
-/**\brief The class for indication user has asked impossible task
+/**\brief The exception class for indication a user has asked an impossible transaction
  *
- * package lists generating work. It should not be confused with
- * OperationException class which is used for system or repository
- * problems occurred in transaction. In most cases TaskException
- * indicates errors caused by invalid user input such as user has asked
- * to install unknown package or he has asked to install incompatible set
- * of packages. This class contains optional string argument for various
- * error types. Its meaning depends on particular error.
  *
  * \sa AbstractTaskSolver GeneralSolver OperationException
  */
