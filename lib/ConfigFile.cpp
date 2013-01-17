@@ -228,6 +228,7 @@ void ConfigFile::processValue(const std::string& line)
 	  stopParam(state, i, line);
 	  assert(0);
 	} //PARAM_INITIAL;
+      //PARAM_NAME;
       if (state == PARAM_NAME)
 	{
 	  if (validIdentChar(c))
@@ -240,6 +241,30 @@ void ConfigFile::processValue(const std::string& line)
 	      m_path.push_back(name);
 	      name.erase();
 	      state = PARAM_AFTER_NAME;
+	      continue;
+	    }
+	  if (c == '=')
+	    {
+	      m_path.push_back(name);
+	      name.erase();
+	      state = PARAM_VALUE;
+	      m_assignMode = ModeAssign;
+	      continue;
+	    }
+	  if (c == '+')
+	    {
+	      if (i + 1 >= line.length())
+		break;
+	      i++;
+	      if (line[i] != '=')
+		{
+		  stopParam(state, i, line);
+		  assert(0);
+		}
+	      m_path.push_back(name);
+	      name.erase();
+	      state = PARAM_VALUE;
+	      m_assignMode = ModeAdding;
 	      continue;
 	    }
 	  if (c == '.')
