@@ -198,33 +198,41 @@ private:
   std::string m_comment;
 }; //class SystemException;
 
-/**\brief The exception class for indication a user has asked an impossible transaction
+/**\brief The exception class for indication user has asked an impossible transaction
  *
+ * This exception class indicates any error occurred during package lists
+ * for installation/removing calculation due to incorrect user
+ * request. It should not be confused with OperationException class which
+ * is used for errors irrelevant to an invalid user
+ * command. TaskException covers cases caused by invalid user input such
+ * as user has asked to install an unknown package or he has asked to
+ * install incompatible set of packages. This class contains optional
+ * string argument wich meaning depends on particular a error.
  *
- * \sa AbstractTaskSolver GeneralSolver OperationException
+ * \sa OperationCore
  */
 class TaskException: public DeepsolverException
 {
 public:
   enum {
-    UnknownPackageName = 0,
-    UnsolvableSat = 1,
-    NoSatSolution = 2,
-    Unmet = 3,
-    NoRequestedPackage = 4
+    UnknownPackageName,
+    UnsolvableSat,
+    NoSatSolution,
+    Unmet,
+    NoRequestedPackage
   };
 
 public:
   /**\brief The constructor with error type and string argument initialization
    *
-   * \param [in] code The error code
-   * \param [in] arg The string argument value
+   * \param [in] code An error code
+   * \param [in] arg A string argument value
    */
   TaskException(int code, const std::string& arg)
     : m_code(code), 
       m_arg(arg) {}
 
-  /**\brief The constructor with error type initialization
+  /**\brief The constructor with error type only initialization
    *
    * \param [in] code The error code
    */
@@ -235,23 +243,23 @@ public:
   virtual ~TaskException() {}
 
 public:
-  /**\brief Returns the error type code
+  /**\brief Returns an error type code
    *
-   * Use this method to get code of the error occurred.
+   * Use this method to get code of an error occurred.
    *
-   * \return The code of the error occurred
+   * \return Code of the error occurred
    */
   int getCode() const
   {
     return m_code;
   }
 
-  /**\brief Returns the optional error string argument
+  /**\brief Returns optional error string argument
    *
-   * The purpose of this argument depends on error code. It is optional, 
+   * Purpose of this argument depends on error code. It is optional, 
    * so not every of the possible task errors must has non-empty string argument.
    *
-   * \return The string argument of the error occurred
+   * \return String argument of the error occurred
    */
   const std::string& getArg() const
   {
