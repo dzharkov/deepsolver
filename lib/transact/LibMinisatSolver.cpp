@@ -30,7 +30,7 @@ public:
 public:
   void reset();
   void addClause(const Clause& clause);
-  bool solve(const VarIdToBoolMap& assumptions, VarIdToBoolMap& res);
+  bool solve(const VarIdToBoolMap& assumptions, VarIdToBoolMap& res, VarIdVector& conflicts);
 
 private:
   int mapVarId(VarId varId);
@@ -75,7 +75,7 @@ void LibMinisatSolver::addClause(const Clause& clause)
   m_clauseLengths.push_back(clause.size());
 }
 
-bool LibMinisatSolver::solve(const VarIdToBoolMap& assumptions, VarIdToBoolMap& res)
+bool LibMinisatSolver::solve(const VarIdToBoolMap& assumptions, VarIdToBoolMap& res, VarIdVector& conflicts)
 {
   assert(m_clauses.size() == m_clauseLengths.size());
   assert(!m_clauses.empty());
@@ -101,9 +101,19 @@ bool LibMinisatSolver::solve(const VarIdToBoolMap& assumptions, VarIdToBoolMap& 
       index++;
     }
   logMsg(LOG_DEBUG, "libminisat:calling libminisat to solve the task with %zu variables in %zu clauses", varCount, m_clauses.size());
-  if (minisat_solve_assumption(m_clauses.size(), usingCounts, usingEq, assump, assumptions.size(), usingSolution) != MINISAT_OK)
+  const int code = minisat_solve(m_clauses.size(), usingCounts, usingEq, usingSolution);
+  logMsg(LOG_DEBUG, "libminisat:minisat_solve() returned code %d", code);
+  if (code != MINISAT_OK)
     {
-      logMsg(LOG_DEBUG, "libminisat said no solution!");
+      conflicts.clear();
+      for(size_t i = 1;i < varCount;i++)
+	if (usingSolution[i])
+	  {
+	    IntToVarIdMap::const_iterator it = m_intToVarIdMap.find(i);
+	    assert(it != m_intToVarIdMap.end());
+	    conflicts.push_back(it->second);
+	  }
+      logMsg(LOG_DEBUG, "libminisat:libminisat said no solution with %zu highlighted conflicts", conflicts.size());
       return 0;
     }
   logMsg(LOG_DEBUG, "libminisat:libminisat found a solution!");

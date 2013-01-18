@@ -64,9 +64,15 @@ void GeneralSolver::solve(const UserTask& task, VarIdVector& toInstall, VarIdVec
       //      for(Clause::size_type k = 0;k < m_sat[i].size();k++)
       //	assumptions.insert(AbstractSatSolver::VarIdToBoolMap::value_type(m_sat[i][k].varId, m_scope.isInstalled(m_sat[i][k].varId)));
     }
+  VarIdVector solutionConflicts;
   logMsg(LOG_DEBUG, "general:launching minisat with %zu clauses", m_sat.size());
-  if (!satSolver->solve(assumptions, res))
-    throw TaskException(TaskException::NoSatSolution);
+  if (!satSolver->solve(assumptions, res, solutionConflicts))
+    {
+      logMsg(LOG_DEBUG, "general:minisat fails with %zu conflicts:", solutionConflicts.size());
+      for(VarIdVector::size_type i = 0;i < solutionConflicts.size();i++)
+	logMsg(LOG_DEBUG, "general:%s", m_scope.constructPackageName(solutionConflicts[i]).c_str());
+      throw TaskException(TaskException::NoSatSolution);
+    }
   for(AbstractSatSolver::VarIdToBoolMap::const_iterator it = res.begin();it != res.end();it++)
     if (it->second)
       {

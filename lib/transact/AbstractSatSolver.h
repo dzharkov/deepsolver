@@ -88,7 +88,7 @@ public:
 public:
   virtual void reset() = 0;
   virtual void addClause(const Clause& clause) = 0;
-  virtual bool solve(const VarIdToBoolMap& assumptions, VarIdToBoolMap& res) = 0;
+  virtual bool solve(const VarIdToBoolMap& assumptions, VarIdToBoolMap& res, VarIdVector& conflicts) = 0;
 }; //class AbstractSatSolver;
 
 std::auto_ptr<AbstractSatSolver> createLibMinisatSolver();
