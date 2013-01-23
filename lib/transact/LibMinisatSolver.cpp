@@ -86,6 +86,8 @@ bool LibMinisatSolver::solve(const VarIdToBoolMap& assumptions, VarIdToBoolMap& 
   int** usingEq = eq.get()->get();
   std::auto_ptr<AutoArrayAdapter<unsigned char> > solution(new AutoArrayAdapter<unsigned char>(new unsigned char[m_nextFreeVar]));
   unsigned char* usingSolution = solution.get()->get();
+  for(size_t i = 0;i < m_nextFreeVar;i++)
+    usingSolution[i] = 0;
   for(SizeVector::size_type i = 0;i < m_clauseLengths.size();i++)
     {
       usingCounts[i] = m_clauseLengths[i];
