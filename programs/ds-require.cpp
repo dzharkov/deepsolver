@@ -20,80 +20,11 @@
 #include"TransactionProgress.h"
 #include"Messages.h"
 
-class DsInstallCliParser: public CliParser
-{
-public:
-  /**\brief The default constructor*/
-  DsInstallCliParser() {}
-
-  /**\brief The destructor*/
-  virtual ~DsInstallCliParser() {}
-
-protected:
-  size_t recognizeCluster(const StringVector& params, int& mode) const
-  {
-  assert(!params.empty());
-  if (mode == 0 && params[0] == "--")
-    return 0;
-  if (mode == 0 && findKey(params[0]) != (KeyVector::size_type)-1)
-    return CliParser::recognizeCluster(params, mode);
-  if (params.size() < 3 ||
-      (params[1] != "=" && params[1] != "<=" && params[1] != ">=" && params[1] != "<" && params[1] != ">"))
-    return CliParser::recognizeCluster(params, mode);
-  return 2;
-  }
-
-  void parseCluster(const StringVector& cluster, int& mode)
-  {
-    if (mode == 0 && cluster.size() == 1 && cluster[0] == "--")
-      {
-	mode = 1;
-	return ;
-      }
-    if (mode == 0 && findKey(cluster[0]) != (KeyVector::size_type)-1)
-      {
-	CliParser::parseCluster(cluster, mode);
-	return;
-      }
-    if(cluster.size() != 1 && cluster.size() != 3)
-      {
-	CliParser::parseCluster(cluster, mode);
-	return;
-      }
-    if (trim(cluster[0]).empty())
-      return;
-    if (cluster.size() == 1)
-      {
-	userTask.itemsToInstall.push_back(UserTaskItemToInstall(cluster[0]));
-	return;
-      }
-    if (trim(cluster[2]).empty())
-      return;
-    VerDirection verDir = VerNone;
-    if (cluster[1] == "=")
-      verDir = VerEquals; else
-      if (cluster[1] == "<=")
-	verDir = VerLess | VerEquals; else
-	if (cluster[1] == ">=")
-	  verDir = VerGreater | VerEquals; else
-	  if (cluster[1] == "<")
-	    verDir = VerLess; else 
-	    if (cluster[1] == ">")
-	      verDir = VerGreater; else
-	      {
-		assert(0);
-	      }
-    userTask.itemsToInstall.push_back(UserTaskItemToInstall(cluster[0], verDir, cluster[2]));
-  }
-
-public:
-  UserTask userTask;
-}; //class DsInstallCliParser;
-
-static DsInstallCliParser cliParser;
+static NamedPkgRel rel;
 
 void parseCmdLine(int argc, char* argv[])
 {
+  CliParser cliParser;
   Messages(std::cout).dsInstallInitCliParser(cliParser);
   try {
     cliParser.init(argc, argv);
@@ -118,6 +49,12 @@ void parseCmdLine(int argc, char* argv[])
       Messages(std::cout).dsInstallHelp(cliParser);
       exit(EXIT_SUCCESS);
     }
+  if (cliParser.files.size() != 1 && cliParser.files.size() != 3)
+    {
+      //FIXME:
+      exit(EXIT_FAILURE);
+    }
+  for()
 }
 
 int main(int argc, char* argv[])
