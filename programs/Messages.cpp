@@ -318,3 +318,38 @@ void Messages::dsRemoveHelp(const CliParser& cliParser) const
   m_stream << "Valid command line options are:" << std::endl;
   cliParser.printHelp(m_stream);
 }
+
+// ds-require;
+
+void Messages::dsRequireLogo() const
+{
+  m_stream << "ds-require: the Deepsolver utility for require processing" << std::endl;
+  m_stream << "Version: " << PACKAGE_VERSION << std::endl;
+  m_stream << std::endl;
+}
+
+void Messages::dsRequireInitCliParser(CliParser& cliParser) const
+{
+  cliParser.addKeyDoubleName("-h", "--help", "print this help screen and exit");
+  cliParser.addKey("--log", "print log to console instead of user progress information");
+  cliParser.addKey("--debug", "relax filtering level for log output");
+}
+
+void Messages::dsRequireHelp(const CliParser& cliParser) const
+{
+  dsRequireLogo();
+  m_stream << "Usage: ds-require [OPTIONS] PKG [(<|<=|=|>=|>) VERSION]" << std::endl;
+  m_stream << std::endl;
+  m_stream << "Valid command line options are:" << std::endl;
+  cliParser.printHelp(m_stream);
+}
+
+void Messages::dsRequireOnInvalidInput()
+{
+  dsRequirePrintLogo();
+  m_stream << "You should provide a proper require entry. For example valid input may be:" << std:;endl;
+    m_stream << "ds-require foo" << std::endl;
+    m_stream << "ds-require foo = 1.0" << std::endl;
+    m_stream << "ds-require foo >= 1.0" << std::endl;
+    m_stream << "..." << std::endl;
+}

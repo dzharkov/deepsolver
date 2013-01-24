@@ -20,12 +20,12 @@
 #include"TransactionProgress.h"
 #include"Messages.h"
 
+static CliParser cliParser;
 static NamedPkgRel rel;
 
 void parseCmdLine(int argc, char* argv[])
 {
-  CliParser cliParser;
-  Messages(std::cout).dsInstallInitCliParser(cliParser);
+  Messages(std::cout).dsRequireInitCliParser(cliParser);
   try {
     cliParser.init(argc, argv);
     cliParser.parse();
@@ -46,46 +46,54 @@ void parseCmdLine(int argc, char* argv[])
     }
   if (cliParser.wasKeyUsed("--help"))
     {
-      Messages(std::cout).dsInstallHelp(cliParser);
+      Messages(std::cout).dsRequireHelp(cliParser);
       exit(EXIT_SUCCESS);
     }
   if (cliParser.files.size() != 1 && cliParser.files.size() != 3)
     {
-      //FIXME:
+      Messages(std::cerr).dsRequireOnInvalidInput();
       exit(EXIT_FAILURE);
     }
-  for()
+  rel.pkgName = cliParser.files[0];
+  if (cliParser.files.size() == 3)
+    {
+      const std::string dir = cliParser.files[1];
+      if (dir == '<')
+	pkg.type = VerLess; else
+	if (dir == "<=")
+	  rel.type = VerLess | VerEquals; else
+	  if (dir == "=")
+	    rel.type = VerEquals; else
+	    if (dir == ">=")
+	      rel.type = VerEquals | VerGreater; else
+	      if (dir == ">")
+		rel.type = VerGreater; else
+		{
+		  Messages(std::cerr).dsRequireOnInvalidInput();
+		  exit(EXIT_FAILURE);
+		}
+      rel.ver = cliParser.files[2];
+    }
+  if (rel.pkgName.empty() || rel.ver.empty())
+    {
+      Messages(std::cerr).dsRequireOnInvalidInput();
+      exit(EXIT_FAILURE);
+    }
 }
 
 int main(int argc, char* argv[])
 {
-  messagesProgramName = "ds-install";
+  messagesProgramName = "ds-require";
   setlocale(LC_ALL, "");
   parseCmdLine(argc, argv);
   initLogging(cliParser.wasKeyUsed("--debug")?LOG_DEBUG:LOG_INFO, cliParser.wasKeyUsed("--log"));
   try{
-    TransactionProgress transactionProgress(std::cout, cliParser.wasKeyUsed("--log"));
     ConfigCenter conf;
     conf.loadFromFile(DEFAULT_CONFIG_FILE_NAME);
     conf.loadFromDir(DEFAULT_CONFIG_DIR_NAME);
     conf.commit();
-    if (!cliParser.wasKeyUsed("--log"))
-      Messages(std::cout).dsInstallLogo();
     OperationCore core(conf);
-    if (cliParser.userTask.itemsToInstall.empty())
-      {
-	Messages(std::cerr).onNoPackagesMentionedError();
-	return EXIT_FAILURE;
-      }
-    if (!cliParser.wasKeyUsed("--sat"))
-      {
-	core.transaction(transactionProgress, cliParser.userTask);
-      } else
-      {
-	const std::string res = core.generateSat(transactionProgress, cliParser.userTask);
-	std::cout << std::endl;
-	std::cout << res;
-      }
+
   }
   catch (const ConfigFileException& e)
     {
@@ -96,11 +104,6 @@ int main(int argc, char* argv[])
     {
       Messages(std::cerr).onConfigError(e);
       return EXIT_FAILURE;
-    }
-  catch(const TaskException& e)
-    {
-       Messages(std::cerr).onTaskError(e);
-       return EXIT_FAILURE;
     }
   catch(const OperationException& e)
     {

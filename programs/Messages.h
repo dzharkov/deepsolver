@@ -49,6 +49,13 @@ public:
   void dsRemoveInitCliParser(CliParser& cliParser) const;
   void dsRemoveHelp(const CliParser& cliParser) const;
 
+  //ds-require;
+  void dsRequireLogo() const;
+  void dsRequireInitCliParser(CliParser& cliParser) const;
+  void dsRequireHelp(const CliParser& cliParser) const;
+  void dsRequireOnInvalidInput();
+
+
 private:
   std::ostream& m_stream;
 }; //class Messages;
