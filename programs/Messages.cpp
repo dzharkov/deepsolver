@@ -346,8 +346,8 @@ void Messages::dsRequireHelp(const CliParser& cliParser) const
 
 void Messages::dsRequireOnInvalidInput()
 {
-  dsRequirePrintLogo();
-  m_stream << "You should provide a proper require entry. For example valid input may be:" << std:;endl;
+  dsRequireLogo();
+  m_stream << "You should provide a proper require entry. For example valid input may be:" << std::endl;
     m_stream << "ds-require foo" << std::endl;
     m_stream << "ds-require foo = 1.0" << std::endl;
     m_stream << "ds-require foo >= 1.0" << std::endl;

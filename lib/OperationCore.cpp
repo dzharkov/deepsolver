@@ -161,6 +161,45 @@ std::string OperationCore::generateSat(AbstractTransactionListener& listener, co
   return solver->constructSat(userTask);
 }
 
+void OperationCore::printRequires(const NamedPkgRel& rel, std::ostream& s) const
+{
+  const ConfRoot& root = m_conf.root();
+  for(StringVector::size_type i = 0;i < root.os.transactReadAhead.size();i++)
+    File::readAhead(root.os.transactReadAhead[i]);
+  std::auto_ptr<AbstractPackageBackEnd> backEnd = CREATE_PACKAGE_BACKEND;
+  backEnd->initialize();
+  PackageScopeContent content;
+  PackageScopeContentLoader loader(content);
+  loader.loadFromFile(Directory::mixNameComponents(m_conf.root().dir.pkgData, PKG_DATA_FILE_NAME));
+  logMsg(LOG_DEBUG, "operation:index package list loaded");
+  if (content.pkgInfoVector.empty())//FIXME:
+    throw NotImplementedException("Empty set of attached repositories");
+  PkgUtils::fillWithhInstalledPackages(*backEnd.get(), content);
+  ProvideMap provideMap;
+  InstalledReferences requiresReferences, conflictsReferences;
+  PkgUtils::prepareReversedMaps(content, provideMap, requiresReferences, conflictsReferences);
+  PackageScope scope(*backEnd.get(), content, provideMap, requiresReferences, conflictsReferences);
+  if (!scope.checkName(rel.pkgName))
+    {
+      logMsg(LOG_DEBUG, "operation:package name \'%s\' is unknown", rel.pkgName.c_str());
+      return;
+    }
+  const PkgId pkgId = scope.strToPackageid(rel.pkgName);
+  const IdPkgRel idPkgRel(pkgId, rel.type. rel.version);
+  logMsg(LOG_DEBUG, "operation:processing %zu %s", idPkgRel.pkgId, idPkgRel.verStr().c_str());
+  VarId vars;
+  scope.selectMatchingVarsWithProvides(idPkgRel, vars);
+  logMsg(LOG_DEBUG, "operation:found %zu packages matching given require", vars.size());
+  for(VarIdVector::size_type i = 0;i < vars.size();i++)
+    {
+      s << scope.constructPackageName(vars[i]);
+      if (scope.isInstalled(vars[i]))
+	s << " (installed)";
+      s << std::endl;
+      }
+
+}
+
 // Static functions;
 
 std::string urlToFileName(const std::string& url)

@@ -58,8 +58,8 @@ void parseCmdLine(int argc, char* argv[])
   if (cliParser.files.size() == 3)
     {
       const std::string dir = cliParser.files[1];
-      if (dir == '<')
-	pkg.type = VerLess; else
+      if (dir == "<")
+	rel.type = VerLess; else
 	if (dir == "<=")
 	  rel.type = VerLess | VerEquals; else
 	  if (dir == "=")

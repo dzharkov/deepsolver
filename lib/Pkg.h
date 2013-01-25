@@ -84,7 +84,6 @@ public:
     return pkgId != rel.pkgId || verDir != rel.verDir || ver == rel.ver;
   }
 
-
 public:
   bool hasVer() const
   {
