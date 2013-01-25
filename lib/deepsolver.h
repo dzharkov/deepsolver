@@ -27,5 +27,6 @@
 #include"utils/StringUtils.h"
 #include"DeepsolverTypes.h"
 #include"Pkg.h"
+#include"utils/doubling.h"
 
 #endif //DEEPSOLVER_H

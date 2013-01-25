@@ -189,6 +189,7 @@ void OperationCore::printPackagesByRequire(const NamedPkgRel& rel, std::ostream&
   logMsg(LOG_DEBUG, "operation:processing %zu %s", idPkgRel.pkgId, idPkgRel.verString().c_str());
   VarIdVector vars;
   scope.selectMatchingVarsWithProvides(idPkgRel, vars);
+  rmDub(vars);
   logMsg(LOG_DEBUG, "operation:found %zu packages matching given require", vars.size());
   for(VarIdVector::size_type i = 0;i < vars.size();i++)
     {

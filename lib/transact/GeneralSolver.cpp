@@ -20,36 +20,6 @@
 #include"PkgUtils.h"
 #include"PackageNameSorting.h"
 
-template<typename T>
-void rmDub(std::vector<T>& v)
-{
-  if (v.size() < 64)
-    {
-      std::vector<T> vv;
-      for (size_t i = 0;i < v.size();i++)
-	{
-	  size_t j;
-	  for(j = 0;j < i;j++)
-	    if (v[i] == v[j])
-	      break;
-	  if (j == i)
-	  vv.push_back(v[i]);
-	}
-      v = vv;
-      return;
-    }
-  //Be careful: the following only for items with operator < and operator >;
-  std::set<T> s;
-  for(size_t i = 0;i < v.size();i++)
-    s.insert(v[i]);
-  v.resize(s.size());
-  size_t k = 0;
-  typename std::set<T>::const_iterator it;
-  for(it = s.begin();it != s.end();it++)
-    v[k++] = *it;
-  assert(k == s.size());
-}
-
 void GeneralSolver::solve(const UserTask& task, VarIdVector& toInstall, VarIdVector& toRemove)
 {
   m_annotating = 0;

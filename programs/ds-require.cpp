@@ -49,6 +49,7 @@ void parseCmdLine(int argc, char* argv[])
       Messages(std::cout).dsRequireHelp(cliParser);
       exit(EXIT_SUCCESS);
     }
+  //  std::cout << cliParser.files.size() << std::endl;
   if (cliParser.files.size() != 1 && cliParser.files.size() != 3)
     {
       Messages(std::cerr).dsRequireOnInvalidInput();
@@ -58,6 +59,7 @@ void parseCmdLine(int argc, char* argv[])
   if (cliParser.files.size() == 3)
     {
       const std::string dir = cliParser.files[1];
+      //      std::cout << dir << std::endl;
       if (dir == "<")
 	rel.type = VerLess; else
 	if (dir == "<=")
@@ -73,8 +75,9 @@ void parseCmdLine(int argc, char* argv[])
 		  exit(EXIT_FAILURE);
 		}
       rel.ver = cliParser.files[2];
+      //      std::cout << "here" << std::endl;
     }
-  if (rel.pkgName.empty() || rel.ver.empty())
+  if (rel.pkgName.empty() || (rel.type != VerNone && rel.ver.empty()))
     {
       Messages(std::cerr).dsRequireOnInvalidInput();
       exit(EXIT_FAILURE);
