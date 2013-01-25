@@ -93,7 +93,7 @@ int main(int argc, char* argv[])
     conf.loadFromDir(DEFAULT_CONFIG_DIR_NAME);
     conf.commit();
     OperationCore core(conf);
-
+    core.printPackagesByRequire(rel, std::cout);
   }
   catch (const ConfigFileException& e)
     {

@@ -104,7 +104,7 @@ public:
 
   void transaction(AbstractTransactionListener& listener, const UserTask& task) const;
   std::string generateSat(AbstractTransactionListener& listener, const UserTask& task) const;
-  void printRequires(const NamedPkgRel& rel, std::ostream& s) const;
+  void printPackagesByRequire(const NamedPkgRel& rel, std::ostream& s) const;
 
 
 private:
