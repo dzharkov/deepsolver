@@ -40,8 +40,8 @@ public:
 
 private:
   void constructSatImpl(const UserTask& task);
-  void handleChangeToFalse(VarId seed, bool includeItself);
-  void handleChangeToTrue(VarId varId, bool includeItself);
+  void handleChangeToFalse(VarId seed);
+  void handleChangeToTrue(VarId varId);
   void addClause(const Clause& clause);
   void processPendings();
   VarId processPriorityBySorting(const VarIdVector& vars);

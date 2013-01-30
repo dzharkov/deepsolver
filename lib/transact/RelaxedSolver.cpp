@@ -272,7 +272,7 @@ VarId RelaxedSolver::satisfyRequire(PackageId pkgId, const VersionCond& version)
   return processPriorityBySorting(vars);
 }
 
-void RelaxedSolver::handleChangeToTrue(VarId varId, bool includeItself)
+void RelaxedSolver::handleChangeToTrue(VarId varId)
 {
   assert(varId != BAD_VAR_ID);
   assert(!m_scope.isInstalled(varId));
@@ -285,8 +285,7 @@ void RelaxedSolver::handleChangeToTrue(VarId varId, bool includeItself)
       {
 	//FIXME:Not every package requires this;
 	Clause clause;
-	if (includeItself)
-	  clause.push_back(Lit(varId, 1));
+	clause.push_back(Lit(varId, 1));
 	clause.push_back(Lit(otherVersions[i], 1));
 	addClause(clause);
 	m_pending.push_back(otherVersions[i]);
@@ -309,33 +308,17 @@ void RelaxedSolver::handleChangeToTrue(VarId varId, bool includeItself)
       if (m_annotating)
 	annotation = "# By the require entry \"" + relToString(requires[i]) + "\" of \"" + m_scope.constructPackageNameWithBuildTime(varId) + "\":";
       Clause clause;
-      if (includeItself)
-	clause.push_back(Lit(varId, 1));
-      VarIdVector installed;
-      m_scope.whatSatisfiesAmongInstalled(requires[i], installed);
-      rmDub(installed);
-      for(VarIdVector::size_type k = 0;k < installed.size();k++)
+      clause.push_back(Lit(varId, 1));
+      VarIdVector alternatives;
+      m_scope.selectMatchingVarsWithProvides(requires[i], alternatives);
+      rmDub(alternatives);
+      for(VarIdVector::size_type k = 0;k < alternatives.size();k++)
 	{
-	  assert(m_scope.isInstalled(installed[k]));
 	  if (m_annotating)
-	    annotation += "\n# \"" + m_scope.constructPackageNameWithBuildTime(installed[k]) + "\" is already installed";
-	  clause.push_back(Lit(installed[k]));
-	  m_pending.push_back(installed[k]);
+	    annotation += "\n# \"" + m_scope.constructPackageName(alternatives[k]) + "\" matches";
+	  clause.push_back(Lit(alternatives[k]));
+	  m_pending.push_back(alternatives[k]);
 	}
-	  const VarId def = satisfyRequire(requires[i]);
-	  assert(def != BAD_VAR_ID);
-	  VarIdVector::size_type k;
-	  for(k = 0;k < installed.size();k++)
-	    if (def == installed[k])
-	      break;
-	  if (k >= installed.size())
-	    {
-	      assert(!m_scope.isInstalled(def));
-	      if (m_annotating)
-		annotation += "\n# \"" + m_scope.constructPackageNameWithBuildTime(def) + "\" is a default matching package among non-installed";
-	      clause.push_back(Lit(def));
-	      m_pending.push_back(def);
-	    }
       addClause(clause);
       if (m_annotating)
 	m_annotations.push_back(annotation);
@@ -358,8 +341,7 @@ void RelaxedSolver::handleChangeToTrue(VarId varId, bool includeItself)
 	if (vars[k] != varId)//Package cannot conflict with itself;
 	  {
 	    Clause clause;
-	    if (includeItself)
-	      clause.push_back(Lit(varId, 1));
+	    clause.push_back(Lit(varId, 1));
 	    clause.push_back(Lit(vars[k], 1));
 	    addClause(clause);
 	    m_pending.push_back(vars[k]);
@@ -376,8 +358,7 @@ void RelaxedSolver::handleChangeToTrue(VarId varId, bool includeItself)
     {
       assert(m_scope.isInstalled(vars[i]));
       Clause clause;
-      if (includeItself)
-	clause.push_back(Lit(varId, 1));
+      clause.push_back(Lit(varId, 1));
       clause.push_back(Lit(vars[i], 1));
       addClause(clause);
       m_pending.push_back(vars[i]);
@@ -386,7 +367,7 @@ void RelaxedSolver::handleChangeToTrue(VarId varId, bool includeItself)
     }
 }
 
-void RelaxedSolver::handleChangeToFalse(VarId seed, bool includeItself)
+void RelaxedSolver::handleChangeToFalse(VarId seed)
 {
   assert(seed != BAD_VAR_ID);
   VarIdVector deps;
@@ -397,8 +378,7 @@ void RelaxedSolver::handleChangeToFalse(VarId seed, bool includeItself)
     {
       std::string annotation = "# Installed \"" + m_scope.constructPackageNameWithBuildTime(deps[i]) + "\" depends on installed \"" + m_scope.constructPackageNameWithBuildTime(seed) + "\" by its require \"" + relToString(rels[i]) + "\":";
       Clause clause;
-      if (includeItself)
-	clause.push_back(Lit(seed));
+      clause.push_back(Lit(seed));
       clause.push_back(Lit(deps[i], 1));
       m_pending.push_back(deps[i]);
       VarIdVector installed;
@@ -447,15 +427,11 @@ void RelaxedSolver::processPendings()
       if (!m_scope.isInstalled(varId))
 	{
 	  //Handling the case varId is pending to be installed;
-	  if (m_decisionMadeFalse.find(varId) != m_decisionMadeFalse.end())//Installation of varId will never happen;
-	    continue;
-	  handleChangeToTrue(varId, m_decisionMadeTrue.find(varId) == m_decisionMadeTrue.end());
+	  handleChangeToTrue(varId);
 	} else
 	{
 	  //Handling the case varId is pending to be removed;
-	  if (m_decisionMadeTrue.find(varId) != m_decisionMadeTrue.end())//Removing of varId will never happen;
-	    continue;
-	  handleChangeToFalse(varId, m_decisionMadeFalse.find(varId) == m_decisionMadeFalse.end());
+	  handleChangeToFalse(varId);
 	}
     }
 }

@@ -122,7 +122,7 @@ void OperationCore::transaction(AbstractTransactionListener& listener, const Use
 	info.providers.push_back(root.provide[i].providers[k]);
       taskSolverData.provides.push_back(info);
     }
-  std::auto_ptr<AbstractTaskSolver> solver = createGeneralTaskSolver(taskSolverData);
+  std::auto_ptr<AbstractTaskSolver> solver = createRelaxedTaskSolver(taskSolverData);
   VarIdVector toInstall, toRemove;
   solver->solve(userTask, toInstall, toRemove);
   PkgUtils::printSolution(scope, toInstall, toRemove);
@@ -157,7 +157,7 @@ std::string OperationCore::generateSat(AbstractTransactionListener& listener, co
 	info.providers.push_back(root.provide[i].providers[k]);
       taskSolverData.provides.push_back(info);
     }
-  std::auto_ptr<AbstractTaskSolver> solver = createGeneralTaskSolver(taskSolverData);
+  std::auto_ptr<AbstractTaskSolver> solver = createRelaxedTaskSolver(taskSolverData);
   return solver->constructSat(userTask);
 }
 
