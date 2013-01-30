@@ -20,6 +20,17 @@
 #include"PkgUtils.h"
 #include"PackageNameSorting.h"
 
+struct DeferredClause
+{
+  VarId varId;
+  Clause clause;
+  std::string annotation;
+}; //struct DeferredClause;
+
+typedef std::vector<DeferredClause> DeferredClauseVector;
+
+static DeferredClauseVector deferredClauses;
+
 void RelaxedSolver::solve(const UserTask& task, VarIdVector& toInstall, VarIdVector& toRemove)
 {
   m_annotating = 0;
@@ -304,21 +315,37 @@ void RelaxedSolver::handleChangeToTrue(VarId varId)
 	  break;
       if (dub < i)
 	continue;
+
       std::string annotation;
       if (m_annotating)
 	annotation = "# By the require entry \"" + relToString(requires[i]) + "\" of \"" + m_scope.constructPackageName(varId) + "\":";
       Clause clause;
       clause.push_back(Lit(varId, 1));
+      VarId installedVarId = BAD_VAR_ID;
       VarIdVector alternatives;
       m_scope.selectMatchingVarsWithProvides(requires[i], alternatives);
       rmDub(alternatives);
       for(VarIdVector::size_type k = 0;k < alternatives.size();k++)
 	{
+	  if (m_scope.isInstalled(alternatives[k]))
+	    installedVarId = alternatives[k];
 	  if (m_annotating)
 	    annotation += "\n# \"" + m_scope.constructPackageName(alternatives[k]) + "\" matches";
 	  clause.push_back(Lit(alternatives[k]));
-	  m_pending.push_back(alternatives[k]);
+	  //	  m_pending.push_back(alternatives[k]);
 	}
+      if (installedVarId != BAD_VAR_ID)
+	{
+	  DeferredClause deferred;
+	  deferred.varId = installedVarId;
+	  deferred.clause = clause;
+	  deferred.annotation = annotation;
+	  deferredClauses.push_back(deferred);
+	  continue;
+	}
+
+      for(VarIdVector::size_type k = 0;k < alternatives.size();k++)
+	m_pending.push_back(alternatives[k]);
       addClause(clause);
       if (m_annotating)
 	m_annotations.push_back(annotation);
@@ -370,12 +397,43 @@ void RelaxedSolver::handleChangeToTrue(VarId varId)
 void RelaxedSolver::handleChangeToFalse(VarId seed)
 {
   assert(seed != BAD_VAR_ID);
+
+  for(DeferredClauseVector::size_type i = 0;i < deferredClauses.size();i++)
+    {
+      if (deferredClauses[i].varId != seed)
+	continue;
+      addClause(deferredClauses[i].clause);
+      if (m_annotating)
+	m_annotations.push_back(deferredClauses[i].annotation);
+    }
+
+  for(DeferredClauseVector::size_type i = 0;i < deferredClauses.size();i++)
+    if (deferredClauses[i].varId == seed)
+      {
+	deferredClauses[i] = deferredClauses.back();
+	deferredClauses.pop_back();
+      }
+
+
+
+
   VarIdVector deps;
   IdPkgRelVector rels;
   m_scope.whatDependsAmongInstalled(seed, deps, rels);
   assert(deps.size() == rels.size());
   for(VarIdVector::size_type i = 0;i < deps.size();i++)
     {
+      VarIdVector alternatives;
+      m_scope.selectMatchingVarsWithProvides(rels[i], alternatives);
+      VarIdVector::size_type k = 0;
+      for(k = 0;k < alternatives.size();k++)
+	if (m_decisionMadeTrue.find(alternatives[k]) != m_decisionMadeTrue.end())
+	  break;
+      if (k < alternatives.size())
+	continue;
+
+
+
       std::string annotation = "# Installed \"" + m_scope.constructPackageName(deps[i]) + "\" depends on installed \"" + m_scope.constructPackageName(seed) + "\" by its require \"" + relToString(rels[i]) + "\":";
       Clause clause;
       clause.push_back(Lit(seed));
