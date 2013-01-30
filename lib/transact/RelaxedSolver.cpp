@@ -290,7 +290,7 @@ void RelaxedSolver::handleChangeToTrue(VarId varId)
 	addClause(clause);
 	m_pending.push_back(otherVersions[i]);
 	if (m_annotating)
-	  m_annotations.push_back("# \"" + m_scope.constructPackageNameWithBuildTime(otherVersions[i]) + "\" cannot be installed if \"" + m_scope.constructPackageNameWithBuildTime(varId) + "\" is present in the system");
+	  m_annotations.push_back("# \"" + m_scope.constructPackageName(otherVersions[i]) + "\" cannot be installed if \"" + m_scope.constructPackageName(varId) + "\" is present in the system");
       }
 
   //Requires;
@@ -306,7 +306,7 @@ void RelaxedSolver::handleChangeToTrue(VarId varId)
 	continue;
       std::string annotation;
       if (m_annotating)
-	annotation = "# By the require entry \"" + relToString(requires[i]) + "\" of \"" + m_scope.constructPackageNameWithBuildTime(varId) + "\":";
+	annotation = "# By the require entry \"" + relToString(requires[i]) + "\" of \"" + m_scope.constructPackageName(varId) + "\":";
       Clause clause;
       clause.push_back(Lit(varId, 1));
       VarIdVector alternatives;
@@ -346,7 +346,7 @@ void RelaxedSolver::handleChangeToTrue(VarId varId)
 	    addClause(clause);
 	    m_pending.push_back(vars[k]);
 	    if (m_annotating)
-	      m_annotations.push_back("# \"" + m_scope.constructPackageNameWithBuildTime(vars[k]) + "\" cannot be installed with \"" + m_scope.constructPackageNameWithBuildTime(varId) + "\"");
+	      m_annotations.push_back("# \"" + m_scope.constructPackageName(vars[k]) + "\" cannot be installed with \"" + m_scope.constructPackageName(varId) + "\"");
 	  }
     }
 
@@ -363,7 +363,7 @@ void RelaxedSolver::handleChangeToTrue(VarId varId)
       addClause(clause);
       m_pending.push_back(vars[i]);
       if (m_annotating)
-	m_annotations.push_back("# \"" + m_scope.constructPackageNameWithBuildTime(vars[i]) + "\" currently present in the system should be removed if \"" + m_scope.constructPackageNameWithBuildTime(varId) + "\" is considered for installation");
+	m_annotations.push_back("# \"" + m_scope.constructPackageName(vars[i]) + "\" currently present in the system should be removed if \"" + m_scope.constructPackageName(varId) + "\" is considered for installation");
     }
 }
 
@@ -376,38 +376,11 @@ void RelaxedSolver::handleChangeToFalse(VarId seed)
   assert(deps.size() == rels.size());
   for(VarIdVector::size_type i = 0;i < deps.size();i++)
     {
-      std::string annotation = "# Installed \"" + m_scope.constructPackageNameWithBuildTime(deps[i]) + "\" depends on installed \"" + m_scope.constructPackageNameWithBuildTime(seed) + "\" by its require \"" + relToString(rels[i]) + "\":";
+      std::string annotation = "# Installed \"" + m_scope.constructPackageName(deps[i]) + "\" depends on installed \"" + m_scope.constructPackageName(seed) + "\" by its require \"" + relToString(rels[i]) + "\":";
       Clause clause;
       clause.push_back(Lit(seed));
       clause.push_back(Lit(deps[i], 1));
       m_pending.push_back(deps[i]);
-      VarIdVector installed;
-      m_scope.whatSatisfiesAmongInstalled(rels[i], installed);
-      for(VarIdVector::size_type k = 0;k < installed.size();k++)
-	if (installed[k] != seed)
-	  {
-	    assert(m_scope.isInstalled(installed[k]));
-	    clause.push_back(Lit(installed[k]));
-	    m_pending.push_back(installed[k]);
-	    if (m_annotating)
-	      annotation += "\n# " + m_scope.constructPackageNameWithBuildTime(installed[k]) + "\" is installed and also matches this require entry";
-	  }
-
-      const VarId replacement = satisfyRequire(rels[i]);
-      assert(replacement != BAD_VAR_ID);
-      VarIdVector::size_type k;
-      for(k = 0;k < installed.size();k++)
-	if (replacement == installed[k])
-	  break;
-      if (k >= installed.size())
-	{
-	  assert(!m_scope.isInstalled(replacement));
-	  clause.push_back(Lit(replacement));
-	  m_pending.push_back(replacement);
-	  if (m_annotating)
-	    annotation += "\n# \"" + m_scope.constructPackageNameWithBuildTime(replacement) + "\" is considered as default replacement among non-installed";
-	}
-
       addClause(clause);
       if (m_annotating)
 	m_annotations.push_back(annotation);
@@ -481,7 +454,7 @@ void RelaxedSolver::addClause(const Clause& clause)
     {
       if(m_decisionMadeTrue.find(lit.varId) != m_decisionMadeTrue.end())
 	{
-	  logMsg(LOG_ERR, "\'%s\' must be simultaneously installed and removed", m_scope.constructPackageNameWithBuildTime(lit.varId).c_str());
+	  logMsg(LOG_ERR, "\'%s\' must be simultaneously installed and removed", m_scope.constructPackageName(lit.varId).c_str());
 	  //FIXME:	  assert(0);
 	}
       m_decisionMadeFalse.insert(lit.varId); 
@@ -489,7 +462,7 @@ void RelaxedSolver::addClause(const Clause& clause)
     {
       if(m_decisionMadeFalse.find(lit.varId) != m_decisionMadeFalse.end())
 	{
-	  logMsg(LOG_ERR, "\'%s\' must be simultaneously installed and removed", m_scope.constructPackageNameWithBuildTime(lit.varId).c_str());
+	  logMsg(LOG_ERR, "\'%s\' must be simultaneously installed and removed", m_scope.constructPackageName(lit.varId).c_str());
 	  //FIXME:	  assert(0);
 	}
     m_decisionMadeTrue.insert(lit.varId);
