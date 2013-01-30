@@ -128,26 +128,26 @@ public:
 
 /**\brief The main class for package managing
  *
-The OperationCore class is the central class of Deepsolver project. It
-allows every client to perform various manipulations with packages
-including installation, removing and upgrading. In addition this class
-takes care of information gathered about attached repositories. 
-
-Be careful, each method of the OperationCore class throws number of
-exceptions. Their exact set depends on method purpose. The main
-structure used for configuring is a ConfigCenter class instance
-provided by a reference to OperationCore constructor.
-
-According to accepted project design there are two additional classes
-purposed for direct client using as well as OperationCore itself:
-IndexCore and InfoCore. The former takes care about index construction
-and the second provides various information about known
-packages. These three classes are the main classes end-user could be
-interested in.
-*
-* \sa OperationException
-* \sa IndexCore InfoCore
-*/
+ * The OperationCore class is the central class of Deepsolver project. It
+ * allows every client to perform various manipulations with packages
+ * including installation, removing and upgrading. In addition this class
+ * takes care of information gathered about attached repositories. 
+ *
+ * Be careful, each method of the OperationCore class throws a number of
+ * exceptions. Their exact set depends on method purpose. The main
+ * structure used for configuring is a ConfigCenter class instance
+ * provided by a reference to OperationCore constructor.
+ *
+ * According to accepted project design there are two additional classes
+ * purposed for direct client using as well as OperationCore itself:
+ * IndexCore and InfoCore. The former takes care about index construction
+ * and the second provides various information about known
+ * packages. These three classes are the main classes end-user could be
+ * interested in.
+ *
+ * \sa OperationException
+ * \sa IndexCore InfoCore
+ */
 class OperationCore
 {
 public:
