@@ -15,24 +15,24 @@
    General Public License for more details.
 */
 
-#ifndef DEEPSOLVER_GENERAL_SOLVER_H
-#define DEEPSOLVER_GENERAL_SOLVER_H
+#ifndef DEEPSOLVER_RELAXED_SOLVER_H
+#define DEEPSOLVER_RELAXED_SOLVER_H
 
 #include"AbstractTaskSolver.h"
 #include"AbstractPackageBackEnd.h"
 #include"AbstractPackageScope.h"
 #include"AbstractSatSolver.h"
 
-class GeneralSolver: public AbstractTaskSolver
+class RelaxedSolver: public AbstractTaskSolver
 {
 public:
-  GeneralSolver(TaskSolverData& data)
+  RelaxedSolver(TaskSolverData& data)
     : m_annotating(0),
     m_taskSolverData(data),
     m_backEnd(data.backEnd),
       m_scope(data.scope) {}
 
-  virtual ~GeneralSolver() {}
+  virtual ~RelaxedSolver() {}
 
 public:
   void solve(const UserTask& task, VarIdVector& toInstall, VarIdVector& toRemove);
@@ -63,6 +63,6 @@ private:
   VarIdVector m_pending;
   VarIdSet m_processed;
   VarIdSet m_decisionMadeTrue, m_decisionMadeFalse;
-}; //class GeneralSolver;
+}; //class RelaxedSolver;
 
-#endif //DEEPSOLVER_GENERAL_SOLVER_H;
+#endif //DEEPSOLVER_RELAXED_SOLVER_H;

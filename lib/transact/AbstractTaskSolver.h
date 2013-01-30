@@ -58,5 +58,6 @@ public:
 }; //class AbstractTaskSolver;
 
 std::auto_ptr<AbstractTaskSolver> createGeneralTaskSolver(TaskSolverData& taskSolverData);
+std::auto_ptr<AbstractTaskSolver> createRelaxedTaskSolver(TaskSolverData& taskSolverData);
 
 #endif //DEEPSOLVER_ABSTRACT_TASK_SOLVER_H;

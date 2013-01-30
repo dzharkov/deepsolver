@@ -16,11 +16,11 @@
 */
 
 #include"deepsolver.h"
-#include"GeneralSolver.h"
+#include"RelaxedSolver.h"
 #include"PkgUtils.h"
 #include"PackageNameSorting.h"
 
-void GeneralSolver::solve(const UserTask& task, VarIdVector& toInstall, VarIdVector& toRemove)
+void RelaxedSolver::solve(const UserTask& task, VarIdVector& toInstall, VarIdVector& toRemove)
 {
   m_annotating = 0;
   constructSatImpl(task);
@@ -35,12 +35,12 @@ void GeneralSolver::solve(const UserTask& task, VarIdVector& toInstall, VarIdVec
       //	assumptions.insert(AbstractSatSolver::VarIdToBoolMap::value_type(m_sat[i][k].varId, m_scope.isInstalled(m_sat[i][k].varId)));
     }
   VarIdVector solutionConflicts;
-  logMsg(LOG_DEBUG, "general:launching minisat with %zu clauses", m_sat.size());
+  logMsg(LOG_DEBUG, "relaxed:launching minisat with %zu clauses", m_sat.size());
   if (!satSolver->solve(assumptions, res, solutionConflicts))
     {
-      logMsg(LOG_DEBUG, "general:minisat fails with %zu conflicts:", solutionConflicts.size());
+      logMsg(LOG_DEBUG, "relaxed:minisat fails with %zu conflicts:", solutionConflicts.size());
       for(VarIdVector::size_type i = 0;i < solutionConflicts.size();i++)
-	logMsg(LOG_DEBUG, "general:%s", m_scope.constructPackageName(solutionConflicts[i]).c_str());
+	logMsg(LOG_DEBUG, "relaxed:%s", m_scope.constructPackageName(solutionConflicts[i]).c_str());
       throw TaskException(TaskException::NoSatSolution);
     }
   for(AbstractSatSolver::VarIdToBoolMap::const_iterator it = res.begin();it != res.end();it++)
@@ -53,17 +53,17 @@ void GeneralSolver::solve(const UserTask& task, VarIdVector& toInstall, VarIdVec
 	if (m_scope.isInstalled(it->first))
 	  toRemove.push_back(it->first);
       }
-  logMsg(LOG_INFO, "general:solution found: %zu to install, %zu to remove", toInstall.size(), toRemove.size());
+  logMsg(LOG_INFO, "relaxed:solution found: %zu to install, %zu to remove", toInstall.size(), toRemove.size());
 }
 
-std::string GeneralSolver::constructSat(const UserTask& task)
+std::string RelaxedSolver::constructSat(const UserTask& task)
 {
   m_annotating = 1;
   constructSatImpl(task);
   return PkgUtils::satToString(m_scope, m_sat, m_annotations);
 }
 
-void GeneralSolver::constructSatImpl(const UserTask& task)
+void RelaxedSolver::constructSatImpl(const UserTask& task)
 {
   const clock_t satConstructStart = clock(); 
   translateUserTask(task);
@@ -71,10 +71,10 @@ void GeneralSolver::constructSatImpl(const UserTask& task)
   const double satConstructDuration = ((double)clock() - satConstructStart) / CLOCKS_PER_SEC;
     for(Sat::size_type i = 0;i < m_sat.size();i++)
       rmDub(m_sat[i]);
-  logMsg(LOG_DEBUG, "general:SAT construction takes %f sec", satConstructDuration);
+  logMsg(LOG_DEBUG, "relaxed:SAT construction takes %f sec", satConstructDuration);
 }
 
-void GeneralSolver::translateUserTask(const UserTask& userTask)
+void RelaxedSolver::translateUserTask(const UserTask& userTask)
 {
   m_sat.clear();
   m_annotations.clear();
@@ -113,7 +113,7 @@ void GeneralSolver::translateUserTask(const UserTask& userTask)
       if (!m_scope.checkName(*it))
 	{
 	  //FIXME:user Notice;
-	  logMsg(LOG_DEBUG, "general:request contains ask to remove unknown package \'%s\', skipping", it->c_str());
+	  logMsg(LOG_DEBUG, "relaxed:request contains ask to remove unknown package \'%s\', skipping", it->c_str());
 	  continue;
 	}
       const PackageId pkgId = m_scope.strToPackageId(*it);
@@ -131,7 +131,7 @@ void GeneralSolver::translateUserTask(const UserTask& userTask)
     }
 }
 
-VarId GeneralSolver::translateItemToInstall(const UserTaskItemToInstall& item) 
+VarId RelaxedSolver::translateItemToInstall(const UserTaskItemToInstall& item) 
 {
   //FIXME:Obsoletes;
   assert(!item.pkgName.empty());
@@ -189,14 +189,14 @@ VarId GeneralSolver::translateItemToInstall(const UserTaskItemToInstall& item)
   return processPriorityBySorting(vars);
 }
 
-VarId GeneralSolver::satisfyRequire(const IdPkgRel& rel)
+VarId RelaxedSolver::satisfyRequire(const IdPkgRel& rel)
 {
   if (!rel.hasVer())
     return satisfyRequire(rel.pkgId);
   return satisfyRequire(rel.pkgId, rel.extractVersionCond());
 }
 
-VarId GeneralSolver::satisfyRequire(PackageId pkgId)
+VarId RelaxedSolver::satisfyRequire(PackageId pkgId)
 {
   assert(pkgId != BAD_PACKAGE_ID);
   VarIdVector vars;
@@ -237,7 +237,7 @@ VarId GeneralSolver::satisfyRequire(PackageId pkgId)
   return processPriorityBySorting(vars);
 }
 
-VarId GeneralSolver::satisfyRequire(PackageId pkgId, const VersionCond& version)
+VarId RelaxedSolver::satisfyRequire(PackageId pkgId, const VersionCond& version)
 {
   assert(version.type != VerNone);
   assert(!version.version.empty());
@@ -272,7 +272,7 @@ VarId GeneralSolver::satisfyRequire(PackageId pkgId, const VersionCond& version)
   return processPriorityBySorting(vars);
 }
 
-void GeneralSolver::handleChangeToTrue(VarId varId, bool includeItself)
+void RelaxedSolver::handleChangeToTrue(VarId varId, bool includeItself)
 {
   assert(varId != BAD_VAR_ID);
   assert(!m_scope.isInstalled(varId));
@@ -386,7 +386,7 @@ void GeneralSolver::handleChangeToTrue(VarId varId, bool includeItself)
     }
 }
 
-void GeneralSolver::handleChangeToFalse(VarId seed, bool includeItself)
+void RelaxedSolver::handleChangeToFalse(VarId seed, bool includeItself)
 {
   assert(seed != BAD_VAR_ID);
   VarIdVector deps;
@@ -434,7 +434,7 @@ void GeneralSolver::handleChangeToFalse(VarId seed, bool includeItself)
     }
 }
 
-void GeneralSolver::processPendings()
+void RelaxedSolver::processPendings()
 {
   while(!m_pending.empty())
     {
@@ -460,7 +460,7 @@ void GeneralSolver::processPendings()
     }
 }
 
-VarId GeneralSolver::processPriorityList(const VarIdVector& vars, PackageId provideEntry)
+VarId RelaxedSolver::processPriorityList(const VarIdVector& vars, PackageId provideEntry)
 {
   assert(!vars.empty());
   const std::string provideName = m_scope.packageIdToStr(provideEntry);
@@ -483,7 +483,7 @@ VarId GeneralSolver::processPriorityList(const VarIdVector& vars, PackageId prov
   return BAD_VAR_ID;
 }
 
-VarId GeneralSolver::processPriorityBySorting(const VarIdVector& vars)
+VarId RelaxedSolver::processPriorityBySorting(const VarIdVector& vars)
 {
   assert(!vars.empty());
   PackageNameSortItemVector items;
@@ -494,7 +494,7 @@ VarId GeneralSolver::processPriorityBySorting(const VarIdVector& vars)
   return items[items.size() - 1].varId;
 }
 
-void GeneralSolver::addClause(const Clause& clause)
+void RelaxedSolver::addClause(const Clause& clause)
 {
   assert(!clause.empty());
   m_sat.push_back(clause);
@@ -520,7 +520,7 @@ void GeneralSolver::addClause(const Clause& clause)
     }
 }
 
-std::string GeneralSolver::relToString(const IdPkgRel& rel)
+std::string RelaxedSolver::relToString(const IdPkgRel& rel)
 {
   const std::string ver = rel.verString();
   if (ver.empty())
@@ -528,7 +528,7 @@ std::string GeneralSolver::relToString(const IdPkgRel& rel)
   return m_scope.packageIdToStr(rel.pkgId) + " " + ver;
 }
 
-std::auto_ptr<AbstractTaskSolver> createGeneralTaskSolver(TaskSolverData& taskSolverData)
+std::auto_ptr<AbstractTaskSolver> createRelaxedTaskSolver(TaskSolverData& taskSolverData)
 {
-  return std::auto_ptr<AbstractTaskSolver>(new GeneralSolver(taskSolverData));
+  return std::auto_ptr<AbstractTaskSolver>(new RelaxedSolver(taskSolverData));
 }

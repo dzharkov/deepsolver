@@ -38,6 +38,7 @@ transact/PackageScopeContent.cpp \
 transact/PackageScope.cpp \
 transact/ProvideMap.cpp \
 transact/ProvidePriorityList.cpp \
+transact/RelaxedSolver.cpp \
 utils/CurlInterface.cpp \
 utils/GzipInterface.cpp \
 utils/Md5.cpp \
@@ -88,6 +89,7 @@ transact/PackageScopeContent.h \
 transact/PackageScope.h \
 transact/ProvideMap.h \
 transact/ProvidePriorityList.h \
+transact/RelaxedSolver.h \
 utils/CurlInterface.h \
 utils/DateTime.h \
 utils/GzipInterface.h \

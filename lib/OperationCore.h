@@ -142,11 +142,10 @@ public:
  * purposed for direct client using as well as OperationCore itself:
  * IndexCore and InfoCore. The former takes care about index construction
  * and the second provides various information about known
- * packages. These three classes are the main classes end-user could be
+ * packages. These three classes are the main classes a end-user could be
  * interested in.
  *
- * \sa OperationException
- * \sa IndexCore InfoCore
+ * \sa IndexCore InfoCore OperationException
  */
 class OperationCore
 {
