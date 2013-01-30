@@ -433,12 +433,25 @@ void RelaxedSolver::handleChangeToFalse(VarId seed)
 	continue;
 
 
-
+    
       std::string annotation = "# Installed \"" + m_scope.constructPackageName(deps[i]) + "\" depends on installed \"" + m_scope.constructPackageName(seed) + "\" by its require \"" + relToString(rels[i]) + "\":";
       Clause clause;
       clause.push_back(Lit(seed));
       clause.push_back(Lit(deps[i], 1));
       m_pending.push_back(deps[i]);
+
+      VarIdVector otherAlternatives;
+      m_scope.selectMatchingVarsWithProvides(rels[i], otherAlternatives);
+      rmDub(otherAlternatives);
+      for(VarIdVector::size_type k = 0;k < otherAlternatives.size();k++)
+	{
+	  if (m_annotating)
+	    annotation = "# \"" + m_scope.constructPackageName(otherAlternatives[k]) + "\" is possible alternative";
+	  clause.push_back(Lit(otherAlternatives[k]));
+	m_pending.push_back(otherAlternatives[k]);
+	}
+
+
       addClause(clause);
       if (m_annotating)
 	m_annotations.push_back(annotation);
