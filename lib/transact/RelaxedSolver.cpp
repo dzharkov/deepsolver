@@ -384,6 +384,13 @@ void RelaxedSolver::handleChangeToFalse(VarId seed)
       addClause(clause);
       if (m_annotating)
 	m_annotations.push_back(annotation);
+
+      const PackageId pkgId = m_scope.packageIdOfVarId(deps[i]);
+      VarIdVector otherVersions;
+      m_scope.selectMatchingVarsRealNames(pkgId, otherVersions);
+      rmDub(otherVersions);
+      for(VarIdVector::size_type k = 0;k < otherVersions.size();k++)
+	m_pending.push_back(otherVersions[k]);
     }
 }
 
