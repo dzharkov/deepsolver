@@ -174,9 +174,11 @@ public:
   virtual bool validSourcePkgFileName(const std::string& fileName) const = 0;
 }; //class AbstractPackageBackEnd;
 
-std::auto_ptr<AbstractPackageBackEnd> createRpmBackEnd();
+//std::auto_ptr<AbstractPackageBackEnd> createRpmBackEnd();
+std::auto_ptr<AbstractPackageBackEnd> createDummyBackEnd();
+
 
 //General proposal consider this line as main switch what backend we want;
-#define CREATE_PACKAGE_BACKEND createRpmBackEnd()
+#define CREATE_PACKAGE_BACKEND createDummyBackEnd()
 
 #endif //DEEPSOLVER_ABSTRACT_PACKAGE_BACK_END_H;

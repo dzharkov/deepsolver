@@ -1,6 +1,6 @@
 
 AM_CXXFLAGS = $(DEEPSOLVER_CXXFLAGS) $(DEEPSOLVER_INCLUDES)
-LIBS += -lrpm -lcurl -lminisat
+LIBS += -lcurl -lminisat
 LIBdir=${libdir}
 LDFLAGS=-version-info ${LT_CURRENT}:$(LT_REVISION):$(LT_AGE) -release $(LT_RELEASE)
 
@@ -11,6 +11,7 @@ libdeepsolver_ladir = $(includedir)
 libdeepsolver_la_SOURCES = \
 ConfigCenter.cpp \
 ConfigFile.cpp \
+DummyPackageBackEnd.cpp \
 IndexCore.cpp \
 IndexFetch.cpp \
 InfoCore.cpp \
@@ -27,10 +28,6 @@ repo/PkgSection.cpp \
 repo/RepoParams.cpp \
 Repository.cpp \
 repo/TextFormatSectionReader.cpp \
-rpm/RpmBackEnd.cpp \
-rpm/RpmFileHeaderReader.cpp \
-rpm/rpmHeader.cpp \
-rpm/RpmInstalledPackagesIterator.cpp \
 transact/GeneralSolver.cpp \
 transact/InstalledReferences.cpp \
 transact/LibMinisatSolver.cpp \
@@ -57,6 +54,7 @@ DeepsolverExceptions.h \
 deepsolver.h \
 DeepsolverTypes.h \
 DefaultValues.h \
+DummyPackageBackEnd.h \
 IndexCore.h \
 IndexFetch.h \
 InfoCore.h \
@@ -75,10 +73,6 @@ repo/PkgSection.h \
 repo/RepoParams.h \
 Repository.h \
 repo/TextFormatSectionReader.h \
-rpm/RpmBackEnd.h \
-rpm/RpmFileHeaderReader.h \
-rpm/rpmHeader.h \
-rpm/RpmInstalledPackagesIterator.h \
 transact/AbstractPackageScope.h \
 transact/AbstractSatSolver.h \
 transact/AbstractTaskSolver.h \

@@ -49,4 +49,3 @@ AC_CHECK_LIB(minisat, minisat_solve, [], [
 
 AC_CHECK_LIB(curl, curl_global_init, [], [echo;echo Your system has no libcurl library needed for proper Deepsolver work! >&2;exit 1])
 AC_CHECK_LIB(z, gzdopen, [], [echo;echo Your system has no zlib library needed for proper Deepsolver work! >&2;exit 1])
-AC_CHECK_LIB(rpm, rpmReadPackageHeader, [], [echo;echo Your system has no librpm library needed for proper Deepsolver work! >&2;exit 1])

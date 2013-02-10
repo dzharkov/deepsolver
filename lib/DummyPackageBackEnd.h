@@ -18,6 +18,8 @@
 #ifndef DEEPSOLVER_DUMMY_PACKAGE_BACK_END_H
 #define DEEPSOLVER_DUMMY_PACKAGE_BACK_END_H
 
+#include"AbstractPackageBackEnd.h"
+
 class DummyInstalledPackagesIterator: public AbstractInstalledPackagesIterator
 {
 public:
@@ -41,7 +43,7 @@ public:
   DummyPackageBackEnd() {}
 
   /**\brief The destructor*/
-  virtual ~AbstractPackageBackEnd() {}
+  virtual ~DummyPackageBackEnd() {}
 
 public:
   void initialize()

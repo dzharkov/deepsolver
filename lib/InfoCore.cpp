@@ -29,7 +29,7 @@ void InfoCore::listKnownPackages(PkgVector& pkgs, bool noInstalled, bool noRepoA
     {
       File::readAhead("/var/lib/rpm/Packages");//FIXME:take the value from configuration;
       logMsg(LOG_DEBUG, "Info core is requested to list all installed packages without available with known repositories");
-      std::auto_ptr<AbstractPackageBackEnd> backend = createRpmBackEnd();
+      std::auto_ptr<AbstractPackageBackEnd> backend = CREATE_PACKAGE_BACKEND;
       std::auto_ptr<AbstractInstalledPackagesIterator> it = backend->enumInstalledPackages();
       Pkg pkg;
       while(it->moveNext(pkg))
@@ -45,7 +45,7 @@ void InfoCore::listKnownPackages(PkgVector& pkgs, bool noInstalled, bool noRepoA
   if (!noInstalled)
     {
       File::readAhead("/var/lib/rpm/Packages");//FIXME:take the value from configuration;
-      std::auto_ptr<AbstractPackageBackEnd> backend = createRpmBackEnd();
+      std::auto_ptr<AbstractPackageBackEnd> backend = CREATE_PACKAGE_BACKEND;
       logMsg(LOG_DEBUG, "Adding information about installed packages");
       PkgUtils::fillWithhInstalledPackages(*backend.get(), content);
     }
