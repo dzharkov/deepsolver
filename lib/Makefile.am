@@ -1,6 +1,6 @@
 
 AM_CXXFLAGS = $(DEEPSOLVER_CXXFLAGS) $(DEEPSOLVER_INCLUDES)
-LIBS += -lcurl -lminisat
+LIBS += -lcurl -lminisat -lsqlite3
 LIBdir=${libdir}
 LDFLAGS=-version-info ${LT_CURRENT}:$(LT_REVISION):$(LT_AGE) -release $(LT_RELEASE)
 
@@ -28,6 +28,7 @@ repo/PkgSection.cpp \
 repo/RepoParams.cpp \
 Repository.cpp \
 repo/TextFormatSectionReader.cpp \
+SqlitePkgCacheCreator.cpp \
 transact/GeneralSolver.cpp \
 transact/InstalledReferences.cpp \
 transact/LibMinisatSolver.cpp \
@@ -41,8 +42,9 @@ utils/GzipInterface.cpp \
 utils/Md5.cpp \
 utils/Md5File.cpp \
 utils/RegExp.cpp \
+utils/SqliteInterface.cpp \
 utils/StringUtils.cpp \
-utils/TinyFileDownload.cpp
+utils/TinyFileDownload.cpp 
 
 libdeepsolver_la_HEADERS = \
 AbstractPackageBackEnd.h \
@@ -73,6 +75,7 @@ repo/PkgSection.h \
 repo/RepoParams.h \
 Repository.h \
 repo/TextFormatSectionReader.h \
+SqlitePkgCacheCreator.h \
 transact/AbstractPackageScope.h \
 transact/AbstractSatSolver.h \
 transact/AbstractTaskSolver.h \
@@ -90,5 +93,7 @@ utils/GzipInterface.h \
 utils/Md5File.h \
 utils/Md5.h \
 utils/RegExp.h \
+utils/SqliteInterface.h \
 utils/StringUtils.h \
 utils/TinyFileDownload.h
+
